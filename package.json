@@ -6,7 +6,9 @@
     "test": "cucumber-js",
     "test:dry": "cucumber-js --dry-run",
     "catalog": "cucumber-js --dry-run --format message:cucumber-messages.ndjson && ts-node scripts/extract-steps.ts cucumber-messages.ndjson && ts-node scripts/render-markdown.ts",
-    "report": "echo \"HTML report is configured in cucumber.js (html formatter)\""
+    "report": "echo \"HTML report is configured in cucumber.js (html formatter)\"",
+    "validate:steps": "ts-node --project tsconfig.json scripts/validate-steps.ts",
+    "prepare": "husky"
   },
   "keywords": [
     "playwright",
@@ -20,6 +22,7 @@
     "@cucumber/cucumber": "^10.8.0",
     "@playwright/test": "^1.45.0",
     "@types/node": "^20.14.0",
+    "husky": "^9.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.0"
   }
