@@ -1,0 +1,70 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - 'src/steps/**'       # step definitions change → catalog changes
+      - 'scripts/**'         # catalog generation scripts
+  workflow_dispatch:         # manual trigger from the Actions UI
+
+# Required for the GitHub Pages deploy actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time; cancel in-flight builds if a new push arrives.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Astro site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Regenerate step-catalog.json from the live step definitions.
+      # The file is gitignored (it's a derived artifact), so we must
+      # produce it fresh before the Astro build can read it.
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Regenerate step catalog
+        run: npm run catalog
+
+      # Build the Astro/Starlight site inside docs-site/.
+      - name: Install docs dependencies
+        run: npm ci
+        working-directory: docs-site
+
+      - name: Build docs site
+        run: npm run build
+        working-directory: docs-site
+        env:
+          # Derive the GitHub Pages URL automatically from the repo context.
+          SITE_URL: https://${{ github.repository_owner }}.github.io
+          SITE_BASE: /${{ github.event.repository.name }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-site/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

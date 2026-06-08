@@ -1,0 +1,32 @@
+---
+title: BDD Step Catalog
+description: Searchable reference for every Cucumber step in the automation scaffold.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+This site is the **single source of truth** for all Cucumber steps in the
+automation scaffold. Use the search bar or the sidebar to find the step
+you need before writing a new one.
+
+<CardGrid>
+  <Card title="Search" icon="magnifier">
+    Press **Ctrl + K** (or click the search bar) and type a keyword — e.g.
+    `login`, `cart`, `order`.
+  </Card>
+  <Card title="Each step page shows" icon="document">
+    - Step expression (copy-paste into your `.feature`)
+    - Parameters with types and descriptions
+    - `@intent` — the business intent
+    - Pre / Post conditions
+    - `file:line` link to the implementation
+  </Card>
+  <Card title="Missing a step?" icon="warning">
+    If no existing step covers your scenario, contact **Steve** (the catalog
+    gatekeeper). New steps must be approved before use. See `CONTRIBUTING.md`.
+  </Card>
+  <Card title="Keep it deterministic" icon="approve-check">
+    Reuse steps from this catalog. Do **not** invent new phrasing for something
+    that already exists — the pre-commit hook will catch it anyway.
+  </Card>
+</CardGrid>

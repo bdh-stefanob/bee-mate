@@ -1,0 +1,18 @@
+---
+// Custom page using Starlight layout — not part of the docs content collection.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import FeatureEditor from '../components/FeatureEditor';
+
+// Pass the base URL so the React component can fetch /api/steps.json correctly
+// when deployed under a sub-path (e.g. /bdd-automation-scaffold/).
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Feature Editor',
+    description: 'Compose Gherkin .feature files using only catalog-approved steps. Live validation + download.',
+  }}
+>
+  <FeatureEditor client:only="react" base={base} />
+</StarlightPage>
