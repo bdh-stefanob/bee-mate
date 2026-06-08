@@ -1,0 +1,8 @@
+node_modules/
+dist/
+reports/
+cucumber-messages.ndjson
+step-catalog.json
+*.log
+.env
+.env.*

@@ -1,0 +1,26 @@
+{
+  "name": "bdd-automation-scaffold",
+  "version": "0.1.0",
+  "description": "Greenfield BDD test automation scaffold — Playwright + Cucumber.js + TypeScript. Generic demo domain.",
+  "scripts": {
+    "test": "cucumber-js",
+    "test:dry": "cucumber-js --dry-run",
+    "catalog": "cucumber-js --dry-run --format message:cucumber-messages.ndjson && ts-node scripts/extract-steps.ts cucumber-messages.ndjson && ts-node scripts/render-markdown.ts",
+    "report": "echo \"HTML report is configured in cucumber.js (html formatter)\""
+  },
+  "keywords": [
+    "playwright",
+    "cucumber",
+    "bdd",
+    "typescript",
+    "e2e"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.8.0",
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.14.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}
