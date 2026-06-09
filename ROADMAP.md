@@ -14,8 +14,12 @@ Lo scaffold contiene:
 - Dominio demo **generico** (auth + orders) — placeholder, non flussi reali
 - `STEP_CATALOG.md` generato da `step-catalog.json` (rigenerato da `npm run catalog`)
 - Convenzioni in `CONTRIBUTING.md` (step canonici, `@intent`, anti-rumore)
+- **Catalog schema v2** (Fase 2 completa): campi `app`, `area`, `status`, `replacedBy`,
+  `requester`, `assignee`; tag lifecycle `@wanted`/`@deprecated`; badge `🔧`/`⛔` nel MD;
+  tipi VS Code extension allineati.
 
-**Stato verifiche:** scaffold funzionante (tsc OK, 5 scenari / 18 step / 0 undefined, catalog 10 step documentati).
+**Stato verifiche:** scaffold funzionante (tsc OK, 5 scenari / 18 step / 0 undefined,
+catalog 11 step — 10 implemented + 1 wanted demo).
 
 ---
 
@@ -77,7 +81,56 @@ Il team misto richiede **due interfacce parallele** sullo stesso catalog:
 
 ---
 
-## 5. Roadmap — 6 punti in ordine di ROI
+## 5. Roadmap — milestone in ordine di priorità
+
+### M1 — Manager Demo  [SCADENZA: venerdì 13 giugno 2026]
+
+Obiettivo: dimostrare alla manager il valore dell'approccio BDD-catalog rispetto
+a Notepad. Non serve essere production-ready — serve essere convincente.
+
+#### 5.0a Import scenari plain text  [Fase 3, ~0.5 giorni]
+
+**Cosa:** script `scripts/import-scenarios.ts` che:
+1. Legge un file `.txt` / `.feature` con scenari Given/When/Then già scritti
+2. Produce i `.feature` file nella struttura `src/features/<area>/`
+3. Estrae gli step unici e li aggiunge al catalog come `@wanted` (non implementati)
+
+**Input atteso:** file plain text con scenari Boots (arrivano 10/06/2026).
+
+**Output:** baseline di `.feature` reali + step catalog popolato di `@wanted`.
+
+**Da NON fare:** generare step definition TypeScript automaticamente.
+
+---
+
+#### 5.0b Web authoring app (catalog + editor)  [Fase 4, ~1.5 giorni]
+
+**Cosa:** mini-app web locale (Express + HTML/JS vanilla o Vite) con:
+
+- **Catalog panel** (sinistra): step cercabili per testo/tag/domain/status,
+  badge `🔧 wanted` e `⛔ deprecated`, sezione "Favoriti" (localStorage)
+- **Authoring panel** (destra): editor Gherkin con autocomplete deterministico
+  (suggerisce solo step dal catalog), evidenzia in arancio step non nel catalog
+- **Linting inline**: capitalizzazione Given/When/Then, step near-duplicate già
+  presenti (`fastest-levenshtein`), placeholder `{string}`/`{int}` malformati
+- **Save flow**: mostra preview degli step nuovi → conferma → scrive il `.feature`
+  in `src/features/` + esegue `git commit` locale via `child_process`
+- **Flow browser**: tab che mostra i business flow per area/dominio come punto
+  di partenza per nuovi scenari
+
+**Stack:** server Node locale (`npm run app`) + UI leggera senza framework pesante.
+Niente database — tutto legge da `step-catalog.json` e dai `.feature` esistenti.
+
+**Dipendenza:** Fase 3 (catalog popolato con step Boots).
+
+---
+
+#### 5.0c UI/UX audit  [post-build, ~0.5 giorni]
+
+Dopo la build della web app, spawn di `gsd-ui-auditor` per revisione su 6 dimensioni
+(layout, accessibilità, coerenza visiva, leggibilità, feedback utente, mobile/responsive).
+
+---
 
 ### 5.1 Step Catalog → sito statico cercabile  [PRIORITA 1, 1-2 giorni]
 
@@ -347,15 +400,18 @@ Scenario: Checkout fails with expired card
 
 ## 6. Cosa NON fare
 
-- ❌ **Webapp authoring full-blown** (4-8 settimane): Cucumber Studio esiste gia
-  a pagamento. Se davvero serve, valutarla prima di costruire.
 - ❌ **Dashboard custom dei run**: usa `multiple-cucumber-html-reporter`.
-- ❌ **Editor con AI generativa libera per i QA**: rompe la calibrazione
-  deterministica. AI generativa solo lato Steve (Claude Code) per draft.
+- ❌ **AI generativa libera per i QA nell'editor**: rompe la calibrazione
+  deterministica. Autocomplete = solo step dal catalog (lookup, non generazione).
+  AI generativa solo lato Steve (Claude Code) per draft e generation da ticket.
 - ❌ **Selettori dentro gli step**: rispetta i 4 layer (vedi `CONTRIBUTING.md`).
 - ❌ **Step duplicati "per velocita"**: usa il pre-commit hook (5.2) per impedirlo.
 - ❌ **Scrivere a mano `STEP_CATALOG.md`**: si genera da `npm run catalog`.
 - ❌ **Nomi/flussi/dati aziendali reali in questo repo**: e' pubblico/personale.
+- ❌ **Generare il body delle step definition automaticamente**: solo lo scheletro
+  TypeScript; l'implementazione Playwright è manuale (non inferibile dal testo).
+- ❌ **Backend con database** per la web app del demo: tutto da `step-catalog.json`
+  e `.feature` su filesystem — niente persistenza esterna per M1.
 
 ---
 
@@ -385,10 +441,14 @@ npm run catalog       # rigenera STEP_CATALOG.md + step-catalog.json
 
 ## 8. Open questions (Steve)
 
-- [ ] Decidere se il sito catalog deve essere **pubblico** (utile come portfolio +
-      onboarding rapido) o **auth-gated** (se il catalog contiene anche nomi di
-      flussi che vuoi tenere riservati).
-- [ ] Confermare se i QA non-repo useranno OAuth GitHub o se le PR le aprira'
-      Steve in batch (review degli export `.feature` settimanale).
-- [ ] Valutare Cucumber Studio / Xray Test Editor come alternativa a 5.6 prima di
-      committarsi a 1-2 settimane di dev.
+- [x] **Web app per demo manager**: confermata — scadenza venerdì 13/06/2026.
+- [x] **Formato step Boots**: scenari plain text con Given/When/Then già scritti
+      (non step definition isolate). Arrivano il 10/06/2026.
+- [x] **Jira integration**: nice-to-have prioritario — token API già disponibili.
+      Testare il prima possibile per vedere l'output su una pagina Jira.
+- [ ] **Formato esatto file step Boots**: `.txt`, `.feature`, Word, email?
+      Determina l'importer da costruire in Fase 3.
+- [ ] **Dove gira la web app durante la demo**: localhost (Steve condivide schermo)
+      o serve hosting temporaneo accessibile dalla manager?
+- [ ] **Catalog pubblico vs auth-gated**: decidere quando si passa al repo aziendale.
+- [ ] **PR apertura per QA non-repo**: OAuth GitHub diretto o Steve fa batch review?
