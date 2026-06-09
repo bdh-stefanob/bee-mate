@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-06-09T20:05:46.789Z",
-  "totalSteps": 10,
-  "documentedSteps": 10,
+  "generatedAt": "2026-06-09T20:06:34.410Z",
+  "totalSteps": 11,
+  "documentedSteps": 11,
   "undocumentedSteps": 0,
   "steps": [
     {
@@ -91,6 +91,29 @@
         "pre": "The cart contains at least one product.",
         "post": "An order is created.",
         "page": "CartPage"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I search for the product {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "wanted",
+      "requester": "DEMO-001",
+      "assignee": "steve",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:79",
+      "doc": {
+        "params": {
+          "product": "The product name to search for."
+        },
+        "intent": "Searches the catalog for a product by name.",
+        "wanted": true,
+        "requester": "DEMO-001",
+        "assignee": "steve"
       },
       "documented": true
     },

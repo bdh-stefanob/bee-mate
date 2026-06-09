@@ -4,8 +4,8 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-06-09T20:05:46.789Z
-Total steps: **10** (10 documented, 0 undocumented)
+Last update: 2026-06-09T20:06:34.410Z
+Total steps: **11** (11 documented, 0 undocumented)
 
 ## How to use
 
@@ -52,7 +52,7 @@ Authenticates the current user with valid credentials.
 
 _Implementation:_ `src\steps\app-a\auth\auth.steps.ts:39`
 
-## Domain: `app-a/orders` (5 steps)
+## Domain: `app-a/orders` (6 steps)
 
 ### `I place the order`
 
@@ -63,6 +63,15 @@ Submits the current cart as an order.
 **Post:** An order is created.
 
 _Implementation:_ `src\steps\app-a\orders\orders.steps.ts:46`
+
+### `I search for the product {string}`
+
+Searches the catalog for a product by name.
+
+**Parameters:**
+- `product` — The product name to search for.
+
+_Implementation:_ `src\steps\app-a\orders\orders.steps.ts:79`
 
 ### `the cart contains the following products:`
 
