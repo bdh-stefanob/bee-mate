@@ -29,7 +29,9 @@
   2. `npm test` passa 5 scenari / 18 step / 0 undefined sui nuovi path
   3. `npm run catalog` rigenera step-catalog.json senza errori e il domain riflette i nuovi path
   4. `cucumber.js` e tsconfig.json puntano ai nuovi glob path (nessun path legacy hardcoded)
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 01-01-PLAN.md — Refactor multi-app: migra codice sotto app-a, placeholder app-b, rigenera catalog
 
 ### Phase 2: Catalog Pipeline Upgrade
 **Goal**: Il catalog contiene app, area, status per ogni step; l'extension li conosce
@@ -91,7 +93,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Multi-App Scaffold | 0/? | Not started | - |
+| 1. Multi-App Scaffold | 0/1 | Not started | - |
 | 2. Catalog Pipeline Upgrade | 0/? | Not started | - |
 | 3. CI Automation | 0/? | Not started | - |
 | 4. Extension Diagnostics & Catalog UX | 0/? | Not started | - |
