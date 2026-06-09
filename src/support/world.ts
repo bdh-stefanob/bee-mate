@@ -17,7 +17,9 @@ export class CustomWorld extends World {
 
   async init(): Promise<void> {
     this.browser = await chromium.launch();
-    this.context = await this.browser.newContext();
+    this.context = await this.browser.newContext({
+      baseURL: process.env.BASE_URL ?? "http://localhost:3000",
+    });
     this.page = await this.context.newPage();
   }
 
