@@ -101,6 +101,10 @@ a Notepad. Non serve essere production-ready — serve essere convincente.
 
 **Da NON fare:** generare step definition TypeScript automaticamente.
 
+**Plans:** 1 piano
+Plans:
+- [ ] 03-01-PLAN.md — Implementare import-scenarios.ts + test end-to-end con fixture
+
 ---
 
 #### 5.0b Web authoring app (catalog + editor)  [Fase 4, ~1.5 giorni]
