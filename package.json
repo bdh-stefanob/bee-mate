@@ -8,6 +8,8 @@
     "catalog": "cucumber-js --dry-run --format message:cucumber-messages.ndjson && ts-node scripts/extract-steps.ts cucumber-messages.ndjson && ts-node scripts/render-markdown.ts",
     "report": "echo \"HTML report is configured in cucumber.js (html formatter)\"",
     "validate:steps": "ts-node --project tsconfig.json scripts/validate-steps.ts",
+    "jira:sync": "ts-node scripts/jira-sync.ts",
+    "jira:sync:dry": "ts-node scripts/jira-sync.ts --dry-run",
     "prepare": "husky"
   },
   "keywords": [

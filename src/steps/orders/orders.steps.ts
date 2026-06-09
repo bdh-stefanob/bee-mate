@@ -12,6 +12,7 @@ import { OrderActions } from "../../actions/orders.actions";
  * @intent  Adds a single product to the cart.
  * @param   product  The product name to add.
  * @post    The cart contains the named product, quantity 1.
+ * @page    CartPage
  */
 Given(
   "the cart contains the product {string}",
@@ -23,6 +24,7 @@ Given(
 /**
  * @intent  Adds several products to the cart from a table.
  * @post    The cart contains every product/quantity listed.
+ * @page    CartPage
  */
 Given(
   "the cart contains the following products:",
@@ -39,6 +41,7 @@ Given(
  * @intent  Submits the current cart as an order.
  * @pre     The cart contains at least one product.
  * @post    An order is created.
+ * @page    CartPage
  */
 When("I place the order", async function (this: CustomWorld) {
   await new OrderActions(this.page).placeOrder();
@@ -46,6 +49,7 @@ When("I place the order", async function (this: CustomWorld) {
 
 /**
  * @intent  Verifies the order was confirmed.
+ * @page    CartPage
  */
 Then("the order is confirmed", async function (this: CustomWorld) {
   const confirmed = await new OrderActions(this.page).isOrderConfirmed();
@@ -55,6 +59,7 @@ Then("the order is confirmed", async function (this: CustomWorld) {
 /**
  * @intent  Verifies the order has the expected status.
  * @param   status  Expected status, e.g. "pending".
+ * @page    CartPage
  */
 Then(
   "the order status is {string}",

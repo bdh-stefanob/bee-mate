@@ -303,6 +303,48 @@ Near-duplicates rilevati (richiedono consolidamento):
 
 ---
 
+### 5.8 Integrazione Jira plain (senza Xray)  [PRIORITA 3, 1 giorno]
+
+**Contesto:** Xray è a pagamento — fuori scope. Si usa Jira standard via REST API.
+
+**Tag convention adottata** (già implementata nel Feature Editor):
+
+| Tag | Significato |
+|-----|-------------|
+| `@ticket:BOOT-123` | Collega lo scenario alla Jira story / bug di riferimento |
+| `@regression`      | Include nella suite di regressione |
+| `@smoke`           | Smoke test (ogni build) |
+| `@sanity`          | Sanity post-deploy |
+| `@wip`             | In lavorazione — escluso dal CI gate |
+
+**Testo libero scenario** (Gherkin valido, già nel template + Scenario):
+```gherkin
+@ticket:BOOT-1234
+Scenario: Checkout fails with expired card
+  Jira: https://company.atlassian.net/browse/BOOT-1234
+  Note: verifica il messaggio di errore lato UI e lato API
+
+  Given I am a logged in user
+  ...
+```
+
+**Script da costruire:** `scripts/jira-sync.ts`
+- Legge tutti i `.feature` nel repo
+- Estrae scenari con `@ticket:BOOT-XXX`
+- Usa Jira REST API (`POST /rest/api/3/issue/{key}/comment`) per aggiornare
+  la issue con il contenuto dello scenario come commento o attachment
+- Configurazione: `JIRA_URL`, `JIRA_TOKEN` in `.env` (mai nel codice)
+- Direzione iniziale: **push** (`.feature` → Jira); pull (Jira → `.feature`) già
+  coperto dalla skill `anthropic-skills:regression-scenario`
+
+**Dipendenze:** nessuna libreria extra — `fetch` nativo Node 18+ è sufficiente.
+
+**Da NON fare:**
+- Gestire autenticazione Basic nel codice — solo token Bearer via `.env`
+- Modificare le Jira issues (solo commenti / allegati, read-only sul ticket principale)
+
+---
+
 ## 6. Cosa NON fare
 
 - ❌ **Webapp authoring full-blown** (4-8 settimane): Cucumber Studio esiste gia

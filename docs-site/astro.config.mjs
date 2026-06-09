@@ -14,6 +14,7 @@ export default defineConfig({
     starlight({
       title: 'BDD Step Catalog',
       description: 'Searchable reference for every Cucumber step in the automation scaffold.',
+      customCss: ['./src/styles/boots-theme.css'],
       sidebar: [
         { label: 'Home', link: '/' },
         { label: 'Feature Editor', link: '/editor' },

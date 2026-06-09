@@ -1,0 +1,79 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Gherkin",
+  "scopeName": "source.gherkin",
+  "fileTypes": ["feature"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#tag" },
+    { "include": "#feature-keyword" },
+    { "include": "#scenario-keyword" },
+    { "include": "#step-keyword" },
+    { "include": "#docstring" },
+    { "include": "#table-row" },
+    { "include": "#string-double" },
+    { "include": "#string-single" },
+    { "include": "#placeholder" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.number-sign.gherkin",
+      "match": "^\\s*#.*$"
+    },
+    "tag": {
+      "name": "entity.name.tag.gherkin",
+      "match": "@[\\w:][\\w:\\-\\.]*"
+    },
+    "feature-keyword": {
+      "match": "^(\\s*)(Feature|Rule|Background)(\\s*:)(.*)",
+      "captures": {
+        "2": { "name": "keyword.control.feature.gherkin" },
+        "3": { "name": "punctuation.separator.gherkin" },
+        "4": { "name": "entity.name.section.gherkin" }
+      }
+    },
+    "scenario-keyword": {
+      "match": "^(\\s*)(Scenario Outline|Scenario)(\\s*:)(.*)",
+      "captures": {
+        "2": { "name": "keyword.control.scenario.gherkin" },
+        "3": { "name": "punctuation.separator.gherkin" },
+        "4": { "name": "string.unquoted.title.gherkin" }
+      }
+    },
+    "step-keyword": {
+      "match": "^(\\s*)(Given|When|Then|And|But|\\*)(\\s+)(.*)",
+      "captures": {
+        "2": { "name": "keyword.operator.step.gherkin" },
+        "4": { "name": "source.gherkin.step-text" }
+      }
+    },
+    "docstring": {
+      "name": "string.quoted.triple.gherkin",
+      "begin": "^\\s*\"\"\"",
+      "end": "^\\s*\"\"\"",
+      "patterns": [
+        { "name": "string.quoted.triple.gherkin", "match": ".*" }
+      ]
+    },
+    "table-row": {
+      "match": "^(\\s*)(\\|)(.+)(\\|\\s*$)",
+      "captures": {
+        "2": { "name": "punctuation.definition.table.gherkin" },
+        "3": { "name": "variable.parameter.table-cell.gherkin" },
+        "4": { "name": "punctuation.definition.table.gherkin" }
+      }
+    },
+    "string-double": {
+      "name": "string.quoted.double.gherkin",
+      "match": "\"[^\"\\n]*\""
+    },
+    "string-single": {
+      "name": "string.quoted.single.gherkin",
+      "match": "'[^'\\n]*'"
+    },
+    "placeholder": {
+      "name": "variable.other.placeholder.gherkin",
+      "match": "<[^>\\n]+>"
+    }
+  }
+}

@@ -25,12 +25,14 @@ interface StepDoc {
   params: Record<string, string>;
   pre?: string;
   post?: string;
+  page?: string; // Page Object this step operates on (e.g. LoginPage, CartPage)
 }
 
 interface CatalogStep {
   expression: string;
   parameters: string[];
   domain: string;
+  page?: string; // promoted from doc for easy filtering
   sourceRef: string;
   doc: StepDoc;
   documented: boolean; // true se ha almeno @intent
@@ -92,6 +94,7 @@ function extractDoc(uri: string, stepLine: number): StepDoc {
     if (tag === "intent") doc.intent = rest;
     else if (tag === "pre") doc.pre = rest;
     else if (tag === "post") doc.post = rest;
+    else if (tag === "page") doc.page = rest;
     else if (tag === "param") {
       const pm = rest.match(/^(\S+)\s+(.*)$/);
       if (pm) doc.params[pm[1]] = pm[2];
@@ -130,7 +133,7 @@ for (const line of lines) {
   const doc = lineNo ? extractDoc(uri, lineNo) : { params: {} };
   const documented = Boolean(doc.intent);
 
-  steps.push({ expression, parameters, domain, sourceRef, doc, documented });
+  steps.push({ expression, parameters, domain, page: doc.page, sourceRef, doc, documented });
 }
 
 steps.sort((a, b) =>

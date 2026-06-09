@@ -12,7 +12,41 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   frontmatter={{
     title: 'Feature Editor',
     description: 'Compose Gherkin .feature files using only catalog-approved steps. Live validation + download.',
+    tableOfContents: false,
   }}
 >
   <FeatureEditor client:only="react" base={base} />
 </StarlightPage>
+
+{/*
+  Starlight's prose CSS applies margin-top to sibling div/section elements
+  (e.g. `* + *` or `div + div` flow-spacing rules). Inside Monaco's DOM,
+  .monaco-scrollable-element is a sibling of .margin (the gutter); if it
+  receives margin-top the content area shifts down by one line-height (19px),
+  causing the visible click/cursor misalignment.
+  These resets must be `is:global` because Monaco's DOM is injected at runtime.
+*/}
+<style is:global>
+  /*
+   * Starlight prose CSS applies flow-spacing (margin-top) to sibling elements.
+   * These rules reset margins on Monaco's internal containers and their children
+   * so that the gutter and content area stay pixel-aligned.
+   * Children rules (> div) catch per-line divs; container rules catch the wrappers.
+   */
+
+  /* containers */
+  .monaco-editor .overflow-guard          { margin-top: 0 !important; padding-top: 0 !important; }
+  .monaco-editor .overflow-guard > div    { margin-top: 0 !important; }
+  .monaco-editor .margin                  { margin-top: 0 !important; }
+  .monaco-editor .margin-view-overlays    { margin-top: 0 !important; }
+  .monaco-editor .lines-content           { margin-top: 0 !important; }
+  .monaco-editor .view-lines              { margin-top: 0 !important; }
+  .monaco-scrollable-element              { margin-top: 0 !important; }
+
+  /* per-line divs */
+  .monaco-editor .overflow-guard > div + div { margin-top: 0 !important; }
+  .monaco-scrollable-element > div           { margin-top: 0 !important; }
+  .lines-content > div                       { margin-top: 0 !important; }
+  .view-lines    > div                       { margin-top: 0 !important; }
+  .margin-view-overlays > div                { margin-top: 0 !important; }
+</style>

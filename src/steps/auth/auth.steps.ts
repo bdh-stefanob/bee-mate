@@ -11,6 +11,7 @@ import { AuthActions } from "../../actions/auth.actions";
 /**
  * @intent  Registers the test user so they can authenticate.
  * @post    A user account exists, with the default role.
+ * @page    LoginPage
  */
 Given("I am a registered user", async function (this: CustomWorld) {
   await new AuthActions(this.page).ensureRegisteredUser();
@@ -20,6 +21,7 @@ Given("I am a registered user", async function (this: CustomWorld) {
  * @intent  Registers the test user with a specific role.
  * @param   role  The role to assign: "admin" | "standard".
  * @post    A user account exists with the given role.
+ * @page    LoginPage
  */
 Given(
   "I am a registered user with role {string}",
@@ -32,6 +34,7 @@ Given(
  * @intent  Authenticates the current user with valid credentials.
  * @pre     A registered user exists.
  * @post    An authenticated session is active.
+ * @page    LoginPage
  */
 When("I log in with valid credentials", async function (this: CustomWorld) {
   await new AuthActions(this.page).loginWithValidCredentials();
@@ -39,6 +42,7 @@ When("I log in with valid credentials", async function (this: CustomWorld) {
 
 /**
  * @intent  Verifies the user reached their dashboard after login.
+ * @page    LoginPage
  */
 Then("I land on my dashboard", async function (this: CustomWorld) {
   const onDashboard = await new AuthActions(this.page).isOnDashboard();

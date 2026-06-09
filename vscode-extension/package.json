@@ -1,0 +1,85 @@
+{
+  "name": "bdd-step-catalog",
+  "displayName": "BDD Step Catalog",
+  "description": "Autocomplete deterministico e validazione degli step Gherkin dal catalog del progetto.",
+  "version": "0.1.0",
+  "publisher": "bertaccini",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Programming Languages", "Other"],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:gherkin",
+    "workspaceContains:**/step-catalog.json"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "gherkin",
+        "extensions": [".feature"],
+        "aliases": ["Gherkin", "Cucumber"]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "gherkin",
+        "scopeName": "source.gherkin",
+        "path": "./syntaxes/gherkin.tmLanguage.json"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "stepCatalogContainer",
+          "title": "Step Catalog",
+          "icon": "$(symbol-method)"
+        }
+      ]
+    },
+    "views": {
+      "stepCatalogContainer": [
+        {
+          "id": "stepCatalogTree",
+          "name": "Steps"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "stepCatalog.reload",
+        "title": "Step Catalog: Reload from disk"
+      },
+      {
+        "command": "stepCatalog.find",
+        "title": "Step Catalog: Find step…"
+      },
+      {
+        "command": "stepCatalog.insertStep",
+        "title": "Step Catalog: Insert step"
+      }
+    ],
+    "configuration": {
+      "title": "BDD Step Catalog",
+      "properties": {
+        "stepCatalog.catalogPath": {
+          "type": "string",
+          "default": "step-catalog.json",
+          "description": "Percorso del file catalog rispetto al workspace root. Modificabile per setup multi-modulo."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.5.0"
+  }
+}

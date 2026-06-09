@@ -9,12 +9,14 @@ interface StepDoc {
   params: Record<string, string>;
   pre?: string;
   post?: string;
+  page?: string;
 }
 
 interface Step {
   expression: string;
   parameters: string[];
   domain: string;
+  page?: string;
   sourceRef: string;
   doc: StepDoc;
   documented: boolean;
@@ -34,8 +36,23 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '');
 }
 
+function needsReview(step: Step): boolean {
+  return !step.doc.intent || !step.page;
+}
+
 function renderBody(step: Step): string {
   const parts: string[] = [];
+
+  if (needsReview(step)) {
+    const missing: string[] = [];
+    if (!step.doc.intent) missing.push('`@intent`');
+    if (!step.page)       missing.push('`@page`');
+    parts.push(`:::caution[Needs Review]\nThis step is missing: ${missing.join(', ')}. Ask Steve to complete the JSDoc.\n:::\n`);
+  }
+
+  if (step.page) {
+    parts.push(`**Page Object:** \`${step.page}\`\n`);
+  }
 
   const paramEntries = Object.entries(step.doc.params ?? {});
   if (paramEntries.length > 0) {
@@ -111,19 +128,23 @@ export function catalogDocsLoader(): Loader {
         const id = `steps/${slugify(step.expression)}`;
         const body = renderBody(step);
 
-        const data = await ctx.parseData({
-          id,
-          data: {
-            title: step.expression,
-            description: step.doc.intent ?? '',
-          },
-        });
+        const frontmatter: Record<string, unknown> = {
+          title: step.expression,
+          description: step.doc.intent ?? '',
+        };
+
+        if (needsReview(step)) {
+          frontmatter.badge = { text: 'Needs Review', variant: 'caution' };
+        }
+
+        const data = await ctx.parseData({ id, data: frontmatter });
 
         ctx.store.set({
           id,
           data,
           body,
-          digest: ctx.generateDigest(step),
+          // JSON.stringify produces a stable string digest Astro can hash.
+          digest: ctx.generateDigest(JSON.stringify(step)),
         });
       }
     },

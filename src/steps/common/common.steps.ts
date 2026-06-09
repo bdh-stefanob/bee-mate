@@ -11,6 +11,7 @@ import { AuthActions } from "../../actions/auth.actions";
  * @intent  Logs in as a user of the given role in one declarative step.
  * @param   role  The role to log in as: "admin" | "standard".
  * @post    An authenticated session is active for that role.
+ * @page    LoginPage
  */
 Given(
   "I am logged in as a {string} user",
