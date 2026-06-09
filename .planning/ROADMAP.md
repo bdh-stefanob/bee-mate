@@ -42,7 +42,11 @@ Plans:
   2. `npm run catalog` riconosce i JSDoc tag @wanted, @deprecated, @replacedBy, @requester, @assignee e li serializza correttamente
   3. Il tipo CatalogStep nell'extension include tutti i nuovi campi ed è retrocompatibile (catalog vecchio senza quei campi non causa errori runtime)
   4. STEP_CATALOG.md rende visibili lo status e il domain aggiornato (incluso almeno uno step @wanted demo)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Estendi extract-steps.ts (app/area/domain + tag lifecycle/status) + step demo @wanted
+- [ ] 02-02-PLAN.md — render-markdown.ts: badge status, breakdown header, righe lifecycle in STEP_CATALOG.md
+- [ ] 02-03-PLAN.md — Allinea CatalogStep nell'extension (6 campi opzionali, retrocompatibile)
 
 ### Phase 3: CI Automation
 **Goal**: Il catalog si mantiene aggiornato automaticamente in CI e le PR con step inventati vengono bloccate
@@ -94,7 +98,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Multi-App Scaffold | 0/1 | Not started | - |
-| 2. Catalog Pipeline Upgrade | 0/? | Not started | - |
+| 2. Catalog Pipeline Upgrade | 0/3 | Not started | - |
 | 3. CI Automation | 0/? | Not started | - |
 | 4. Extension Diagnostics & Catalog UX | 0/? | Not started | - |
 | 5. Extension Workflow | 0/? | Not started | - |
