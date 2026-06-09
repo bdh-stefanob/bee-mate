@@ -4,7 +4,7 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-06-09T18:32:04.360Z
+Last update: 2026-06-09T20:05:46.789Z
 Total steps: **10** (10 documented, 0 undocumented)
 
 ## How to use
@@ -15,7 +15,7 @@ expression. If it does not, flag it to the step gatekeeper.
 
 ---
 
-## Domain: `app-a` (9 steps)
+## Domain: `app-a/auth` (4 steps)
 
 ### `I am a registered user`
 
@@ -51,6 +51,8 @@ Authenticates the current user with valid credentials.
 **Post:** An authenticated session is active.
 
 _Implementation:_ `src\steps\app-a\auth\auth.steps.ts:39`
+
+## Domain: `app-a/orders` (5 steps)
 
 ### `I place the order`
 

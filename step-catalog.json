@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T18:32:04.360Z",
+  "generatedAt": "2026-06-09T20:05:46.789Z",
   "totalSteps": 10,
   "documentedSteps": 10,
   "undocumentedSteps": 0,
@@ -7,7 +7,10 @@
     {
       "expression": "I am a registered user",
       "parameters": [],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
       "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:16",
       "doc": {
@@ -23,7 +26,10 @@
       "parameters": [
         "{string}"
       ],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
       "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:26",
       "doc": {
@@ -39,7 +45,10 @@
     {
       "expression": "I land on my dashboard",
       "parameters": [],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
       "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:47",
       "doc": {
@@ -52,7 +61,10 @@
     {
       "expression": "I log in with valid credentials",
       "parameters": [],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
       "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:39",
       "doc": {
@@ -67,7 +79,10 @@
     {
       "expression": "I place the order",
       "parameters": [],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
       "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:46",
       "doc": {
@@ -82,7 +97,10 @@
     {
       "expression": "the cart contains the following products:",
       "parameters": [],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
       "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:29",
       "doc": {
@@ -98,7 +116,10 @@
       "parameters": [
         "{string}"
       ],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
       "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:17",
       "doc": {
@@ -114,7 +135,10 @@
     {
       "expression": "the order is confirmed",
       "parameters": [],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
       "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:54",
       "doc": {
@@ -129,7 +153,10 @@
       "parameters": [
         "{string}"
       ],
-      "domain": "app-a",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
       "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:64",
       "doc": {
@@ -146,7 +173,10 @@
       "parameters": [
         "{string}"
       ],
+      "app": "common",
+      "area": "common",
       "domain": "common",
+      "status": "implemented",
       "page": "LoginPage",
       "sourceRef": "src\\steps\\common\\common.steps.ts:16",
       "doc": {
