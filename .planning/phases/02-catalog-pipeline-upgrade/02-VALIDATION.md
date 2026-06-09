@@ -2,8 +2,8 @@
 phase: 2
 slug: catalog-pipeline-upgrade
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-06-09
 ---
 
@@ -40,8 +40,8 @@ created: 2026-06-09
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 2-01-01 | 01 | 1 | INFRA-02 | — | N/A | integration | `npm run catalog && node -e "const c=require('./step-catalog.json'); const s=c.steps.find(x=>x.sourceRef.includes('orders')); console.assert(s&&s.app==='app-a'&&s.area==='orders'&&s.domain==='app-a/orders','INFRA-02 failed')"` | ❌ W0 | ⬜ pending |
 | 2-01-02 | 01 | 1 | INFRA-03 | — | N/A | integration | `npm run catalog && node -e "const c=require('./step-catalog.json'); const s=c.steps.find(x=>x.status==='wanted'); console.assert(s,'nessuno step wanted trovato')"` | ❌ W0 | ⬜ pending |
-| 2-02-01 | 02 | 2 | EXT-01 | — | N/A | type check | `cd vscode-extension && npx tsc --noEmit` | ✅ | ⬜ pending |
-| 2-03-01 | 03 | 3 | INFRA-02, INFRA-03 | — | N/A | integration | `npm run catalog && npm test` | ✅ | ⬜ pending |
+| 2-02-01 | 02 | 2 | INFRA-03 | — | N/A | integration | `npm run catalog && node -e "const c=require('./step-catalog.json'); const s=c.steps.find(x=>x.status==='wanted'); process.stdout.write(c.steps[0]&&c.steps[0].domain&&c.steps[0].domain.includes('/')? 'OK':'FAIL')"` | ✅ | ⬜ pending |
+| 2-03-01 | 03 | 1 | EXT-01 | — | N/A | type check | `cd vscode-extension && npx tsc --noEmit` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

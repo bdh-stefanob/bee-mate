@@ -402,17 +402,17 @@ Aggiungere lo step demo `@wanted`.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`npm run catalog` scrive `cucumber-messages.ndjson` nella root — questo file va in `.gitignore`?**
+1. **`npm run catalog` scrive `cucumber-messages.ndjson` nella root — questo file va in `.gitignore`? (RESOLVED)**
    - Cosa sappiamo: il file è già usato oggi e non è nel `.gitignore` standard del progetto (non verificato)
    - Cosa non è chiaro: se è già escluso o se va aggiunto nella fase
-   - Raccomandazione: verificare durante Wave 0; se non escluso, aggiungerlo è un micro-task da includere nel piano
+   - **RESOLVED (2026-06-09):** `cucumber-messages.ndjson` è alla riga 4 di `.gitignore`. Nessun task necessario.
 
-2. **Il campo `domain` nel JSON cambia da `"app-a"` a `"app-a/auth"` — impatto sui consumer esistenti?**
+2. **Il campo `domain` nel JSON cambia da `"app-a"` a `"app-a/auth"` — impatto sui consumer esistenti? (RESOLVED)**
    - Cosa sappiamo: `CompletionProvider` e `validate-steps.ts` leggono `domain` per raggruppamento; il cambio di formato altera come vengono raggruppati gli step nell'extension
    - Cosa non è chiaro: se i provider Phase 1 dell'extension dipendono dal formato `"app-a"` (senza area) per qualche match string
-   - Raccomandazione: verificare `vscode-extension/src/` — se c'è un match `domain === "app-a"` hardcoded, va aggiornato. Basso rischio dato che l'extension attuale usa `domain` solo per raggruppamento display.
+   - **RESOLVED (2026-06-09):** Grep su `vscode-extension/src/` conferma che NESSUN provider usa match hardcoded su stringhe `domain` specifiche. `treeProvider.ts` usa `step.domain` come chiave Map dinamica (raggruppamento per dominio), `completionProvider.ts` e `hoverProvider.ts` lo usano solo come stringa display. Il cambio di formato `"app-a"` → `"app-a/orders"` produrrà albero più granulare nel tree (un nodo per area invece di uno per app) — comportamento atteso e desiderato. Nessuna modifica ai consumer richiesta.
 
 ---
 
