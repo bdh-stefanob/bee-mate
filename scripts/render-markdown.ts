@@ -20,7 +20,13 @@ interface StepDoc {
 interface CatalogStep {
   expression: string;
   parameters: string[];
+  app?: string;
+  area?: string;
   domain: string;
+  status?: 'implemented' | 'wanted' | 'deprecated';
+  replacedBy?: string;
+  requester?: string;
+  assignee?: string;
   sourceRef: string;
   doc: StepDoc;
   documented: boolean;
@@ -40,8 +46,11 @@ md += `> **Auto-generated — do not edit by hand.**\n`;
 md += `> Source of truth: the step definitions in the code. Regenerated on\n`;
 md += `> every build. To change a step, change the code.\n\n`;
 md += `Last update: ${catalog.generatedAt}\n`;
-md += `Total steps: **${catalog.totalSteps}** `;
-md += `(${catalog.documentedSteps} documented, ${catalog.undocumentedSteps} undocumented)\n\n`;
+const impl = steps.filter((s) => !s.status || s.status === 'implemented').length;
+const want = steps.filter((s) => s.status === 'wanted').length;
+const depr = steps.filter((s) => s.status === 'deprecated').length;
+md += `Total: **${catalog.totalSteps}** steps `;
+md += `(${impl} implemented, ${want} wanted, ${depr} deprecated)\n\n`;
 
 md += `## How to use\n\n`;
 md += `Before writing a new step in a \`.feature\`, **search here** (Ctrl+F) for\n`;
@@ -53,9 +62,18 @@ for (const domain of [...byDomain.keys()].sort()) {
   const list = byDomain.get(domain)!;
   md += `## Domain: \`${domain}\` (${list.length} steps)\n\n`;
   for (const s of list) {
-    const flag = s.documented ? "" : " ⚠️ _undocumented_";
-    md += `### \`${s.expression}\`${flag}\n\n`;
+    const statusBadge =
+      s.status === 'wanted' ? '🔧 ' :
+      s.status === 'deprecated' ? '⛔ ' : '';
+    const undocFlag = s.documented ? "" : " ⚠️ _undocumented_";
+    md += `### ${statusBadge}\`${s.expression}\`${undocFlag}\n\n`;
     if (s.doc.intent) md += `${s.doc.intent}\n\n`;
+    if (s.status === 'wanted' && (s.requester || s.assignee)) {
+      md += `_Requester: ${s.requester ?? '—'} — Assignee: ${s.assignee ?? '—'}_\n\n`;
+    }
+    if (s.status === 'deprecated' && s.replacedBy) {
+      md += `**Sostituito da:** \`${s.replacedBy}\`\n\n`;
+    }
     if (Object.keys(s.doc.params).length) {
       md += `**Parameters:**\n`;
       for (const [name, desc] of Object.entries(s.doc.params)) {

@@ -68,17 +68,3 @@ Then(
     assert.equal(actual, status, `Expected order status "${status}"`);
   }
 );
-
-/**
- * @intent    Searches the catalog for a product by name.
- * @param     product  The product name to search for.
- * @wanted
- * @requester DEMO-001
- * @assignee  steve
- */
-When(
-  "I search for the product {string}",
-  async function (this: CustomWorld, product: string) {
-    throw new Error('NOT IMPLEMENTED');
-  }
-);
