@@ -1,15 +1,18 @@
 {
-  "generatedAt": "2026-06-09T07:15:58.713Z",
-  "totalSteps": 10,
-  "documentedSteps": 10,
+  "generatedAt": "2026-06-09T20:06:34.410Z",
+  "totalSteps": 11,
+  "documentedSteps": 11,
   "undocumentedSteps": 0,
   "steps": [
     {
       "expression": "I am a registered user",
       "parameters": [],
-      "domain": "common",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:16",
+      "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:16",
       "doc": {
         "params": {},
         "intent": "Registers the test user so they can authenticate.",
@@ -23,9 +26,12 @@
       "parameters": [
         "{string}"
       ],
-      "domain": "common",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:26",
+      "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:26",
       "doc": {
         "params": {
           "role": "The role to assign: \"admin\" | \"standard\"."
@@ -37,29 +43,14 @@
       "documented": true
     },
     {
-      "expression": "I am logged in as a {string} user",
-      "parameters": [
-        "{string}"
-      ],
-      "domain": "common",
-      "page": "LoginPage",
-      "sourceRef": "src\\steps\\common\\common.steps.ts:16",
-      "doc": {
-        "params": {
-          "role": "The role to log in as: \"admin\" | \"standard\"."
-        },
-        "intent": "Logs in as a user of the given role in one declarative step.",
-        "post": "An authenticated session is active for that role.",
-        "page": "LoginPage"
-      },
-      "documented": true
-    },
-    {
       "expression": "I land on my dashboard",
       "parameters": [],
-      "domain": "common",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:47",
+      "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:47",
       "doc": {
         "params": {},
         "intent": "Verifies the user reached their dashboard after login.",
@@ -70,9 +61,12 @@
     {
       "expression": "I log in with valid credentials",
       "parameters": [],
-      "domain": "common",
+      "app": "app-a",
+      "area": "auth",
+      "domain": "app-a/auth",
+      "status": "implemented",
       "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:39",
+      "sourceRef": "src\\steps\\app-a\\auth\\auth.steps.ts:39",
       "doc": {
         "params": {},
         "intent": "Authenticates the current user with valid credentials.",
@@ -85,9 +79,12 @@
     {
       "expression": "I place the order",
       "parameters": [],
-      "domain": "common",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:46",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:46",
       "doc": {
         "params": {},
         "intent": "Submits the current cart as an order.",
@@ -98,11 +95,37 @@
       "documented": true
     },
     {
+      "expression": "I search for the product {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "wanted",
+      "requester": "DEMO-001",
+      "assignee": "steve",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:79",
+      "doc": {
+        "params": {
+          "product": "The product name to search for."
+        },
+        "intent": "Searches the catalog for a product by name.",
+        "wanted": true,
+        "requester": "DEMO-001",
+        "assignee": "steve"
+      },
+      "documented": true
+    },
+    {
       "expression": "the cart contains the following products:",
       "parameters": [],
-      "domain": "common",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:29",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:29",
       "doc": {
         "params": {},
         "intent": "Adds several products to the cart from a table.",
@@ -116,9 +139,12 @@
       "parameters": [
         "{string}"
       ],
-      "domain": "common",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:17",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:17",
       "doc": {
         "params": {
           "product": "The product name to add."
@@ -132,9 +158,12 @@
     {
       "expression": "the order is confirmed",
       "parameters": [],
-      "domain": "common",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:54",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:54",
       "doc": {
         "params": {},
         "intent": "Verifies the order was confirmed.",
@@ -147,15 +176,39 @@
       "parameters": [
         "{string}"
       ],
-      "domain": "common",
+      "app": "app-a",
+      "area": "orders",
+      "domain": "app-a/orders",
+      "status": "implemented",
       "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:64",
+      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:64",
       "doc": {
         "params": {
           "status": "Expected status, e.g. \"pending\"."
         },
         "intent": "Verifies the order has the expected status.",
         "page": "CartPage"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I am logged in as a {string} user",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "common",
+      "area": "common",
+      "domain": "common",
+      "status": "implemented",
+      "page": "LoginPage",
+      "sourceRef": "src\\steps\\common\\common.steps.ts:16",
+      "doc": {
+        "params": {
+          "role": "The role to log in as: \"admin\" | \"standard\"."
+        },
+        "intent": "Logs in as a user of the given role in one declarative step.",
+        "post": "An authenticated session is active for that role.",
+        "page": "LoginPage"
       },
       "documented": true
     }

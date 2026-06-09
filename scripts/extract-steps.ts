@@ -26,12 +26,23 @@ interface StepDoc {
   pre?: string;
   post?: string;
   page?: string; // Page Object this step operates on (e.g. LoginPage, CartPage)
+  wanted?: boolean;
+  deprecated?: boolean;
+  replacedBy?: string;
+  requester?: string;
+  assignee?: string;
 }
 
 interface CatalogStep {
   expression: string;
   parameters: string[];
+  app: string;
+  area: string;
   domain: string;
+  status: 'implemented' | 'wanted' | 'deprecated';
+  replacedBy?: string;
+  requester?: string;
+  assignee?: string;
   page?: string; // promoted from doc for easy filtering
   sourceRef: string;
   doc: StepDoc;
@@ -87,14 +98,19 @@ function extractDoc(uri: string, stepLine: number): StepDoc {
     .filter((l) => l.length > 0);
 
   for (const line of clean) {
-    const m = line.match(/^@(\w+)\s+(.*)$/);
+    const m = line.match(/^@(\w+)(?:\s+(.*))?$/);
     if (!m) continue;
     const tag = m[1];
-    const rest = m[2].trim();
+    const rest = (m[2] ?? "").trim();
     if (tag === "intent") doc.intent = rest;
     else if (tag === "pre") doc.pre = rest;
     else if (tag === "post") doc.post = rest;
     else if (tag === "page") doc.page = rest;
+    else if (tag === "wanted") doc.wanted = true;
+    else if (tag === "deprecated") doc.deprecated = true;
+    else if (tag === "replacedBy") doc.replacedBy = rest;
+    else if (tag === "requester") doc.requester = rest;
+    else if (tag === "assignee") doc.assignee = rest;
     else if (tag === "param") {
       const pm = rest.match(/^(\S+)\s+(.*)$/);
       if (pm) doc.params[pm[1]] = pm[2];
@@ -125,15 +141,41 @@ for (const line of lines) {
   const lineNo: number = sd.sourceReference?.location?.line ?? 0;
   const sourceRef = `${uri}:${lineNo || "?"}`;
 
-  const domainMatch = uri.match(/steps\/([^/]+)\//);
-  const domain = domainMatch ? domainMatch[1] : "common";
+  // Deriva app, area e domain dal path del file step.
+  // Supporta path POSIX e Windows (sia "/" che "\").
+  // Struttura attesa: steps/<app>/<area>/...
+  // Edge case steps/<app>/... (1 livello, es. common): area = app, domain = app.
+  const appMatch = uri.match(/steps[/\\]([^/\\]+)[/\\]/);
+  const areaMatch = uri.match(/steps[/\\][^/\\]+[/\\]([^/\\]+)[/\\]/);
+  const app = appMatch ? appMatch[1] : "common";
+  const area = areaMatch ? areaMatch[1] : app;
+  const domain = areaMatch ? `${app}/${area}` : app;
 
   const parameters = [...expression.matchAll(/{[^}]+}/g)].map((m) => m[0]);
 
   const doc = lineNo ? extractDoc(uri, lineNo) : { params: {} };
   const documented = Boolean(doc.intent);
 
-  steps.push({ expression, parameters, domain, page: doc.page, sourceRef, doc, documented });
+  const status: 'implemented' | 'wanted' | 'deprecated' =
+    doc.wanted ? 'wanted' :
+    doc.deprecated ? 'deprecated' :
+    'implemented';
+
+  steps.push({
+    expression,
+    parameters,
+    app,
+    area,
+    domain,
+    status,
+    ...(doc.replacedBy ? { replacedBy: doc.replacedBy } : {}),
+    ...(doc.requester ? { requester: doc.requester } : {}),
+    ...(doc.assignee ? { assignee: doc.assignee } : {}),
+    page: doc.page,
+    sourceRef,
+    doc,
+    documented,
+  });
 }
 
 steps.sort((a, b) =>
