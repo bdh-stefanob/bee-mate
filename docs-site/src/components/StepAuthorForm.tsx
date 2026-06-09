@@ -1,21 +1,94 @@
-/**
- * StepAuthorForm
- * ---------------
- * Form per creare una nuova step definition con documentazione completa.
- * L'utente compila espressione, @intent, parametri, dominio, page object.
- * Il form genera il codice TypeScript pronto da copiare o proporre via PR.
- */
-
 import { useState, useEffect } from 'react';
+
+// ---------------------------------------------------------------------------
+// i18n
+// ---------------------------------------------------------------------------
+
+const STRINGS = {
+  it: {
+    langLabel: 'EN',
+    sec1: '1 · Espressione Gherkin',
+    sec2: '2 · Parametri rilevati',
+    sec3: '3 · Documentazione',
+    sec4: '4 · Codice generato',
+    keyword: 'Keyword',
+    keywordHint: 'Tipo di step',
+    domain: 'Dominio',
+    domainHint: 'Area di business dello step',
+    newDomain: '+ Nuovo dominio…',
+    expression: 'Espressione step',
+    expressionHint: 'Usa {string}, {int}, {float}, {word} per i parametri',
+    expressionPlaceholder: 'I see the product {string} in the cart',
+    paramName: 'nome variabile',
+    paramDesc: 'descrizione per @param',
+    intent: '@intent',
+    intentRequired: '(obbligatorio)',
+    intentHint: 'Una frase. Verbo primo, presente, voce attiva. Max ~15 parole.',
+    intentPlaceholder: "Verify the product is visible in the user's cart",
+    pre: '@pre',
+    preHint: 'Precondizione (opzionale)',
+    prePlaceholder: 'Cart page is open',
+    post: '@post',
+    postHint: 'Postcondizione (opzionale)',
+    postPlaceholder: 'Product count is visible',
+    page: 'Page Object',
+    pageHint: 'Classe che questo step usa (es. CartPage)',
+    pagePlaceholder: 'CartPage',
+    codeEmpty: '// Completa espressione e @intent per vedere il codice generato',
+    copy: 'Copia',
+    copied: '✓ Copiato',
+    copyCode: 'Copia codice',
+    copyHint: (domain: string) =>
+      `Incolla in src/steps/${domain}/${domain}.steps.ts, poi lancia npm run catalog`,
+  },
+  en: {
+    langLabel: 'IT',
+    sec1: '1 · Gherkin Expression',
+    sec2: '2 · Detected Parameters',
+    sec3: '3 · Documentation',
+    sec4: '4 · Generated Code',
+    keyword: 'Keyword',
+    keywordHint: 'Step type',
+    domain: 'Domain',
+    domainHint: 'Business area for this step',
+    newDomain: '+ New domain…',
+    expression: 'Step expression',
+    expressionHint: 'Use {string}, {int}, {float}, {word} for parameters',
+    expressionPlaceholder: 'I see the product {string} in the cart',
+    paramName: 'variable name',
+    paramDesc: 'description for @param',
+    intent: '@intent',
+    intentRequired: '(required)',
+    intentHint: 'One sentence. Verb first, present tense, active voice. Max ~15 words.',
+    intentPlaceholder: "Verify the product is visible in the user's cart",
+    pre: '@pre',
+    preHint: 'Precondition (optional)',
+    prePlaceholder: 'Cart page is open',
+    post: '@post',
+    postHint: 'Postcondition (optional)',
+    postPlaceholder: 'Product count is visible',
+    page: 'Page Object',
+    pageHint: 'Page Object class used by this step (e.g. CartPage)',
+    pagePlaceholder: 'CartPage',
+    codeEmpty: '// Fill in expression and @intent to see the generated code',
+    copy: 'Copy',
+    copied: '✓ Copied',
+    copyCode: 'Copy code',
+    copyHint: (domain: string) =>
+      `Paste into src/steps/${domain}/${domain}.steps.ts, then run npm run catalog`,
+  },
+} as const;
+
+type Lang = keyof typeof STRINGS;
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface ParamField {
-  placeholder: string; // {string}, {int}, etc.
-  name:        string; // nome del parametro per il JSDoc
-  desc:        string; // descrizione del parametro per il JSDoc
+  placeholder: string;
+  name:        string;
+  desc:        string;
 }
 
 interface StepForm {
@@ -42,26 +115,23 @@ function inferParamName(placeholder: string, index: number): string {
   const type = placeholder.replace(/[{}]/g, '').toLowerCase();
   const names: Record<string, string> = {
     string: `value${index + 1}`,
-    int: `count${index + 1}`,
-    float: `amount${index + 1}`,
-    word: `word${index + 1}`,
+    int:    `count${index + 1}`,
+    float:  `amount${index + 1}`,
+    word:   `word${index + 1}`,
   };
   return names[type] ?? `param${index + 1}`;
 }
 
 function tsType(placeholder: string): string {
   const t = placeholder.replace(/[{}]/g, '').toLowerCase();
-  if (t === 'int' || t === 'float' || t === 'biginteger' || t === 'double') return 'number';
-  if (t === 'word' || t === 'string') return 'string';
+  if (['int', 'float', 'biginteger', 'double'].includes(t)) return 'number';
   return 'string';
 }
 
 function generateCode(form: StepForm): string {
   const lines: string[] = [];
-
-  // JSDoc
   lines.push('/**');
-  if (form.intent)  lines.push(` * @intent  ${form.intent}`);
+  if (form.intent) lines.push(` * @intent  ${form.intent}`);
   for (const p of form.params) {
     if (p.name) lines.push(` * @param   ${p.name} ${p.desc || '...'}`);
   }
@@ -70,47 +140,92 @@ function generateCode(form: StepForm): string {
   if (form.page) lines.push(` * @page    ${form.page}`);
   lines.push(' */');
 
-  // Determina il pattern da importare
   const kw = form.keyword === 'Given/When/Then' ? 'Given' : form.keyword;
-
-  // Parametri della funzione
-  const fnParams = form.params
-    .map((p) => `${p.name || '_'}: ${tsType(p.placeholder)}`)
-    .join(', ');
+  const fnParams = form.params.map((p) => `${p.name || '_'}: ${tsType(p.placeholder)}`).join(', ');
   const fnParamsFull = fnParams ? `, async function(${fnParams})` : ', async function()';
 
   lines.push(`${kw}('${form.expression}'${fnParamsFull} {`);
   if (form.page) {
-    const pageName = form.page.replace(/Page$/, '') + 'Page';
-    lines.push(`  // await new ${pageName}(this.page).yourMethod(${form.params.map(p => p.name || '_').join(', ')});`);
+    const cls = form.page.replace(/Page$/, '') + 'Page';
+    lines.push(`  // await new ${cls}(this.page).yourMethod(${form.params.map(p => p.name || '_').join(', ')});`);
   }
-  lines.push('  throw new Error(\'Step non ancora implementato\');');
+  lines.push(`  throw new Error('Step not yet implemented');`);
   lines.push('});');
-
   return lines.join('\n');
 }
+
+// ---------------------------------------------------------------------------
+// Shared style tokens
+// ---------------------------------------------------------------------------
+
+const S = {
+  field: { display: 'flex', flexDirection: 'column', gap: '0.25rem' } as React.CSSProperties,
+  lbl:   { fontSize: '0.78rem', fontWeight: 600, color: 'var(--sl-color-text)' } as React.CSSProperties,
+  hint:  { fontSize: '0.71rem', color: 'var(--sl-color-gray-3)', lineHeight: 1.3 } as React.CSSProperties,
+  inp: {
+    width: '100%', padding: '0.4rem 0.6rem',
+    fontSize: '0.85rem', lineHeight: 1.4,
+    border: '1px solid var(--sl-color-hairline)',
+    borderRadius: '5px',
+    background: 'var(--sl-color-bg)',
+    color: 'var(--sl-color-text)',
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+  } as React.CSSProperties,
+  mono: {
+    width: '100%', padding: '0.4rem 0.6rem',
+    fontSize: '0.82rem', lineHeight: 1.4,
+    border: '1px solid var(--sl-color-hairline)',
+    borderRadius: '5px',
+    background: 'var(--sl-color-bg)',
+    color: 'var(--sl-color-text)',
+    fontFamily: 'monospace',
+    boxSizing: 'border-box',
+  } as React.CSSProperties,
+  btn: {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    padding: '0.35rem 0.8rem', fontSize: '0.82rem', lineHeight: 1.2,
+    border: '1px solid var(--sl-color-hairline)',
+    borderRadius: '5px', background: 'var(--sl-color-bg-nav)',
+    color: 'var(--sl-color-text)', cursor: 'pointer', fontWeight: 500,
+    whiteSpace: 'nowrap',
+  } as React.CSSProperties,
+  secTitle: {
+    fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.07em',
+    textTransform: 'uppercase', color: 'var(--sl-color-gray-3)',
+    margin: '1.25rem 0 0.5rem',
+    padding: '0.5rem 0.75rem',
+    background: 'var(--sl-color-bg-nav)',
+    borderLeft: '3px solid var(--sl-color-accent)',
+    borderRadius: '0 4px 4px 0',
+  } as React.CSSProperties,
+  badge: {
+    display: 'inline-block', padding: '0.1rem 0.45rem',
+    fontSize: '0.7rem', borderRadius: '3px', fontFamily: 'monospace',
+    background: 'var(--sl-color-bg-inline-code)',
+    color: 'var(--sl-color-text-accent)',
+    border: '1px solid var(--sl-color-hairline)',
+    whiteSpace: 'nowrap',
+  } as React.CSSProperties,
+};
+
+const DOMAINS = ['auth', 'orders', 'cart', 'common', 'search', 'account', 'checkout'];
+const KEYWORDS = ['Given', 'When', 'Then', 'Given/When/Then'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-const DOMAINS = ['auth', 'orders', 'cart', 'common', 'search', 'account', 'checkout'];
-const KEYWORDS = ['Given', 'When', 'Then', 'Given/When/Then'] as const;
-
 export default function StepAuthorForm() {
-  const [form, setForm] = useState<StepForm>({
-    expression: '',
-    keyword:    'When',
-    domain:     'common',
-    page:       '',
-    intent:     '',
-    pre:        '',
-    post:       '',
-    params:     [],
+  const [lang, setLang]   = useState<Lang>('it');
+  const [form, setForm]   = useState<StepForm>({
+    expression: '', keyword: 'When', domain: 'common',
+    page: '', intent: '', pre: '', post: '', params: [],
   });
   const [copied, setCopied] = useState(false);
 
-  // Auto-rileva i parametri dall'espressione
+  const t = STRINGS[lang];
+
   useEffect(() => {
     const placeholders = extractParams(form.expression);
     setForm((prev) => ({
@@ -122,8 +237,8 @@ export default function StepAuthorForm() {
     }));
   }, [form.expression]);
 
-  const code = generateCode(form);
-  const isValid = form.expression.trim() && form.intent.trim();
+  const code    = generateCode(form);
+  const isValid = form.expression.trim().length > 0 && form.intent.trim().length > 0;
 
   function updateParam(index: number, field: 'name' | 'desc', value: string) {
     setForm((prev) => {
@@ -140,206 +255,185 @@ export default function StepAuthorForm() {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // Styles
-  // ---------------------------------------------------------------------------
-  const field: React.CSSProperties = {
-    display: 'flex', flexDirection: 'column', gap: '0.25rem',
-  };
-  const lbl: React.CSSProperties = {
-    fontSize: '0.78rem', fontWeight: 600,
-    color: 'var(--sl-color-text)',
-  };
-  const sublbl: React.CSSProperties = {
-    fontSize: '0.72rem', color: 'var(--sl-color-gray-3)',
-    marginBottom: '0.15rem',
-  };
-  const inp: React.CSSProperties = {
-    width: '100%', padding: '0.4rem 0.6rem',
-    fontSize: '0.85rem', lineHeight: 1.4,
-    border: '1px solid var(--sl-color-hairline)',
-    borderRadius: '5px',
-    background: 'var(--sl-color-bg)',
-    color: 'var(--sl-color-text)',
-    fontFamily: 'inherit',
-  };
-  const monoInp: React.CSSProperties = {
-    ...inp, fontFamily: 'monospace', fontSize: '0.82rem',
-  };
-  const btn: React.CSSProperties = {
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    padding: '0.4rem 0.9rem', fontSize: '0.83rem', lineHeight: 1.2,
-    border: '1px solid var(--sl-color-hairline)',
-    borderRadius: '5px', background: 'var(--sl-color-bg-nav)',
-    color: 'var(--sl-color-text)', cursor: 'pointer', fontWeight: 500,
-  };
   const btnPrimary: React.CSSProperties = {
-    ...btn,
+    ...S.btn,
     border: '1px solid var(--sl-color-accent)',
     background: 'var(--sl-color-accent)',
-    color: 'var(--sl-color-accent-high)', fontWeight: 600,
+    color: '#fff',
+    fontWeight: 600,
   };
-  const grid2: React.CSSProperties = {
-    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem',
-  };
-  const sectionTitle: React.CSSProperties = {
-    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em',
-    textTransform: 'uppercase', color: 'var(--sl-color-gray-3)',
-    marginBottom: '0.75rem', marginTop: '1.5rem',
-  };
-  const badge: React.CSSProperties = {
-    display: 'inline-block', padding: '0.1rem 0.4rem',
-    fontSize: '0.7rem', borderRadius: '3px', fontFamily: 'monospace',
-    background: 'var(--sl-color-bg-inline-code)',
-    color: 'var(--sl-color-text-accent)',
-    border: '1px solid var(--sl-color-hairline)',
+
+  const langBtn: React.CSSProperties = {
+    ...S.btn,
+    fontSize: '0.72rem',
+    padding: '0.2rem 0.55rem',
+    letterSpacing: '0.05em',
+    fontWeight: 700,
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '760px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, maxWidth: '760px' }}>
 
-      {/* ── Espressione ── */}
-      <p style={sectionTitle}>1 · Espressione Gherkin</p>
+      {/* ── Language toggle ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+        <button style={langBtn} onClick={() => setLang(lang === 'it' ? 'en' : 'it')}>
+          {t.langLabel}
+        </button>
+      </div>
 
-      <div style={grid2}>
-        <div style={field}>
-          <span style={lbl}>Keyword</span>
-          <select style={inp} value={form.keyword}
+      {/* ══ Section 1 ══ */}
+      <p style={S.secTitle}>{t.sec1}</p>
+
+      {/* Keyword + Domain: align-items:end so selects sit at the same baseline */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', alignItems: 'end', marginTop: '0.75rem' }}>
+
+        <div style={S.field}>
+          <span style={S.lbl}>{t.keyword}</span>
+          <span style={S.hint}>{t.keywordHint}</span>
+          <select style={S.inp} value={form.keyword}
             onChange={(e) => setForm({ ...form, keyword: e.target.value as StepForm['keyword'] })}>
             {KEYWORDS.map((k) => <option key={k}>{k}</option>)}
           </select>
         </div>
-        <div style={field}>
-          <span style={lbl}>Dominio</span>
-          <span style={sublbl}>Raggruppa step per area di business</span>
-          <select style={inp} value={form.domain}
+
+        <div style={S.field}>
+          <span style={S.lbl}>{t.domain}</span>
+          <span style={S.hint}>{t.domainHint}</span>
+          <select style={S.inp} value={form.domain}
             onChange={(e) => setForm({ ...form, domain: e.target.value })}>
             {DOMAINS.map((d) => <option key={d}>{d}</option>)}
-            <option value="__new__">+ Nuovo dominio…</option>
+            <option value="__new__">{t.newDomain}</option>
           </select>
         </div>
+
       </div>
 
-      <div style={field}>
-        <span style={lbl}>Espressione step</span>
-        <span style={sublbl}>Usa <code>{'{string}'}</code>, <code>{'{int}'}</code>, <code>{'{float}'}</code>, <code>{'{word}'}</code> per i parametri</span>
-        <input style={monoInp} type="text"
-          placeholder="I see the product {string} in the cart"
+      {/* Expression */}
+      <div style={{ ...S.field, marginTop: '0.75rem' }}>
+        <span style={S.lbl}>{t.expression}</span>
+        <span style={S.hint}>{t.expressionHint}</span>
+        <input style={S.mono} type="text"
+          placeholder={t.expressionPlaceholder}
           value={form.expression}
           onChange={(e) => setForm({ ...form, expression: e.target.value })}
         />
       </div>
 
-      {/* ── Parametri auto-rilevati ── */}
+      {/* ══ Section 2 — Params (conditional) ══ */}
       {form.params.length > 0 && (
-        <div>
-          <p style={sectionTitle}>2 · Parametri rilevati</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        <>
+          <p style={S.secTitle}>{t.sec2}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
             {form.params.map((p, i) => (
               <div key={p.placeholder} style={{
-                display: 'grid', gridTemplateColumns: 'auto 1fr 2fr', gap: '0.6rem',
+                display: 'grid', gridTemplateColumns: 'auto 1fr 2fr', gap: '0.5rem',
                 alignItems: 'center',
                 padding: '0.5rem 0.75rem',
                 background: 'var(--sl-color-bg-nav)',
                 border: '1px solid var(--sl-color-hairline)',
                 borderRadius: '5px',
               }}>
-                <span style={badge}>{p.placeholder}</span>
-                <input style={inp} type="text" placeholder="nome parametro"
+                <span style={S.badge}>{p.placeholder}</span>
+                <input style={S.inp} type="text" placeholder={t.paramName}
                   value={p.name}
                   onChange={(e) => updateParam(i, 'name', e.target.value)}
                 />
-                <input style={inp} type="text" placeholder="descrizione per @param"
+                <input style={S.inp} type="text" placeholder={t.paramDesc}
                   value={p.desc}
                   onChange={(e) => updateParam(i, 'desc', e.target.value)}
                 />
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
 
-      {/* ── Documentazione ── */}
-      <p style={sectionTitle}>3 · Documentazione</p>
+      {/* ══ Section 3 ══ */}
+      <p style={S.secTitle}>{t.sec3}</p>
 
-      <div style={field}>
-        <span style={lbl}>@intent <span style={{ color: 'var(--sl-color-red)' }}>*</span></span>
-        <span style={sublbl}>Una frase. Verbo primo, presente, voce attiva. Max ~15 parole.</span>
-        <input style={inp} type="text"
-          placeholder="Verify the product is visible in the user's cart"
+      {/* @intent */}
+      <div style={{ ...S.field, marginTop: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+          <span style={S.lbl}>{t.intent}</span>
+          <span style={{ ...S.hint, color: 'var(--sl-color-red)', fontWeight: 600 }}>{t.intentRequired}</span>
+        </div>
+        <span style={S.hint}>{t.intentHint}</span>
+        <input style={S.inp} type="text"
+          placeholder={t.intentPlaceholder}
           value={form.intent}
           onChange={(e) => setForm({ ...form, intent: e.target.value })}
         />
       </div>
 
-      <div style={grid2}>
-        <div style={field}>
-          <span style={lbl}>@pre</span>
-          <span style={sublbl}>Precondizione (opzionale)</span>
-          <input style={inp} type="text"
-            placeholder="Cart page is open"
+      {/* @pre + @post */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', alignItems: 'end', marginTop: '0.75rem' }}>
+        <div style={S.field}>
+          <span style={S.lbl}>{t.pre}</span>
+          <span style={S.hint}>{t.preHint}</span>
+          <input style={S.inp} type="text"
+            placeholder={t.prePlaceholder}
             value={form.pre}
             onChange={(e) => setForm({ ...form, pre: e.target.value })}
           />
         </div>
-        <div style={field}>
-          <span style={lbl}>@post</span>
-          <span style={sublbl}>Postcondizione (opzionale)</span>
-          <input style={inp} type="text"
-            placeholder="Product count is visible"
+        <div style={S.field}>
+          <span style={S.lbl}>{t.post}</span>
+          <span style={S.hint}>{t.postHint}</span>
+          <input style={S.inp} type="text"
+            placeholder={t.postPlaceholder}
             value={form.post}
             onChange={(e) => setForm({ ...form, post: e.target.value })}
           />
         </div>
       </div>
 
-      <div style={field}>
-        <span style={lbl}>Page Object</span>
-        <span style={sublbl}>Classe Page Object che questo step usa (es. CartPage)</span>
-        <input style={inp} type="text"
-          placeholder="CartPage"
+      {/* Page Object */}
+      <div style={{ ...S.field, marginTop: '0.75rem' }}>
+        <span style={S.lbl}>{t.page}</span>
+        <span style={S.hint}>{t.pageHint}</span>
+        <input style={S.inp} type="text"
+          placeholder={t.pagePlaceholder}
           value={form.page}
           onChange={(e) => setForm({ ...form, page: e.target.value })}
         />
       </div>
 
-      {/* ── Preview codice ── */}
-      <p style={sectionTitle}>4 · Codice generato</p>
+      {/* ══ Section 4 ══ */}
+      <p style={S.secTitle}>{t.sec4}</p>
 
       <div style={{
-        position: 'relative',
+        position: 'relative', marginTop: '0.5rem',
         border: '1px solid var(--sl-color-hairline)',
         borderRadius: '6px', overflow: 'hidden',
       }}>
         <pre style={{
           margin: 0, padding: '1rem',
-          fontSize: '0.8rem', lineHeight: 1.6,
+          fontSize: '0.8rem', lineHeight: 1.65,
           background: 'var(--sl-color-bg-nav)',
           color: 'var(--sl-color-text)',
-          overflowX: 'auto',
-          whiteSpace: 'pre-wrap',
-          opacity: isValid ? 1 : 0.45,
+          overflowX: 'auto', whiteSpace: 'pre-wrap',
+          opacity: isValid ? 1 : 0.5,
         }}>
-          {isValid ? code : '// Completa espressione e @intent per vedere il codice generato'}
+          {isValid ? code : t.codeEmpty}
         </pre>
         {isValid && (
           <button
-            style={{ ...btn, position: 'absolute', top: '0.5rem', right: '0.5rem', fontSize: '0.75rem' }}
+            style={{ ...S.btn, position: 'absolute', top: '0.5rem', right: '0.5rem', fontSize: '0.74rem' }}
             onClick={handleCopy}
           >
-            {copied ? '✓ Copiato' : 'Copia'}
+            {copied ? t.copied : t.copy}
           </button>
         )}
       </div>
 
-      {/* ── Azioni ── */}
+      {/* ── Actions ── */}
       {isValid && (
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
           <button style={btnPrimary} onClick={handleCopy}>
-            {copied ? '✓ Copiato' : 'Copia codice'}
+            {copied ? t.copied : t.copyCode}
           </button>
-          <span style={{ fontSize: '0.78rem', color: 'var(--sl-color-gray-3)' }}>
-            Incolla in <code>src/steps/{form.domain}/{form.domain}.steps.ts</code>, poi lancia <code>npm run catalog</code>
+          <span style={{ fontSize: '0.77rem', color: 'var(--sl-color-gray-3)' }}>
+            {t.copyHint(form.domain)}
           </span>
         </div>
       )}
