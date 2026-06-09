@@ -58,4 +58,43 @@ npm run catalog
 ```
 
 This produces `STEP_CATALOG.md` (and `step-catalog.json`). It runs in CI so it
-can never drift from the code. Before writing a step, search it.
+can never drift from the code. Before writing a step, search it. The
+`step-catalog.json` is **committed** (it is the machine-readable source of
+truth read by the VS Code extension and the pre-commit validator).
+
+## Multi-app layout
+
+The framework targets multiple web applications. Filesystem layout:
+
+```
+src/
+├─ features/<app>/<area>/*.feature
+├─ steps/{common,<app>/<area>}/*.steps.ts
+├─ actions/{common,<app>}/<area>.actions.ts
+└─ pages/<app>/*.page.ts
+```
+
+Conventions:
+
+- Application names are placeholders (`app-a`, `app-b`) on the personal repo,
+  renamed by the team only after migration to the corporate repo.
+- A step's catalog `domain` is `<app>/<area>` (e.g. `app-a/auth`), or just
+  `<app>` for app-wide steps, or `common` for cross-app steps.
+- `common/` exists only for **truly universal** steps (cookie banner, env
+  switching). Same text but different selectors per app is NOT a reason to
+  share code — those steps live in `steps/<app>/`.
+- See `DOMAINS.md` for the full map and the rename TODO.
+
+## Step status (lifecycle)
+
+Every step has a status: **`implemented`** (default), **`wanted`**, or
+**`deprecated`**. Declared via JSDoc tags, parsed by `extract-steps.ts`.
+
+| Status | Marker | Behaviour |
+|---|---|---|
+| `implemented` | (no marker, default) | Real body, has `@intent`, used by features |
+| `wanted` | `@wanted` + `@requester` + `@assignee` | Stub body throws "NOT IMPLEMENTED"; appears in catalog so QA can plan around it |
+| `deprecated` | `@deprecated` + `@replacedBy "<canonical expr>"` | Still works but discouraged; CI warns features that still use it |
+
+See `WORKFLOW.md` for the full handoff between QA manual and SDET, and for
+the `Request step implementation` quickfix flow.
