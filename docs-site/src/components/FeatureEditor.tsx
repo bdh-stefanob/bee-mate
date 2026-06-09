@@ -351,10 +351,28 @@ export default function FeatureEditor({ base = '' }: { base?: string }) {
         const stepText = m[4].trim();
         if (!stepText) return;
         if (!compiledRef.current.some(r => r.test(stepText))) {
+          // Fuzzy suggestion: find catalog steps whose words overlap with the
+          // mistyped text (case-insensitive, ignores {placeholders}).
+          const typed = stepText.toLowerCase();
+          const words = typed.split(/\s+/).filter(w => w.length > 2);
+          const similar = catalogRef.current!.steps
+            .map(s => {
+              const expr = s.expression.replace(/\{[^}]+\}/g, '').toLowerCase();
+              const score = words.filter(w => expr.includes(w)).length;
+              return { expr: s.expression, score };
+            })
+            .filter(x => x.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 2)
+            .map(x => `"${x.expr}"`);
+
+          const hint = similar.length
+            ? ` — simile a: ${similar.join(', ')}`
+            : '';
           errorMarkers.push({
             startLineNumber: idx + 1, endLineNumber: idx + 1,
             startColumn:     1,       endColumn:     line.length + 1,
-            message:  `Step non nel catalogo: "${stepText}"`,
+            message:  `Step non nel catalogo: "${stepText}"${hint}`,
             severity: monaco.MarkerSeverity.Error,
             source:   'step-validator',
           });
@@ -388,6 +406,8 @@ export default function FeatureEditor({ base = '' }: { base?: string }) {
       });
 
       monaco.languages.registerCompletionItemProvider('gherkin', {
+        // Space triggers the list on first keystroke after Given/When/Then.
+        // Subsequent filtering is handled by quickSuggestions as the user types.
         triggerCharacters: [' ', '\t'],
         provideCompletionItems: (model, position) => {
           const cat = catalogRef.current;
@@ -395,22 +415,39 @@ export default function FeatureEditor({ base = '' }: { base?: string }) {
           const lineContent = model.getLineContent(position.lineNumber);
           const stepMatch   = lineContent.match(STEP_KEYWORD_RE);
           if (!stepMatch) return { suggestions: [] };
-          const stepStartCol =
-            lineContent.indexOf(stepMatch[2]) + stepMatch[2].length + stepMatch[3].length + 1;
+
+          // stepStartCol = column just after keyword + whitespace (1-based)
+          const kwOffset    = lineContent.search(/given|when|then|and|but/i);
+          const stepStartCol = kwOffset + stepMatch[2].length + stepMatch[3].length + 1;
+
+          // endColumn = cursor position (not end-of-line).
+          // Using cursor as the range end means Monaco filters completions
+          // against exactly what the user has typed so far, avoiding false
+          // "no match" when the line already contains trailing text.
+          const endCol = position.column;
+
           return {
             suggestions: cat.steps.map(s => ({
-              label:         s.expression,
-              kind:          monaco.languages.CompletionItemKind.Snippet,
-              insertText:    s.expression,
-              detail:        [s.page, s.doc.intent].filter(Boolean).join(' — '),
-              documentation: [
-                s.doc.intent ? `**Intent:** ${s.doc.intent}` : '',
-                s.page       ? `**Page:** \`${s.page}\``     : '',
-                s.sourceRef  ? `**Source:** \`${s.sourceRef}\`` : '',
-              ].filter(Boolean).join('\n\n'),
+              label:      { label: s.expression, description: s.domain },
+              kind:       monaco.languages.CompletionItemKind.Snippet,
+              insertText: s.expression,
+              // filterText must match the partially-typed step text so Monaco
+              // shows the item while the user types (e.g. "I log" matches
+              // "I log in with valid credentials").
+              filterText:  s.expression,
+              sortText:    s.expression,
+              detail:      s.doc.intent ?? [s.page, s.domain].filter(Boolean).join(' · '),
+              documentation: {
+                value: [
+                  s.doc.intent  ? `**@intent** ${s.doc.intent}`       : '',
+                  s.page        ? `**page** \`${s.page}\``             : '',
+                  s.sourceRef   ? `**src** \`${s.sourceRef}\``         : '',
+                ].filter(Boolean).join('\n\n'),
+                isTrusted: true,
+              },
               range: {
                 startLineNumber: position.lineNumber, endLineNumber: position.lineNumber,
-                startColumn:     stepStartCol,        endColumn:     lineContent.length + 1,
+                startColumn:     stepStartCol,        endColumn:     endCol,
               },
             })),
           };

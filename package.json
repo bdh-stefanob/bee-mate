@@ -11,7 +11,10 @@
     "catalog:watch": "ts-node scripts/watch-catalog.ts",
     "jira:sync": "ts-node scripts/jira-sync.ts",
     "jira:sync:dry": "ts-node scripts/jira-sync.ts --dry-run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "app": "npm --prefix docs-site run dev",
+    "app:install": "npm --prefix docs-site install",
+    "app:build": "npm --prefix docs-site run build"
   },
   "keywords": [
     "playwright",
