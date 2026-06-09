@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-06-09T19:16:35.615Z"
+last_updated: "2026-06-09T20:01:58.488Z"
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 1
+  total_plans: 4
   completed_plans: 1
-  percent: 100
+  percent: 25
 ---
 
 # Project State — bdd-automation-scaffold
@@ -22,12 +22,14 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 1 — Multi-App Scaffold
+**Current Focus:** Phase 02 — Catalog Pipeline Upgrade
 
 ---
 
 ## Current Position
 
+Phase: 02 (Catalog Pipeline Upgrade) — EXECUTING
+Plan: 1 of 3
 | Field | Value |
 |-------|-------|
 | Current Phase | 1 — Multi-App Scaffold |
