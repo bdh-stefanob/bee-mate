@@ -1,12 +1,12 @@
-// src/steps/orders/orders.steps.ts
+// src/steps/app-a/orders/orders.steps.ts
 // Order steps. Demonstrates the canonical, declarative style and an OPTIONAL
 // data table: the same business action ("cart contains products") is expressed
 // both as a single-product step and a table-driven step, reusing one action.
 
 import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { strict as assert } from "assert";
-import { CustomWorld } from "../../support/world";
-import { OrderActions } from "../../actions/orders.actions";
+import { CustomWorld } from "../../../support/world";
+import { OrderActions } from "../../../actions/app-a/orders.actions";
 
 /**
  * @intent  Adds a single product to the cart.

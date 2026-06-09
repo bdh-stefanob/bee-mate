@@ -1,9 +1,9 @@
-// src/actions/orders.actions.ts
+// src/actions/app-a/orders.actions.ts
 // DOMAIN / ACTION LAYER for orders. Small, focused actions composed together —
 // no god-methods. Steps call these; these call Page Objects / API clients.
 
 import { Page } from "@playwright/test";
-import { CartPage } from "../pages/cart.page";
+import { CartPage } from "../../pages/app-a/cart.page";
 
 export interface CartItem {
   product: string;
