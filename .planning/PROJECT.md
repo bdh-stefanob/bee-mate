@@ -26,10 +26,9 @@ deterministici: autocomplete vincolato sull'extension, validazione pre-commit, g
 - ✓ Docs-site Astro Starlight con FeatureEditor Monaco + catalog cercabile (build OK, deploy non attivato) — existing
 - ✓ Script jira-sync.ts: push scenari @ticket:BOOT-XXX come commenti Jira via REST API — existing
 - ✓ Step lifecycle convention (implemented/wanted/deprecated) documentata in WORKFLOW.md — existing
+- ✓ Refactor scaffold mono-app → struttura multi-app src/<layer>/<app>/<area>/ — Validated in Phase 1: Multi-App Scaffold
 
 ### Active
-
-- [ ] Refactor scaffold mono-app → struttura multi-app src/<layer>/<app>/<area>/
 - [ ] Estendere extract-steps.ts: domain derivato da app+area, catalog schema con status/app/area/lifecycle tags
 - [ ] Aggiornare tipi VS Code extension: CatalogStep con status/replacedBy/requester/assignee
 - [ ] CI: job auto-regen catalog su push (commit step-catalog.json + STEP_CATALOG.md, [skip ci])
@@ -58,12 +57,13 @@ SDET (implementano step, mantengono layers). AI (Claude Code) come propositore, 
 **Repo status:** Git personale privato come ponte temporaneo fino all'accesso al repo aziendale Boots.
 Tutti i nomi di app/flussi sono placeholder (app-a, app-b) da rinominare nel repo aziendale.
 
-**Stato codebase al 2026-06-09:**
-- Scaffold funzionante (tsc OK, 5 scenari/18 step/0 undefined)
+**Stato codebase al 2026-06-09 (dopo Phase 1):**
+- Scaffold multi-app: src/<layer>/app-a/<area>/ con placeholder app-b; tsc OK, 0 undefined step, catalog con domain app-a
+- BaseURL wired in world.ts: process.env.BASE_URL ?? "http://localhost:3000" (fix applicato in Phase 1)
 - Extension: CompletionProvider funzionante; mancano diagnostic, tree view, hover, PR opener
 - Docs-site: build OK, deploy GitHub Pages non attivato (decisione visibilità aperta)
 - Problemi noti: credenziali hardcoded in auth.actions.ts, cucumberExprToRegex duplicata in 4 posti,
-  CI non aggiunge step-catalog.json al commit automatico, baseURL non passato al browser context
+  CI non aggiunge step-catalog.json al commit automatico
 
 **Calibrazione anti-rumore:** i suggerimenti dell'extension sono lookup su step-catalog.json,
 non generazione LLM. Il catalog è SoT machine-readable committato nel repo (Model A, pull-based).
@@ -107,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-09 after initialization*
+*Last updated: 2026-06-09 — Phase 1 complete (INFRA-01 delivered)*
