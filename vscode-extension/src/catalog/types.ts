@@ -18,11 +18,23 @@ export interface CatalogStep {
   expression: string;
   /** Lista dei placeholder nell'ordine in cui appaiono, es: ['{string}'] */
   parameters: string[];
-  /** Dominio dello step, derivato dal path (es. 'auth', 'orders', 'common') */
+  /** Dominio dello step nel formato <app>/<area>, es. 'app-a/orders', 'common' */
   domain: string;
+  /** App di appartenenza, primo segmento del path (es. 'app-a'). Opzionale per retrocompatibilità. */
+  app?: string;
+  /** Area funzionale, secondo segmento del path (es. 'orders'). Opzionale per retrocompatibilità. */
+  area?: string;
+  /** Stato lifecycle dello step. undefined è trattato come 'implemented' dal consumer. */
+  status?: 'implemented' | 'wanted' | 'deprecated';
+  /** Espressione del sostituto, presente solo se status === 'deprecated'. */
+  replacedBy?: string;
+  /** ID del richiedente, presente solo se status === 'wanted'. */
+  requester?: string;
+  /** SDET incaricato, presente solo se status === 'wanted'. */
+  assignee?: string;
   /** Page Object associato allo step (opzionale, emesso da extract-steps.ts) */
   page?: string;
-  /** Riferimento al sorgente, es: 'src/steps/auth/auth.steps.ts:15' */
+  /** Riferimento al sorgente, es: 'src/steps/app-a/orders/orders.steps.ts:15' */
   sourceRef: string;
   doc: StepDoc;
   documented: boolean;

@@ -1,4 +1,4 @@
-// src/pages/app-a/cart.page.ts
+// src/pages/cart.page.ts
 // PAGE OBJECT for cart/checkout. Selectors and UI mechanics only.
 
 import { Page } from "@playwright/test";

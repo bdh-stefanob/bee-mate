@@ -27,66 +27,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   These resets must be `is:global` because Monaco's DOM is injected at runtime.
 */}
 <style is:global>
-  /* ── Full-width layout for the editor page ──────────────────────────────
-   * Starlight's prose column has a max-width (~65ch) designed for reading.
-   * The Feature Editor needs the full available viewport width, so we
-   * override the content-width variable and any container max-width rules
-   * in this page's CSS bundle (is:global in an .astro page only affects
-   * that page's HTML document).
-   */
-  :root {
-    --sl-content-width: 100% !important;
-  }
-  /* Starlight 0.30 content container selectors */
-  .content,
-  .sl-container,
-  .content-panel > *,
-  main > .content-panel .content {
-    max-width: 100% !important;
-    padding-inline: 1rem !important;
-  }
-  /* Remove article prose spacing that adds unnecessary top margin */
-  main article.sl-markdown-content {
-    max-width: 100% !important;
-  }
-
-  /* ── Monaco suggest / hover widgets ────────────────────────────────────
-   * With fixedOverflowWidgets:true Monaco renders these elements at body
-   * level — outside the .monaco-editor DOM — so theme CSS variables are NOT
-   * inherited. We force the correct Boots-Blue dark palette explicitly.
-   * Starlight light-mode also resets --vscode-* vars to its own values on
-   * :root, which would make the popup invisible (white text on white bg).
-   */
-  .editor-widget.suggest-widget {
-    --vscode-editorSuggestWidget-background:         #0F2342 !important;
-    --vscode-editorSuggestWidget-foreground:         #E8F0FE !important;
-    --vscode-editorSuggestWidget-border:             #1B448E !important;
-    --vscode-editorSuggestWidget-selectedBackground: #1B448E !important;
-    --vscode-editorSuggestWidget-selectedForeground: #ffffff !important;
-    --vscode-editorSuggestWidget-highlightForeground:#4FC3F7 !important;
-    --vscode-editorSuggestWidget-focusHighlightForeground: #4FC3F7 !important;
-    background-color: #0F2342 !important;
-    border: 1px solid #1B448E !important;
-    color: #E8F0FE !important;
-  }
-  .editor-widget.suggest-widget .monaco-list .monaco-list-row { color: #E8F0FE !important; }
-  .editor-widget.suggest-widget .monaco-list .monaco-list-row.focused,
-  .editor-widget.suggest-widget .monaco-list .monaco-list-row.selected {
-    background: #1B448E !important; color: #fff !important;
-  }
-  /* Hover widget (on hover over an error marker) */
-  .monaco-editor-hover {
-    --vscode-editorHoverWidget-background: #0F2342 !important;
-    --vscode-editorHoverWidget-foreground: #E8F0FE !important;
-    --vscode-editorHoverWidget-border:     #1B448E !important;
-    background: #0F2342 !important;
-    border-color: #1B448E !important;
-    color: #E8F0FE !important;
-  }
-
-  /* ── Monaco margin/padding resets ──────────────────────────────────────
-   * Starlight's flow-spacing (margin-top on sibling elements) leaks into
-   * Monaco's internal DOM and shifts the gutter/content alignment by ~19px.
+  /*
+   * Starlight prose CSS applies flow-spacing (margin-top) to sibling elements.
+   * These rules reset margins on Monaco's internal containers and their children
+   * so that the gutter and content area stay pixel-aligned.
+   * Children rules (> div) catch per-line divs; container rules catch the wrappers.
    */
 
   /* containers */
