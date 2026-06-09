@@ -219,19 +219,47 @@ function useStarlightTheme(): 'boots-dark' | 'boots-light' {
 // Component
 // ---------------------------------------------------------------------------
 
+const DRAFT_KEY = 'bdd-feature-draft';
+
 export default function FeatureEditor({ base = '' }: { base?: string }) {
   const monacoTheme = useStarlightTheme();
 
   const [catalog, setCatalog]         = useState<StepCatalog | null>(null);
-  const [value, setValue]             = useState(DEFAULT_CONTENT);
+  const [value, setValue]             = useState(() => {
+    try { return localStorage.getItem(DRAFT_KEY) ?? DEFAULT_CONTENT; } catch { return DEFAULT_CONTENT; }
+  });
   const [errorCount, setErrorCount]   = useState(0);
   const [copied, setCopied]           = useState(false);
   const [showJiraExport, setShowJiraExport] = useState(false);
+  const [savedDraft, setSavedDraft]   = useState(false);
+  const isDirty = value !== DEFAULT_CONTENT;
 
   const editorRef   = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef   = useRef<typeof import('monaco-editor') | null>(null);
   const catalogRef  = useRef<StepCatalog | null>(null);
   const compiledRef = useRef<RegExp[]>([]);
+
+  // Autosave draft to localStorage (debounced 800ms)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, value);
+        setSavedDraft(true);
+        setTimeout(() => setSavedDraft(false), 1500);
+      } catch { /* localStorage non disponibile */ }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  // Warn before tab/window close when content is modified
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirty) return;
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   // Load catalog once on mount
   useEffect(() => {
@@ -576,6 +604,25 @@ export default function FeatureEditor({ base = '' }: { base?: string }) {
           </span>
         )}
 
+        {savedDraft && (
+          <span style={{ fontSize: '0.78rem', color: 'var(--sl-color-green, #3fb950)', whiteSpace: 'nowrap' }}>
+            Saved
+          </span>
+        )}
+        {isDirty && (
+          <button
+            style={{ ...btn, fontSize: '0.78rem' }}
+            title="Cancella la bozza salvata e torna al template"
+            onClick={() => {
+              if (!confirm('Cancellare la bozza e tornare al template?')) return;
+              try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+              setValue(DEFAULT_CONTENT);
+              editorRef.current?.setValue(DEFAULT_CONTENT);
+            }}
+          >
+            Reset
+          </button>
+        )}
         <button style={btn} onClick={handleCopy}>
           {copied ? 'Copied' : 'Copy'}
         </button>

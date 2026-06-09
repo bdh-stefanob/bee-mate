@@ -18,6 +18,7 @@ export default defineConfig({
       sidebar: [
         { label: 'Home', link: '/' },
         { label: 'Feature Editor', link: '/editor' },
+        { label: 'Nuovo Step', link: '/new-step' },
         {
           label: 'Step Catalog',
           autogenerate: { directory: 'steps' },
