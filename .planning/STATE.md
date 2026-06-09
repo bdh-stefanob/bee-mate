@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-06-09T19:16:35.615Z"
+progress:
+  total_phases: 6
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 100
+---
+
 # Project State — bdd-automation-scaffold
 
 *Last updated: 2026-06-09*
@@ -22,6 +36,7 @@
 | Phase Goal | Lo scaffold supporta struttura multi-app e tutti i test continuano a passare |
 
 **Progress:**
+
 ```
 Phase 1 [          ] 0%
 Phase 2 [          ] 0%
@@ -78,6 +93,7 @@ None
 **To resume:** Leggi `.planning/ROADMAP.md` per la struttura delle phase, poi usa `/gsd-plan-phase 1` per iniziare.
 
 **Commands:**
+
 ```bash
 npm test             # 5 scenari / 18 step / 0 undefined
 npm run test:dry     # dry-run senza eseguire
@@ -85,6 +101,7 @@ npm run catalog      # rigenera STEP_CATALOG.md + step-catalog.json
 ```
 
 **Repo status at init:**
+
 - scaffold: tsc OK, 5 scenari, 18 step, 0 undefined
 - extension: CompletionProvider funzionante; mancano diagnostic, tree view, hover, PR opener
 - docs-site: build OK, deploy non attivato

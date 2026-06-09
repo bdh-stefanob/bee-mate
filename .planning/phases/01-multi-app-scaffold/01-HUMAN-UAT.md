@@ -1,5 +1,5 @@
 ---
-status: partial
+status: resolved
 phase: 01-multi-app-scaffold
 source: [01-VERIFICATION.md]
 started: 2026-06-09T18:42:58Z

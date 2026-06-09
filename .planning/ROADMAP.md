@@ -31,7 +31,7 @@
   4. `cucumber.js` e tsconfig.json puntano ai nuovi glob path (nessun path legacy hardcoded)
 **Plans**: 1 plan
 Plans:
-- [ ] 01-01-PLAN.md — Refactor multi-app: migra codice sotto app-a, placeholder app-b, rigenera catalog
+- [x] 01-01-PLAN.md — Refactor multi-app: migra codice sotto app-a, placeholder app-b, rigenera catalog
 
 ### Phase 2: Catalog Pipeline Upgrade
 **Goal**: Il catalog contiene app, area, status per ogni step; l'extension li conosce
