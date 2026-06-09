@@ -1,4 +1,4 @@
-// src/pages/login.page.ts
+// src/pages/app-a/login.page.ts
 // PAGE OBJECT. The ONLY layer that knows about selectors and UI mechanics.
 // If the UI changes, you fix it here — nowhere else. Steps and actions never
 // touch selectors.

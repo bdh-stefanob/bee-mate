@@ -125,7 +125,12 @@ for (const line of lines) {
   const lineNo: number = sd.sourceReference?.location?.line ?? 0;
   const sourceRef = `${uri}:${lineNo || "?"}`;
 
-  const domainMatch = uri.match(/steps\/([^/]+)\//);
+  // Cattura il primo segmento dopo "steps/" (o "steps\") per supportare
+  // sia path POSIX che Windows. Con path multi-app
+  // (es. "src/steps/app-a/auth/auth.steps.ts" o "src\steps\app-a\auth\...")
+  // produce "app-a"; con path common produce "common".
+  // Retrocompatibile con path a 2 livelli.
+  const domainMatch = uri.match(/steps[/\\]([^/\\]+)[/\\]/);
   const domain = domainMatch ? domainMatch[1] : "common";
 
   const parameters = [...expression.matchAll(/{[^}]+}/g)].map((m) => m[0]);

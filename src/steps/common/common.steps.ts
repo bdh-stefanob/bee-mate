@@ -5,7 +5,7 @@
 
 import { Given } from "@cucumber/cucumber";
 import { CustomWorld } from "../../support/world";
-import { AuthActions } from "../../actions/auth.actions";
+import { AuthActions } from "../../actions/app-a/auth.actions";
 
 /**
  * @intent  Logs in as a user of the given role in one declarative step.

@@ -1,12 +1,12 @@
-// src/steps/auth/auth.steps.ts
+// src/steps/app-a/auth/auth.steps.ts
 // Thin glue: maps Gherkin phrases to action-layer calls. No business logic,
 // no selectors here. Each step carries an @intent comment (project convention)
 // so the step catalog can document it automatically.
 
 import { Given, When, Then } from "@cucumber/cucumber";
 import { strict as assert } from "assert";
-import { CustomWorld } from "../../support/world";
-import { AuthActions } from "../../actions/auth.actions";
+import { CustomWorld } from "../../../support/world";
+import { AuthActions } from "../../../actions/app-a/auth.actions";
 
 /**
  * @intent  Registers the test user so they can authenticate.
