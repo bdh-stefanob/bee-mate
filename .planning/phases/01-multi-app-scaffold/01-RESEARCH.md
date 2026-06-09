@@ -312,12 +312,13 @@ const domain = domainMatch ? domainMatch[1] : "common";
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`src/steps/common/` va spostato in `src/steps/app-a/common/` o resta in `src/steps/common/`?**
    - What we know: DOMAINS.md §3 mostra `steps/common/` alla radice (non sotto `app-a/`). CONTEXT.md D-01 non include `common.steps.ts` nel mapping da aggiornare. CONTRIBUTING.md dice che `common/` è per step "davvero trasversali a più app".
    - What's unclear: Il mapping D-01 non menziona `common.steps.ts` — questo implica che resta in `steps/common/` (non `steps/app-a/common/`).
    - Recommendation: Lascia `src/steps/common/common.steps.ts` nella posizione attuale. Aggiorna solo il suo import interno verso il nuovo path di `auth.actions.ts`. Questo è allineato con D-02 (solo `support/` dichiarato invariato, ma `common/` segue la stessa logica cross-app).
+   - **RESOLVED:** `src/steps/common/common.steps.ts` resta in `src/steps/common/` (non si sposta). Solo il suo import verso `auth.actions.ts` viene aggiornato da `../../actions/auth.actions` a `../../actions/app-a/auth.actions`.
 
 ---
 
