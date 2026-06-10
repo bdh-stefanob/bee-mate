@@ -66,6 +66,11 @@ export const translations = {
       jiraToken: 'Jira API Token',
       jiraTokenHint: 'API token from Atlassian account settings. Never committed.',
       saved: 'Saved',
+      jiraSyncTitle: 'Jira Sync',
+      jiraSyncButton: 'Sync scenarios to Jira',
+      jiraSyncLoading: 'Syncing…',
+      jiraSyncResult: '{synced} scenarios synced, {errors} errors',
+      jiraSyncNotConfigured: 'Configure Jira URL and token above to enable sync',
     },
   },
   it: {
@@ -135,6 +140,11 @@ export const translations = {
       jiraToken: 'API Token Jira',
       jiraTokenHint: 'Token API dalle impostazioni account Atlassian. Mai committato.',
       saved: 'Salvato',
+      jiraSyncTitle: 'Sincronizzazione Jira',
+      jiraSyncButton: 'Sincronizza scenari su Jira',
+      jiraSyncLoading: 'Sincronizzazione in corso…',
+      jiraSyncResult: '{synced} scenari sincronizzati, {errors} errori',
+      jiraSyncNotConfigured: 'Configura URL Jira e token sopra per abilitare la sync',
     },
   },
 } as const;
