@@ -68,6 +68,27 @@ Then the user is successfully logged in
 And the user is on the "My Account" page
 ```
 
+**Feature scenario vs E2E journey — when the rules apply differently:**
+
+| Type | Goal | Expected When/Then pairs |
+|------|------|--------------------------|
+| **Feature scenario** | Tests one specific behaviour | 1 When block + 1–2 Then |
+| **E2E / Journey scenario** | Walks a complete user flow end-to-end | Multiple When/Then — one per intermediate state |
+
+A Weight Loss questionnaire with 15 pages legitimately has 15+ intermediate states.
+Splitting it into 15 separate scenarios loses the E2E guarantee — the whole point is to
+verify the **complete flow** works together.
+
+Use tags to signal which type a scenario is:
+```gherkin
+@smoke @e2e           # journey — multiple When/Then pairs are expected and correct
+@questionnaire        # feature — keep it short and focused on one behaviour
+```
+
+If a journey scenario keeps growing past ~30 steps, that is a signal to check whether
+two distinct user goals have been merged into one scenario — not a reason to avoid
+E2E tests altogether.
+
 ---
 
 ## 3. Step writing best practices

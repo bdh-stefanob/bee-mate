@@ -68,6 +68,26 @@ Then the user is successfully logged in
 And the user is on the "My Account" page
 ```
 
+**Feature scenario vs Journey E2E — quando le regole si applicano diversamente:**
+
+| Tipo | Obiettivo | Coppie When/Then attese |
+|------|-----------|------------------------|
+| **Feature scenario** | Testa un singolo comportamento specifico | 1 blocco When + 1–2 Then |
+| **Journey E2E** | Percorre un flusso utente completo | Più coppie When/Then — una per ogni stato intermedio |
+
+Un questionario Weight Loss con 15 pagine ha legittimamente 15+ stati intermedi.
+Spezzarlo in 15 scenari separati farebbe perdere la garanzia E2E — il punto è proprio
+verificare che il **flusso completo** funzioni insieme.
+
+Usa i tag per segnalare di che tipo è lo scenario:
+```gherkin
+@smoke @e2e           # journey — più coppie When/Then sono attese e corrette
+@questionnaire        # feature — mantienilo corto e focalizzato su un comportamento
+```
+
+Se un journey scenario supera i ~30 step, è il segnale che due obiettivi utente distinti
+sono stati uniti in uno scenario solo — non un motivo per evitare i test E2E.
+
 ---
 
 ## 3. Best practice per scrivere gli step
