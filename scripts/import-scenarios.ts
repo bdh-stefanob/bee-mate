@@ -422,6 +422,18 @@ import { CustomWorld } from "../../../support/world";
 
 function buildStepSkeleton(step: ParsedStep): string {
   const kw = step.keyword;
+
+  // Derive parameter list from expression placeholders, in order
+  const paramTypes: string[] = [];
+  const placeholderRe = /\{(string|int|float|word|any)\}/g;
+  let m: RegExpExecArray | null;
+  let idx = 0;
+  while ((m = placeholderRe.exec(step.expression)) !== null) {
+    const tsType = m[1] === 'int' || m[1] === 'float' ? 'number' : 'string';
+    paramTypes.push(`arg${idx++}: ${tsType}`);
+  }
+  const paramList = paramTypes.length ? `, ${paramTypes.join(', ')}` : '';
+
   return `
 /**
  * @intent    <da completare>
@@ -430,7 +442,7 @@ function buildStepSkeleton(step: ParsedStep): string {
  */
 ${kw}(
   "${step.expression}",
-  async function (this: CustomWorld) {
+  async function (this: CustomWorld${paramList}) {
     throw new Error('NOT IMPLEMENTED');
   }
 );
