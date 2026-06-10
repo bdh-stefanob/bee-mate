@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "_comment": "Managed manually — NOT overwritten by npm run catalog. Edit to add enum values and dependencies for steps.",
+  "enums": [
+    {
+      "expression": "I add {string} to the basket",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "Product name",
+          "values": ["Aspirin 500mg", "Ibuprofen 400mg", "Vitamin C 1000mg", "Paracetamol 500mg", "Cetirizine 10mg"]
+        }
+      ]
+    },
+    {
+      "expression": "I search for the product {string}",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "Search term",
+          "values": ["aspirin", "ibuprofen", "vitamin C", "paracetamol", "prescription"]
+        }
+      ]
+    },
+    {
+      "expression": "I enter my delivery address {string}",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "Delivery address",
+          "values": []
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "expression": "I proceed to checkout",
+      "requires": ["I add {string} to the basket"]
+    },
+    {
+      "expression": "I should see the order confirmation",
+      "requires": ["I proceed to checkout"]
+    },
+    {
+      "expression": "the order total should be {int}",
+      "requires": ["I proceed to checkout"]
+    }
+  ]
+}

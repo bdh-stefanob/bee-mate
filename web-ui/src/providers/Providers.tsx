@@ -3,6 +3,7 @@
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { createContext, useContext, useState } from 'react';
 import { translations, type Lang, type T } from '@/lib/i18n';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface LanguageContextValue {
   lang: Lang;
@@ -26,7 +27,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
       <LanguageContext.Provider value={{ lang, setLang, t: translations[lang] }}>
-        {children}
+        <TooltipProvider delay={400}>
+          {children}
+        </TooltipProvider>
       </LanguageContext.Provider>
     </NextThemesProvider>
   );

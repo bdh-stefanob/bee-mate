@@ -1,3 +1,9 @@
+export interface ParamEnumDef {
+  token: string;      // e.g. "{string}"
+  label?: string;     // display label for the field
+  values: string[];   // known valid values; empty = free-text only
+}
+
 export interface CatalogStep {
   expression: string;
   parameters: string[];
@@ -9,6 +15,8 @@ export interface CatalogStep {
   requester?: string;
   sourceRef: string;
   documented: boolean;
+  paramEnums?: ParamEnumDef[];  // enriched at API time from step-enums.json
+  requires?: string[];          // prerequisite step expressions
 }
 
 export interface Catalog {
