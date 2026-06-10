@@ -10,6 +10,7 @@ import type { CatalogStep } from '@/lib/types';
 import { slugify } from '@/lib/repo';
 import { formatGherkin } from '@/lib/gherkin-cm';
 import { useLanguage } from '@/providers/Providers';
+import { useSettings } from '@/hooks/useSettings';
 import { toast } from 'sonner';
 
 /**
@@ -30,6 +31,7 @@ import { toast } from 'sonner';
  */
 export default function EditorPage() {
   const { t } = useLanguage();
+  const { settings } = useSettings();
   const searchParams = useSearchParams();
   const stepParam = searchParams.get('step');
 
@@ -39,6 +41,7 @@ export default function EditorPage() {
 
   const [content, setContent] = useState<string>(initialContent);
   const [stepExpressions, setStepExpressions] = useState<string[]>([]);
+  const [isCommitting, setIsCommitting] = useState(false);
   const editorRef = useRef<GherkinEditorHandle | null>(null);
 
   // Load step expressions from catalog once
@@ -73,6 +76,39 @@ export default function EditorPage() {
     if (formatted !== content) setContent(formatted);
   }, [content]);
 
+  // Commit contenuto corrente su GitHub via /api/github/push
+  const handleCommitGitHub = useCallback(async () => {
+    if (!settings.githubToken || !settings.githubOwner || !settings.githubRepo) return;
+
+    const featureMatch = content.match(/Feature:\s*(.+)/i);
+    const featureName = featureMatch ? featureMatch[1].trim() : 'scenario';
+    const slug = slugify(featureName) || 'scenario';
+    const filePath = `src/features/${slug}.feature`;
+
+    setIsCommitting(true);
+    try {
+      const res = await fetch('/api/github/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-github-token': settings.githubToken,
+          'x-github-owner': settings.githubOwner,
+          'x-github-repo': settings.githubRepo,
+          'x-github-branch': settings.githubBranch || 'main',
+        },
+        body: JSON.stringify({ content, filePath }),
+      });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (!data.ok) throw new Error(data.error ?? 'Unknown error');
+      toast.success(t.editor.commitGitHubSuccess);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      toast.error(`${t.editor.commitGitHubError}: ${msg}`);
+    } finally {
+      setIsCommitting(false);
+    }
+  }, [content, settings, t]);
+
   // Download current editor content as .feature file
   const handleDownload = useCallback(() => {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
@@ -92,12 +128,23 @@ export default function EditorPage() {
     <div className="p-4 lg:p-6 max-w-screen-xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-foreground">{t.editor.title}</h1>
-        <button
-          onClick={handleDownload}
-          className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors"
-        >
-          {t.editor.download}
-        </button>
+        <div className="flex items-center gap-2">
+          {settings.githubToken && (
+            <button
+              onClick={handleCommitGitHub}
+              disabled={isCommitting || !content.trim()}
+              className="px-3 py-1.5 text-sm rounded-md border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isCommitting ? t.editor.commitGitHubLoading : t.editor.commitGitHub}
+            </button>
+          )}
+          <button
+            onClick={handleDownload}
+            className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors"
+          >
+            {t.editor.download}
+          </button>
+        </div>
       </div>
 
       {/* Two-column layout */}

@@ -27,6 +27,10 @@ export const translations = {
       format: 'Format',
       preview: 'Preview .feature',
       previewPlaceholder: '# Start typing to see a preview…',
+      commitGitHub: 'Commit to GitHub',
+      commitGitHubLoading: 'Committing…',
+      commitGitHubSuccess: 'File committed to GitHub',
+      commitGitHubError: 'Commit failed',
     },
     stepBrowser: {
       title: 'Steps',
@@ -92,6 +96,10 @@ export const translations = {
       format: 'Formatta',
       preview: 'Anteprima .feature',
       previewPlaceholder: '# Inizia a scrivere per vedere l\'anteprima…',
+      commitGitHub: 'Commit su GitHub',
+      commitGitHubLoading: 'Commit in corso…',
+      commitGitHubSuccess: 'File committato su GitHub',
+      commitGitHubError: 'Commit fallito',
     },
     stepBrowser: {
       title: 'Step',
