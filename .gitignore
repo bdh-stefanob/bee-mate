@@ -1,6 +1,8 @@
 node_modules/
 dist/
 reports/
+.claude/
+.clone/
 cucumber-messages.ndjson
 *.log
 .env
