@@ -34,9 +34,12 @@ export function slugify(s: string): string {
 export function safeFeaturePath(rel: string): string | null {
   const resolved = path.resolve(FEATURES_DIR, rel);
 
-  // Guard path traversal: il path risolto deve essere dentro FEATURES_DIR
-  const featuresPrefix = FEATURES_DIR + path.sep;
-  if (!resolved.startsWith(featuresPrefix) && resolved !== FEATURES_DIR) {
+  // Guard path traversal: il path risolto deve essere STRETTAMENTE dentro FEATURES_DIR.
+  // WR-04: normalise to lower-case before comparison to handle case-insensitive
+  // filesystems (Windows/macOS) where mixed-case paths would bypass startsWith.
+  const prefix = (FEATURES_DIR + path.sep).toLowerCase();
+  const normalised = resolved.toLowerCase();
+  if (!normalised.startsWith(prefix)) {
     return null;
   }
 
