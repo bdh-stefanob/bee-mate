@@ -95,6 +95,7 @@ function parseScenarios(content: string): ParsedFeature {
 
   let currentScenario: ParsedScenario | null = null;
   let inScenario = false;
+  let headerDone = false;  // set to true after first Scenario is encountered
   let lastMainKeyword = 'When'; // fallback per And/But/*
 
   for (let i = 0; i < lines.length; i++) {
@@ -123,6 +124,7 @@ function parseScenarios(content: string): ParsedFeature {
         rawLines: [line],
       };
       inScenario = true;
+      headerDone = true;
       lastMainKeyword = 'When';
       continue;
     }
@@ -155,7 +157,7 @@ function parseScenarios(content: string): ParsedFeature {
       }
 
       // Righe Examples/tabella — già incluse in rawLines, nessuna azione extra
-    } else if (!inScenario) {
+    } else if (!headerDone) {
       rawHeaderLines.push(line);
     }
   }
