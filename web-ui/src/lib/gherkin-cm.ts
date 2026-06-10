@@ -133,7 +133,7 @@ export const gherkinLinter = linter((view) => {
 
   let hasFeature = false;
   let inBlock = false; // inside a Scenario/Background block
-  let blockStart = 0; // line number of current block start (1-based)
+
   let blockHasSteps = false;
   let blockFrom = 0; // character offset of block keyword line start
 
@@ -157,7 +157,6 @@ export const gherkinLinter = linter((view) => {
         });
       }
       inBlock = true;
-      blockStart = lineNum;
       blockHasSteps = false;
       blockFrom = line.from;
       continue;

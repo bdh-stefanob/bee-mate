@@ -66,7 +66,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
 
   useEffect(() => {
     fetch('/api/catalog')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(data => { if (data.steps) setSteps(data.steps); })
       .catch(() => {});
   }, []);
@@ -274,7 +274,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                             </TooltipTrigger>
                             <TooltipContent side="left" className="text-xs">
                               {hasEnums
-                                ? `${step.paramEnums!.find(p => p.values.length > 0)!.values.length} known values`
+                                ? `${step.paramEnums?.find(p => p.values.length > 0)?.values.length ?? 0} known values`
                                 : 'Free-text parameter'}
                             </TooltipContent>
                           </Tooltip>

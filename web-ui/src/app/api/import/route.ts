@@ -37,6 +37,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json(
+      { ok: false, error: 'File troppo grande (max 1 MB)' },
+      { status: 400 }
+    );
+  }
+
   // 2. Scrivi il contenuto in un file temporaneo con nome generato (T-04-06)
   const tmpPath = path.join(os.tmpdir(), `import-${Date.now()}.txt`);
   const buffer = Buffer.from(await file.arrayBuffer());

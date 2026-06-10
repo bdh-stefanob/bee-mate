@@ -43,13 +43,13 @@ export default function EditorPage() {
   // Load step expressions from catalog once
   useEffect(() => {
     fetch('/api/catalog')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then((data: { steps?: CatalogStep[] }) => {
         if (data.steps) {
           setStepExpressions(data.steps.map(s => s.expression));
         }
       })
-      .catch(() => {/* ignore network errors */});
+      .catch(() => {/* catalog not available — autocomplete disabled */});
   }, []);
 
   // Toolbar + StepBrowser insert handler

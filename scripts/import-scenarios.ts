@@ -16,6 +16,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 
 // ---------------------------------------------------------------------------
@@ -176,8 +177,10 @@ function parseScenarios(content: string): ParsedFeature {
 
 function validateInputPath(inputPath: string): string {
   const resolved = path.resolve(inputPath);
-  const cwd = process.cwd() + path.sep;   // ensure trailing separator
-  if (!resolved.startsWith(cwd) && resolved !== process.cwd()) {
+  const cwd = process.cwd() + path.sep;
+  const tmpDir = os.tmpdir() + path.sep;
+  // Allow both project root (CLI use) and os.tmpdir() (API-generated temp files)
+  if (!resolved.startsWith(cwd) && resolved !== process.cwd() && !resolved.startsWith(tmpDir)) {
     throw new Error(
       `Path non sicuro: "${inputPath}" non è dentro la root del progetto (${process.cwd()}).`
     );
