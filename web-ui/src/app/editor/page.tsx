@@ -29,6 +29,14 @@ import { toast } from 'sonner';
  * ?step= pre-population: if the URL contains ?step=..., the editor is
  * pre-populated with "  Given <step>" on mount.
  */
+function safeDecodeURI(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s; // restituisce la stringa grezza se la percent-encoding è malformata
+  }
+}
+
 export default function EditorPage() {
   const { t } = useLanguage();
   const { settings } = useSettings();
@@ -36,7 +44,7 @@ export default function EditorPage() {
   const stepParam = searchParams.get('step');
 
   const initialContent = stepParam
-    ? `  Given ${decodeURIComponent(stepParam)}`
+    ? `  Given ${safeDecodeURI(stepParam)}`
     : '';
 
   const [content, setContent] = useState<string>(initialContent);
