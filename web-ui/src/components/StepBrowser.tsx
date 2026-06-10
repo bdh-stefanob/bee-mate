@@ -116,12 +116,12 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
       setPickerStep(step);
     } else {
       const kw = guessKeyword(step.expression);
-      onInsert(`    ${kw} ${step.expression}`);
+      onInsert(`    ${kw} ${step.expression}\n`);
     }
   }, [onInsert]);
 
   const handlePickerInsert = useCallback((line: string) => {
-    onInsert(line);
+    onInsert(line.endsWith('\n') ? line : line + '\n');
     setPickerStep(null);
   }, [onInsert]);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GherkinEditor, type GherkinEditorHandle } from '@/components/GherkinEditor';
 import { GherkinToolbar } from '@/components/GherkinToolbar';
@@ -33,8 +33,19 @@ function safeDecodeURI(s: string): string {
   try {
     return decodeURIComponent(s);
   } catch {
-    return s; // restituisce la stringa grezza se la percent-encoding è malformata
+    return s;
   }
+}
+
+function matchesCatalog(stepText: string, expressions: string[]): boolean {
+  return expressions.some(expr => {
+    const segments = expr.split(/\{[^}]+\}/);
+    const pattern = segments
+      .map(s => s.replace(/[.*+?^$|[\]\\()[\]{}]/g, '\\$&'))
+      .join('.+');
+    try { return new RegExp(`^${pattern}$`, 'i').test(stepText); }
+    catch { return false; }
+  });
 }
 
 export default function EditorPage() {
@@ -63,6 +74,22 @@ export default function EditorPage() {
       })
       .catch((err: Error) => { toast.error(`Catalog non disponibile: ${err.message}`); });
   }, []);
+
+  // Steps in content not found in the catalog
+  const unknownSteps = useMemo(() => {
+    if (!stepExpressions.length || !content.trim()) return [];
+    const stepLineRe = /^\s+(?:given|when|then|and|but)\s+(.+)/gim;
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const m of content.matchAll(stepLineRe)) {
+      const text = m[1].trim();
+      if (!seen.has(text) && !matchesCatalog(text, stepExpressions)) {
+        seen.add(text);
+        result.push(text);
+      }
+    }
+    return result;
+  }, [content, stepExpressions]);
 
   // Toolbar + StepBrowser insert handler
   const handleInsert = useCallback((text: string) => {
@@ -172,6 +199,14 @@ export default function EditorPage() {
             onChange={setContent}
             stepExpressions={stepExpressions}
           />
+          {unknownSteps.length > 0 && (
+            <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-2 text-xs text-orange-700 dark:text-orange-300">
+              <p className="font-semibold">⚠ {unknownSteps.length} step non nel catalogo:</p>
+              <ul className="mt-1 list-disc pl-4 space-y-0.5 font-mono">
+                {unknownSteps.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+          )}
           <ImportDropzone
             onImported={(featureContent) => setContent(featureContent)}
           />

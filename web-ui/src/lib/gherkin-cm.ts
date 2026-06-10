@@ -117,6 +117,7 @@ export const gherkinTheme: Extension = syntaxHighlighting(gherkinHighlightStyle)
 // ---------------------------------------------------------------------------
 
 const STEP_LINE_RE = /^\s*(Given|When|Then|And|But)\s+/;
+const ANY_CASE_STEP_RE = /^\s*(given|when|then|and|but)\s+/i;
 const SCENARIO_START_RE = /^\s*(Scenario:|Scenario Outline:|Background:)/;
 const FEATURE_LINE_RE = /^\s*Feature:/;
 
@@ -172,6 +173,18 @@ export const gherkinLinter = linter((view) => {
         });
       } else {
         blockHasSteps = true;
+      }
+    } else if (ANY_CASE_STEP_RE.test(text)) {
+      if (inBlock) blockHasSteps = true;
+      const kw = text.trimStart().match(/^\w+/)?.[0] ?? '';
+      if (kw) {
+        const fixed = kw.charAt(0).toUpperCase() + kw.slice(1).toLowerCase();
+        diagnostics.push({
+          from: line.from,
+          to: line.to,
+          severity: 'warning',
+          message: `"${kw}" → "${fixed}" (capitalise step keyword)`,
+        });
       }
     }
   }
