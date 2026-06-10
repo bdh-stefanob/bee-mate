@@ -1,237 +1,235 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { getSuggestions } from '@/lib/autocomplete';
-import type { CatalogStep } from '@/lib/types';
-import { slugify } from '@/lib/repo';
-import { ImportDropzone } from './ImportDropzone';
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { EditorView, keymap, lineNumbers, highlightActiveLineGutter } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
+import { defaultKeymap, history, historyKeymap, undo, redo } from '@codemirror/commands';
+import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
+import { gherkinLanguage, gherkinTheme, gherkinLinter } from '@/lib/gherkin-cm';
+import { GHERKIN_PREFIX_RE } from '@/lib/autocomplete';
 
-interface GherkinEditorProps {
+// ---------------------------------------------------------------------------
+// Public ref handle
+// ---------------------------------------------------------------------------
+
+export interface GherkinEditorHandle {
+  /** Insert text at the current cursor position */
+  insertAtCursor: (text: string) => void;
+  /** Get the underlying EditorView instance */
+  getView: () => EditorView | null;
+  /** Undo one step */
+  undo: () => void;
+  /** Redo one step */
+  redo: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
+
+export interface GherkinEditorProps {
+  value: string;
+  onChange: (v: string) => void;
+  /** Step expressions from catalog — used for autocomplete */
+  stepExpressions: string[];
+  /** Legacy: initialValue for backward compatibility */
   initialValue?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 /**
- * GherkinEditor
+ * GherkinEditor — CodeMirror 6 based Gherkin editor
  *
- * Textarea monospace controllata con:
- * - Autocomplete prefix-match sul catalog (max 8, Tab/Enter/Escape)
- * - Pre-popolamento da prop initialValue (passata da ?step= query)
- * - Dropdown con wrapper position:relative (Pitfall 6)
- * - onBlur con delay 50ms (Pitfall 5)
- * - Preview .feature in pannello laterale
- * - Download .feature client-side via Blob
- * - ImportDropzone integrata
+ * Features:
+ *  - Gherkin syntax highlighting (teal keywords, green steps, gray comments, orange tags)
+ *  - Inline Gherkin linter (errors/warnings)
+ *  - Autocomplete from step expressions (prefix-match, case-insensitive, max 8)
+ *  - Line numbers, active-line gutter, undo/redo history
+ *  - Controlled value: syncs from outside (value prop) and emits to onChange
+ *  - Exposes GherkinEditorHandle ref for toolbar/stepBrowser inserts
  */
-export function GherkinEditor({ initialValue = '' }: GherkinEditorProps) {
-  const [value, setValue] = useState<string>(initialValue);
-  const [steps, setSteps] = useState<CatalogStep[]>([]);
-  const [suggestions, setSuggestions] = useState<CatalogStep[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
+const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
+  function GherkinEditor({ value, onChange, stepExpressions, initialValue }, ref) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const viewRef = useRef<EditorView | null>(null);
+    // Track last value sent/received to avoid infinite loops
+    const lastValueRef = useRef<string>(value ?? initialValue ?? '');
+    // Keep stepExpressions accessible in autocomplete closure without recreating extensions
+    const stepExpressionsRef = useRef<string[]>(stepExpressions);
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Update ref when prop changes
+    useEffect(() => {
+      stepExpressionsRef.current = stepExpressions;
+    }, [stepExpressions]);
 
-  // Aggiorna il value se initialValue cambia (es. navigazione da catalog)
-  useEffect(() => {
-    if (initialValue) {
-      setValue(initialValue);
+    // ---------------------------------------------------------------------------
+    // Autocomplete source
+    // ---------------------------------------------------------------------------
+
+    function gherkinComplete(context: CompletionContext): CompletionResult | null {
+      const textToCursor = context.state.doc.sliceString(0, context.pos);
+      const m = textToCursor.match(GHERKIN_PREFIX_RE);
+      if (!m) return null;
+
+      const prefix = m[2].toLowerCase();
+      const filtered = stepExpressionsRef.current
+        .filter(e => e.toLowerCase().startsWith(prefix))
+        .slice(0, 8);
+
+      if (filtered.length === 0) return null;
+
+      // Replace from start of the text after the keyword on the current line
+      const line = context.state.doc.lineAt(context.pos);
+      const lineText = line.text.trimStart();
+      const indentLen = line.text.length - lineText.length;
+      const keywordMatch = lineText.match(/^(Given|When|Then|And|But)\s/);
+      if (!keywordMatch) return null;
+      const replaceFrom = line.from + indentLen + keywordMatch[1].length + 1;
+
+      return {
+        from: replaceFrom,
+        options: filtered.map(expression => ({
+          label: expression,
+          type: 'text',
+        })),
+      };
     }
-  }, [initialValue]);
 
-  // Carica il catalog
-  useEffect(() => {
-    fetch('/api/catalog')
-      .then(res => res.json())
-      .then(data => {
-        if (data.steps) setSteps(data.steps);
-      })
-      .catch(() => {/* ignora errori fetch in caso di rete assente */});
-  }, []);
+    // ---------------------------------------------------------------------------
+    // Editor initialization (runs once on mount)
+    // ---------------------------------------------------------------------------
 
-  // Inserisce il suggerimento nel testo, sostituendo il testo dopo la keyword
-  const insertSuggestion = useCallback((step: CatalogStep) => {
-    // Trova l'ultima riga con keyword Gherkin e sostituisce il testo dopo la keyword
-    const PREFIX_RE = /(?:^|\n)(Given|When|Then|And|But)\s+([^\n]*)$/;
-    const m = value.match(PREFIX_RE);
-    if (!m) return;
+    useEffect(() => {
+      if (!containerRef.current) return;
 
-    const keywordEnd = value.lastIndexOf(m[1]) + m[1].length + 1; // +1 per lo spazio
-    const newValue = value.slice(0, keywordEnd) + step.expression;
-    setValue(newValue);
-    setShowDropdown(false);
-    setSuggestions([]);
-    // Riposiziona il cursore alla fine
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(newValue.length, newValue.length);
+      const startValue = value ?? initialValue ?? '';
+      lastValueRef.current = startValue;
+
+      const updateListener = EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          const newValue = update.state.doc.toString();
+          lastValueRef.current = newValue;
+          onChange(newValue);
+        }
+      });
+
+      const view = new EditorView({
+        state: EditorState.create({
+          doc: startValue,
+          extensions: [
+            gherkinLanguage,
+            gherkinTheme,
+            gherkinLinter,
+            lineNumbers(),
+            highlightActiveLineGutter(),
+            history(),
+            keymap.of([...defaultKeymap, ...historyKeymap]),
+            autocompletion({ override: [gherkinComplete] }),
+            updateListener,
+            EditorView.theme({
+              '&': {
+                fontFamily: 'var(--font-mono, ui-monospace, "Cascadia Code", "Fira Mono", monospace)',
+                fontSize: '0.875rem',
+                minHeight: '400px',
+              },
+              '.cm-scroller': {
+                minHeight: '400px',
+              },
+              '.cm-content': {
+                padding: '0.5rem 0',
+                caretColor: 'var(--foreground)',
+              },
+              '.cm-cursor': {
+                borderLeftColor: 'var(--foreground)',
+              },
+              '.cm-gutters': {
+                backgroundColor: 'var(--muted)',
+                borderRight: '1px solid var(--border)',
+                color: 'var(--muted-foreground)',
+              },
+              '.cm-activeLineGutter': {
+                backgroundColor: 'var(--accent)',
+              },
+            }),
+          ],
+        }),
+        parent: containerRef.current,
+      });
+
+      viewRef.current = view;
+
+      return () => {
+        view.destroy();
+        viewRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ---------------------------------------------------------------------------
+    // Sync value prop → EditorView (controlled component)
+    // ---------------------------------------------------------------------------
+
+    useEffect(() => {
+      const view = viewRef.current;
+      if (!view) return;
+
+      const current = view.state.doc.toString();
+      // Only update if the value came from outside (not from our own onChange)
+      if (current !== value && lastValueRef.current !== value) {
+        lastValueRef.current = value;
+        view.dispatch({
+          changes: { from: 0, to: current.length, insert: value },
+        });
       }
-    }, 0);
-  }, [value]);
+    }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setValue(newValue);
-    const sugg = getSuggestions(newValue, steps);
-    if (sugg.length > 0) {
-      setSuggestions(sugg);
-      setShowDropdown(true);
-      setActiveIndex(0);
-    } else {
-      setSuggestions([]);
-      setShowDropdown(false);
-    }
-  };
+    // ---------------------------------------------------------------------------
+    // Imperative handle
+    // ---------------------------------------------------------------------------
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (!showDropdown) return;
+    useImperativeHandle(ref, () => ({
+      insertAtCursor(text: string) {
+        const view = viewRef.current;
+        if (!view) return;
+        const pos = view.state.selection.main.head;
+        view.dispatch({
+          changes: { from: pos, insert: text },
+          selection: { anchor: pos + text.length },
+        });
+        view.focus();
+      },
+      getView() {
+        return viewRef.current;
+      },
+      undo() {
+        const view = viewRef.current;
+        if (view) undo(view);
+      },
+      redo() {
+        const view = viewRef.current;
+        if (view) redo(view);
+      },
+    }));
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex(i => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex(i => Math.max(i - 1, 0));
-    } else if (e.key === 'Tab' || e.key === 'Enter') {
-      if (showDropdown && suggestions[activeIndex]) {
-        e.preventDefault();
-        insertSuggestion(suggestions[activeIndex]);
-      }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setShowDropdown(false);
-    }
-  };
+    // ---------------------------------------------------------------------------
+    // Render
+    // ---------------------------------------------------------------------------
 
-  // Pitfall 5: delay 50ms per permettere il click sul suggerimento
-  const handleBlur = () => {
-    blurTimeoutRef.current = setTimeout(() => {
-      setShowDropdown(false);
-    }, 50);
-  };
+    return (
+      <div
+        ref={containerRef}
+        className="w-full rounded-md border border-border bg-background text-foreground overflow-hidden"
+        style={{ minHeight: '400px', fontFamily: 'var(--font-mono, ui-monospace, monospace)' }}
+        aria-label="Gherkin Editor"
+      />
+    );
+  }
+);
 
-  const handleFocus = () => {
-    if (blurTimeoutRef.current) {
-      clearTimeout(blurTimeoutRef.current);
-    }
-  };
+GherkinEditor.displayName = 'GherkinEditor';
 
-  // Download .feature client-side via Blob
-  const handleDownload = () => {
-    // Estrae il nome Feature dalla prima riga "Feature: ..."
-    const featureMatch = value.match(/Feature:\s*(.+)/i);
-    const featureName = featureMatch ? featureMatch[1].trim() : 'scenario';
-    const filename = slugify(featureName) || 'scenario';
-
-    const blob = new Blob([value], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename}.feature`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      {/* Toolbar */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setShowPreview(p => !p)}
-          className="px-3 py-1.5 text-sm rounded-md bg-teal-600 text-white hover:bg-teal-700 transition-colors"
-        >
-          {showPreview ? 'Chiudi Preview' : 'Preview .feature'}
-        </button>
-        <button
-          onClick={handleDownload}
-          className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors"
-        >
-          Download .feature
-        </button>
-      </div>
-
-      <div className="flex gap-4">
-        {/* Editor area */}
-        <div className="flex-1 flex flex-col gap-3">
-          {/* Textarea con wrapper relative per il dropdown (Pitfall 6) */}
-          <div className="relative">
-            <textarea
-              ref={textareaRef}
-              value={value}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              onBlur={handleBlur}
-              onFocus={handleFocus}
-              placeholder="Feature: Il mio scenario&#10;&#10;  Scenario: Descrizione&#10;    Given ...&#10;    When ...&#10;    Then ..."
-              className="w-full h-64 p-3 font-mono text-sm border border-border rounded-md bg-background text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-teal-500"
-              spellCheck={false}
-              aria-label="Gherkin Editor"
-              aria-autocomplete="list"
-              aria-controls={showDropdown ? 'autocomplete-listbox' : undefined}
-              aria-activedescendant={
-                showDropdown ? `autocomplete-option-${activeIndex}` : undefined
-              }
-            />
-
-            {/* Autocomplete dropdown (Pitfall 6: position absolute su parent relative) */}
-            {showDropdown && suggestions.length > 0 && (
-              <ul
-                id="autocomplete-listbox"
-                role="listbox"
-                className="absolute left-0 right-0 z-50 mt-0.5 bg-popover border border-border rounded-md shadow-lg max-h-56 overflow-y-auto"
-              >
-                {suggestions.map((s, i) => (
-                  <li
-                    key={s.expression}
-                    id={`autocomplete-option-${i}`}
-                    role="option"
-                    aria-selected={i === activeIndex}
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // previene blur prima del click
-                      insertSuggestion(s);
-                    }}
-                    className={`px-3 py-2 text-sm font-mono cursor-pointer flex items-center gap-2 ${
-                      i === activeIndex
-                        ? 'bg-teal-600 text-white'
-                        : 'hover:bg-muted text-foreground'
-                    }`}
-                  >
-                    <span className="flex-1 truncate">{s.expression}</span>
-                    <span
-                      className={`text-xs shrink-0 ${
-                        i === activeIndex ? 'text-teal-100' : 'text-muted-foreground'
-                      }`}
-                    >
-                      {s.area}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Import dropzone */}
-          <ImportDropzone
-            onImported={(featureContent) => setValue(featureContent)}
-          />
-        </div>
-
-        {/* Preview panel */}
-        {showPreview && (
-          <div className="flex-1 min-w-0">
-            <div className="h-full border border-border rounded-md bg-muted/30 p-3 overflow-auto">
-              <p className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wide">
-                Preview .feature
-              </p>
-              <pre className="text-sm font-mono whitespace-pre-wrap text-foreground break-words">
-                {value || '# Nessun contenuto da visualizzare'}
-              </pre>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+export { GherkinEditor };
+export default GherkinEditor;
