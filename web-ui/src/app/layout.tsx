@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Providers } from '@/providers/Providers';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { NavSettingsLink } from '@/components/NavSettingsLink';
 import './globals.css';
 
 const geistSans = Geist({
@@ -39,6 +40,7 @@ export default function RootLayout({
             <Link href="/features" className="text-sm text-teal-100 hover:text-white transition-colors">
               Features
             </Link>
+            <NavSettingsLink />
             <div className="ml-auto flex items-center gap-1">
               <LanguageToggle />
               <ThemeToggle />
