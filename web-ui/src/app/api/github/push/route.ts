@@ -38,6 +38,15 @@ export async function POST(request: Request) {
     );
   }
 
+  // Path injection guard: owner e repo devono contenere solo caratteri GitHub-valid (T-05-03-04)
+  const GITHUB_NAME_RE = /^[a-zA-Z0-9_.\-]+$/;
+  if (!GITHUB_NAME_RE.test(githubOwner) || !GITHUB_NAME_RE.test(githubRepo)) {
+    return NextResponse.json(
+      { ok: false, error: 'Invalid x-github-owner or x-github-repo: only alphanumerics, hyphens, dots, underscores allowed' },
+      { status: 400 }
+    );
+  }
+
   // 2. Leggere il body
   let body: PushBody;
   try {
