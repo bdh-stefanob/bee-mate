@@ -11,6 +11,7 @@ import {
 import type { CatalogStep } from '@/lib/types';
 import { useLanguage } from '@/providers/Providers';
 import { StepParamPicker, type GherkinKeyword } from '@/components/StepParamPicker';
+import { toast } from 'sonner';
 
 export interface StepBrowserProps {
   onInsert: (expression: string) => void;
@@ -68,7 +69,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
     fetch('/api/catalog')
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(data => { if (data.steps) setSteps(data.steps); })
-      .catch(() => {});
+      .catch((err: Error) => { toast.error(`Step catalog non disponibile: ${err.message}`); });
   }, []);
 
   const areas = useMemo(

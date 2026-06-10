@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useLanguage } from '@/providers/Providers';
+import { toast } from 'sonner';
 
 interface ImportDropzoneProps {
   onImported: (featureContent: string) => void;
@@ -55,14 +56,14 @@ export function ImportDropzone({ onImported }: ImportDropzoneProps) {
           featurePath: json.featurePath ?? null,
         });
       } else {
-        setState({
-          status: 'error',
-          error: json.error ?? 'Errore sconosciuto durante l\'import',
-        });
+        const errorMsg = json.error ?? 'Errore sconosciuto durante l\'import';
+        setState({ status: 'error', error: errorMsg });
+        toast.error(`Importazione fallita: ${errorMsg}`);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Errore di rete';
       setState({ status: 'error', error: msg });
+      toast.error(`Importazione fallita: ${msg}`);
     }
   };
 

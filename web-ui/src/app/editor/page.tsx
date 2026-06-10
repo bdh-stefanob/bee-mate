@@ -10,6 +10,7 @@ import type { CatalogStep } from '@/lib/types';
 import { slugify } from '@/lib/repo';
 import { formatGherkin } from '@/lib/gherkin-cm';
 import { useLanguage } from '@/providers/Providers';
+import { toast } from 'sonner';
 
 /**
  * EditorPage (/editor)
@@ -49,7 +50,7 @@ export default function EditorPage() {
           setStepExpressions(data.steps.map(s => s.expression));
         }
       })
-      .catch(() => {/* catalog not available — autocomplete disabled */});
+      .catch((err: Error) => { toast.error(`Catalog non disponibile: ${err.message}`); });
   }, []);
 
   // Toolbar + StepBrowser insert handler
