@@ -118,11 +118,13 @@ Nessuno.
 
 ---
 
-## Checkpoint: human-verify
+## Checkpoint: human-verify — APPROVATO
 
-Il piano include un checkpoint `type="checkpoint:human-verify"` (Task 3) per la verifica visiva del layout desktop. I due task automatici precedenti sono stati completati e committati. Il checkpoint richiede verifica manuale a 1280px nel browser.
+Il checkpoint `type="checkpoint:human-verify"` (Task 3) e' stato approvato dall'utente il 2026-06-10. Verifica visiva confermata come "approved" con verifica approfondita in seguito.
 
-**Passi di verifica:**
+**Stato:** VERIFICATO-PENDING (approvato, verifica visiva desktop programmata dall'utente)
+
+**Passi di verifica (per riferimento):**
 1. `cd web-ui && npm run dev`
 2. Aprire http://localhost:3000 in finestra da 1280px (DevTools Responsive)
 3. Verificare ogni pagina: Catalog, Editor (2 colonne), Features, Settings
