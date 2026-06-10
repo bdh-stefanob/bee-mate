@@ -1,0 +1,15 @@
+Feature: Checkout Happy Path
+
+  Scenario: Guest user places an order successfully
+    Given I am on the homepage
+    When I add "Blue Widget" to the basket
+    And I proceed to checkout
+    And I enter my delivery address "123 High Street"
+    Then I should see the order confirmation page
+    And the order total should be 29
+
+  Scenario: Logged-in user reuses saved address
+    Given I am logged in as a "standard" user
+    When I add "Red Widget" to the basket
+    And I proceed to checkout
+    Then I should see my saved address "456 Low Road"

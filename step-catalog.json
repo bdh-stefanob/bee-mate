@@ -1,9 +1,136 @@
 {
-  "generatedAt": "2026-06-09T20:20:17.338Z",
-  "totalSteps": 11,
-  "documentedSteps": 11,
+  "generatedAt": "2026-06-10T07:27:40.433Z",
+  "totalSteps": 18,
+  "documentedSteps": 18,
   "undocumentedSteps": 0,
   "steps": [
+    {
+      "expression": "I add {string} to the basket",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:27",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I am on the homepage",
+      "parameters": [],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:14",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I enter my delivery address {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:53",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I proceed to checkout",
+      "parameters": [],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:40",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I should see my saved address {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:92",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
+    {
+      "expression": "I should see the order confirmation page",
+      "parameters": [],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:66",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
+    {
+      "expression": "the order total should be {int}",
+      "parameters": [
+        "{int}"
+      ],
+      "app": "app-a",
+      "area": "imported",
+      "domain": "app-a/imported",
+      "status": "wanted",
+      "requester": "TBD",
+      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:79",
+      "doc": {
+        "params": {},
+        "intent": "<da completare>",
+        "wanted": true,
+        "requester": "TBD"
+      },
+      "documented": true
+    },
     {
       "expression": "I search for the product {string}",
       "parameters": [

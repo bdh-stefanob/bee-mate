@@ -4,8 +4,8 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-06-09T20:20:17.338Z
-Total: **11** steps (10 implemented, 1 wanted, 0 deprecated)
+Last update: 2026-06-10T07:27:40.433Z
+Total: **18** steps (10 implemented, 8 wanted, 0 deprecated)
 
 ## How to use
 
@@ -14,6 +14,64 @@ an existing step that matches the intent. If it exists, reuse the exact
 expression. If it does not, flag it to the step gatekeeper.
 
 ---
+
+## Domain: `app-a/imported` (7 steps)
+
+### 🔧 `I add {string} to the basket`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:27`
+
+### 🔧 `I am on the homepage`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:14`
+
+### 🔧 `I enter my delivery address {string}`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:53`
+
+### 🔧 `I proceed to checkout`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:40`
+
+### 🔧 `I should see my saved address {string}`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:92`
+
+### 🔧 `I should see the order confirmation page`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:66`
+
+### 🔧 `the order total should be {int}`
+
+<da completare>
+
+_Requester: TBD — Assignee: —_
+
+_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:79`
 
 ## Domain: `app-a/orders` (1 steps)
 
