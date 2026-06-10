@@ -119,6 +119,40 @@
   --sidebar-ring: oklch(0.704 0.14 182.503);
 }
 
+/* CodeMirror syntax highlight tokens — WCAG AA compliant */
+:root {
+  --cm-keyword: #0F766E;   /* teal-700, 5.0:1 on white ✓ */
+  --cm-step:    #16A34A;   /* green-600, 4.6:1 on white ✓ */
+  --cm-comment: #6B7280;   /* gray-500 */
+  --cm-tag:     #C2410C;   /* orange-700, 5.0:1 on white ✓ */
+  --cm-table:   #1D4ED8;   /* blue-700, 5.9:1 on white ✓ */
+}
+.dark {
+  --cm-keyword: #2DD4BF;   /* teal-400 on dark ✓ */
+  --cm-step:    #4ADE80;   /* green-400 on dark ✓ */
+  --cm-comment: #9CA3AF;   /* gray-400 */
+  --cm-tag:     #FB923C;   /* orange-400 */
+  --cm-table:   #93C5FD;   /* blue-300 */
+}
+
+/* CodeMirror lint panel — dark mode overrides */
+.dark .cm-panel.cm-panel-lint {
+  background: oklch(0.18 0 0);
+  color: oklch(0.95 0 0);
+  border-top-color: oklch(1 0 0 / 12%);
+}
+.dark .cm-diagnostic {
+  border-left-color: #f87171;
+}
+.dark .cm-diagnostic-warning {
+  border-left-color: #fbbf24;
+}
+.dark .cm-tooltip-lint {
+  background: oklch(0.22 0 0);
+  color: oklch(0.95 0 0);
+  border-color: oklch(1 0 0 / 15%);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

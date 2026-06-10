@@ -86,25 +86,26 @@ export const gherkinLanguage = StreamLanguage.define(gherkinParser);
 export const gherkinHighlightStyle = HighlightStyle.define([
   {
     tag: tags.keyword,
-    color: 'var(--primary)',
-    fontWeight: 'bold',
+    color: 'var(--cm-keyword)',
+    fontWeight: '700',
   },
   {
     tag: tags.definitionKeyword,
-    color: '#22c55e',
+    color: 'var(--cm-step)',
+    fontWeight: '600',
   },
   {
     tag: tags.lineComment,
-    color: 'var(--muted-foreground)',
+    color: 'var(--cm-comment)',
     fontStyle: 'italic',
   },
   {
     tag: tags.typeName,
-    color: 'var(--accent)',
+    color: 'var(--cm-tag)',
   },
   {
     tag: tags.string,
-    color: 'oklch(65% 0.14 240)',
+    color: 'var(--cm-table)',
   },
 ]);
 
@@ -197,3 +198,50 @@ export const gherkinLinter = linter((view) => {
 
   return diagnostics;
 });
+
+// ---------------------------------------------------------------------------
+// 4. Gherkin auto-formatter
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalises Gherkin indentation:
+ *   col 0  — Feature:, Rule:, Scenario:, Background:, Scenario Outline:, Examples:, @tags, #comments
+ *   2 spc  — Given / When / Then / And / But
+ *   4 spc  — table rows (|)
+ * Collapses consecutive blank lines to a single blank line.
+ */
+export function formatGherkin(text: string): string {
+  const lines = text.split('\n');
+  const out: string[] = [];
+  let prevBlank = false;
+
+  for (const raw of lines) {
+    const t = raw.trim();
+
+    if (!t) {
+      if (!prevBlank) out.push('');
+      prevBlank = true;
+      continue;
+    }
+    prevBlank = false;
+
+    if (
+      /^(Feature:|Rule:|Background:|Scenario:|Scenario Outline:|Examples:)/.test(t) ||
+      t.startsWith('@') ||
+      t.startsWith('#')
+    ) {
+      out.push(t);
+    } else if (/^(Given |When |Then |And |But )/.test(t)) {
+      out.push('  ' + t);
+    } else if (t.startsWith('|')) {
+      out.push('    ' + t);
+    } else {
+      out.push(t);
+    }
+  }
+
+  // Remove trailing blank lines
+  while (out.length > 0 && out[out.length - 1] === '') out.pop();
+
+  return out.join('\n');
+}

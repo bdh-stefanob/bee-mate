@@ -11,6 +11,8 @@ export interface GherkinToolbarProps {
   onInsert: (text: string) => void;
   onUndo: () => void;
   onRedo: () => void;
+  onFormat?: () => void;
+  formatLabel?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -48,7 +50,7 @@ const TABLE_SNIPPET = { label: '| table |', text: '    | col1 | col2 |\n    |   
  *
  * Structure buttons use teal border; step keyword buttons use green border.
  */
-export function GherkinToolbar({ onInsert, onUndo, onRedo }: GherkinToolbarProps) {
+export function GherkinToolbar({ onInsert, onUndo, onRedo, onFormat, formatLabel = 'Format' }: GherkinToolbarProps) {
   return (
     <div className="flex flex-col gap-1.5 p-2 rounded-md border border-border bg-muted/30">
       {/* Row 1 — Structure keywords */}
@@ -112,6 +114,21 @@ export function GherkinToolbar({ onInsert, onUndo, onRedo }: GherkinToolbarProps
         >
           ↪ Redo
         </Button>
+
+        {onFormat && (
+          <>
+            <Separator orientation="vertical" className="h-5 mx-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onFormat}
+              className="text-xs h-7 px-2 border-teal-500 text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950"
+              title="Auto-format indentation"
+            >
+              ⟳ {formatLabel}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

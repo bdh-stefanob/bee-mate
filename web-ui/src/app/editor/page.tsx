@@ -8,6 +8,8 @@ import { StepBrowser } from '@/components/StepBrowser';
 import { ImportDropzone } from '@/components/ImportDropzone';
 import type { CatalogStep } from '@/lib/types';
 import { slugify } from '@/lib/repo';
+import { formatGherkin } from '@/lib/gherkin-cm';
+import { useLanguage } from '@/providers/Providers';
 
 /**
  * EditorPage (/editor)
@@ -26,6 +28,7 @@ import { slugify } from '@/lib/repo';
  * pre-populated with "  Given <step>" on mount.
  */
 export default function EditorPage() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const stepParam = searchParams.get('step');
 
@@ -63,6 +66,12 @@ export default function EditorPage() {
     editorRef.current?.redo();
   }, []);
 
+  // Format Gherkin indentation
+  const handleFormat = useCallback(() => {
+    const formatted = formatGherkin(content);
+    if (formatted !== content) setContent(formatted);
+  }, [content]);
+
   // Download current editor content as .feature file
   const handleDownload = useCallback(() => {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
@@ -81,12 +90,12 @@ export default function EditorPage() {
   return (
     <div className="p-4 lg:p-6 max-w-screen-xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-foreground">Gherkin Editor</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t.editor.title}</h1>
         <button
           onClick={handleDownload}
           className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors"
         >
-          Download .feature
+          {t.editor.download}
         </button>
       </div>
 
@@ -98,6 +107,8 @@ export default function EditorPage() {
             onInsert={handleInsert}
             onUndo={handleUndo}
             onRedo={handleRedo}
+            onFormat={handleFormat}
+            formatLabel={t.editor.format}
           />
           <GherkinEditor
             ref={editorRef}
@@ -118,11 +129,11 @@ export default function EditorPage() {
           <div className="rounded-md border border-border bg-muted/30 flex flex-col">
             <div className="px-3 py-2 border-b border-border">
               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">
-                Preview .feature
+                {t.editor.preview}
               </p>
             </div>
             <pre className="text-sm font-mono whitespace-pre-wrap text-foreground break-words p-3 overflow-auto flex-1 max-h-96">
-              {content || '# Start typing to see a preview…'}
+              {content || t.editor.previewPlaceholder}
             </pre>
           </div>
         </div>
