@@ -174,16 +174,11 @@ function parseScenarios(content: string): ParsedFeature {
 
 function validateInputPath(inputPath: string): string {
   const resolved = path.resolve(inputPath);
-  const cwd = process.cwd();
-  // Permette path assoluti leggibili e path relativi dentro la cwd
-  if (!resolved.startsWith(cwd)) {
-    // Accettiamo comunque path assoluti purché non usino .. per uscire
-    const normalized = path.normalize(inputPath);
-    if (normalized.includes('..')) {
-      throw new Error(
-        `Path non sicuro: "${inputPath}" contiene ".." che esce dalla root del progetto.`
-      );
-    }
+  const cwd = process.cwd() + path.sep;   // ensure trailing separator
+  if (!resolved.startsWith(cwd) && resolved !== process.cwd()) {
+    throw new Error(
+      `Path non sicuro: "${inputPath}" non è dentro la root del progetto (${process.cwd()}).`
+    );
   }
   return resolved;
 }
