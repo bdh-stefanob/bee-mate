@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { REPO_ROOT } from '@/lib/repo';
+import { REPO_ROOT, FEATURES_DIR, safeFeaturePath } from '@/lib/repo';
 
 /**
  * POST /api/import
@@ -63,7 +63,22 @@ export async function POST(request: Request) {
     const newCountMatch = rawOutput.match(/\((\d+) step nuovi\)/);
     const skipCountMatch = rawOutput.match(/(\d+) già nel catalog/);
 
-    const featurePath = featurePathMatch ? featurePathMatch[1].trim() : null;
+    // CR-02: validate the path from script stdout via safeFeaturePath before reading
+    const rawFeaturePath = featurePathMatch ? featurePathMatch[1].trim() : null;
+    const relPath = rawFeaturePath
+      ? path.relative(FEATURES_DIR, rawFeaturePath).replace(/\\/g, '/')
+      : null;
+    const featurePath = relPath ? safeFeaturePath(relPath) : null;
+
+    if (rawFeaturePath && !featurePath) {
+      // Script returned a path outside FEATURES_DIR — reject
+      try { fs.unlinkSync(tmpPath); } catch { /* ignora errori unlink */ }
+      return NextResponse.json(
+        { ok: false, error: 'Path del feature non valido' },
+        { status: 400 }
+      );
+    }
+
     const newCount = newCountMatch ? parseInt(newCountMatch[1], 10) : 0;
     const skipCount = skipCountMatch ? parseInt(skipCountMatch[1], 10) : 0;
 
@@ -76,25 +91,24 @@ export async function POST(request: Request) {
     // 6. Cancella il file temporaneo
     try { fs.unlinkSync(tmpPath); } catch { /* ignora errori unlink */ }
 
+    // CR-01: return only what the UI needs — no rawOutput, no absolute server paths
     return NextResponse.json({
       ok: true,
       featureContent,
-      featurePath,
+      featurePath: featurePath
+        ? path.relative(REPO_ROOT, featurePath).replace(/\\/g, '/')
+        : null,
       newCount,
       skipCount,
-      rawOutput,
     });
   } catch (err: unknown) {
     // 7. Cleanup + risposta errore
     try { fs.unlinkSync(tmpPath); } catch { /* ignora errori unlink */ }
 
-    const error = err as NodeJS.ErrnoException & { stdout?: string; stderr?: string };
+    // CR-01 / WR-02: never expose rawOutput or internal error details to clients
+    console.error('[api/import] Import failed:', err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: error.message ?? 'Errore sconosciuto',
-        rawOutput: error.stdout ?? '',
-      },
+      { ok: false, error: 'Import failed. Check server logs.' },
       { status: 500 }
     );
   }
