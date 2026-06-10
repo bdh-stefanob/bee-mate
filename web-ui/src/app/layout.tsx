@@ -29,21 +29,23 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <nav className="bg-teal-700 dark:bg-slate-900 border-b border-teal-600 dark:border-slate-700 px-6 py-3 flex items-center gap-6">
-            <span className="font-bold text-sm text-white mr-2">BDD Portal</span>
-            <Link href="/" className="text-sm text-teal-100 hover:text-white transition-colors">
-              Catalog
-            </Link>
-            <Link href="/editor" className="text-sm text-teal-100 hover:text-white transition-colors">
-              Editor
-            </Link>
-            <Link href="/features" className="text-sm text-teal-100 hover:text-white transition-colors">
-              Features
-            </Link>
-            <NavSettingsLink />
-            <div className="ml-auto flex items-center gap-1">
-              <LanguageToggle />
-              <ThemeToggle />
+          <nav className="bg-teal-700 dark:bg-slate-900 border-b border-teal-600 dark:border-slate-700">
+            <div className="max-w-screen-xl mx-auto px-6 py-3 flex items-center gap-6">
+              <span className="font-bold text-sm text-white mr-2">BDD Portal</span>
+              <Link href="/" className="text-sm text-teal-100 hover:text-white transition-colors">
+                Catalog
+              </Link>
+              <Link href="/editor" className="text-sm text-teal-100 hover:text-white transition-colors">
+                Editor
+              </Link>
+              <Link href="/features" className="text-sm text-teal-100 hover:text-white transition-colors">
+                Features
+              </Link>
+              <NavSettingsLink />
+              <div className="ml-auto flex items-center gap-1">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
             </div>
           </nav>
           <main className="min-h-screen bg-background">{children}</main>
