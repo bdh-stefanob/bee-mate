@@ -81,6 +81,39 @@ export async function POST(request: Request) {
     );
   }
 
+  // SSRF guard: validare schema e hostname prima di usare jiraUrl (T-05-jira-01)
+  let parsedJiraUrl: URL;
+  try {
+    parsedJiraUrl = new URL(jiraUrl);
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: 'Invalid x-jira-url: must be a valid URL' },
+      { status: 400 }
+    );
+  }
+
+  if (parsedJiraUrl.protocol !== 'https:' && parsedJiraUrl.protocol !== 'http:') {
+    return NextResponse.json(
+      { ok: false, error: 'Invalid x-jira-url: only https:// is allowed' },
+      { status: 400 }
+    );
+  }
+
+  // Bloccare indirizzi RFC-1918 / loopback per prevenire SSRF verso servizi interni
+  const jiraHostname = parsedJiraUrl.hostname.toLowerCase();
+  const BLOCKED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '::1'];
+  if (
+    BLOCKED_HOSTS.includes(jiraHostname) ||
+    jiraHostname.startsWith('192.168.') ||
+    jiraHostname.startsWith('10.') ||
+    jiraHostname.startsWith('172.')
+  ) {
+    return NextResponse.json(
+      { ok: false, error: 'Invalid x-jira-url: private addresses not allowed' },
+      { status: 400 }
+    );
+  }
+
   // Normalizzare l'URL base (rimuovere trailing slash)
   const baseUrl = jiraUrl.replace(/\/$/, '');
 
