@@ -200,3 +200,17 @@ navigazione Given/When/Then della sezione 2 e marcherà gli step sconosciuti con
 
 > L'enforcement inline in VS Code (autocomplete + linting rispetto a queste convenzioni)
 > è tracciato separatamente nel roadmap del progetto.
+
+---
+
+## 8. Riferimenti
+
+Le convenzioni in questo documento sono radicate nella letteratura BDD consolidata:
+
+| Risorsa | Autore/i | Perché è utile |
+|---------|----------|----------------|
+| [The Cucumber Book](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) | Matt Wynne, Aslak Hellesøy | Fonte canonica sullo stile Gherkin dichiarativo vs imperativo e il "giusto livello di astrazione" |
+| [Specification by Example](https://gojko.net/books/specification-by-example/) | Gojko Adzic | Scenari leggibili dal business come documentazione viva; evitare il rumore degli step a livello UI |
+| [Writing better Gherkin](https://cucumber.io/docs/bdd/better-gherkin/) | cucumber.io | Guida ufficiale Cucumber: esprimere l'intenzione dell'utente, non le sequenze di interazione |
+| [Screenplay Pattern](https://serenity-js.org/handbook/design/screenplay-pattern/) | Serenity/JS | Traduce l'intent BDD in codice: Task (obiettivo) → Interaction (azione UI). Si allinea all'architettura a 4 layer di questo repo |
+| [BDD in Action](https://www.manning.com/books/bdd-in-action-second-edition) | John Ferguson Smart | Guida end-to-end per integrare il BDD nei team di delivery; ottimo per l'onboarding |

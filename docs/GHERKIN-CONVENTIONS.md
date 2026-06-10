@@ -200,3 +200,17 @@ Given/When/Then navigation rule from section 2, and mark unknown steps `@wanted`
 
 > VS Code inline enforcement (autocomplete + linting against this convention)
 > is tracked separately in the project roadmap.
+
+---
+
+## 8. References
+
+The conventions in this document are grounded in established BDD literature:
+
+| Resource | Author(s) | Why it matters |
+|----------|-----------|----------------|
+| [The Cucumber Book](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) | Matt Wynne, Aslak Hellesøy | Canonical source for declarative vs imperative Gherkin style and "right level of abstraction" |
+| [Specification by Example](https://gojko.net/books/specification-by-example/) | Gojko Adzic | Business-readable scenarios as living documentation; avoid UI-level step noise |
+| [Writing better Gherkin](https://cucumber.io/docs/bdd/better-gherkin/) | cucumber.io | Official Cucumber guidance: express user intent, not interaction sequences |
+| [Screenplay Pattern](https://serenity-js.org/handbook/design/screenplay-pattern/) | Serenity/JS | Maps BDD intent to code: Task (goal) → Interaction (UI action). Aligns with this repo's 4-layer architecture |
+| [BDD in Action](https://www.manning.com/books/bdd-in-action-second-edition) | John Ferguson Smart | End-to-end guide on integrating BDD into delivery teams; good for onboarding |
