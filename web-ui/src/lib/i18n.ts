@@ -1,0 +1,69 @@
+export const translations = {
+  en: {
+    nav: { catalog: 'Catalog', editor: 'Editor', features: 'Features' },
+    catalog: {
+      title: 'Step Catalog',
+      search: 'Search steps…',
+      filterArea: 'All areas',
+      filterStatus: 'All statuses',
+      noResults: 'No steps found',
+      colExpression: 'Expression',
+      colArea: 'Area',
+      colStatus: 'Status',
+      colApp: 'App',
+    },
+    editor: {
+      title: 'Gherkin Editor',
+      placeholder: 'Write your scenario here…\n\nScenario: My scenario\n  Given …\n  When …\n  Then …',
+      import: 'Import .txt',
+      importHint: 'Drop a .txt file or click to select',
+    },
+    features: {
+      title: 'Feature Files',
+      colName: 'Name',
+      colArea: 'Area',
+      colScenarios: 'Scenarios',
+      noFiles: 'No feature files found',
+    },
+    status: {
+      wanted: 'wanted',
+      implemented: 'implemented',
+      deprecated: 'deprecated',
+    },
+  },
+  it: {
+    nav: { catalog: 'Catalogo', editor: 'Editor', features: 'Feature' },
+    catalog: {
+      title: 'Catalogo Step',
+      search: 'Cerca step…',
+      filterArea: 'Tutte le aree',
+      filterStatus: 'Tutti gli stati',
+      noResults: 'Nessuno step trovato',
+      colExpression: 'Espressione',
+      colArea: 'Area',
+      colStatus: 'Stato',
+      colApp: 'App',
+    },
+    editor: {
+      title: 'Editor Gherkin',
+      placeholder: 'Scrivi il tuo scenario qui…\n\nScenario: Il mio scenario\n  Given …\n  When …\n  Then …',
+      import: 'Importa .txt',
+      importHint: 'Trascina un file .txt o clicca per selezionare',
+    },
+    features: {
+      title: 'File Feature',
+      colName: 'Nome',
+      colArea: 'Area',
+      colScenarios: 'Scenari',
+      noFiles: 'Nessun file feature trovato',
+    },
+    status: {
+      wanted: 'da fare',
+      implemented: 'implementato',
+      deprecated: 'deprecato',
+    },
+  },
+} as const;
+
+export type Lang = keyof typeof translations;
+export type T = (typeof translations)[Lang];
