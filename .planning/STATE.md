@@ -14,7 +14,7 @@ progress:
 
 # Project State — bdd-automation-scaffold
 
-*Last updated: 2026-06-10*
+*Last updated: 2026-06-09*
 
 ---
 
@@ -28,15 +28,14 @@ progress:
 
 ## Current Position
 
+Phase: 03
+Plan: Not started
 | Field | Value |
 |-------|-------|
-| Current Phase | 04 — Web UI |
-| Current Plan | 03 (prossimo) |
-| Status | In progress |
-| Phase Goal | Web authoring app Next.js 15 per demo manager M1 |
-
-**Ultimo piano completato:** 04-02 — Step Catalog UI (filterSteps TDD + StepCatalog.tsx con badge e filtri)
-**Stopped at:** Completed 04-02-PLAN.md
+| Current Phase | 1 — Multi-App Scaffold |
+| Current Plan | Not started |
+| Status | Not started |
+| Phase Goal | Lo scaffold supporta struttura multi-app e tutti i test continuano a passare |
 
 **Progress:**
 
