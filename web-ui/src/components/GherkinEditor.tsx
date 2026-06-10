@@ -59,11 +59,17 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
     const lastValueRef = useRef<string>(value ?? initialValue ?? '');
     // Keep stepExpressions accessible in autocomplete closure without recreating extensions
     const stepExpressionsRef = useRef<string[]>(stepExpressions);
+    // WR-03: keep latest onChange in a ref so the init closure never goes stale
+    const onChangeRef = useRef(onChange);
 
-    // Update ref when prop changes
+    // Update refs when props change
     useEffect(() => {
       stepExpressionsRef.current = stepExpressions;
     }, [stepExpressions]);
+
+    useEffect(() => {
+      onChangeRef.current = onChange;
+    }, [onChange]);
 
     // ---------------------------------------------------------------------------
     // Autocomplete source
@@ -112,7 +118,8 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
         if (update.docChanged) {
           const newValue = update.state.doc.toString();
           lastValueRef.current = newValue;
-          onChange(newValue);
+          // WR-03: call via ref so we always invoke the latest onChange, not the stale closure
+          onChangeRef.current(newValue);
         }
       });
 
