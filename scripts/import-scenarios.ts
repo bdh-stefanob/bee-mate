@@ -332,7 +332,9 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
   try {
     execSync('npm run catalog', { stdio: 'inherit' });
   } catch (e) {
-    console.warn('Warning: catalog rigenerato con warning — verifica manualmente.');
+    console.error('Errore: npm run catalog ha fallito — il catalog potrebbe essere inconsistente.');
+    console.error('Verifica manualmente con: npm run catalog');
+    process.exit(1);
   }
 
   // --- 8. Riepilogo ---
