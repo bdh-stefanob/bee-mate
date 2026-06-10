@@ -181,8 +181,8 @@ Scenario Outline: Select medicine and coaching plan
 
 1. Write the scenario using the expression you need.
 2. Tag it `@wanted`.
-3. Submit to Steve (gatekeeper) for approval.
-4. Approved steps get implemented; `@wanted` is removed.
+3. Open a PR or discussion so the team can review the new expression.
+4. Once approved, the step gets implemented and `@wanted` is removed.
 
 Check the catalog first: `npm run catalog` regenerates `STEP_CATALOG.md`.
 
