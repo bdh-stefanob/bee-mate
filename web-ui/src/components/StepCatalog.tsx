@@ -138,7 +138,7 @@ export default function StepCatalog() {
                   key={`${step.sourceRef}-${idx}`}
                   className="cursor-pointer select-none"
                   onDoubleClick={() => {
-                    router.push('/editor?step=' + encodeURIComponent('Given ' + step.expression));
+                    router.push('/editor?step=' + encodeURIComponent(step.expression));
                   }}
                 >
                   <TableCell className="font-mono text-xs whitespace-normal break-words max-w-xs">
