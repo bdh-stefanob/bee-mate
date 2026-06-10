@@ -219,6 +219,9 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
     process.exit(1);
   }
 
+  // Sanitize --app with slugify (same pattern as areaArg) to prevent path traversal
+  appArg = slugify(appArg) || 'app-a';
+
   // --- Validazione path (T-03-01) ---
   let resolvedInput: string;
   try {
