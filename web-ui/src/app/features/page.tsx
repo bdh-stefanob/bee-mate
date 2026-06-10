@@ -19,8 +19,10 @@ export default function FeaturesPage() {
   useEffect(() => {
     fetch('/api/features')
       .then((res) => res.json())
-      .then((data: FeatureSummary[]) => {
-        setFeatures(data);
+      .then((data: unknown) => {
+        if (Array.isArray(data)) {
+          setFeatures(data as FeatureSummary[]);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
