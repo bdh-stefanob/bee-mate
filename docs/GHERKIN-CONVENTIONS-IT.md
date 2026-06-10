@@ -239,6 +239,6 @@ navigazione Given/When/Then della sezione 2 e marcherà gli step sconosciuti con
 
 | Libro | Autore/i | Perché è utile |
 |-------|----------|----------------|
-| *The Cucumber Book* (2ª ed.) | Matt Wynne, Aslak Hellesøy | Fonte canonica sullo stile dichiarativo vs imperativo e il "giusto livello di astrazione" |
-| *Specification by Example* | Gojko Adzic | Scenari leggibili dal business come documentazione viva; evitare il rumore degli step a livello UI |
-| *BDD in Action* (2ª ed.) | John Ferguson Smart | Guida end-to-end per integrare il BDD nei team di delivery; ottimo per l'onboarding |
+| [*The Cucumber Book*](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) (2ª ed.) | Matt Wynne, Aslak Hellesøy | Fonte canonica sullo stile dichiarativo vs imperativo e il "giusto livello di astrazione" |
+| [*Specification by Example*](https://gojko.net/books/specification-by-example/) | Gojko Adzic | Scenari leggibili dal business come documentazione viva; evitare il rumore degli step a livello UI |
+| [*BDD in Action*](https://www.manning.com/books/bdd-in-action-second-edition) (2ª ed.) | John Ferguson Smart | Guida end-to-end per integrare il BDD nei team di delivery; ottimo per l'onboarding |

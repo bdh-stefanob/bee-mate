@@ -240,6 +240,6 @@ Given/When/Then navigation rule from section 2, and mark unknown steps `@wanted`
 
 | Book | Author(s) | Why it matters |
 |------|-----------|----------------|
-| *The Cucumber Book* (2nd ed.) | Matt Wynne, Aslak Hellesøy | Canonical source for declarative vs imperative style and "right level of abstraction" |
-| *Specification by Example* | Gojko Adzic | Business-readable scenarios as living documentation; avoid UI-level step noise |
-| *BDD in Action* (2nd ed.) | John Ferguson Smart | End-to-end guide on integrating BDD into delivery teams; good for onboarding |
+| [*The Cucumber Book*](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) (2nd ed.) | Matt Wynne, Aslak Hellesøy | Canonical source for declarative vs imperative style and "right level of abstraction" |
+| [*Specification by Example*](https://gojko.net/books/specification-by-example/) | Gojko Adzic | Business-readable scenarios as living documentation; avoid UI-level step noise |
+| [*BDD in Action*](https://www.manning.com/books/bdd-in-action-second-edition) (2nd ed.) | John Ferguson Smart | End-to-end guide on integrating BDD into delivery teams; good for onboarding |
