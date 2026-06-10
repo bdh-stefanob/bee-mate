@@ -12,6 +12,7 @@ export default function FeaturesPage() {
   const [features, setFeatures] = useState<FeatureSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/features')
@@ -22,7 +23,10 @@ export default function FeaturesPage() {
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Failed to load features');
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -43,7 +47,10 @@ export default function FeaturesPage() {
               ))}
             </div>
           )}
-          {!loading && features.length === 0 && (
+          {!loading && error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
+          {!loading && !error && features.length === 0 && (
             <p className="text-muted-foreground text-sm">{t.features.noFiles}</p>
           )}
           {features.map((f) => (
