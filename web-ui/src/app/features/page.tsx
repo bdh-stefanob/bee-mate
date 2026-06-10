@@ -33,7 +33,15 @@ export default function FeaturesPage() {
         {/* Lista feature */}
         <div className="w-80 flex flex-col gap-2 overflow-y-auto shrink-0">
           {loading && (
-            <p className="text-muted-foreground text-sm">{t.stepBrowser.loading}</p>
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex gap-4 items-center p-3 rounded-md border border-border">
+                  <div className="h-5 w-1/3 rounded animate-pulse bg-muted" />
+                  <div className="h-4 w-16 rounded animate-pulse bg-muted" />
+                  <div className="h-4 w-8 rounded animate-pulse bg-muted" />
+                </div>
+              ))}
+            </div>
           )}
           {!loading && features.length === 0 && (
             <p className="text-muted-foreground text-sm">{t.features.noFiles}</p>

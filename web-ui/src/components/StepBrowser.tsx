@@ -55,9 +55,20 @@ const KEYWORD_SHORT: Record<string, string> = { Given: 'G', When: 'W', Then: 'T'
 // Component
 // ---------------------------------------------------------------------------
 
+function SkeletonRow() {
+  return (
+    <div className="flex gap-2 items-center px-3 py-2">
+      <div className="h-4 w-5 shrink-0 rounded animate-pulse bg-muted" />
+      <div className="h-4 flex-1 rounded animate-pulse bg-muted" />
+      <div className="h-4 w-16 shrink-0 rounded animate-pulse bg-muted" />
+    </div>
+  );
+}
+
 export function StepBrowser({ onInsert }: StepBrowserProps) {
   const { t } = useLanguage();
   const [steps, setSteps] = useState<CatalogStep[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(true);
   const [query, setQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
@@ -69,7 +80,8 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
     fetch('/api/catalog')
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(data => { if (data.steps) setSteps(data.steps); })
-      .catch((err: Error) => { toast.error(`Step catalog non disponibile: ${err.message}`); });
+      .catch((err: Error) => { toast.error(`Step catalog non disponibile: ${err.message}`); })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const areas = useMemo(
@@ -194,9 +206,17 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
               {/* Step list */}
               <ul ref={listRef} role="listbox" aria-label="Step expressions"
                   className="overflow-y-auto" style={{ maxHeight: '320px' }}>
-                {filtered.length === 0 ? (
+                {isLoading ? (
+                  <li aria-busy="true">
+                    <div className="space-y-1 py-1">
+                      <SkeletonRow />
+                      <SkeletonRow />
+                      <SkeletonRow />
+                    </div>
+                  </li>
+                ) : filtered.length === 0 ? (
                   <li className="px-3 py-4 text-sm text-muted-foreground text-center">
-                    {steps.length === 0 ? t.stepBrowser.loading : t.stepBrowser.noResults}
+                    {t.stepBrowser.noResults}
                   </li>
                 ) : (
                   filtered.map((step, i) => {

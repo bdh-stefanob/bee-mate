@@ -61,8 +61,14 @@ export default function StepCatalog() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16 text-muted-foreground">
-        {t.catalog.loading}
+      <div className="space-y-2 p-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="h-4 w-1/2 rounded animate-pulse bg-muted" />
+            <div className="h-4 w-16 rounded animate-pulse bg-muted" />
+            <div className="h-4 w-20 rounded animate-pulse bg-muted" />
+          </div>
+        ))}
       </div>
     );
   }
