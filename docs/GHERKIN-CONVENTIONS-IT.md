@@ -90,7 +90,7 @@ diventa un parametro `{string}`.
 | `flags` | checkbox da spuntare obbligatoriamente |
 | `confirms` | azione di conferma / prosegui |
 
-**Astrarre i sotto-flussi ripetitivi:**  
+**Astrarre i sotto-flussi ripetitivi** *(stile dichiarativo — [The Cucumber Book](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/), [cucumber.io](https://cucumber.io/docs/bdd/better-gherkin/))*:  
 Se un flusso ha 3+ step che compaiono sempre insieme, racchiuderli in un unico step.
 ```gherkin
 # SBAGLIATO — fragile, si rompe se la UI cambia

@@ -90,7 +90,7 @@ format shown below — the page context becomes a `{string}` parameter.
 | `flags` | checkbox that must be ticked |
 | `confirms` | confirmation / proceed action |
 
-**Abstract repetitive sub-flows:**  
+**Abstract repetitive sub-flows** *(declarative style — [The Cucumber Book](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/), [cucumber.io](https://cucumber.io/docs/bdd/better-gherkin/))*:  
 If a flow has 3+ steps that always appear together, wrap them in one step.
 ```gherkin
 # BAD — brittle, breaks if UI changes

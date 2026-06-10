@@ -50,7 +50,7 @@ And the user clicks Verify button
 And the user completes SMS verification
 ```
 
-Riferimento: *The Cucumber Book* (Wynne & Hellesøy) — cap. "Declarative vs Imperative".
+Riferimento: [*The Cucumber Book*](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) (Wynne & Hellesøy) — cap. "Declarative vs Imperative".
 
 ### 2. Screenplay Pattern (livello codice)
 Nei file `.steps.ts` e `.actions.ts` si usano tre livelli:
@@ -63,7 +63,7 @@ Nei file `.steps.ts` e `.actions.ts` si usano tre livelli:
 
 Questo mappa direttamente ai 4 layer dell'architettura: `steps/` → `actions/` → `pages/`.
 
-Riferimento: *Screenplay Pattern* (Serenity/JS docs) — serenity-js.org/handbook/design/screenplay-pattern.
+Riferimento: [*Screenplay Pattern*](https://serenity-js.org/handbook/design/screenplay-pattern/) (Serenity/JS docs).
 
 ## Stile
 
