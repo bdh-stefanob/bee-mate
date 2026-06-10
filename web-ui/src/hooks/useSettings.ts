@@ -26,7 +26,12 @@ function readStorage(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULTS };
-    return { ...DEFAULTS, ...JSON.parse(raw) } as AppSettings;
+    const parsed = JSON.parse(raw);
+    // Guard: merge solo se il valore è un plain object (non null, array, stringa, ecc.)
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return { ...DEFAULTS };
+    }
+    return { ...DEFAULTS, ...parsed } as AppSettings;
   } catch {
     return { ...DEFAULTS };
   }
