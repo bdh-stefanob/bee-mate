@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useLanguage } from '@/providers/Providers';
 
 const STATUS_STYLES: Record<string, string> = {
   wanted:      'bg-[#FF6B2C] text-white border-transparent',
@@ -30,6 +31,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function StepCatalog() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [steps, setSteps] = useState<CatalogStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export default function StepCatalog() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
-        Caricamento step catalog…
+        {t.catalog.loading}
       </div>
     );
   }
@@ -79,7 +81,7 @@ export default function StepCatalog() {
       <div className="flex flex-wrap items-center gap-3">
         <Input
           type="search"
-          placeholder="Cerca per expression…"
+          placeholder={t.catalog.search}
           value={query}
           onChange={e => setQuery(e.target.value)}
           className="h-9 w-64"
@@ -87,10 +89,10 @@ export default function StepCatalog() {
 
         <Select value={area || undefined} onValueChange={v => setArea((v ?? '') === '__all__' ? '' : (v ?? ''))}>
           <SelectTrigger className="h-9 w-40">
-            <SelectValue placeholder="Tutte le aree" />
+            <SelectValue placeholder={t.catalog.filterArea} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">Tutte le aree</SelectItem>
+            <SelectItem value="__all__">{t.catalog.filterArea}</SelectItem>
             {areas.map(a => (
               <SelectItem key={a} value={a}>{a}</SelectItem>
             ))}
@@ -99,10 +101,10 @@ export default function StepCatalog() {
 
         <Select value={status || undefined} onValueChange={v => setStatus((v ?? '') === '__all__' ? '' : (v ?? ''))}>
           <SelectTrigger className="h-9 w-40">
-            <SelectValue placeholder="Tutti gli status" />
+            <SelectValue placeholder={t.catalog.filterStatus} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">Tutti gli status</SelectItem>
+            <SelectItem value="__all__">{t.catalog.filterStatus}</SelectItem>
             {statuses.map(s => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
@@ -110,7 +112,7 @@ export default function StepCatalog() {
         </Select>
 
         <span className="ml-auto text-sm text-muted-foreground">
-          {filtered.length} step
+          {filtered.length} {t.catalog.step}
         </span>
       </div>
 
@@ -119,17 +121,17 @@ export default function StepCatalog() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50%]">Expression</TableHead>
-              <TableHead>Area</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>App</TableHead>
+              <TableHead className="w-[50%]">{t.catalog.colExpression}</TableHead>
+              <TableHead>{t.catalog.colArea}</TableHead>
+              <TableHead>{t.catalog.colStatus}</TableHead>
+              <TableHead>{t.catalog.colApp}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
-                  Nessuno step trovato
+                  {t.catalog.noResults}
                 </TableCell>
               </TableRow>
             ) : (
@@ -160,9 +162,7 @@ export default function StepCatalog() {
         </Table>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Doppio click su una riga per aprirla nell&apos;editor.
-      </p>
+      <p className="text-xs text-muted-foreground">{t.catalog.hint}</p>
     </div>
   );
 }

@@ -5,13 +5,10 @@ import type { FeatureSummary } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import FeaturePreview from '@/components/FeaturePreview';
+import { useLanguage } from '@/providers/Providers';
 
-/**
- * /features — Feature Catalog
- * Lista i .feature del repo (nome, area, scenarioCount) e
- * al click mostra il contenuto in FeaturePreview.
- */
 export default function FeaturesPage() {
+  const { t } = useLanguage();
   const [features, setFeatures] = useState<FeatureSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,16 +27,16 @@ export default function FeaturesPage() {
 
   return (
     <div className="p-6 h-full flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Feature Catalog</h1>
+      <h1 className="text-2xl font-bold">{t.features.title}</h1>
 
       <div className="flex flex-1 gap-4 min-h-0">
         {/* Lista feature */}
         <div className="w-80 flex flex-col gap-2 overflow-y-auto shrink-0">
           {loading && (
-            <p className="text-muted-foreground text-sm">Caricamento...</p>
+            <p className="text-muted-foreground text-sm">{t.stepBrowser.loading}</p>
           )}
           {!loading && features.length === 0 && (
-            <p className="text-muted-foreground text-sm">Nessun file .feature trovato.</p>
+            <p className="text-muted-foreground text-sm">{t.features.noFiles}</p>
           )}
           {features.map((f) => (
             <Card
@@ -55,7 +52,7 @@ export default function FeaturesPage() {
                     {f.area}
                   </Badge>
                   <span className="text-xs text-muted-foreground ml-auto">
-                    {f.scenarioCount} scenari
+                    {f.scenarioCount} {t.features.colScenarios.toLowerCase()}
                   </span>
                 </div>
                 <p className="text-sm font-medium leading-snug">{f.name}</p>

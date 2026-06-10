@@ -31,6 +31,9 @@ const gherkinParser: StreamParser<GherkinState> = {
   startState: () => ({}),
 
   token(stream) {
+    // Consume leading whitespace first (collapses indent into one null-token)
+    if (stream.eatSpace()) return null;
+
     // Tags / annotations
     if (stream.match(/^@\S+/)) {
       return 'typeName';
@@ -46,17 +49,14 @@ const gherkinParser: StreamParser<GherkinState> = {
       return 'string';
     }
 
-    // Structure keywords
+    // Structure keywords — now safe after eatSpace()
     if (stream.match(STRUCTURE_RE)) {
-      // consume the rest of the line as part of the keyword token
       stream.skipToEnd();
       return 'keyword';
     }
 
-    // Step keywords (must start at column 0 after optional spaces)
-    // We need to handle indented steps — peek at the whole line
-    const sol = stream.string.trimStart();
-    if (STEP_RE.test(sol)) {
+    // Step keywords — now safe after eatSpace()
+    if (stream.match(STEP_RE)) {
       stream.skipToEnd();
       return 'definitionKeyword';
     }
@@ -204,19 +204,25 @@ export const gherkinLinter = linter((view) => {
 // ---------------------------------------------------------------------------
 
 /**
- * Normalises Gherkin indentation:
- *   col 0  — Feature:, Rule:, Scenario:, Background:, Scenario Outline:, Examples:, @tags, #comments
- *   2 spc  — Given / When / Then / And / But
- *   4 spc  — table rows (|)
- * Collapses consecutive blank lines to a single blank line.
+ * Normalises Gherkin indentation per the official Cucumber spec:
+ *
+ *   col 0  — Feature:, Rule:, #comments, @tags before Feature
+ *   col 2  — Background:, Scenario:, Scenario Outline:, @tags before Scenario
+ *   col 4  — Given/When/Then/And/But steps, Examples:
+ *   col 6  — | table rows |
+ *
+ * Tags are placed at col 0 if the next non-empty line is Feature/Rule,
+ * otherwise at col 2 (before Scenario/Background).
+ * Collapses consecutive blank lines to max 1.
  */
 export function formatGherkin(text: string): string {
-  const lines = text.split('\n');
+  const rawLines = text.split('\n');
+  const trimmed = rawLines.map(l => l.trim());
   const out: string[] = [];
   let prevBlank = false;
 
-  for (const raw of lines) {
-    const t = raw.trim();
+  for (let i = 0; i < trimmed.length; i++) {
+    const t = trimmed[i];
 
     if (!t) {
       if (!prevBlank) out.push('');
@@ -225,23 +231,31 @@ export function formatGherkin(text: string): string {
     }
     prevBlank = false;
 
-    if (
-      /^(Feature:|Rule:|Background:|Scenario:|Scenario Outline:|Examples:)/.test(t) ||
-      t.startsWith('@') ||
-      t.startsWith('#')
-    ) {
-      out.push(t);
+    if (/^(Feature:|Rule:)/.test(t)) {
+      out.push(t);                             // col 0
+    } else if (/^(Background:|Scenario:|Scenario Outline:)/.test(t)) {
+      out.push('  ' + t);                      // col 2
     } else if (/^(Given |When |Then |And |But )/.test(t)) {
-      out.push('  ' + t);
+      out.push('    ' + t);                    // col 4
+    } else if (/^Examples:/.test(t)) {
+      out.push('    ' + t);                    // col 4 (inside Scenario Outline)
     } else if (t.startsWith('|')) {
-      out.push('    ' + t);
+      out.push('      ' + t);                  // col 6
+    } else if (t.startsWith('@')) {
+      // Look ahead: col 0 if next non-empty line is Feature/Rule, else col 2
+      let nextContent = '';
+      for (let j = i + 1; j < trimmed.length; j++) {
+        if (trimmed[j]) { nextContent = trimmed[j]; break; }
+      }
+      const atCol0 = /^(Feature:|Rule:)/.test(nextContent);
+      out.push((atCol0 ? '' : '  ') + t);
+    } else if (t.startsWith('#')) {
+      out.push(t);                             // col 0
     } else {
-      out.push(t);
+      out.push('  ' + t);                      // col 2 (narrative / description)
     }
   }
 
-  // Remove trailing blank lines
   while (out.length > 0 && out[out.length - 1] === '') out.pop();
-
   return out.join('\n');
 }

@@ -19,23 +19,30 @@ export interface GherkinToolbarProps {
 // Snippet definitions
 // ---------------------------------------------------------------------------
 
+// Gherkin canonical indentation (Cucumber spec):
+//   Feature:                col 0
+//   Scenario: / Background: col 2
+//   Given/When/Then:        col 4
+//   Examples:               col 4
+//   | table rows |          col 6
+
 const STRUCTURE_SNIPPETS: { label: string; text: string }[] = [
-  { label: 'Feature:', text: 'Feature: \n\n  ' },
-  { label: 'Scenario:', text: '\nScenario: \n  ' },
-  { label: 'Background:', text: '\nBackground:\n  ' },
-  { label: 'Scenario Outline:', text: '\nScenario Outline: \n  ' },
-  { label: 'Examples:', text: '\n  Examples:\n    | col1 | col2 |\n    |      |      |' },
+  { label: 'Feature:',          text: 'Feature: \n\n  ' },
+  { label: 'Scenario:',         text: '\n  Scenario: \n    ' },
+  { label: 'Background:',       text: '\n  Background:\n    ' },
+  { label: 'Scenario Outline:', text: '\n  Scenario Outline: \n    ' },
+  { label: 'Examples:',         text: '\n    Examples:\n      | col1 | col2 |\n      |      |      |' },
 ];
 
 const STEP_SNIPPETS: { label: string; text: string }[] = [
-  { label: 'Given', text: '  Given ' },
-  { label: 'When', text: '  When ' },
-  { label: 'Then', text: '  Then ' },
-  { label: 'And', text: '  And ' },
-  { label: 'But', text: '  But ' },
+  { label: 'Given', text: '    Given ' },
+  { label: 'When',  text: '    When ' },
+  { label: 'Then',  text: '    Then ' },
+  { label: 'And',   text: '    And ' },
+  { label: 'But',   text: '    But ' },
 ];
 
-const TABLE_SNIPPET = { label: '| table |', text: '    | col1 | col2 |\n    |      |      |' };
+const TABLE_SNIPPET = { label: '| table |', text: '      | col1 | col2 |\n      |      |      |' };
 
 // ---------------------------------------------------------------------------
 // Component

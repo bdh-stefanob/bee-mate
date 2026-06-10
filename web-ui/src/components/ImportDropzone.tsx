@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useLanguage } from '@/providers/Providers';
 
 interface ImportDropzoneProps {
   onImported: (featureContent: string) => void;
@@ -21,6 +22,7 @@ type ImportState =
  * Su errore: mostra il messaggio di errore.
  */
 export function ImportDropzone({ onImported }: ImportDropzoneProps) {
+  const { t } = useLanguage();
   const [state, setState] = useState<ImportState>({ status: 'idle' });
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -121,8 +123,8 @@ export function ImportDropzone({ onImported }: ImportDropzoneProps) {
         </svg>
         <span>
           {state.status === 'loading'
-            ? 'Import in corso…'
-            : 'Trascina un .txt o clicca per selezionare'}
+            ? t.editor.importLoading
+            : t.editor.importHint}
         </span>
       </div>
 
