@@ -225,12 +225,20 @@ navigazione Given/When/Then della sezione 2 e marcherà gli step sconosciuti con
 
 ## 8. Riferimenti
 
-Le convenzioni in questo documento sono radicate nella letteratura BDD consolidata:
+### Risorse online gratuite
 
-| Risorsa | Autore/i | Perché è utile |
-|---------|----------|----------------|
-| [The Cucumber Book](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) | Matt Wynne, Aslak Hellesøy | Fonte canonica sullo stile Gherkin dichiarativo vs imperativo e il "giusto livello di astrazione" |
-| [Specification by Example](https://gojko.net/books/specification-by-example/) | Gojko Adzic | Scenari leggibili dal business come documentazione viva; evitare il rumore degli step a livello UI |
-| [Writing better Gherkin](https://cucumber.io/docs/bdd/better-gherkin/) | cucumber.io | Guida ufficiale Cucumber: esprimere l'intenzione dell'utente, non le sequenze di interazione |
-| [Screenplay Pattern](https://serenity-js.org/handbook/design/screenplay-pattern/) | Serenity/JS | Traduce l'intent BDD in codice: Task (obiettivo) → Interaction (azione UI). Si allinea all'architettura a 4 layer di questo repo |
-| [BDD in Action](https://www.manning.com/books/bdd-in-action-second-edition) | John Ferguson Smart | Guida end-to-end per integrare il BDD nei team di delivery; ottimo per l'onboarding |
+| Risorsa | Perché è utile |
+|---------|----------------|
+| [Writing better Gherkin](https://cucumber.io/docs/bdd/better-gherkin/) — cucumber.io | Guida ufficiale Cucumber: esprimere l'intenzione dell'utente, non le sequenze di interazione |
+| [Gherkin Reference](https://cucumber.io/docs/gherkin/) — cucumber.io | Sintassi Gherkin completa: keyword, regole, esempi, data table |
+| [BDD Anti-patterns](https://cucumber.io/docs/bdd/anti-patterns/) — cucumber.io | Errori comuni e come correggerli (stile imperativo, contesto mancante, ecc.) |
+| [Writing Good Gherkin — BDD 101](https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/) — Automation Panda | Guida pratica su granularità degli step, stile dichiarativo e struttura degli scenari |
+| [Screenplay Pattern](https://serenity-js.org/handbook/design/screenplay-pattern/) — Serenity/JS | Traduce l'intent BDD in codice: Task (obiettivo) → Interaction (azione UI). Si allinea all'architettura a 4 layer di questo repo |
+
+### Libri (approfondimento)
+
+| Libro | Autore/i | Perché è utile |
+|-------|----------|----------------|
+| *The Cucumber Book* (2ª ed.) | Matt Wynne, Aslak Hellesøy | Fonte canonica sullo stile dichiarativo vs imperativo e il "giusto livello di astrazione" |
+| *Specification by Example* | Gojko Adzic | Scenari leggibili dal business come documentazione viva; evitare il rumore degli step a livello UI |
+| *BDD in Action* (2ª ed.) | John Ferguson Smart | Guida end-to-end per integrare il BDD nei team di delivery; ottimo per l'onboarding |

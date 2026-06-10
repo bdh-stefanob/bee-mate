@@ -226,12 +226,20 @@ Given/When/Then navigation rule from section 2, and mark unknown steps `@wanted`
 
 ## 8. References
 
-The conventions in this document are grounded in established BDD literature:
+### Free online resources
 
-| Resource | Author(s) | Why it matters |
-|----------|-----------|----------------|
-| [The Cucumber Book](https://pragprog.com/titles/hwcuc2/the-cucumber-book-second-edition/) | Matt Wynne, Aslak Hellesøy | Canonical source for declarative vs imperative Gherkin style and "right level of abstraction" |
-| [Specification by Example](https://gojko.net/books/specification-by-example/) | Gojko Adzic | Business-readable scenarios as living documentation; avoid UI-level step noise |
-| [Writing better Gherkin](https://cucumber.io/docs/bdd/better-gherkin/) | cucumber.io | Official Cucumber guidance: express user intent, not interaction sequences |
-| [Screenplay Pattern](https://serenity-js.org/handbook/design/screenplay-pattern/) | Serenity/JS | Maps BDD intent to code: Task (goal) → Interaction (UI action). Aligns with this repo's 4-layer architecture |
-| [BDD in Action](https://www.manning.com/books/bdd-in-action-second-edition) | John Ferguson Smart | End-to-end guide on integrating BDD into delivery teams; good for onboarding |
+| Resource | Why it matters |
+|----------|----------------|
+| [Writing better Gherkin](https://cucumber.io/docs/bdd/better-gherkin/) — cucumber.io | Official Cucumber guidance: express user intent, not interaction sequences |
+| [Gherkin Reference](https://cucumber.io/docs/gherkin/) — cucumber.io | Complete Gherkin syntax: keywords, rules, examples, data tables |
+| [BDD Anti-patterns](https://cucumber.io/docs/bdd/anti-patterns/) — cucumber.io | Common mistakes and how to fix them (imperative style, missing context, etc.) |
+| [Writing Good Gherkin — BDD 101](https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/) — Automation Panda | Practical guide on step granularity, declarative style, and scenario structure |
+| [Screenplay Pattern](https://serenity-js.org/handbook/design/screenplay-pattern/) — Serenity/JS | Maps BDD intent to code: Task (goal) → Interaction (UI action). Aligns with this repo's 4-layer architecture |
+
+### Books (deep reading)
+
+| Book | Author(s) | Why it matters |
+|------|-----------|----------------|
+| *The Cucumber Book* (2nd ed.) | Matt Wynne, Aslak Hellesøy | Canonical source for declarative vs imperative style and "right level of abstraction" |
+| *Specification by Example* | Gojko Adzic | Business-readable scenarios as living documentation; avoid UI-level step noise |
+| *BDD in Action* (2nd ed.) | John Ferguson Smart | End-to-end guide on integrating BDD into delivery teams; good for onboarding |
