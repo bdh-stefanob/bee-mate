@@ -123,7 +123,9 @@ export async function POST(request: Request) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     // T-05-03-02: rimuovere il token dal messaggio di errore prima di restituirlo al client
-    const safeMessage = message.replace(githubToken, '[TOKEN]');
+    // Usare RegExp globale per sostituire TUTTE le occorrenze (plain .replace rimuove solo la prima)
+    const escapedToken = githubToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const safeMessage = message.replace(new RegExp(escapedToken, 'g'), '[TOKEN]');
     return NextResponse.json({ ok: false, error: safeMessage }, { status: 500 });
   }
 }
