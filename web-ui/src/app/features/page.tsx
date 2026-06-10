@@ -26,7 +26,7 @@ export default function FeaturesPage() {
   }, []);
 
   return (
-    <div className="p-6 h-full flex flex-col gap-4">
+    <div className="p-6 max-w-screen-xl mx-auto flex flex-col gap-4">
       <h1 className="text-2xl font-bold">{t.features.title}</h1>
 
       <div className="flex flex-1 gap-4 min-h-0">

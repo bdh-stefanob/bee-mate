@@ -123,8 +123,8 @@ export default function StepCatalog() {
       </div>
 
       {/* Tabella */}
-      <div className="rounded-lg border">
-        <Table>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50%]">{t.catalog.colExpression}</TableHead>

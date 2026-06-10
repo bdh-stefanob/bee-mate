@@ -133,7 +133,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   };
 
   return (
-    <div className="rounded-md border border-border bg-background">
+    <div className="rounded-md border border-border bg-background overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}
