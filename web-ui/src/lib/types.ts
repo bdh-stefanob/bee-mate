@@ -29,4 +29,6 @@ export interface FeatureSummary {
   name: string;
   area: string;
   scenarioCount: number;
+  app?: string;   // first directory segment under src/features/
+  flow?: string;  // second directory segment under src/features/
 }

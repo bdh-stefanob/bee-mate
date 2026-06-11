@@ -39,20 +39,19 @@ export function parseFeatureSummary(content: string, relFile: string): FeatureSu
   const nameMatch = content.match(/^\s*Feature:\s*(.+)$/m);
   const name = nameMatch ? nameMatch[1].trim() : '(unnamed)';
 
-  // area
-  const tagMatch = content.match(/^@(\S+)/m);
-  let area: string;
-  if (tagMatch) {
-    area = tagMatch[1];
-  } else {
-    const parts = relFile.split('/');
-    area = parts.length > 1 ? parts[0] : 'unknown';
-  }
-
   // scenarioCount
   const scenarioCount = (content.match(/^\s*(Scenario|Scenario Outline):/gm) ?? []).length;
 
-  return { file: relFile, name, area, scenarioCount };
+  // app / flow from directory structure: {app}/{flow}/name.feature
+  const parts = relFile.split('/');
+  const app  = parts.length >= 3 ? parts[0] : undefined;
+  const flow = parts.length >= 3 ? parts[1] : undefined;
+
+  // area: first tag or first directory segment (backward compat)
+  const tagMatch = content.match(/^@(\S+)/m);
+  const area = tagMatch ? tagMatch[1] : (parts.length > 1 ? parts[0] : 'unknown');
+
+  return { file: relFile, name, area, scenarioCount, app, flow };
 }
 
 /**

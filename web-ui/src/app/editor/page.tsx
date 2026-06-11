@@ -159,7 +159,17 @@ function EditorContent() {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
     const featureName = featureMatch ? featureMatch[1].trim() : 'scenario';
     const slug = slugify(featureName) || 'scenario';
-    const filePath = `src/features/${slug}.feature`;
+
+    // Derive app/flow from @tag1 @tag2 on the first tag line
+    const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
+    const tags = tagLine?.[1].match(/@(\S+)/g)?.map(t => t.slice(1)) ?? [];
+    const appSlug  = tags[0] ? slugify(tags[0]) : null;
+    const flowSlug = tags[1] ? slugify(tags[1]) : null;
+
+    // filePath is relative to FEATURES_DIR (src/features/)
+    const filePath = appSlug && flowSlug
+      ? `${appSlug}/${flowSlug}/${slug}.feature`
+      : `${slug}.feature`;
 
     setIsSaving(true);
     try {

@@ -1,26 +1,68 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import type { FeatureSummary } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import FeaturePreview from '@/components/FeaturePreview';
 import { useLanguage } from '@/providers/Providers';
 
+// ---------------------------------------------------------------------------
+// Tree building
+// ---------------------------------------------------------------------------
+
+interface TreeNode {
+  app: string;
+  flows: {
+    flow: string;
+    features: FeatureSummary[];
+  }[];
+}
+
+function buildTree(features: FeatureSummary[]): { tree: TreeNode[]; flat: FeatureSummary[] } {
+  const appMap = new Map<string, Map<string, FeatureSummary[]>>();
+  const flat: FeatureSummary[] = [];
+
+  for (const f of features) {
+    if (!f.app || !f.flow) {
+      flat.push(f);
+      continue;
+    }
+    if (!appMap.has(f.app)) appMap.set(f.app, new Map());
+    const flowMap = appMap.get(f.app)!;
+    if (!flowMap.has(f.flow)) flowMap.set(f.flow, []);
+    flowMap.get(f.flow)!.push(f);
+  }
+
+  const tree: TreeNode[] = [];
+  for (const [app, flowMap] of appMap) {
+    const flows = [];
+    for (const [flow, feats] of flowMap) {
+      flows.push({ flow, features: feats });
+    }
+    tree.push({ app, flows });
+  }
+  return { tree, flat };
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export default function FeaturesPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [features, setFeatures] = useState<FeatureSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collapsedApps, setCollapsedApps] = useState<Set<string>>(new Set());
+  const [collapsedFlows, setCollapsedFlows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch('/api/features')
-      .then((res) => res.json())
+      .then(res => res.json())
       .then((data: unknown) => {
-        if (Array.isArray(data)) {
-          setFeatures(data as FeatureSummary[]);
-        }
+        if (Array.isArray(data)) setFeatures(data as FeatureSummary[]);
         setLoading(false);
       })
       .catch((err: unknown) => {
@@ -29,57 +71,133 @@ export default function FeaturesPage() {
       });
   }, []);
 
+  const { tree, flat } = useMemo(() => buildTree(features), [features]);
+
+  function toggleApp(app: string) {
+    setCollapsedApps(prev => {
+      const next = new Set(prev);
+      next.has(app) ? next.delete(app) : next.add(app);
+      return next;
+    });
+  }
+
+  function toggleFlow(key: string) {
+    setCollapsedFlows(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
+  async function openInEditor(file: string) {
+    const res = await fetch(`/api/download?file=${encodeURIComponent(file)}`);
+    if (!res.ok) return;
+    const content = await res.text();
+    localStorage.setItem('gsd-editor-draft', content);
+    router.push('/editor');
+  }
+
+  function renderFeatureRow(f: FeatureSummary, indent: string) {
+    const active = selected === f.file;
+    return (
+      <div
+        key={f.file}
+        className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs transition-colors ${
+          active ? 'bg-teal-600 text-white' : 'hover:bg-muted text-foreground'
+        }`}
+        style={{ paddingLeft: indent }}
+        onClick={() => setSelected(f.file)}
+      >
+        <span className="flex-1 truncate font-medium" title={f.name}>{f.name}</span>
+        <span className={`shrink-0 ${active ? 'text-teal-200' : 'text-muted-foreground'}`}>
+          {f.scenarioCount} sc.
+        </span>
+        <button
+          onClick={e => { e.stopPropagation(); openInEditor(f.file); }}
+          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+            active
+              ? 'border-teal-300 text-teal-100 hover:bg-teal-700'
+              : 'border-border text-muted-foreground hover:border-teal-500 hover:text-teal-600'
+          }`}
+          title="Apri nell'editor"
+        >
+          Edit
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-screen-xl mx-auto flex flex-col gap-4">
       <h1 className="text-2xl font-bold">{t.features.title}</h1>
 
       <div className="flex flex-1 gap-4 min-h-0">
-        {/* Lista feature */}
-        <div className="w-80 flex flex-col gap-2 overflow-y-auto shrink-0">
+        {/* Tree sidebar */}
+        <div className="w-80 flex flex-col gap-1 overflow-y-auto shrink-0">
           {loading && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex gap-4 items-center p-3 rounded-md border border-border">
-                  <div className="h-5 w-1/3 rounded animate-pulse bg-muted" />
-                  <div className="h-4 w-16 rounded animate-pulse bg-muted" />
-                  <div className="h-4 w-8 rounded animate-pulse bg-muted" />
-                </div>
+                <div key={i} className="h-7 rounded animate-pulse bg-muted" />
               ))}
             </div>
           )}
-          {!loading && error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {!loading && error && <p className="text-sm text-destructive">{error}</p>}
           {!loading && !error && features.length === 0 && (
             <p className="text-muted-foreground text-sm">{t.features.noFiles}</p>
           )}
-          {features.map((f) => (
-            <Card
-              key={f.file}
-              className={`cursor-pointer transition-colors hover:bg-accent ${
-                selected === f.file ? 'ring-2 ring-primary' : ''
-              }`}
-              onClick={() => setSelected(f.file)}
-            >
-              <CardContent className="py-3 px-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {f.area}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    {f.scenarioCount} {t.features.colScenarios.toLowerCase()}
-                  </span>
-                </div>
-                <p className="text-sm font-medium leading-snug">{f.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 font-mono truncate">
-                  {f.file}
+
+          {/* Tree: App → Flow → Features */}
+          {tree.map(({ app, flows }) => {
+            const appCollapsed = collapsedApps.has(app);
+            return (
+              <div key={app}>
+                {/* App node */}
+                <button
+                  onClick={() => toggleApp(app)}
+                  className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-bold uppercase tracking-wide text-foreground hover:bg-muted transition-colors"
+                >
+                  <span>{appCollapsed ? '▶' : '▼'}</span>
+                  <span className="truncate">{app}</span>
+                </button>
+
+                {!appCollapsed && flows.map(({ flow, features: feats }) => {
+                  const flowKey = `${app}/${flow}`;
+                  const flowCollapsed = collapsedFlows.has(flowKey);
+                  return (
+                    <div key={flow}>
+                      {/* Flow node */}
+                      <button
+                        onClick={() => toggleFlow(flowKey)}
+                        className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                        style={{ paddingLeft: '1.25rem' }}
+                      >
+                        <span>{flowCollapsed ? '▶' : '▼'}</span>
+                        <span className="truncate">{flow}</span>
+                        <span className="ml-auto text-[10px]">{feats.length}</span>
+                      </button>
+
+                      {!flowCollapsed && feats.map(f => renderFeatureRow(f, '2rem'))}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+
+          {/* Flat features (no app/flow) */}
+          {flat.length > 0 && (
+            <div>
+              {tree.length > 0 && (
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide px-2 py-1 mt-2">
+                  Other
                 </p>
-              </CardContent>
-            </Card>
-          ))}
+              )}
+              {flat.map(f => renderFeatureRow(f, '0.5rem'))}
+            </div>
+          )}
         </div>
 
-        {/* Pannello preview */}
+        {/* Preview panel */}
         <div className="flex-1 min-w-0">
           <FeaturePreview file={selected} />
         </div>
