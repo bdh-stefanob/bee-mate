@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useLanguage } from '@/providers/Providers';
 import { toast } from 'sonner';
-import { isExtendedFormat, parseExtendedFormat } from '@/lib/import-extended';
+import { isExtendedFormat, parseExtendedFormat, type ExtractedStepEnum } from '@/lib/import-extended';
 
 interface ImportDropzoneProps {
   onImported: (featureContent: string) => void;
@@ -13,7 +13,7 @@ type ImportState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'success'; newCount: number; skipCount: number; featurePath: string | null }
-  | { status: 'extended'; extractedEnums: { stepText: string; values: string[] }[] }
+  | { status: 'extended'; extractedEnums: ExtractedStepEnum[] }
   | { status: 'error'; error: string };
 
 /**
@@ -185,13 +185,20 @@ export function ImportDropzone({ onImported }: ImportDropzoneProps) {
           {state.extractedEnums.length > 0 && (
             <>
               <p className="text-blue-600 dark:text-blue-400 mb-1">
-                {state.extractedEnums.length} step con valori parametrici estratti:
+                {state.extractedEnums.length} step con parametri estratti:
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {state.extractedEnums.map((e, i) => (
-                  <li key={i} className="font-mono text-[10px] text-blue-600 dark:text-blue-400 truncate">
-                    <span className="font-semibold">{e.stepText}</span>
-                    {' → '}[{e.values.join(', ')}]
+                  <li key={i} className="text-[10px] text-blue-600 dark:text-blue-400">
+                    <p className="font-mono font-semibold truncate">{e.stepExpression}</p>
+                    <ul className="pl-2 mt-0.5 space-y-0.5">
+                      {e.paramEnums.map((p, pi) => (
+                        <li key={pi}>
+                          <span className="text-blue-500">{p.label}:</span>{' '}
+                          {p.values.join(', ')}
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 ))}
               </ul>
