@@ -48,6 +48,12 @@ const STATUS_TEXT_CLASS: Record<string, string> = {
   deprecated:  'text-red-500 dark:text-red-400',
 };
 
+const STATUS_DOT_CLASS: Record<string, string> = {
+  implemented: 'bg-emerald-500',
+  wanted:      'bg-amber-400',
+  deprecated:  'bg-red-400',
+};
+
 function renderExpression(expr: string, active: boolean) {
   const parts = expr.split(/(\{[^}]+\})/);
   return parts.map((part, i) =>
@@ -260,77 +266,70 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                         aria-selected={active}
                         onMouseDown={e => { e.preventDefault(); handleStepClick(step); }}
                         onMouseEnter={() => setActiveIndex(i)}
-                        className={`relative px-3 py-2 cursor-pointer flex flex-col gap-0.5 text-xs ${
+                        className={`cursor-pointer text-xs ${
                           active ? 'bg-teal-600 text-white' : 'hover:bg-muted text-foreground'
                         }`}
                       >
-                        {/* Row 1: keyword + expression + param indicator */}
-                        <div className="flex items-start gap-1.5 min-w-0">
-                          {/* Dependency dot */}
-                          {hasDeps && (
-                            <Tooltip>
-                              <TooltipTrigger className="shrink-0 mt-1 p-0 border-0 bg-transparent">
-                                <span className={`block w-1.5 h-1.5 rounded-full ${active ? 'bg-orange-300' : 'bg-accent'}`} />
-                              </TooltipTrigger>
-                              <TooltipContent side="left" className="max-w-[240px] text-xs">
-                                <p className="text-[11px] font-medium text-muted-foreground mb-1">Requires:</p>
+                        <Tooltip>
+                          <TooltipTrigger className="flex w-full items-center gap-1.5 px-3 py-1.5 bg-transparent border-0 text-inherit text-left outline-none cursor-pointer">
+                            {/* Status dot */}
+                            <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${
+                              active
+                                ? hasDeps ? 'bg-orange-300' : 'bg-white/30'
+                                : hasDeps ? 'bg-amber-400' : STATUS_DOT_CLASS[step.status]
+                            }`} />
+
+                            {/* Keyword badge */}
+                            <span className={`shrink-0 w-5 h-4 flex items-center justify-center text-[10px] font-bold rounded ${
+                              active ? 'bg-white/20 text-white' : KEYWORD_CLASS[kw]
+                            }`}>
+                              {KEYWORD_SHORT[kw]}
+                            </span>
+
+                            {/* Expression — single line, truncated; tooltip shows full */}
+                            <span className="flex-1 font-mono truncate min-w-0">
+                              {renderExpression(step.expression, active)}
+                            </span>
+
+                            {/* Area */}
+                            <span className={`shrink-0 text-[10px] max-w-[52px] truncate ${
+                              active ? 'text-teal-100' : 'text-muted-foreground'
+                            }`}>
+                              {step.area}
+                            </span>
+
+                            {/* Param indicator */}
+                            {hasParams && (
+                              <span className={`shrink-0 text-[10px] font-semibold ${
+                                active ? 'text-teal-200' : hasEnums ? 'text-primary' : 'text-muted-foreground'
+                              }`}>
+                                {hasEnums ? '~' : 'P'}
+                              </span>
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-[300px] p-3">
+                            <p className="font-mono text-xs break-words leading-relaxed">
+                              {renderExpression(step.expression, false)}
+                            </p>
+                            <div className="mt-1.5 flex items-center gap-1.5 text-[10px]">
+                              <span className="text-muted-foreground">{step.area}</span>
+                              <span className="text-muted-foreground/40">·</span>
+                              <span className={STATUS_TEXT_CLASS[step.status] ?? 'text-muted-foreground'}>
+                                {step.status}
+                              </span>
+                            </div>
+                            {hasDeps && (
+                              <div className="mt-2 pt-2 border-t border-border/50">
+                                <p className="text-[10px] font-semibold text-amber-500 mb-1">Requires:</p>
                                 <ul className="list-disc pl-3 space-y-0.5">
                                   {step.requires!.map(req => (
-                                    <li key={req} className="font-mono">{req}</li>
+                                    <li key={req} className="font-mono text-[10px]">{req}</li>
                                   ))}
                                 </ul>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-
-                          {/* Keyword badge */}
-                          <span
-                            className={`shrink-0 w-5 h-[18px] flex items-center justify-center text-[10px] font-bold rounded mt-0.5 ${
-                              active ? 'bg-white/20 text-white' : KEYWORD_CLASS[kw]
-                            }`}
-                            title={kw}
-                          >
-                            {KEYWORD_SHORT[kw]}
-                          </span>
-
-                          {/* Expression — wraps instead of truncating */}
-                          <span className="flex-1 font-mono leading-snug break-words min-w-0">
-                            {renderExpression(step.expression, active)}
-                          </span>
-
-                          {/* Param indicator */}
-                          {hasParams && (
-                            <Tooltip>
-                              <TooltipTrigger
-                                className={`shrink-0 self-start mt-0.5 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] leading-none ${
-                                  active
-                                    ? 'border-teal-300 text-teal-100'
-                                    : hasEnums
-                                      ? 'border-primary/20 bg-primary/10 text-primary'
-                                      : 'border-border text-muted-foreground font-mono'
-                                }`}
-                              >
-                                {hasEnums ? '● ~' : '{P}'}
-                              </TooltipTrigger>
-                              <TooltipContent side="left" className="text-xs">
-                                {hasEnums
-                                  ? `${step.paramEnums?.find(p => p.values.length > 0)?.values.length ?? 0} known values`
-                                  : 'Free-text parameter'}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-
-                        {/* Row 2: area · status */}
-                        <div className="flex items-center gap-1 pl-6">
-                          <span className={`text-[10px] ${active ? 'text-teal-100' : 'text-muted-foreground'}`}>
-                            {step.area}
-                          </span>
-                          <span className={`text-[10px] ${active ? 'text-teal-200' : 'text-muted-foreground/40'}`}>·</span>
-                          <span className={`text-[10px] ${active ? 'text-teal-100' : STATUS_TEXT_CLASS[step.status] ?? 'text-muted-foreground'}`}>
-                            {step.status}
-                          </span>
-                        </div>
+                              </div>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
                       </li>
                     );
                   })
