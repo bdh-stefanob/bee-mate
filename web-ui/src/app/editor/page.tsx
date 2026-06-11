@@ -54,6 +54,7 @@ function EditorContent() {
   const searchParams = useSearchParams();
   const stepParam = searchParams.get('step');
 
+  const [isSaving, setIsSaving] = useState(false);
   const [content, setContent] = useState<string>(() => {
     if (stepParam) return `  Given ${safeDecodeURI(stepParam)}`;
     if (typeof window !== 'undefined') {
@@ -151,6 +152,44 @@ function EditorContent() {
     }
   }, [content, settings, t]);
 
+  // Save feature file to src/features/ on the local server filesystem
+  const handleSave = useCallback(async () => {
+    if (!content.trim()) return;
+    const featureMatch = content.match(/Feature:\s*(.+)/i);
+    const featureName = featureMatch ? featureMatch[1].trim() : 'scenario';
+    const slug = slugify(featureName) || 'scenario';
+    const filePath = `src/features/${slug}.feature`;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/features', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, filePath }),
+      });
+      const data = await res.json() as { ok?: boolean; path?: string; error?: string };
+      if (!data.ok) throw new Error(data.error ?? 'Unknown error');
+      toast.success(`Salvato in ${data.path}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      toast.error(`Salvataggio fallito: ${msg}`);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [content]);
+
+  // Ctrl+S → save
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleSave]);
+
   // Download current editor content as .feature file
   const handleDownload = useCallback(() => {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
@@ -180,6 +219,14 @@ function EditorContent() {
               {isCommitting ? t.editor.commitGitHubLoading : t.editor.commitGitHub}
             </button>
           )}
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !content.trim()}
+            title="Ctrl+S"
+            className="px-3 py-1.5 text-sm rounded-md border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? 'Saving…' : 'Save'}
+          </button>
           <button
             onClick={handleDownload}
             className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors"
