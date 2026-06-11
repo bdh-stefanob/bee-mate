@@ -10,3 +10,12 @@
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.2: Questionnaire canonical BDD refactor (BACKLOG)
+
+**Goal:** Sostituire il happy-path scenario da 28 step con intent-level step dichiarativi: `Given the user has no pre-existing conditions that contraindicate treatment` + `When the user completes the medical history questionnaire`. I dati delle risposte (QuestionnaireProfiles) vivono nei fixture, il flusso di navigazione in QuestionnaireActions.completeQuestionnaire(profile). DataTable e step ripetitivi eliminati dal Gherkin.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
