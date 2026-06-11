@@ -42,18 +42,6 @@ const KEYWORD_CLASS: Record<string, string> = {
 };
 const KEYWORD_SHORT: Record<string, string> = { Given: 'G', When: 'W', Then: 'T' };
 
-const STATUS_TEXT_CLASS: Record<string, string> = {
-  implemented: 'text-emerald-600 dark:text-emerald-400',
-  wanted:      'text-amber-600 dark:text-amber-400',
-  deprecated:  'text-red-500 dark:text-red-400',
-};
-
-const STATUS_DOT_CLASS: Record<string, string> = {
-  implemented: 'bg-emerald-500',
-  wanted:      'bg-amber-400',
-  deprecated:  'bg-red-400',
-};
-
 function renderExpression(expr: string, active: boolean) {
   const parts = expr.split(/(\{[^}]+\})/);
   return parts.map((part, i) =>
@@ -272,12 +260,10 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                       >
                         <Tooltip>
                           <TooltipTrigger className="flex w-full items-center gap-1.5 px-3 py-1.5 bg-transparent border-0 text-inherit text-left outline-none cursor-pointer">
-                            {/* Status dot */}
-                            <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${
-                              active
-                                ? hasDeps ? 'bg-orange-300' : 'bg-white/30'
-                                : hasDeps ? 'bg-amber-400' : STATUS_DOT_CLASS[step.status]
-                            }`} />
+                            {/* Dependency dot — only shown when step has requires */}
+                            {hasDeps && (
+                              <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${active ? 'bg-orange-300' : 'bg-amber-400'}`} />
+                            )}
 
                             {/* Keyword badge */}
                             <span className={`shrink-0 w-5 h-4 flex items-center justify-center text-[10px] font-bold rounded ${
@@ -311,12 +297,8 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                             <p className="font-mono text-xs break-words leading-relaxed">
                               {renderExpression(step.expression, false)}
                             </p>
-                            <div className="mt-1.5 flex items-center gap-1.5 text-[10px]">
-                              <span className="text-muted-foreground">{step.area}</span>
-                              <span className="text-muted-foreground/40">·</span>
-                              <span className={STATUS_TEXT_CLASS[step.status] ?? 'text-muted-foreground'}>
-                                {step.status}
-                              </span>
+                            <div className="mt-1.5 text-[10px] text-muted-foreground">
+                              {step.area}
                             </div>
                             {hasDeps && (
                               <div className="mt-2 pt-2 border-t border-border/50">
