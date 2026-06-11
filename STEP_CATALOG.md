@@ -4,7 +4,7 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-06-10T14:37:30.297Z
+Last update: 2026-06-11T08:06:51.438Z
 Total: **34** steps (10 implemented, 24 wanted, 0 deprecated)
 
 ## How to use
