@@ -5,8 +5,27 @@ import { EditorView, keymap, lineNumbers, highlightActiveLineGutter } from '@cod
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, undo, redo } from '@codemirror/commands';
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
+import { foldGutter, foldService, foldKeymap } from '@codemirror/language';
 import { gherkinLanguage, gherkinTheme, gherkinLinter } from '@/lib/gherkin-cm';
 import { GHERKIN_PREFIX_RE } from '@/lib/autocomplete';
+
+// Fold ranges for Gherkin: each Scenario/Scenario Outline block is collapsible
+const gherkinFoldService = foldService.of((state, _lineStart, lineEnd) => {
+  const line = state.doc.lineAt(lineEnd);
+  if (!/^\s*Scenario(?:\s+Outline)?:/i.test(line.text)) return null;
+  const STOP = /^\s*(Scenario(?:\s+Outline)?:|Feature:|Rule:|Background:|@\S)/i;
+  for (let num = line.number + 1; num <= state.doc.lines; num++) {
+    const nl = state.doc.line(num);
+    if (STOP.test(nl.text)) {
+      let end = num - 1;
+      while (end > line.number && state.doc.line(end).text.trim() === '') end--;
+      const to = state.doc.line(end).to;
+      return to > lineEnd ? { from: lineEnd, to } : null;
+    }
+  }
+  const to = state.doc.length;
+  return to > lineEnd ? { from: lineEnd, to } : null;
+});
 
 // ---------------------------------------------------------------------------
 // Public ref handle
@@ -133,7 +152,9 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
             lineNumbers(),
             highlightActiveLineGutter(),
             history(),
-            keymap.of([...defaultKeymap, ...historyKeymap]),
+            keymap.of([...defaultKeymap, ...historyKeymap, ...foldKeymap]),
+            gherkinFoldService,
+            foldGutter({ openText: '▼', closedText: '▶' }),
             autocompletion({ override: [gherkinComplete], activateOnTyping: true, maxRenderedOptions: 10 }),
             updateListener,
             EditorView.theme({
@@ -159,6 +180,17 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
               },
               '.cm-activeLineGutter': {
                 backgroundColor: 'var(--accent)',
+              },
+              '.cm-foldGutter .cm-gutterElement': {
+                cursor: 'pointer',
+                color: 'var(--muted-foreground)',
+                padding: '0 2px',
+                fontSize: '0.6rem',
+                lineHeight: '1.5rem',
+                userSelect: 'none',
+              },
+              '.cm-foldGutter .cm-gutterElement:hover': {
+                color: 'var(--foreground)',
               },
             }),
           ],
