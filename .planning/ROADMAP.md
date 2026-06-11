@@ -73,3 +73,12 @@ Plans:
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.9: Import formato esteso QA team (BACKLOG)
+
+**Goal:** L'importer accetta scenari nel formato esteso del team QA: `@app @flusso` come tag strutturali, commenti `#PageName` come marcatori di cambio pagina (ricercabili nella search bar con `#`), `[a,b,c,d]` a fine step come enum values estratti automaticamente in step-enums.json. Step accettati verbatim (tutto lowercase, maiuscolo solo quando lo step include il nome della pagina). Nessuna validazione contro il catalogo esistente.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
