@@ -26,7 +26,8 @@ function waitForServer(timeout = 30000) {
 function startNextServer() {
   if (isDev) return Promise.resolve();
 
-  const serverScript = path.join(__dirname, '../.next/standalone/server.js');
+  // monorepo: Next.js standalone mirrors the subfolder structure → web-ui/server.js
+  const serverScript = path.join(__dirname, '../.next/standalone/web-ui/server.js');
   nextProcess = spawn(process.execPath, [serverScript], {
     env: { ...process.env, PORT: String(PORT), HOSTNAME: '127.0.0.1' },
     stdio: 'pipe',

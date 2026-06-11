@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GherkinEditor, type GherkinEditorHandle } from '@/components/GherkinEditor';
 import { GherkinToolbar } from '@/components/GherkinToolbar';
@@ -48,7 +48,7 @@ function matchesCatalog(stepText: string, expressions: string[]): boolean {
   });
 }
 
-export default function EditorPage() {
+function EditorContent() {
   const { t } = useLanguage();
   const { settings } = useSettings();
   const searchParams = useSearchParams();
@@ -230,5 +230,13 @@ export default function EditorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense>
+      <EditorContent />
+    </Suspense>
   );
 }
