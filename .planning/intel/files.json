@@ -1,0 +1,575 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-11T10:57:30.279Z",
+    "version": 2
+  },
+  "entries": {
+    "package.json": {
+      "exports": [],
+      "imports": [],
+      "type": "config"
+    },
+    "cucumber.js": {
+      "exports": [],
+      "imports": [],
+      "type": "config"
+    },
+    "playwright.config.ts": {
+      "exports": [],
+      "imports": [],
+      "type": "config"
+    },
+    "tsconfig.json": {
+      "exports": [],
+      "imports": [],
+      "type": "config"
+    },
+    "src/support/world.ts": {
+      "exports": [
+        "CustomWorld"
+      ],
+      "imports": [
+        "@cucumber/cucumber",
+        "@playwright/test"
+      ],
+      "type": "module"
+    },
+    "src/support/hooks.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber",
+        "./world"
+      ],
+      "type": "module"
+    },
+    "src/actions/auth.actions.ts": {
+      "exports": [
+        "AuthActions"
+      ],
+      "imports": [
+        "@playwright/test",
+        "../pages/login.page"
+      ],
+      "type": "module"
+    },
+    "src/actions/orders.actions.ts": {
+      "exports": [
+        "OrdersActions"
+      ],
+      "imports": [
+        "@playwright/test"
+      ],
+      "type": "module"
+    },
+    "src/pages/login.page.ts": {
+      "exports": [
+        "LoginPage"
+      ],
+      "imports": [
+        "@playwright/test"
+      ],
+      "type": "module"
+    },
+    "src/pages/cart.page.ts": {
+      "exports": [
+        "CartPage"
+      ],
+      "imports": [
+        "@playwright/test"
+      ],
+      "type": "module"
+    },
+    "src/steps/common/common.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber",
+        "../../support/world",
+        "../../actions/auth.actions"
+      ],
+      "type": "module"
+    },
+    "src/steps/auth/auth.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber",
+        "../../support/world",
+        "../../actions/auth.actions"
+      ],
+      "type": "module"
+    },
+    "src/steps/brochure-clinic/auth.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber"
+      ],
+      "type": "module"
+    },
+    "src/steps/weight-loss/questionnaire.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber"
+      ],
+      "type": "module"
+    },
+    "src/steps/orders/orders.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber",
+        "../../support/world",
+        "../../actions/orders.actions"
+      ],
+      "type": "module"
+    },
+    "src/steps/app-a/orders/orders.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber"
+      ],
+      "type": "module"
+    },
+    "src/steps/app-a/imported/checkout.steps.ts": {
+      "exports": [],
+      "imports": [
+        "@cucumber/cucumber"
+      ],
+      "type": "module"
+    },
+    "src/features/auth/login.feature": {
+      "exports": [],
+      "imports": [],
+      "type": "data"
+    },
+    "src/features/orders/place-order.feature": {
+      "exports": [],
+      "imports": [],
+      "type": "data"
+    },
+    "src/features/checkout/checkout-happy-path.feature": {
+      "exports": [],
+      "imports": [],
+      "type": "data"
+    },
+    "src/features/brochure-clinic/clinic-login.feature": {
+      "exports": [],
+      "imports": [],
+      "type": "data"
+    },
+    "src/features/weight-loss/weight-loss-service.feature": {
+      "exports": [],
+      "imports": [],
+      "type": "data"
+    },
+    "scripts/extract-steps.ts": {
+      "exports": [],
+      "imports": [
+        "fs"
+      ],
+      "type": "script"
+    },
+    "scripts/render-markdown.ts": {
+      "exports": [],
+      "imports": [
+        "fs"
+      ],
+      "type": "script"
+    },
+    "scripts/validate-steps.ts": {
+      "exports": [],
+      "imports": [
+        "fs"
+      ],
+      "type": "script"
+    },
+    "scripts/import-scenarios.ts": {
+      "exports": [],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "type": "script"
+    },
+    "scripts/jira-sync.ts": {
+      "exports": [],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "type": "script"
+    },
+    "scripts/watch-catalog.ts": {
+      "exports": [],
+      "imports": [
+        "fs",
+        "child_process"
+      ],
+      "type": "script"
+    },
+    "web-ui/src/lib/types.ts": {
+      "exports": [
+        "ParamEnumDef",
+        "CatalogStep",
+        "Catalog",
+        "FeatureSummary"
+      ],
+      "imports": [],
+      "type": "type-def"
+    },
+    "web-ui/src/lib/repo.ts": {
+      "exports": [
+        "REPO_ROOT",
+        "FEATURES_DIR",
+        "slugify",
+        "safeFeaturePath"
+      ],
+      "imports": [
+        "path"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/lib/features.ts": {
+      "exports": [
+        "walkFeatures",
+        "parseFeatureSummary",
+        "listFeatures"
+      ],
+      "imports": [
+        "fs",
+        "path",
+        "./types",
+        "./repo"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/lib/catalog.ts": {
+      "exports": [
+        "filterSteps",
+        "uniqueAreas",
+        "uniqueStatuses"
+      ],
+      "imports": [
+        "./types"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/lib/autocomplete.ts": {
+      "exports": [
+        "GHERKIN_PREFIX_RE",
+        "getAutocompletePrefix",
+        "getSuggestions"
+      ],
+      "imports": [
+        "./types"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/lib/import-extended.ts": {
+      "exports": [
+        "isExtendedFormat",
+        "parseExtendedFormat"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "web-ui/src/lib/gherkin-cm.ts": {
+      "exports": [
+        "formatGherkin"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "web-ui/src/lib/i18n.ts": {
+      "exports": [
+        "translations"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "web-ui/src/lib/utils.ts": {
+      "exports": [
+        "cn"
+      ],
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/layout.tsx": {
+      "exports": [
+        "RootLayout",
+        "metadata"
+      ],
+      "imports": [
+        "next",
+        "react",
+        "@/providers/Providers",
+        "@/components/ThemeToggle",
+        "@/components/LanguageToggle",
+        "@/components/NavSettingsLink"
+      ],
+      "type": "entry-point"
+    },
+    "web-ui/src/app/page.tsx": {
+      "exports": [
+        "Home"
+      ],
+      "imports": [
+        "@/components/StepCatalog",
+        "@/providers/Providers"
+      ],
+      "type": "entry-point"
+    },
+    "web-ui/src/app/editor/page.tsx": {
+      "exports": [
+        "EditorPage"
+      ],
+      "imports": [
+        "@/components/GherkinEditor",
+        "@/components/GherkinToolbar",
+        "@/components/StepBrowser",
+        "@/components/ImportDropzone",
+        "@/components/ScenarioOutline",
+        "@/lib/repo",
+        "@/lib/gherkin-cm",
+        "@/providers/Providers",
+        "@/hooks/useSettings",
+        "sonner"
+      ],
+      "type": "entry-point"
+    },
+    "web-ui/src/app/features/page.tsx": {
+      "exports": [
+        "FeaturesPage"
+      ],
+      "imports": [
+        "@/lib/types",
+        "@/components/FeaturePreview",
+        "@/providers/Providers"
+      ],
+      "type": "entry-point"
+    },
+    "web-ui/src/app/settings/page.tsx": {
+      "exports": [
+        "SettingsPage"
+      ],
+      "imports": [
+        "@/hooks/useSettings"
+      ],
+      "type": "entry-point"
+    },
+    "web-ui/src/app/api/catalog/route.ts": {
+      "exports": [
+        "GET"
+      ],
+      "imports": [
+        "next/server",
+        "fs",
+        "path",
+        "@/lib/repo",
+        "@/lib/types"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/api/features/route.ts": {
+      "exports": [
+        "GET",
+        "POST"
+      ],
+      "imports": [
+        "next/server",
+        "fs",
+        "path",
+        "@/lib/repo",
+        "@/lib/features"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/api/enums/route.ts": {
+      "exports": [
+        "PUT"
+      ],
+      "imports": [
+        "next/server",
+        "fs",
+        "path",
+        "@/lib/repo",
+        "@/lib/types"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/api/import/route.ts": {
+      "exports": [
+        "POST"
+      ],
+      "imports": [
+        "next/server",
+        "child_process",
+        "fs",
+        "path",
+        "os",
+        "@/lib/repo"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/api/github/push/route.ts": {
+      "exports": [
+        "POST"
+      ],
+      "imports": [
+        "next/server"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/api/jira/sync/route.ts": {
+      "exports": [
+        "POST"
+      ],
+      "imports": [
+        "next/server",
+        "fs",
+        "path",
+        "@/lib/repo"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/app/api/download/route.ts": {
+      "exports": [
+        "GET"
+      ],
+      "imports": [
+        "next/server",
+        "@/lib/repo"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/StepCatalog.tsx": {
+      "exports": [
+        "StepCatalog"
+      ],
+      "imports": [
+        "@/lib/types",
+        "@/lib/catalog",
+        "@/components/StepDetailModal",
+        "@/providers/Providers"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/StepBrowser.tsx": {
+      "exports": [
+        "StepBrowser"
+      ],
+      "imports": [
+        "@/lib/types",
+        "@/providers/Providers",
+        "@/components/StepParamPicker",
+        "sonner"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/StepDetailModal.tsx": {
+      "exports": [
+        "StepDetailModal"
+      ],
+      "imports": [
+        "@/lib/types",
+        "next/navigation",
+        "sonner"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/ScenarioOutline.tsx": {
+      "exports": [
+        "ScenarioOutline"
+      ],
+      "imports": [
+        "@/components/GherkinEditor"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/GherkinEditor.tsx": {
+      "exports": [
+        "GherkinEditor"
+      ],
+      "imports": [
+        "@codemirror/view",
+        "@codemirror/state",
+        "@codemirror/language",
+        "@/lib/autocomplete"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/GherkinToolbar.tsx": {
+      "exports": [
+        "GherkinToolbar"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "web-ui/src/components/ImportDropzone.tsx": {
+      "exports": [
+        "ImportDropzone"
+      ],
+      "imports": [
+        "@/lib/import-extended",
+        "@/providers/Providers",
+        "sonner"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/FeaturePreview.tsx": {
+      "exports": [
+        "FeaturePreview"
+      ],
+      "imports": [
+        "@/lib/repo"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/components/StepParamPicker.tsx": {
+      "exports": [
+        "StepParamPicker"
+      ],
+      "imports": [
+        "@/lib/types"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/hooks/useSettings.ts": {
+      "exports": [
+        "useSettings",
+        "STORAGE_KEY"
+      ],
+      "imports": [
+        "react"
+      ],
+      "type": "module"
+    },
+    "web-ui/src/providers/Providers.tsx": {
+      "exports": [
+        "Providers",
+        "useLanguage"
+      ],
+      "imports": [
+        "react",
+        "next-themes",
+        "@/lib/i18n"
+      ],
+      "type": "module"
+    },
+    "web-ui/electron/main.js": {
+      "exports": [],
+      "imports": [
+        "electron",
+        "path"
+      ],
+      "type": "entry-point"
+    },
+    "web-ui/electron/preload.js": {
+      "exports": [],
+      "imports": [
+        "electron"
+      ],
+      "type": "module"
+    }
+  }
+}

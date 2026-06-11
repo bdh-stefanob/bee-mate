@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-11T10:57:35.462Z",
+    "version": 2
+  },
+  "entries": {
+    "GET /api/catalog": {
+      "method": "GET",
+      "path": "/api/catalog",
+      "params": [],
+      "file": "web-ui/src/app/api/catalog/route.ts",
+      "description": "Returns full step catalog from step-catalog.json enriched with paramEnums and requires from step-enums.json. Response: { steps: CatalogStep[] }"
+    },
+    "GET /api/features": {
+      "method": "GET",
+      "path": "/api/features",
+      "params": [],
+      "file": "web-ui/src/app/api/features/route.ts",
+      "description": "Returns FeatureSummary[] for all .feature files under src/features/ using walkFeatures + parseFeatureSummary. Includes app/flow fields derived from directory structure."
+    },
+    "POST /api/features": {
+      "method": "POST",
+      "path": "/api/features",
+      "params": [
+        "content",
+        "filePath"
+      ],
+      "file": "web-ui/src/app/api/features/route.ts",
+      "description": "Writes a .feature file to src/features/{app}/{flow}/{slug}.feature. filePath is relative to FEATURES_DIR. safeFeaturePath() prevents path traversal (Guard T-04-01). Body: { content: string, filePath: string }"
+    },
+    "PUT /api/enums": {
+      "method": "PUT",
+      "path": "/api/enums",
+      "params": [
+        "expression",
+        "paramEnums"
+      ],
+      "file": "web-ui/src/app/api/enums/route.ts",
+      "description": "Upserts paramEnum values for a step expression in step-enums.json. Used by StepDetailModal inline enum editor. Body: { expression: string, paramEnums: ParamEnumDef[] }"
+    },
+    "POST /api/import": {
+      "method": "POST",
+      "path": "/api/import",
+      "params": [
+        "file (FormData)"
+      ],
+      "file": "web-ui/src/app/api/import/route.ts",
+      "description": "Accepts .txt file via FormData, writes to os.tmpdir() with generated name (T-04-06), runs import-scenarios.ts via execSync with 30s timeout, returns { ok, featureContent, featurePath, newCount, skipCount }. Max 1MB. Windows-safe via shell:cmd.exe."
+    },
+    "POST /api/github/push": {
+      "method": "POST",
+      "path": "/api/github/push",
+      "params": [
+        "content",
+        "filePath"
+      ],
+      "file": "web-ui/src/app/api/github/push/route.ts",
+      "description": "Creates or updates a .feature file on GitHub via REST API v3. Token passed via x-github-token header (never in body — T-05-03-03). filePath validated with whitelist regex + path traversal block (T-05-03-01). Token scrubbed from error messages (T-05-03-02)."
+    },
+    "POST /api/jira/sync": {
+      "method": "POST",
+      "path": "/api/jira/sync",
+      "params": [],
+      "file": "web-ui/src/app/api/jira/sync/route.ts",
+      "description": "Scans all .feature files for @ticket:PROJ-123 tags and posts the scenario text as an ADF code block comment on the Jira issue. Token via x-jira-token header. SSRF guard blocks RFC-1918 addresses (T-05-jira-01). Returns { synced, skipped, errors }."
+    },
+    "GET /api/download": {
+      "method": "GET",
+      "path": "/api/download",
+      "params": [
+        "file"
+      ],
+      "file": "web-ui/src/app/api/download/route.ts",
+      "description": "Returns raw content of a .feature file given a path relative to FEATURES_DIR. Used by features page 'Edit' button to load a feature into the editor via localStorage."
+    }
+  }
+}

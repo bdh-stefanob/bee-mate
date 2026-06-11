@@ -1,0 +1,215 @@
+{
+  "_meta": {
+    "updated_at": "2026-06-11T10:57:35.539Z",
+    "version": 2
+  },
+  "entries": {
+    "@cucumber/cucumber": {
+      "version": "^10.8.0",
+      "type": "development",
+      "invocation": "npm test",
+      "used_by": [
+        "src/steps/",
+        "src/support/"
+      ]
+    },
+    "@playwright/test": {
+      "version": "^1.45.0",
+      "type": "development",
+      "invocation": "npm test",
+      "used_by": [
+        "src/pages/",
+        "src/actions/",
+        "src/support/world.ts"
+      ]
+    },
+    "ts-node": {
+      "version": "^10.9.2",
+      "type": "development",
+      "invocation": "npm run catalog",
+      "used_by": [
+        "scripts/extract-steps.ts",
+        "scripts/render-markdown.ts",
+        "scripts/import-scenarios.ts",
+        "scripts/validate-steps.ts",
+        "scripts/jira-sync.ts"
+      ]
+    },
+    "typescript": {
+      "version": "^5.5.0",
+      "type": "development",
+      "invocation": "implicit",
+      "used_by": [
+        "src/",
+        "scripts/"
+      ]
+    },
+    "husky": {
+      "version": "^9.0.0",
+      "type": "development",
+      "invocation": "npm run prepare",
+      "used_by": [
+        ".husky/"
+      ]
+    },
+    "next": {
+      "version": "15.5.19",
+      "type": "production",
+      "invocation": "npm run dev",
+      "used_by": [
+        "web-ui/src/app/"
+      ]
+    },
+    "react": {
+      "version": "19.1.0",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/",
+        "web-ui/src/app/"
+      ]
+    },
+    "react-dom": {
+      "version": "19.1.0",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/app/layout.tsx"
+      ]
+    },
+    "@codemirror/view": {
+      "version": "^6.43.1",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/GherkinEditor.tsx",
+        "web-ui/src/components/ScenarioOutline.tsx"
+      ]
+    },
+    "@codemirror/state": {
+      "version": "^6.6.0",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/GherkinEditor.tsx"
+      ]
+    },
+    "@codemirror/autocomplete": {
+      "version": "^6.20.3",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/GherkinEditor.tsx",
+        "web-ui/src/lib/autocomplete.ts"
+      ]
+    },
+    "@codemirror/language": {
+      "version": "^6.12.3",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/GherkinEditor.tsx"
+      ]
+    },
+    "@codemirror/commands": {
+      "version": "^6.10.3",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/GherkinEditor.tsx"
+      ]
+    },
+    "sonner": {
+      "version": "^2.0.7",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/app/editor/page.tsx",
+        "web-ui/src/components/StepBrowser.tsx",
+        "web-ui/src/components/StepDetailModal.tsx",
+        "web-ui/src/components/ImportDropzone.tsx"
+      ]
+    },
+    "next-themes": {
+      "version": "^0.4.6",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/providers/Providers.tsx"
+      ]
+    },
+    "lucide-react": {
+      "version": "^1.17.0",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/"
+      ]
+    },
+    "tailwindcss": {
+      "version": "^4",
+      "type": "development",
+      "invocation": "npm run build",
+      "used_by": [
+        "web-ui/src/app/globals.css"
+      ]
+    },
+    "electron": {
+      "version": "^35.7.5",
+      "type": "development",
+      "invocation": "npm run electron:dev",
+      "used_by": [
+        "web-ui/electron/main.js",
+        "web-ui/electron/preload.js"
+      ]
+    },
+    "electron-builder": {
+      "version": "^26.15.2",
+      "type": "development",
+      "invocation": "npm run electron:build",
+      "used_by": [
+        "web-ui/electron-builder.yml"
+      ]
+    },
+    "vitest": {
+      "version": "^4.1.8",
+      "type": "development",
+      "invocation": "npm test",
+      "used_by": [
+        "web-ui/vitest.config.ts"
+      ]
+    },
+    "concurrently": {
+      "version": "^9.2.1",
+      "type": "development",
+      "invocation": "npm run electron:dev",
+      "used_by": [
+        "web-ui/package.json"
+      ]
+    },
+    "class-variance-authority": {
+      "version": "^0.7.1",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/components/ui/"
+      ]
+    },
+    "clsx": {
+      "version": "^2.1.1",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/lib/utils.ts"
+      ]
+    },
+    "tailwind-merge": {
+      "version": "^3.6.0",
+      "type": "production",
+      "invocation": "implicit",
+      "used_by": [
+        "web-ui/src/lib/utils.ts"
+      ]
+    }
+  }
+}
