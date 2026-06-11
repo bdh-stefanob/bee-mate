@@ -1,10 +1,13 @@
 import * as path from 'path';
 
 /**
- * REPO_ROOT: root directory del repository, un livello sopra web-ui/.
- * Assumendo che npm run dev venga eseguito da web-ui/, process.cwd() = web-ui/.
+ * REPO_ROOT: root directory del repository.
+ * In Electron production BDD_WORKSPACE è impostato da main.js (cartella scelta dall'utente).
+ * In dev: process.cwd() = web-ui/, quindi saliamo di un livello.
  */
-export const REPO_ROOT = path.resolve(process.cwd(), '..');
+export const REPO_ROOT = process.env.BDD_WORKSPACE
+  ? path.resolve(process.env.BDD_WORKSPACE)
+  : path.resolve(process.cwd(), '..');
 
 /**
  * FEATURES_DIR: directory radice dei file .feature nel repository.
