@@ -1,0 +1,33 @@
+appId: com.boots.bdd-catalog
+productName: BDD Catalog
+copyright: Boots BDD Team
+
+directories:
+  output: dist-electron
+
+files:
+  - electron/**
+  - .next/standalone/**
+  - .next/static/**
+  - public/**
+  - package.json
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: public/icon.ico
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: public/icon.icns
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  installerIcon: public/icon.ico
+  uninstallerIcon: public/icon.ico
