@@ -31,6 +31,61 @@
           "values": []
         }
       ]
+    },
+    {
+      "expression": "the user selects {string} from the popular services menu",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "Service",
+          "values": ["Weight loss", "Hair loss", "Erectile dysfunction", "Acne", "Contraceptive pill", "Period delay"]
+        }
+      ]
+    },
+    {
+      "expression": "the user selects {string} as their service status",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "Status",
+          "values": ["I'm New", "I haven't been here for over 3 months", "I'm using Boots weight loss medicine"]
+        }
+      ]
+    },
+    {
+      "expression": "the user selects medicine {string} with quantity {string} and coaching {string}",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "Medicine",
+          "values": ["Wegovy", "Mounjaro", "Nevolat", "Orlistat", "Xenical", "Coaching Only"]
+        },
+        {
+          "token": "{string}",
+          "label": "Quantity",
+          "values": ["0.25mg", "0.5mg", "1mg", "1.7mg", "2.4mg", "7.2mg", "2.5mg", "5mg", "7.5mg", "10mg", "12.5mg", "15mg", "3 Pens", "5 Pens", "1 Month", ""]
+        },
+        {
+          "token": "{string}",
+          "label": "Coaching",
+          "values": ["with", "without"]
+        }
+      ]
+    },
+    {
+      "expression": "the user clicks {string} on the {string} service page",
+      "paramEnums": [
+        {
+          "token": "{string}",
+          "label": "CTA",
+          "values": ["Get started online", "View our in store service"]
+        },
+        {
+          "token": "{string}",
+          "label": "Service page",
+          "values": ["Weight Loss Treatment Service"]
+        }
+      ]
     }
   ],
   "dependencies": [
