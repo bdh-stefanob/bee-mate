@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useLanguage } from '@/providers/Providers';
+import { StepDetailModal } from '@/components/StepDetailModal';
 
 const STATUS_STYLES: Record<string, string> = {
   wanted:      'bg-[#FF6B2C] text-white border-transparent',
@@ -38,6 +39,7 @@ export default function StepCatalog() {
   const [query, setQuery] = useState('');
   const [area, setArea] = useState('');
   const [status, setStatus] = useState('');
+  const [selectedStep, setSelectedStep] = useState<CatalogStep | null>(null);
 
   useEffect(() => {
     fetch('/api/catalog')
@@ -82,6 +84,8 @@ export default function StepCatalog() {
   }
 
   return (
+    <>
+    <StepDetailModal step={selectedStep} onClose={() => setSelectedStep(null)} />
     <div className="space-y-4">
       {/* Filtri */}
       <div className="flex flex-wrap items-center gap-3">
@@ -145,6 +149,7 @@ export default function StepCatalog() {
                 <TableRow
                   key={`${step.sourceRef}-${idx}`}
                   className="cursor-pointer select-none"
+                  onClick={() => setSelectedStep(step)}
                   onDoubleClick={() => {
                     router.push('/editor?step=' + encodeURIComponent(step.expression));
                   }}
@@ -170,5 +175,6 @@ export default function StepCatalog() {
 
       <p className="text-xs text-muted-foreground">{t.catalog.hint}</p>
     </div>
+    </>
   );
 }
