@@ -176,7 +176,7 @@ export function StepDetailModal({ step, onClose }: Props) {
             onClick={() => { router.push('/editor?step=' + encodeURIComponent(step.expression)); onClose(); }}
             className="text-xs text-teal-600 dark:text-teal-400 hover:underline"
           >
-            Apri nell'editor →
+            Apri nell&apos;editor →
           </button>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm" onClick={onClose}>Chiudi</Button>

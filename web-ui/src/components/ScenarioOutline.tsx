@@ -12,7 +12,7 @@ interface ScenarioEntry {
 
 function parseScenarios(content: string): ScenarioEntry[] {
   const lines = content.split('\n');
-  const results: ScenarioEntry[] = [];
+  const results: Omit<ScenarioEntry, 'index'>[] = [];
   let current: Omit<ScenarioEntry, 'index'> | null = null;
 
   lines.forEach((line, i) => {
@@ -52,7 +52,7 @@ export function ScenarioOutline({ content, editorRef }: Props) {
   function toggle(index: number) {
     setCollapsed(prev => {
       const next = new Set(prev);
-      next.has(index) ? next.delete(index) : next.add(index);
+      if (next.has(index)) { next.delete(index); } else { next.add(index); }
       return next;
     });
   }
