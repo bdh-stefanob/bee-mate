@@ -134,7 +134,7 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
             highlightActiveLineGutter(),
             history(),
             keymap.of([...defaultKeymap, ...historyKeymap]),
-            autocompletion({ override: [gherkinComplete] }),
+            autocompletion({ override: [gherkinComplete], activateOnTyping: true, maxRenderedOptions: 10 }),
             updateListener,
             EditorView.theme({
               '&': {

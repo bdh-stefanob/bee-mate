@@ -6,7 +6,7 @@ import type { CatalogStep } from './types';
  * Gruppo 1: keyword
  * Gruppo 2: testo dopo la keyword (può essere vuoto)
  */
-export const GHERKIN_PREFIX_RE = /(?:^|\n)(Given|When|Then|And|But)\s+([^\n]*)$/;
+export const GHERKIN_PREFIX_RE = /(?:^|\n)\s*(Given|When|Then|And|But)\s+([^\n]*)$/;
 
 /**
  * getAutocompletePrefix
