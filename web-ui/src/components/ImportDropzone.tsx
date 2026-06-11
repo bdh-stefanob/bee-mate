@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useLanguage } from '@/providers/Providers';
 import { toast } from 'sonner';
+import { isExtendedFormat, parseExtendedFormat } from '@/lib/import-extended';
 
 interface ImportDropzoneProps {
   onImported: (featureContent: string) => void;
@@ -12,6 +13,7 @@ type ImportState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'success'; newCount: number; skipCount: number; featurePath: string | null }
+  | { status: 'extended'; extractedEnums: { stepText: string; values: string[] }[] }
   | { status: 'error'; error: string };
 
 /**
@@ -30,12 +32,24 @@ export function ImportDropzone({ onImported }: ImportDropzoneProps) {
 
   const processFile = async (file: File) => {
     if (!file.name.endsWith('.txt') && !file.name.endsWith('.feature')) {
-      setState({ status: 'error', error: 'Accetta solo file .txt' });
+      setState({ status: 'error', error: 'Accetta solo file .txt o .feature' });
       return;
     }
 
     setState({ status: 'loading' });
 
+    const text = await file.text();
+
+    // Detect extended QA team format (#PageName markers or [enum] suffixes)
+    if (isExtendedFormat(text)) {
+      const { gherkin, extractedEnums } = parseExtendedFormat(text);
+      onImported(gherkin);
+      setState({ status: 'extended', extractedEnums });
+      toast.success('Formato esteso importato e convertito in Gherkin');
+      return;
+    }
+
+    // Standard import via server
     const formData = new FormData();
     formData.append('file', file);
 
@@ -160,6 +174,29 @@ export function ImportDropzone({ onImported }: ImportDropzoneProps) {
               </span>
             )}
           </span>
+        </div>
+      )}
+
+      {state.status === 'extended' && (
+        <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-xs">
+          <p className="font-semibold text-blue-700 dark:text-blue-300 mb-1">
+            Formato esteso convertito in Gherkin
+          </p>
+          {state.extractedEnums.length > 0 && (
+            <>
+              <p className="text-blue-600 dark:text-blue-400 mb-1">
+                {state.extractedEnums.length} step con valori parametrici estratti:
+              </p>
+              <ul className="space-y-1">
+                {state.extractedEnums.map((e, i) => (
+                  <li key={i} className="font-mono text-[10px] text-blue-600 dark:text-blue-400 truncate">
+                    <span className="font-semibold">{e.stepText}</span>
+                    {' → '}[{e.values.join(', ')}]
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 
