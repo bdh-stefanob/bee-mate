@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-10T07:27:40.433Z",
-  "totalSteps": 18,
-  "documentedSteps": 18,
-  "undocumentedSteps": 0,
+  "generatedAt": "2026-06-10T14:37:30.297Z",
+  "totalSteps": 34,
+  "documentedSteps": 33,
+  "undocumentedSteps": 1,
   "steps": [
     {
       "expression": "I add {string} to the basket",
@@ -227,6 +227,95 @@
       "documented": true
     },
     {
+      "expression": "the user clicks the Login button",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "brochure-clinic",
+      "domain": "brochure-clinic",
+      "status": "wanted",
+      "page": "BrochureHomePage",
+      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:26",
+      "doc": {
+        "params": {},
+        "intent": "Clicks the primary Login button visible on the current page.",
+        "page": "BrochureHomePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user completes SMS verification",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "brochure-clinic",
+      "domain": "brochure-clinic",
+      "status": "wanted",
+      "page": "ClinicSmsVerificationPage",
+      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:52",
+      "doc": {
+        "params": {},
+        "intent": "Completes the entire SMS two-factor verification flow in one step.",
+        "post": "SMS code verified, session active.",
+        "page": "ClinicSmsVerificationPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user enters valid login credentials on the {string} page",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "brochure-clinic",
+      "area": "brochure-clinic",
+      "domain": "brochure-clinic",
+      "status": "wanted",
+      "page": "ClinicLoginPage",
+      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:37",
+      "doc": {
+        "params": {
+          "page": "The page where credentials are entered (e.g. \"Clinic login\")."
+        },
+        "intent": "Enters valid email and password credentials on the named login page.",
+        "page": "ClinicLoginPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user is on the Brochure home page",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "brochure-clinic",
+      "domain": "brochure-clinic",
+      "status": "wanted",
+      "page": "BrochureHomePage",
+      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:16",
+      "doc": {
+        "params": {},
+        "intent": "Navigates to the Boots Brochure home page as the test entry point.",
+        "post": "Browser is on the Brochure home page.",
+        "page": "BrochureHomePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user is successfully logged in",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "brochure-clinic",
+      "domain": "brochure-clinic",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:61",
+      "doc": {
+        "params": {},
+        "intent": "Asserts the user has an authenticated session after login.",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
       "expression": "I am logged in as a {string} user",
       "parameters": [
         "{string}"
@@ -235,15 +324,28 @@
       "area": "common",
       "domain": "common",
       "status": "implemented",
-      "page": "LoginPage",
-      "sourceRef": "src\\steps\\common\\common.steps.ts:16",
+      "sourceRef": "src\\steps\\common\\common.steps.ts:29",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
+    {
+      "expression": "the user is on the {string} page",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "common",
+      "area": "common",
+      "domain": "common",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\common\\common.steps.ts:22",
       "doc": {
         "params": {
-          "role": "The role to log in as: \"admin\" | \"standard\"."
+          "page": "The page title or URL segment (e.g. \"My Account\", \"Summary\")."
         },
-        "intent": "Logs in as a user of the given role in one declarative step.",
-        "post": "An authenticated session is active for that role.",
-        "page": "LoginPage"
+        "intent": "Asserts or navigates to any named page. Shared across all domains.",
+        "wanted": true
       },
       "documented": true
     },
@@ -336,6 +438,220 @@
         },
         "intent": "Verifies the order has the expected status.",
         "page": "CartPage"
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user clicks {string} on the {string} service page",
+      "parameters": [
+        "{string}",
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:33",
+      "doc": {
+        "params": {
+          "cta": "Button label (e.g. \"Get started online\", \"View our in store service\").",
+          "service": "The service page name (e.g. \"Weight Loss Treatment Service\")."
+        },
+        "intent": "Clicks a primary call-to-action on a service landing page.",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user clicks next on the {string} questionnaire page",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:150",
+      "doc": {
+        "params": {
+          "page": "The questionnaire page name."
+        },
+        "intent": "Clicks the Next button to advance from a questionnaire page.",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user confirms the medicine selection",
+      "parameters": [],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "page": "MedicineConfirmationPage",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:79",
+      "doc": {
+        "params": {},
+        "intent": "Clicks continue on the medicine confirmation page.",
+        "page": "MedicineConfirmationPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user enters height {string} in {string} and weight {string} in {string}",
+      "parameters": [
+        "{string}",
+        "{string}",
+        "{string}",
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "page": "HeightAndWeightPage",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:106",
+      "doc": {
+        "params": {
+          "height": "Numeric value as string (e.g. \"175\", \"5\").",
+          "heightUnit": "\"cm\" | \"ft/in\".",
+          "weight": "Numeric value as string (e.g. \"80\", \"12\").",
+          "weightUnit": "\"kg\" | \"st/lbs\"."
+        },
+        "intent": "Enters height and weight with explicit unit selection.",
+        "page": "HeightAndWeightPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user flags the consent checkbox and continues on the {string} page",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:89",
+      "doc": {
+        "params": {
+          "page": "The page name (e.g. \"Important Info\", \"GP or Bariatric Team\")."
+        },
+        "intent": "Flags the mandatory consent checkbox and clicks continue.",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selects {string} and enters {string} on the {string} questionnaire page",
+      "parameters": [
+        "{string}",
+        "{string}",
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:137",
+      "doc": {
+        "params": {
+          "option": "The option label to select (triggers the text input).",
+          "value": "The free-text value to enter in the associated input field.",
+          "page": "The questionnaire page name."
+        },
+        "intent": "Selects an option that requires additional free-text on a questionnaire page.",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selects {string} as their service status",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "page": "ServiceBeforePage",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:48",
+      "doc": {
+        "params": {
+          "status": "One of: \"I'm New\" | \"I haven't been here for over 3 months\" |"
+        },
+        "intent": "Selects the user's returning-patient status at the start of the flow.",
+        "page": "ServiceBeforePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selects {string} from the popular services menu",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "page": "BrochureHomePage",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:19",
+      "doc": {
+        "params": {
+          "service": "The service label (e.g. \"Weight loss\", \"Hair loss\", \"Acne\")."
+        },
+        "intent": "Selects a Boots service from the popular services navigation menu.",
+        "page": "BrochureHomePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selects {string} on the {string} questionnaire page",
+      "parameters": [
+        "{string}",
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:122",
+      "doc": {
+        "params": {
+          "option": "The exact option label to select.",
+          "page": "The questionnaire page name (e.g. \"Ethnic Background\","
+        },
+        "intent": "Selects a single option on any questionnaire page and clicks next.",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selects medicine {string} with quantity {string} and coaching {string}",
+      "parameters": [
+        "{string}",
+        "{string}",
+        "{string}"
+      ],
+      "app": "weight-loss",
+      "area": "weight-loss",
+      "domain": "weight-loss",
+      "status": "wanted",
+      "page": "MedicinePreferencePage",
+      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:66",
+      "doc": {
+        "params": {
+          "medicine": "Medicine name: \"Wegovy\" | \"Mounjaro\" | \"Nevolat\" | \"Orlistat\" |",
+          "quantity": "Dose string (e.g. \"0.25mg\", \"5mg\", \"3 Pens\"). Empty string when",
+          "coaching": "\"with\" | \"without\"."
+        },
+        "intent": "Selects a weight loss medicine with dosage tier and coaching option.",
+        "page": "MedicinePreferencePage",
+        "wanted": true
       },
       "documented": true
     }
