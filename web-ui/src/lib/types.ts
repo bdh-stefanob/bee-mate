@@ -17,6 +17,7 @@ export interface CatalogStep {
   documented: boolean;
   paramEnums?: ParamEnumDef[];  // enriched at API time from step-enums.json
   requires?: string[];          // prerequisite step expressions
+  doc?: { intent?: string; [key: string]: unknown }; // JSDoc annotations (@intent etc.)
 }
 
 export interface Catalog {

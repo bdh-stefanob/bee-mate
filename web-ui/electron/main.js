@@ -1,11 +1,19 @@
-const { app, BrowserWindow, dialog } = require('electron');
-const { spawn } = require('child_process');
+const { app, BrowserWindow, dialog, utilityProcess } = require('electron');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = !app.isPackaged;
 const PORT = 3000;
+
+// --- Debug logging ---
+const logFile = path.join(app.getPath('userData'), 'debug.log');
+function log(...args) {
+  const line = `[${new Date().toISOString()}] ${args.join(' ')}\n`;
+  process.stdout.write(line);
+  try { fs.appendFileSync(logFile, line); } catch {}
+}
+log('App starting. isDev:', isDev, 'appPath:', app.getAppPath());
 
 let mainWindow = null;
 let nextProcess = null;
@@ -87,9 +95,12 @@ function waitForServer(timeout = 30000) {
 function startNextServer(workspacePath) {
   if (isDev) return Promise.resolve();
 
-  // monorepo: Next.js standalone mirrors the subfolder structure → web-ui/server.js
-  const serverScript = path.join(__dirname, '../.next/standalone/web-ui/server.js');
-  nextProcess = spawn(process.execPath, [serverScript], {
+  const serverScript = path.join(app.getAppPath(), '.next/standalone/web-ui/server.js');
+  log('serverScript:', serverScript, 'exists:', fs.existsSync(serverScript));
+  log('cwd:', path.dirname(serverScript));
+
+  nextProcess = utilityProcess.fork(serverScript, [], {
+    cwd: path.dirname(serverScript),
     env: {
       ...process.env,
       PORT: String(PORT),
@@ -99,8 +110,11 @@ function startNextServer(workspacePath) {
     stdio: 'pipe',
   });
 
-  nextProcess.stderr.on('data', (d) => console.error('[next]', d.toString()));
+  nextProcess.stdout.on('data', (d) => log('[next-out]', d.toString().trim()));
+  nextProcess.stderr.on('data', (d) => log('[next-err]', d.toString().trim()));
+  nextProcess.on('exit', (code) => log('[next] exited with code', code));
 
+  log('Waiting for server on port', PORT);
   return waitForServer();
 }
 
@@ -124,16 +138,30 @@ function createWindow() {
   });
 
   mainWindow.loadURL(`http://127.0.0.1:${PORT}`);
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.once('ready-to-show', () => { log('Window ready to show'); mainWindow.show(); });
 }
 
 // --- App lifecycle ---
 
 app.whenReady().then(async () => {
+  log('app ready');
   const workspacePath = await resolveWorkspace();
+  log('workspacePath:', workspacePath);
   if (!workspacePath) return;
 
-  await startNextServer(workspacePath);
+  try {
+    await startNextServer(workspacePath);
+    log('server ready');
+  } catch (err) {
+    log('server error:', err.message);
+    await dialog.showMessageBox({
+      type: 'error',
+      title: 'Errore avvio server',
+      message: `Impossibile avviare il server interno.\n\n${err.message}\n\nLog: ${logFile}`,
+    });
+    app.quit();
+    return;
+  }
   createWindow();
 
   app.on('activate', () => {

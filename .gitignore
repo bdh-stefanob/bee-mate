@@ -9,6 +9,9 @@ cucumber-messages.ndjson
 .env.*
 !.env.example
 
+# Electron build output
+web-ui/dist-electron/
+
 # VS Code extension build artifacts
 vscode-extension/out/
 vscode-extension/*.vsix
@@ -16,3 +19,6 @@ vscode-extension/*.vsix
 # step-catalog.json IS versioned: e' la source of truth machine-readable
 # letta dall'extension VS Code. Rigenerato da `npm run catalog`.
 # Un CI check fallisce se non e' in sync col codice.
+docs-site/.astro/
+docs-site/node_modules/
+docs-site/dist/

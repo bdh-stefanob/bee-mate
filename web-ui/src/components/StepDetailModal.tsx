@@ -75,7 +75,7 @@ export function StepDetailModal({ step, onClose }: Props) {
     ));
   }
 
-  const doc = step.doc as Record<string, unknown> | undefined;
+  const doc = step.doc;
 
   return (
     <div
