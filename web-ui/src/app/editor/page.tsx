@@ -11,6 +11,7 @@ import { slugify } from '@/lib/repo';
 import { formatGherkin } from '@/lib/gherkin-cm';
 import { useLanguage } from '@/providers/Providers';
 import { useSettings } from '@/hooks/useSettings';
+import { ScenarioOutline } from '@/components/ScenarioOutline';
 import { toast } from 'sonner';
 
 /**
@@ -268,6 +269,7 @@ function EditorContent() {
 
         {/* RIGHT COLUMN — step browser + preview */}
         <div className="flex flex-col gap-4 lg:w-1/3 min-w-0">
+          <ScenarioOutline content={content} editorRef={editorRef} />
           <StepBrowser onInsert={handleInsert} />
 
           {/* Feature preview */}
