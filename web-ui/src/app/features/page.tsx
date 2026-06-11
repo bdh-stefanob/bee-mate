@@ -127,7 +127,7 @@ export default function FeaturesPage() {
     const res = await fetch(`/api/download?file=${encodeURIComponent(file)}`);
     if (!res.ok) return;
     const content = await res.text();
-    localStorage.setItem('gsd-editor-draft', content);
+    localStorage.setItem('gsd-editor-incoming', JSON.stringify({ content, filePath: file }));
     router.push('/editor');
   }
 
