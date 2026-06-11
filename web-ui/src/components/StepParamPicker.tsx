@@ -48,15 +48,10 @@ function buildInsertLine(keyword: GherkinKeyword, resolved: string): string {
 }
 
 function getParamEnumForIndex(
-  expression: string,
   paramEnums: ParamEnumDef[] | undefined,
   targetIndex: number
 ): ParamEnumDef | undefined {
-  if (!paramEnums?.length) return undefined;
-  const tokens = [...expression.matchAll(/\{[^}]+\}/g)];
-  const token = tokens[targetIndex]?.[0];
-  if (!token) return undefined;
-  return paramEnums.find(p => p.token === token);
+  return paramEnums?.[targetIndex];
 }
 
 // ---------------------------------------------------------------------------
@@ -134,7 +129,7 @@ export function StepParamPicker({ step, defaultKeyword, onInsert, onClose }: Ste
 
       {/* Param fields */}
       {paramMatches.map((match, i) => {
-        const enumDef = getParamEnumForIndex(step.expression, step.paramEnums, i);
+        const enumDef = getParamEnumForIndex(step.paramEnums, i);
         const token = match[0];
         const label = enumDef?.label ?? token;
         const enumValues = enumDef?.values ?? [];
