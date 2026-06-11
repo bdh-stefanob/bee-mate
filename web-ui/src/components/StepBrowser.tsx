@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -20,14 +19,6 @@ export interface StepBrowserProps {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function statusClass(status: CatalogStep['status']): string {
-  switch (status) {
-    case 'implemented': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
-    case 'wanted':      return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
-    case 'deprecated':  return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-  }
-}
 
 function guessKeyword(expr: string): GherkinKeyword {
   const l = expr.toLowerCase();
@@ -50,6 +41,21 @@ const KEYWORD_CLASS: Record<string, string> = {
   Then:  'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
 };
 const KEYWORD_SHORT: Record<string, string> = { Given: 'G', When: 'W', Then: 'T' };
+
+const STATUS_TEXT_CLASS: Record<string, string> = {
+  implemented: 'text-emerald-600 dark:text-emerald-400',
+  wanted:      'text-amber-600 dark:text-amber-400',
+  deprecated:  'text-red-500 dark:text-red-400',
+};
+
+function renderExpression(expr: string, active: boolean) {
+  const parts = expr.split(/(\{[^}]+\})/);
+  return parts.map((part, i) =>
+    /^\{[^}]+\}$/.test(part)
+      ? <span key={i} className={active ? 'text-teal-200' : 'text-amber-600 dark:text-amber-400'}>{part}</span>
+      : <span key={i}>{part}</span>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -226,7 +232,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
 
               {/* Step list */}
               <ul ref={listRef} role="listbox" aria-label="Step expressions"
-                  className="overflow-y-auto" style={{ maxHeight: '320px' }}>
+                  className="overflow-y-auto" style={{ maxHeight: '480px' }}>
                 {isLoading ? (
                   <li aria-busy="true">
                     <div className="space-y-1 py-1">
@@ -254,79 +260,77 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                         aria-selected={active}
                         onMouseDown={e => { e.preventDefault(); handleStepClick(step); }}
                         onMouseEnter={() => setActiveIndex(i)}
-                        className={`relative px-3 py-2 cursor-pointer flex items-center gap-1.5 text-xs ${
+                        className={`relative px-3 py-2 cursor-pointer flex flex-col gap-0.5 text-xs ${
                           active ? 'bg-teal-600 text-white' : 'hover:bg-muted text-foreground'
                         }`}
                       >
-                        {/* Dependency dot */}
-                        {hasDeps && (
-                          <Tooltip>
-                            <TooltipTrigger
-                              className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full p-0 border-0 bg-transparent ${
-                                active ? '' : ''
-                              }`}
-                            >
-                              <span className={`block w-1.5 h-1.5 rounded-full ${active ? 'bg-orange-300' : 'bg-accent'}`} />
-                            </TooltipTrigger>
-                            <TooltipContent side="left" className="max-w-[240px] text-xs">
-                              <p className="text-[11px] font-medium text-muted-foreground mb-1">Requires:</p>
-                              <ul className="list-disc pl-3 space-y-0.5">
-                                {step.requires!.map(req => (
-                                  <li key={req} className="font-mono">{req}</li>
-                                ))}
-                              </ul>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
+                        {/* Row 1: keyword + expression + param indicator */}
+                        <div className="flex items-start gap-1.5 min-w-0">
+                          {/* Dependency dot */}
+                          {hasDeps && (
+                            <Tooltip>
+                              <TooltipTrigger className="shrink-0 mt-1 p-0 border-0 bg-transparent">
+                                <span className={`block w-1.5 h-1.5 rounded-full ${active ? 'bg-orange-300' : 'bg-accent'}`} />
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-[240px] text-xs">
+                                <p className="text-[11px] font-medium text-muted-foreground mb-1">Requires:</p>
+                                <ul className="list-disc pl-3 space-y-0.5">
+                                  {step.requires!.map(req => (
+                                    <li key={req} className="font-mono">{req}</li>
+                                  ))}
+                                </ul>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
 
-                        {/* Keyword badge */}
-                        <span
-                          className={`shrink-0 w-5 text-center text-[10px] font-bold rounded ${
-                            active ? 'bg-white/20 text-white' : KEYWORD_CLASS[kw]
-                          }`}
-                          title={kw}
-                        >
-                          {KEYWORD_SHORT[kw]}
-                        </span>
+                          {/* Keyword badge */}
+                          <span
+                            className={`shrink-0 w-5 h-[18px] flex items-center justify-center text-[10px] font-bold rounded mt-0.5 ${
+                              active ? 'bg-white/20 text-white' : KEYWORD_CLASS[kw]
+                            }`}
+                            title={kw}
+                          >
+                            {KEYWORD_SHORT[kw]}
+                          </span>
 
-                        {/* Expression */}
-                        <span className="flex-1 font-mono truncate" title={step.expression}>
-                          {step.expression}
-                        </span>
+                          {/* Expression — wraps instead of truncating */}
+                          <span className="flex-1 font-mono leading-snug break-words min-w-0">
+                            {renderExpression(step.expression, active)}
+                          </span>
 
-                        {/* Area badge */}
-                        <Badge variant="outline"
-                          className={`shrink-0 text-[10px] px-1 ${active ? 'border-teal-300 text-teal-100' : ''}`}>
-                          {step.area}
-                        </Badge>
+                          {/* Param indicator */}
+                          {hasParams && (
+                            <Tooltip>
+                              <TooltipTrigger
+                                className={`shrink-0 self-start mt-0.5 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] leading-none ${
+                                  active
+                                    ? 'border-teal-300 text-teal-100'
+                                    : hasEnums
+                                      ? 'border-primary/20 bg-primary/10 text-primary'
+                                      : 'border-border text-muted-foreground font-mono'
+                                }`}
+                              >
+                                {hasEnums ? '● ~' : '{P}'}
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="text-xs">
+                                {hasEnums
+                                  ? `${step.paramEnums?.find(p => p.values.length > 0)?.values.length ?? 0} known values`
+                                  : 'Free-text parameter'}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
 
-                        {/* Param indicator */}
-                        {hasParams && (
-                          <Tooltip>
-                            <TooltipTrigger
-                              className={`shrink-0 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] leading-none ${
-                                active
-                                  ? 'border-teal-300 text-teal-100'
-                                  : hasEnums
-                                    ? 'border-primary/20 bg-primary/10 text-primary'
-                                    : 'border-border text-muted-foreground font-mono'
-                              }`}
-                            >
-                              {hasEnums ? '● ~' : '{P}'}
-                            </TooltipTrigger>
-                            <TooltipContent side="left" className="text-xs">
-                              {hasEnums
-                                ? `${step.paramEnums?.find(p => p.values.length > 0)?.values.length ?? 0} known values`
-                                : 'Free-text parameter'}
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-
-                        {/* Status badge */}
-                        <Badge variant="outline"
-                          className={`shrink-0 text-[10px] px-1 ${active ? 'border-teal-300 text-teal-100' : statusClass(step.status)}`}>
-                          {step.status}
-                        </Badge>
+                        {/* Row 2: area · status */}
+                        <div className="flex items-center gap-1 pl-6">
+                          <span className={`text-[10px] ${active ? 'text-teal-100' : 'text-muted-foreground'}`}>
+                            {step.area}
+                          </span>
+                          <span className={`text-[10px] ${active ? 'text-teal-200' : 'text-muted-foreground/40'}`}>·</span>
+                          <span className={`text-[10px] ${active ? 'text-teal-100' : STATUS_TEXT_CLASS[step.status] ?? 'text-muted-foreground'}`}>
+                            {step.status}
+                          </span>
+                        </div>
                       </li>
                     );
                   })
