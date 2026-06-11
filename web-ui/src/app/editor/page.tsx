@@ -54,14 +54,21 @@ function EditorContent() {
   const searchParams = useSearchParams();
   const stepParam = searchParams.get('step');
 
-  const initialContent = stepParam
-    ? `  Given ${safeDecodeURI(stepParam)}`
-    : '';
-
-  const [content, setContent] = useState<string>(initialContent);
+  const [content, setContent] = useState<string>(() => {
+    if (stepParam) return `  Given ${safeDecodeURI(stepParam)}`;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('gsd-editor-draft') ?? '';
+    }
+    return '';
+  });
   const [stepExpressions, setStepExpressions] = useState<string[]>([]);
   const [isCommitting, setIsCommitting] = useState(false);
   const editorRef = useRef<GherkinEditorHandle | null>(null);
+
+  // Persist draft to localStorage so navigating to catalog and back doesn't lose content
+  useEffect(() => {
+    localStorage.setItem('gsd-editor-draft', content);
+  }, [content]);
 
   // Load step expressions from catalog once
   useEffect(() => {
