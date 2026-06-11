@@ -55,6 +55,9 @@ function EditorContent() {
   const stepParam = searchParams.get('step');
 
   const [isSaving, setIsSaving] = useState(false);
+  const [proposalOpen, setProposalOpen] = useState(false);
+  const [proposalSelected, setProposalSelected] = useState<Set<string>>(new Set());
+  const [isProposing, setIsProposing] = useState(false);
   const [content, setContent] = useState<string>(() => {
     if (stepParam) return `  Given ${safeDecodeURI(stepParam)}`;
     if (typeof window !== 'undefined') {
@@ -180,13 +183,17 @@ function EditorContent() {
       const data = await res.json() as { ok?: boolean; path?: string; error?: string };
       if (!data.ok) throw new Error(data.error ?? 'Unknown error');
       toast.success(`Salvato in ${data.path}`);
+      if (unknownSteps.length > 0) {
+        setProposalSelected(new Set(unknownSteps));
+        setProposalOpen(true);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       toast.error(`Salvataggio fallito: ${msg}`);
     } finally {
       setIsSaving(false);
     }
-  }, [content]);
+  }, [content, unknownSteps]);
 
   // Ctrl+S → save
   useEffect(() => {
@@ -199,6 +206,36 @@ function EditorContent() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [handleSave]);
+
+  // Propose unknown steps to catalog as @wanted
+  const handlePropose = useCallback(async () => {
+    const expressions = [...proposalSelected];
+    if (!expressions.length) return;
+    const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
+    const tags = tagLine?.[1].match(/@(\S+)/g)?.map(tag => tag.slice(1)) ?? [];
+    const app  = tags[0] ? slugify(tags[0]) : '';
+    const area = tags[1] ? slugify(tags[1]) : 'to-classify';
+    setIsProposing(true);
+    try {
+      const res = await fetch('/api/catalog/propose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expressions, app, area }),
+      });
+      const data = await res.json() as { ok?: boolean; added?: number; error?: string };
+      if (!data.ok) throw new Error(data.error ?? 'Unknown error');
+      toast.success(`${data.added} step aggiunti al catalogo come @wanted`);
+      setProposalOpen(false);
+      // Refresh step expressions so unknownSteps recalculates
+      const catalogRes = await fetch('/api/catalog');
+      const catalogData = await catalogRes.json() as { steps?: CatalogStep[] };
+      if (catalogData.steps) setStepExpressions(catalogData.steps.map(s => s.expression));
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Errore proposta');
+    } finally {
+      setIsProposing(false);
+    }
+  }, [proposalSelected, content]);
 
   // Download current editor content as .feature file
   const handleDownload = useCallback(() => {
@@ -265,10 +302,52 @@ function EditorContent() {
           />
           {unknownSteps.length > 0 && (
             <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-2 text-xs text-orange-700 dark:text-orange-300">
-              <p className="font-semibold">⚠ {unknownSteps.length} step non nel catalogo:</p>
-              <ul className="mt-1 list-disc pl-4 space-y-0.5 font-mono">
-                {unknownSteps.map((s, i) => <li key={i}>{s}</li>)}
-              </ul>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-semibold">⚠ {unknownSteps.length} step non nel catalogo</p>
+                <button
+                  onClick={() => { setProposalSelected(new Set(unknownSteps)); setProposalOpen(o => !o); }}
+                  className="shrink-0 text-[10px] px-2 py-0.5 rounded border border-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors"
+                >
+                  {proposalOpen ? 'Chiudi ▲' : 'Proponi al catalogo ▼'}
+                </button>
+              </div>
+
+              {proposalOpen && (
+                <div className="mt-2 pt-2 border-t border-orange-200 dark:border-orange-800 flex flex-col gap-2">
+                  <div className="space-y-1">
+                    {unknownSteps.map(s => (
+                      <label key={s} className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={proposalSelected.has(s)}
+                          onChange={() => setProposalSelected(prev => {
+                            const next = new Set(prev);
+                            if (next.has(s)) { next.delete(s); } else { next.add(s); }
+                            return next;
+                          })}
+                          className="mt-0.5 shrink-0 accent-orange-600"
+                        />
+                        <span className="font-mono">{s}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handlePropose}
+                      disabled={isProposing || proposalSelected.size === 0}
+                      className="text-[10px] px-2 py-0.5 rounded bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:opacity-50"
+                    >
+                      {isProposing ? 'Aggiunta…' : `Aggiungi ${proposalSelected.size} come @wanted`}
+                    </button>
+                    <button
+                      onClick={() => setProposalOpen(false)}
+                      className="text-[10px] px-2 py-0.5 rounded border border-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors"
+                    >
+                      Ignora
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <ImportDropzone
