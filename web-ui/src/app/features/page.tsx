@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FeatureSummary } from '@/lib/types';
 import FeaturePreview from '@/components/FeaturePreview';
 import { useLanguage } from '@/providers/Providers';
+import { toast } from 'sonner';
 
 // ---------------------------------------------------------------------------
 // Tree building
@@ -57,8 +58,11 @@ export default function FeaturesPage() {
   const [error, setError] = useState<string | null>(null);
   const [collapsedApps, setCollapsedApps] = useState<Set<string>>(new Set());
   const [collapsedFlows, setCollapsedFlows] = useState<Set<string>>(new Set());
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  function loadFeatures() {
+    setLoading(true);
     fetch('/api/features')
       .then(res => res.json())
       .then((data: unknown) => {
@@ -69,7 +73,37 @@ export default function FeaturesPage() {
         setError(err instanceof Error ? err.message : 'Failed to load features');
         setLoading(false);
       });
-  }, []);
+  }
+
+  useEffect(() => { loadFeatures(); }, []);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = '';
+    if (!file) return;
+    if (!file.name.endsWith('.feature')) {
+      toast.error('Seleziona un file .feature');
+      return;
+    }
+    setUploading(true);
+    try {
+      const content = await file.text();
+      const res = await fetch('/api/features', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, filePath: file.name }),
+      });
+      const data = await res.json() as { ok?: boolean; path?: string; error?: string };
+      if (!data.ok) throw new Error(data.error ?? 'Errore sconosciuto');
+      toast.success(`Caricato: ${data.path}`);
+      loadFeatures();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Upload fallito');
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const { tree, flat } = useMemo(() => buildTree(features), [features]);
 
@@ -129,7 +163,25 @@ export default function FeaturesPage() {
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">{t.features.title}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t.features.title}</h1>
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".feature"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors disabled:opacity-50"
+          >
+            {uploading ? 'Caricamento…' : '+ Carica .feature'}
+          </button>
+        </div>
+      </div>
 
       <div className="flex flex-1 gap-4 min-h-0">
         {/* Tree sidebar */}
@@ -142,9 +194,6 @@ export default function FeaturesPage() {
             </div>
           )}
           {!loading && error && <p className="text-sm text-destructive">{error}</p>}
-          {!loading && !error && features.length === 0 && (
-            <p className="text-muted-foreground text-sm">{t.features.noFiles}</p>
-          )}
 
           {/* Tree: App → Flow → Features */}
           {tree.map(({ app, flows }) => {
@@ -187,13 +236,17 @@ export default function FeaturesPage() {
           {/* Flat features (no app/flow) */}
           {flat.length > 0 && (
             <div>
-              {tree.length > 0 && (
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide px-2 py-1 mt-2">
-                  Other
-                </p>
-              )}
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide px-2 py-1 mt-1">
+                {tree.length > 0 ? 'Altro' : 'Feature files'}
+              </p>
               {flat.map(f => renderFeatureRow(f, '0.5rem'))}
             </div>
+          )}
+
+          {!loading && features.length === 0 && (
+            <p className="text-xs text-muted-foreground px-2 pt-2">
+              Nessun file trovato. Carica un .feature o creane uno dall&apos;editor.
+            </p>
           )}
         </div>
 
