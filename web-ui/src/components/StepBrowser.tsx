@@ -72,6 +72,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   const [open, setOpen] = useState(true);
   const [query, setQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
+  const [keywordFilter, setKeywordFilter] = useState<GherkinKeyword | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pickerStep, setPickerStep] = useState<CatalogStep | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -92,6 +93,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   const filtered = useMemo(() => {
     let list = steps;
     if (areaFilter) list = list.filter(s => s.area === areaFilter);
+    if (keywordFilter) list = list.filter(s => guessKeyword(s.expression) === keywordFilter);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(s =>
@@ -100,9 +102,9 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
       );
     }
     return list;
-  }, [steps, areaFilter, query]);
+  }, [steps, areaFilter, keywordFilter, query]);
 
-  useEffect(() => { setActiveIndex(0); }, [query, areaFilter]);
+  useEffect(() => { setActiveIndex(0); }, [query, areaFilter, keywordFilter]);
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -191,8 +193,27 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                 </div>
               )}
 
+              {/* Keyword filter pills */}
+              <div className="px-2 pb-1 flex gap-1">
+                {([null, 'Given', 'When', 'Then'] as const).map(kw => (
+                  <button
+                    key={kw ?? 'all'}
+                    onClick={() => setKeywordFilter(kw)}
+                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
+                      keywordFilter === kw
+                        ? kw === null
+                          ? 'bg-teal-600 text-white border-teal-600'
+                          : `border-transparent text-white ${kw === 'Given' ? 'bg-teal-700' : kw === 'When' ? 'bg-blue-600' : 'bg-purple-600'}`
+                        : 'border-border text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {kw ?? 'All'}
+                  </button>
+                ))}
+              </div>
+
               {/* Search */}
-              <div className="p-2">
+              <div className="p-2 pt-1">
                 <Input
                   placeholder={t.stepBrowser.search}
                   value={query}
