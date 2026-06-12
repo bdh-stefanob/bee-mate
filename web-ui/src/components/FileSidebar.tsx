@@ -66,6 +66,7 @@ export function FileSidebar({ openFilePaths, activeFilePath, onOpenFile }: FileS
   const [featOpen, setFeatOpen] = useState(true);
   const [gitOpen, setGitOpen] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
+  const [featQuery, setFeatQuery] = useState('');
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -82,6 +83,16 @@ export function FileSidebar({ openFilePaths, activeFilePath, onOpenFile }: FileS
   useEffect(() => { refresh(); }, [refresh]);
 
   const { tree, flat } = useMemo(() => buildTree(features), [features]);
+
+  const featQueryLower = featQuery.trim().toLowerCase();
+  const filteredFeatures = useMemo(() =>
+    featQueryLower
+      ? features.filter(f =>
+          f.name.toLowerCase().includes(featQueryLower) ||
+          f.file.toLowerCase().includes(featQueryLower)
+        )
+      : null,
+  [features, featQueryLower]);
 
   async function openFile(file: string) {
     if (opening === file) return;
@@ -161,6 +172,17 @@ export function FileSidebar({ openFilePaths, activeFilePath, onOpenFile }: FileS
           {sectionHeader('Features', featOpen, () => setFeatOpen(o => !o), features.length)}
           {featOpen && (
             <div className="pb-1">
+              {/* Search */}
+              <div className="px-2 pb-1">
+                <input
+                  type="text"
+                  value={featQuery}
+                  onChange={e => setFeatQuery(e.target.value)}
+                  placeholder="Cerca feature…"
+                  className="w-full text-[10px] px-2 py-0.5 rounded border border-border bg-muted/40 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-teal-500"
+                />
+              </div>
+
               {loading && (
                 <div className="space-y-1 px-2 py-1">
                   {[...Array(3)].map((_, i) => (
@@ -168,7 +190,19 @@ export function FileSidebar({ openFilePaths, activeFilePath, onOpenFile }: FileS
                   ))}
                 </div>
               )}
-              {!loading && tree.map(({ app, flows }) => {
+
+              {/* Search results — flat list */}
+              {!loading && filteredFeatures && (
+                <>
+                  {filteredFeatures.length === 0
+                    ? <p className="px-2 py-1 text-[10px] text-muted-foreground">Nessun risultato</p>
+                    : filteredFeatures.map(f => <FeatureRow key={f.file} f={f} indent="0.5rem" />)
+                  }
+                </>
+              )}
+
+              {/* Normal tree — shown when no query */}
+              {!loading && !filteredFeatures && tree.map(({ app, flows }) => {
                 const appCollapsed = collapsedApps.has(app);
                 return (
                   <div key={app}>
