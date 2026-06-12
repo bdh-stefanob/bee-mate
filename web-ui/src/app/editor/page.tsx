@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { GherkinEditor, type GherkinEditorHandle } from '@/components/GherkinEditor';
 import { GherkinToolbar } from '@/components/GherkinToolbar';
 import { StepBrowser } from '@/components/StepBrowser';
+import { FileSidebar } from '@/components/FileSidebar';
 import { ImportDropzone } from '@/components/ImportDropzone';
 import type { CatalogStep } from '@/lib/types';
 import { slugify } from '@/lib/repo';
@@ -117,6 +118,22 @@ function EditorContent() {
   const [tabs, setTabs] = useState<EditorTab[]>(initState.tabs);
   const [activeTabId, setActiveTabId] = useState<string>(initState.activeId || initState.tabs[0]?.id || '');
 
+  // Sidebar state (persisted)
+  const [showSidebar, setShowSidebar] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('gsd-editor-sidebar') !== 'false';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('gsd-editor-sidebar', String(showSidebar));
+  }, [showSidebar]);
+
+  // Open file paths (for sidebar highlighting)
+  const openFilePaths = useMemo(
+    () => new Set(tabs.map(t => t.filePath).filter(Boolean) as string[]),
+    [tabs]
+  );
+
   // Proposal panel state
   const [proposalOpen, setProposalOpen] = useState(false);
   const [proposalSelected, setProposalSelected] = useState<Set<string>>(new Set());
@@ -225,6 +242,16 @@ function EditorContent() {
   // ---------------------------------------------------------------------------
   // Editor actions
   // ---------------------------------------------------------------------------
+
+  const handleOpenFile = useCallback((filePath: string, content: string) => {
+    setTabs(prev => {
+      const existing = prev.find(t => t.filePath === filePath);
+      if (existing) { setActiveTabId(existing.id); return prev; }
+      const t = newTab(content, filePath);
+      setActiveTabId(t.id);
+      return [...prev, t];
+    });
+  }, []);
 
   const handleInsert = useCallback((text: string) => {
     editorRef.current?.insertAtCursor(text);
@@ -360,11 +387,35 @@ function EditorContent() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="p-4 lg:p-6 max-w-screen-xl mx-auto flex flex-col gap-3">
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+
+      {/* Left sidebar */}
+      {showSidebar && (
+        <div className="w-52 shrink-0 overflow-hidden">
+          <FileSidebar
+            openFilePaths={openFilePaths}
+            activeFilePath={activeTab?.filePath}
+            onOpenFile={handleOpenFile}
+          />
+        </div>
+      )}
+
+      {/* Main area */}
+      <div className="flex-1 min-w-0 overflow-y-auto p-4 lg:p-6 flex flex-col gap-3">
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">{t.editor.title}</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSidebar(o => !o)}
+            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title={showSidebar ? 'Nascondi sidebar' : 'Mostra sidebar'}
+            aria-label="Toggle sidebar"
+          >
+            ☰
+          </button>
+          <h1 className="text-2xl font-bold text-foreground">{t.editor.title}</h1>
+        </div>
         <div className="flex items-center gap-2">
           {settings.githubToken && (
             <button onClick={handleCommitGitHub} disabled={isCommitting || !content.trim()}
@@ -499,6 +550,7 @@ function EditorContent() {
           </div>
         </div>
       </div>
+      </div> {/* end main area */}
     </div>
   );
 }
