@@ -1,3 +1,226 @@
+================================================================================
+  BDD AUTHORING PORTAL — DEMO SCRIPT
+  Friday 13 June 2026
+  Audience: Manager
+  Runtime: ~12 minutes
+================================================================================
+
+
+--------------------------------------------------------------------------------
+  PRE-DEMO CHECKLIST (do this BEFORE the meeting)
+--------------------------------------------------------------------------------
+
+  [ ] Open Chrome — navigate to http://localhost:3000
+  [ ] Open this file in Notepad or a plain text editor (split screen or alt-tab)
+  [ ] Editor tab: blank new feature open, no content
+  [ ] StepBrowser visible on the right, no filters active
+  [ ] Step catalog loaded (wait for steps to appear in browser)
+  [ ] Zoom browser to 110% so text is readable on shared screen
+
+
+--------------------------------------------------------------------------------
+  OPENING  (30 seconds)
+--------------------------------------------------------------------------------
+
+SAY:
+  "Thanks for the time — I want to show you something I've been building.
+   It solves a real problem I see every day in the QA team.
+   I'll keep it under 15 minutes."
+
+  [Switch to THIS FILE in Notepad — point at it on screen]
+
+  "This is what a test scenario looks like today. Written by one of our QAs
+   last month. It's Notepad. No structure, no shared language."
+
+  [Scroll slowly through the BEFORE EXAMPLE at the bottom of this file]
+
+  "45 steps — just to place one order. Three lines just to say
+   'the user confirms their phone number'. It takes 30 minutes to write,
+   it's unreadable to anyone outside QA, and there's no way to reuse any of it."
+
+
+KEY POINT TO LAND:
+  -> Every QA writes differently. Same flow, different words. No consistency.
+  -> Nobody knows if the same flow is already covered by someone else.
+  -> A product owner cannot read this. The business cannot validate it.
+
+
+--------------------------------------------------------------------------------
+  ACT 1 — THE CATALOG  (4 minutes)
+--------------------------------------------------------------------------------
+
+  [Switch to the browser — editor page]
+  [Point to the StepBrowser panel on the right]
+
+SAY:
+  "What I've built is a portal where the team writes scenarios using a
+   shared catalog of approved steps. Think of it as a vocabulary that the
+   whole team agrees on."
+
+  [Click the G (Given) filter]
+
+  "These are our Given steps — starting conditions. Standard, approved,
+   reusable by anyone on the team."
+
+  [Click the W (When) filter]
+
+  "These are the When steps — user actions. Notice: not 'click the weight
+   loss banner'. Instead: 'the user selects Weight Loss from the popular
+   services menu'. One line that a product owner can read."
+
+  [Click the T (Then) filter]
+
+  "And these are our assertions. What we expect the system to do.
+   Clear, unambiguous, agreed."
+
+  [Reset filter to All — type "weight" in the search box]
+
+  "Everything is searchable. I'm building a weight loss scenario — I find
+   the relevant steps in seconds."
+
+
+KEY POINTS TO LAND:
+  -> Shared vocabulary = no more inconsistency across the team.
+  -> Declarative style = readable by the business, not just QA.
+  -> Searchable = fast to compose, hard to get wrong.
+
+
+--------------------------------------------------------------------------------
+  ACT 2 — WRITING A SCENARIO LIVE  (5 minutes)
+--------------------------------------------------------------------------------
+
+  [Click the + button to open a new editor tab]
+  [Clear the search box in StepBrowser]
+
+SAY:
+  "Let me write a scenario from scratch. New patient, first-time weight
+   loss order. Watch how fast this goes."
+
+  [Type the following — slowly, let them read it]
+
+  ---- TYPE THIS ----
+  @brochure-clinic @weightloss
+  Feature: Weight Loss Treatment — First Time Order
+
+    Scenario: New patient places a Wegovy order
+
+      Given an existing logged-in user
+      When the user selects "Weight loss" from the popular services menu
+      When the user selects "I'm New" as their service status
+      When the user selects medicine "Wegovy" with quantity "0.25mg"
+      When the user completes the medical history questionnaire
+      Then the system shows the order submission confirmation
+      Then the order is placed on PIMS with status "Awaiting ID approval"
+  -------------------
+
+SAY (while typing):
+  "Tags at the top organise the file in the repo automatically.
+   Feature title — business language.
+   And now the scenario steps — I pick from the catalog, no free-typing."
+
+  [Point at the StepBrowser — steps filter/highlight as you type]
+
+  "No orange warning. Every step I used is already approved in the catalog."
+
+  [Now add ONE made-up step]
+
+  ---- ADD THIS LINE ----
+      When the user dismisses the promotional banner
+  -----------------------
+
+  [Point at the orange warning banner that appears]
+
+SAY:
+  "Now I've added something that doesn't exist yet. The tool flags it
+   immediately. This is the governance mechanism."
+
+  [Click 'Propose to catalog']
+
+  "The QA ticks it and submits for approval — it becomes 'wanted'.
+   As the lead, I review it: is this the right abstraction? Is there
+   already a step that covers this? I approve or suggest an alternative.
+   Once approved, it's available to the whole team."
+
+
+KEY POINTS TO LAND:
+  -> Real-time validation — you can't silently introduce inconsistent steps.
+  -> Governance loop: propose → review → approve. Steve controls the vocabulary.
+  -> 45 imperative steps → 7 declarative steps. Same coverage, 10x more readable.
+
+
+--------------------------------------------------------------------------------
+  ACT 3 — SAVING AND THE BIGGER PICTURE  (2 minutes)
+--------------------------------------------------------------------------------
+
+  [Press Ctrl+S to save]
+  [Point at the sidebar — Changes section]
+
+SAY:
+  "When I save, the scenario is written as a proper .feature file directly
+   into the Git repository. No copy-paste, no manual file management.
+   It appears here in the sidebar — I can see exactly what changed."
+
+  [Pause — let it land]
+
+  "So what does this mean in practice?
+   Today: 30 minutes in Notepad, inconsistent, not reviewable, not reusable.
+   With this: 3 minutes, validated, in version control, readable by the PO."
+
+
+KEY POINTS TO LAND:
+  -> Directly in Git = traceable, reviewable on pull request.
+  -> The team's vocabulary grows over time — the catalog becomes an asset.
+
+
+--------------------------------------------------------------------------------
+  CLOSING  (1 minute)
+--------------------------------------------------------------------------------
+
+SAY:
+  "This is the foundation — what I'd call M1. The shared vocabulary and the
+   governed authoring workflow.
+
+   What I want to build next: a Jira integration so a scenario can be attached
+   directly to a ticket, and a VS Code extension for the engineers who prefer
+   to stay in their IDE.
+
+   But the core value is already here: consistent scenarios, a controlled
+   vocabulary, and test cases that a product owner can actually read and sign
+   off on.
+
+   Happy to take any questions."
+
+
+--------------------------------------------------------------------------------
+  IF ASKED — QUICK ANSWERS
+--------------------------------------------------------------------------------
+
+  Q: How long did this take to build?
+  A: "A few weeks of evenings — it's built on standard open-source tools.
+      The hard part was the methodology, not the code."
+
+  Q: Does the whole team need to use it?
+  A: "No — we can adopt it gradually. Even one QA using it raises the bar
+      for the whole team because the .feature files land in the same repo."
+
+  Q: What happens to the existing Notepad test cases?
+  A: "They can be imported — I can paste them in and the tool will flag
+      which steps need to be added to the catalog. Migration is incremental."
+
+  Q: Can the business / POs access this?
+  A: "Yes — it's a web app, no install needed. They can read scenarios,
+      they just can't edit the catalog without approval."
+
+  Q: Is this just for web testing?
+  A: "It's designed for any BDD scenario. The catalog adapts to whatever
+      flows the team needs to cover."
+
+
+================================================================================
+  [REFERENCE] BEFORE EXAMPLE — show this in Act 1
+  Open this in Notepad (plain text, no syntax highlighting)
+================================================================================
+
 Test Case: Weight Loss New Patient - Wegovy Order
 Tester: QA
 Date: June 2026
