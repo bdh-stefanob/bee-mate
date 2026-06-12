@@ -232,6 +232,8 @@ export function formatGherkin(text: string): string {
   const trimmed = rawLines.map(l => l.trim());
   const out: string[] = [];
   let prevBlank = false;
+  // Track indentation context so comments inherit the right column
+  let ctx: 'top' | 'feature' | 'scenario' = 'top';
 
   for (let i = 0; i < trimmed.length; i++) {
     const t = trimmed[i];
@@ -244,8 +246,10 @@ export function formatGherkin(text: string): string {
     prevBlank = false;
 
     if (/^(Feature:|Rule:)/.test(t)) {
+      ctx = 'feature';
       out.push(t);                             // col 0
     } else if (/^(Background:|Scenario:|Scenario Outline:)/.test(t)) {
+      ctx = 'scenario';
       out.push('  ' + t);                      // col 2
     } else if (/^(Given |When |Then |And |But )/.test(t)) {
       out.push('    ' + t);                    // col 4
@@ -262,7 +266,9 @@ export function formatGherkin(text: string): string {
       const atCol0 = /^(Feature:|Rule:)/.test(nextContent);
       out.push((atCol0 ? '' : '  ') + t);
     } else if (t.startsWith('#')) {
-      out.push(t);                             // col 0
+      // Comments inherit context: col 4 inside a scenario block, col 0 elsewhere
+      const indent = ctx === 'scenario' ? '    ' : '';
+      out.push(indent + t);
     } else {
       out.push('  ' + t);                      // col 2 (narrative / description)
     }

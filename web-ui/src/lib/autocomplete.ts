@@ -38,7 +38,9 @@ export function getSuggestions(text: string, steps: CatalogStep[]): CatalogStep[
   const prefix = getAutocompletePrefix(text);
   if (prefix === null) return [];
   const p = prefix.toLowerCase();
-  return steps
-    .filter(s => s.expression.toLowerCase().startsWith(p))
-    .slice(0, 8);
+  if (!p) return steps.slice(0, 8);
+  // contains-match: prioritise starts-with, then falls back to includes
+  const startsWith = steps.filter(s => s.expression.toLowerCase().startsWith(p));
+  const contains   = steps.filter(s => !s.expression.toLowerCase().startsWith(p) && s.expression.toLowerCase().includes(p));
+  return [...startsWith, ...contains].slice(0, 8);
 }

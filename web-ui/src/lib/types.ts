@@ -33,4 +33,5 @@ export interface FeatureSummary {
   scenarioCount: number;
   app?: string;   // first directory segment under src/features/
   flow?: string;  // second directory segment under src/features/
+  tags?: string[]; // #hashtags extracted from Gherkin comments (# #tag1 #tag2)
 }

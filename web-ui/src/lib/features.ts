@@ -51,7 +51,17 @@ export function parseFeatureSummary(content: string, relFile: string): FeatureSu
   const tagMatch = content.match(/^@(\S+)/m);
   const area = tagMatch ? tagMatch[1] : (parts.length > 1 ? parts[0] : 'unknown');
 
-  return { file: relFile, name, area, scenarioCount, app, flow };
+  // hashtag comments: lines like "# #tag1 #tag2" → tags = ['tag1', 'tag2']
+  const tags: string[] = [];
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('#')) {
+      const found = trimmed.match(/#(\w[\w-]*)/g);
+      if (found) found.forEach(t => tags.push(t.slice(1)));
+    }
+  }
+
+  return { file: relFile, name, area, scenarioCount, app, flow, tags: tags.length ? tags : undefined };
 }
 
 /**

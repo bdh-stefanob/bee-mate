@@ -89,7 +89,8 @@ export function FileSidebar({ openFilePaths, activeFilePath, onOpenFile }: FileS
     featQueryLower
       ? features.filter(f =>
           f.name.toLowerCase().includes(featQueryLower) ||
-          f.file.toLowerCase().includes(featQueryLower)
+          f.file.toLowerCase().includes(featQueryLower) ||
+          f.tags?.some(tag => tag.toLowerCase().includes(featQueryLower))
         )
       : null,
   [features, featQueryLower]);

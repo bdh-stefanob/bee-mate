@@ -100,9 +100,10 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
       if (!m) return null;
 
       const prefix = m[2].toLowerCase();
-      const filtered = stepExpressionsRef.current
-        .filter(e => e.toLowerCase().startsWith(prefix))
-        .slice(0, 8);
+      const all = stepExpressionsRef.current;
+      const startsWith = all.filter(e => e.toLowerCase().startsWith(prefix));
+      const contains   = all.filter(e => !e.toLowerCase().startsWith(prefix) && e.toLowerCase().includes(prefix));
+      const filtered   = [...startsWith, ...contains].slice(0, 8);
 
       if (filtered.length === 0) return null;
 
