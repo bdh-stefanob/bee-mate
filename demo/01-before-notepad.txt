@@ -1,0 +1,65 @@
+Test Case: Weight Loss New Patient - Wegovy Order
+Tester: QA
+Date: June 2026
+Status: PASS
+
+PRE-CONDITIONS:
+- user is logged in to the website
+- user has a valid account
+- website is accessible
+
+STEPS:
+
+1. go to homepage
+2. find the "Popular Services" section on the homepage
+3. click on the dropdown
+4. scroll down to find "Weight Loss"
+5. click "Weight Loss" - page should load
+6. wait for page to load
+7. there should be a button that says "Get Started Online"
+8. click "Get Started Online"
+9. a popup/modal appears
+10. select "I'm New" (radio button on the left side)
+11. click continue button (green button at the bottom)
+12. medicine selection page - should show list of medicines
+13. find Wegovy in the list and click on it
+14. a dropdown appears for quantity - select "0.25mg"
+15. click "without coaching" option
+16. click next
+17. confirmation page for medicine - read information
+18. click the checkbox to confirm you have read it
+19. click confirm button
+20. important information page
+21. scroll down to read all the text
+22. click "I confirm" checkbox
+23. click continue
+24. height and weight page
+25. enter height in cm field
+26. enter weight in kg field
+27. click calculate BMI (if button exists)
+28. click next
+29. medical history - lots of questions
+30. answer all questions with "No"
+31. click next on every page (there are like 5-6 pages)
+32. order summary page - check everything looks right
+33. select "Store Pickup" option
+34. click place order
+35. ID verification page
+36. click "Upload Photo ID"
+37. choose file from computer (driving licence)
+38. wait for upload
+39. click "Take a selfie" button
+40. take selfie or upload photo
+41. click submit
+42. order confirmation page should appear
+43. check for confirmation message
+44. check that a message appears in the secure inbox
+45. check PIMS (need access) - status should say "Awaiting ID approval"
+
+NOTES:
+- sometimes step 9 doesn't work on Safari, use Chrome
+- step 31 might be different if user has pre-existing conditions
+- PIMS check needs admin access, ask Steve
+
+EXPECTED RESULT: Order placed successfully and visible in PIMS
+ACTUAL RESULT: PASS (tested on Chrome, Windows 11)
