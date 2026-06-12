@@ -243,31 +243,37 @@ export function FileSidebar({ openFilePaths, activeFilePath, onOpenFile }: FileS
           )}
         </div>
 
-        {/* Git section */}
-        <div className="border-t border-border mt-1">
-          {sectionHeader('Changes', gitOpen, () => setGitOpen(o => !o), gitFiles.length || undefined)}
-          {gitOpen && (
-            <div className="pb-1">
-              {gitFiles.length === 0 && !loading && (
-                <p className="px-2 py-1 text-muted-foreground text-[10px]">Nessuna modifica</p>
+        {/* Git section — solo .feature modificati */}
+        {(() => {
+          const changedFeatures = gitFiles.filter(f => f.file.endsWith('.feature'));
+          return (
+            <div className="border-t border-border mt-1">
+              {sectionHeader('Changes', gitOpen, () => setGitOpen(o => !o), changedFeatures.length || undefined)}
+              {gitOpen && (
+                <div className="pb-1">
+                  {changedFeatures.length === 0 && !loading && (
+                    <p className="px-2 py-1 text-muted-foreground text-[10px]">Nessun feature modificato</p>
+                  )}
+                  {changedFeatures.map((gf, i) => {
+                    const { label, cls } = gitBadge(gf.code);
+                    const name = gf.file.split('/').pop() ?? gf.file;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => openFile(gf.file)}
+                        className="w-full flex items-center gap-1.5 px-2 py-0.5 hover:bg-muted text-left"
+                        title={gf.file}
+                      >
+                        <span className={`shrink-0 text-[10px] font-bold w-3 ${cls}`}>{label}</span>
+                        <span className="truncate text-foreground text-[10px]">{name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-              {gitFiles.map((gf, i) => {
-                const { label, cls } = gitBadge(gf.code);
-                const name = gf.file.split('/').pop() ?? gf.file;
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center gap-1.5 px-2 py-0.5 hover:bg-muted"
-                    title={gf.file}
-                  >
-                    <span className={`shrink-0 text-[10px] font-bold w-3 ${cls}`}>{label}</span>
-                    <span className="truncate text-foreground">{name}</span>
-                  </div>
-                );
-              })}
             </div>
-          )}
-        </div>
+          );
+        })()}
       </div>
     </div>
   );
