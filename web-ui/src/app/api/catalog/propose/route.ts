@@ -17,14 +17,14 @@ function extractParameters(expression: string): string[] {
 export async function POST(req: Request) {
   try {
     const body = await req.json() as {
-      expressions: string[];
+      steps: { expression: string; keyword?: string }[];
       app?: string;
       area?: string;
     };
 
-    const { expressions, app = '', area = 'to-classify' } = body;
-    if (!Array.isArray(expressions) || expressions.length === 0) {
-      return NextResponse.json({ ok: false, error: 'expressions required' }, { status: 400 });
+    const { steps, app = '', area = 'to-classify' } = body;
+    if (!Array.isArray(steps) || steps.length === 0) {
+      return NextResponse.json({ ok: false, error: 'steps required' }, { status: 400 });
     }
 
     const catalogPath = path.join(REPO_ROOT, 'step-catalog.json');
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const existing = new Set(catalog.steps.map(s => s.expression));
     let added = 0;
 
-    for (const expression of expressions) {
+    for (const { expression, keyword } of steps) {
       if (existing.has(expression)) continue;
       catalog.steps.push({
         expression,
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
         area,
         domain: '',
         status: 'wanted',
+        ...(keyword ? { keyword: keyword as CatalogStep['keyword'] } : {}),
         sourceRef: 'feature',
         documented: false,
       });
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     catalog.totalSteps = catalog.steps.length;
     fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2), 'utf-8');
 
-    return NextResponse.json({ ok: true, added, skipped: expressions.length - added });
+    return NextResponse.json({ ok: true, added, skipped: steps.length - added });
   } catch (err: unknown) {
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : 'Unknown error' },

@@ -168,16 +168,25 @@ function EditorContent() {
       .catch((err: Error) => { toast.error(`Catalog non disponibile: ${err.message}`); });
   }, []);
 
-  // Unknown steps in current content
+  // Unknown steps in current content — with resolved keyword (And/But inherit previous)
   const unknownSteps = useMemo(() => {
     if (!stepExpressions.length || !content.trim()) return [];
-    const re = /^\s+(?:given|when|then|and|but)\s+(.+)/gim;
+    const re = /^\s+(given|when|then|and|but)\s+(.+)/gim;
     const seen = new Set<string>();
-    const result: string[] = [];
+    const result: { expression: string; keyword: 'Given' | 'When' | 'Then' }[] = [];
+    let lastKw: 'Given' | 'When' | 'Then' = 'When';
     for (const m of content.matchAll(re)) {
-      const text = m[1].trim();
+      const kwRaw = m[1].toLowerCase();
+      let kw: 'Given' | 'When' | 'Then';
+      if (kwRaw === 'given') kw = 'Given';
+      else if (kwRaw === 'when') kw = 'When';
+      else if (kwRaw === 'then') kw = 'Then';
+      else kw = lastKw;
+      lastKw = kw;
+      const text = m[2].trim();
       if (!seen.has(text) && !matchesCatalog(text, stepExpressions)) {
-        seen.add(text); result.push(text);
+        seen.add(text);
+        result.push({ expression: text, keyword: kw });
       }
     }
     return result;
@@ -283,7 +292,7 @@ function EditorContent() {
         tab.id === activeTab.id ? { ...tab, dirty: false, filePath: savedPath } : tab
       ));
       if (unknownSteps.length > 0) {
-        setProposalSelected(new Set(unknownSteps));
+        setProposalSelected(new Set(unknownSteps.map(s => s.expression)));
         setProposalOpen(true);
       }
     } catch (err: unknown) {
@@ -303,17 +312,21 @@ function EditorContent() {
   }, [handleSave]);
 
   const handlePropose = useCallback(async () => {
-    const expressions = [...proposalSelected];
-    if (!expressions.length) return;
+    const selected = [...proposalSelected];
+    if (!selected.length) return;
     const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
     const tags = tagLine?.[1].match(/@(\S+)/g)?.map(tag => tag.slice(1)) ?? [];
+    const steps = selected.map(expr => ({
+      expression: expr,
+      keyword: unknownSteps.find(s => s.expression === expr)?.keyword,
+    }));
     setIsProposing(true);
     try {
       const res = await fetch('/api/catalog/propose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          expressions,
+          steps,
           app:  tags[0] ? slugify(tags[0]) : '',
           area: tags[1] ? slugify(tags[1]) : 'to-classify',
         }),
@@ -330,7 +343,7 @@ function EditorContent() {
     } finally {
       setIsProposing(false);
     }
-  }, [proposalSelected, content]);
+  }, [proposalSelected, content, unknownSteps]);
 
   const handleDownload = useCallback(() => {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
@@ -430,7 +443,7 @@ function EditorContent() {
               <div className="flex items-center justify-between gap-2">
                 <p className="font-semibold">⚠ {unknownSteps.length} step non nel catalogo</p>
                 <button
-                  onClick={() => { setProposalSelected(new Set(unknownSteps)); setProposalOpen(o => !o); }}
+                  onClick={() => { setProposalSelected(new Set(unknownSteps.map(s => s.expression))); setProposalOpen(o => !o); }}
                   className="shrink-0 text-[10px] px-2 py-0.5 rounded border border-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors"
                 >
                   {proposalOpen ? 'Chiudi ▲' : 'Proponi al catalogo ▼'}
@@ -439,7 +452,7 @@ function EditorContent() {
               {proposalOpen && (
                 <div className="mt-2 pt-2 border-t border-orange-200 dark:border-orange-800 flex flex-col gap-2">
                   <div className="space-y-1">
-                    {unknownSteps.map(s => (
+                    {unknownSteps.map(({ expression: s, keyword: kw }) => (
                       <label key={s} className="flex items-start gap-2 cursor-pointer">
                         <input type="checkbox" checked={proposalSelected.has(s)}
                           onChange={() => setProposalSelected(prev => {
@@ -449,7 +462,7 @@ function EditorContent() {
                           })}
                           className="mt-0.5 shrink-0 accent-orange-600"
                         />
-                        <span className="font-mono">{s}</span>
+                        <span className="font-mono"><span className="text-muted-foreground mr-1">{kw}</span>{s}</span>
                       </label>
                     ))}
                   </div>

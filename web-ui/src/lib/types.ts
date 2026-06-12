@@ -11,6 +11,7 @@ export interface CatalogStep {
   area: string;
   domain: string;
   status: 'implemented' | 'wanted' | 'deprecated';
+  keyword?: 'Given' | 'When' | 'Then';
   page?: string;
   requester?: string;
   sourceRef: string;

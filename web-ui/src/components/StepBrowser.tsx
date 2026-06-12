@@ -254,7 +254,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                   </li>
                 ) : (
                   filtered.map((step, i) => {
-                    const kw = guessKeyword(step.expression);
+                    const kw = step.keyword ?? guessKeyword(step.expression);
                     const active = i === activeIndex;
                     const hasParams = step.parameters?.length > 0;
                     const hasEnums = step.paramEnums?.some(p => p.values.length > 0);
