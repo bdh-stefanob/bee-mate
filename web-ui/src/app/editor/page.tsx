@@ -1,3 +1,5 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 
 // Editor depends entirely on browser APIs (localStorage, CodeMirror).
