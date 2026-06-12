@@ -193,24 +193,36 @@ function EditorInner() {
   }, []);
 
   // Unknown steps in current content — with resolved keyword (And/But inherit previous)
+  // Page markers: comment lines like "# #LOGIN" or "# #HOMEPAGE-POPULAR SERVICES MENU"
+  // are transitive: they stay active as the page for all following steps until the next marker.
   const unknownSteps = useMemo(() => {
     if (!stepExpressions.length || !content.trim()) return [];
-    const re = /^\s+(given|when|then|and|but)\s+(.+)/gim;
+    // All-caps comment = page marker: "# #LOGIN", "#WEIGHT LOSS", "# MEDICINE PREFER"
+    const PAGE_MARKER_RE = /^\s*#\s*#?([A-Z][A-Z0-9 _-]{1,})\s*$/;
+    const STEP_LINE_RE   = /^\s+(given|when|then|and|but)\s+(.+)/i;
     const seen = new Set<string>();
-    const result: { expression: string; keyword: 'Given' | 'When' | 'Then' }[] = [];
+    const result: { expression: string; keyword: 'Given' | 'When' | 'Then'; page: string }[] = [];
     let lastKw: 'Given' | 'When' | 'Then' = 'When';
-    for (const m of content.matchAll(re)) {
-      const kwRaw = m[1].toLowerCase();
+    let currentPage = '';
+    for (const line of content.split('\n')) {
+      const pm = line.match(PAGE_MARKER_RE);
+      if (pm) {
+        currentPage = pm[1].trim().toLowerCase().replace(/\s+/g, '-');
+        continue;
+      }
+      const sm = line.match(STEP_LINE_RE);
+      if (!sm) continue;
+      const kwRaw = sm[1].toLowerCase();
       let kw: 'Given' | 'When' | 'Then';
       if (kwRaw === 'given') kw = 'Given';
       else if (kwRaw === 'when') kw = 'When';
       else if (kwRaw === 'then') kw = 'Then';
       else kw = lastKw;
       lastKw = kw;
-      const text = m[2].trim();
+      const text = sm[2].trim();
       if (!seen.has(text) && !matchesCatalog(text, stepExpressions)) {
         seen.add(text);
-        result.push({ expression: text, keyword: kw });
+        result.push({ expression: text, keyword: kw, page: currentPage });
       }
     }
     return result;
@@ -349,10 +361,14 @@ function EditorInner() {
     if (!selected.length) return;
     const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
     const tags = tagLine?.[1].match(/@(\S+)/g)?.map(tag => tag.slice(1)) ?? [];
-    const steps = selected.map(expr => ({
-      expression: expr,
-      keyword: unknownSteps.find(s => s.expression === expr)?.keyword,
-    }));
+    const steps = selected.map(expr => {
+      const found = unknownSteps.find(s => s.expression === expr);
+      return {
+        expression: expr,
+        keyword: found?.keyword,
+        page: found?.page || undefined,
+      };
+    });
     setIsProposing(true);
     try {
       const res = await fetch('/api/catalog/propose', {
@@ -517,7 +533,7 @@ function EditorInner() {
                   {proposalOpen && (
                     <div className="mt-2 pt-2 border-t border-orange-200 dark:border-orange-800 flex flex-col gap-2">
                       <div className="space-y-1">
-                        {unknownSteps.map(({ expression: s, keyword: kw }) => (
+                        {unknownSteps.map(({ expression: s, keyword: kw, page }) => (
                           <label key={s} className="flex items-start gap-2 cursor-pointer">
                             <input type="checkbox" checked={proposalSelected.has(s)}
                               onChange={() => setProposalSelected(prev => {
@@ -527,7 +543,14 @@ function EditorInner() {
                               })}
                               className="mt-0.5 shrink-0 accent-orange-600"
                             />
-                            <span className="font-mono"><span className="text-muted-foreground mr-1">{kw}</span>{s}</span>
+                            <span className="font-mono flex-1 min-w-0">
+                              <span className="text-muted-foreground mr-1">{kw}</span>{s}
+                            </span>
+                            {page && (
+                              <span className="shrink-0 text-[9px] px-1 py-0.5 rounded bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-200 font-medium">
+                                {page}
+                              </span>
+                            )}
                           </label>
                         ))}
                       </div>

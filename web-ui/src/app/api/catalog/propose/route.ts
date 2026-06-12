@@ -17,7 +17,7 @@ function extractParameters(expression: string): string[] {
 export async function POST(req: Request) {
   try {
     const body = await req.json() as {
-      steps: { expression: string; keyword?: string }[];
+      steps: { expression: string; keyword?: string; page?: string }[];
       app?: string;
       area?: string;
     };
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const existing = new Set(catalog.steps.map(s => s.expression));
     let added = 0;
 
-    for (const { expression, keyword } of steps) {
+    for (const { expression, keyword, page } of steps) {
       if (existing.has(expression)) continue;
       catalog.steps.push({
         expression,
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
         domain: '',
         status: 'wanted',
         ...(keyword ? { keyword: keyword as CatalogStep['keyword'] } : {}),
+        ...(page   ? { page } : {}),
         sourceRef: 'feature',
         documented: false,
       });

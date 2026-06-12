@@ -127,7 +127,8 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
       const q = query.toLowerCase();
       list = list.filter(s =>
         s.expression.toLowerCase().includes(q) ||
-        s.area.toLowerCase().includes(q)
+        s.area.toLowerCase().includes(q) ||
+        (s.page ?? '').toLowerCase().includes(q)
       );
     }
     return list;
