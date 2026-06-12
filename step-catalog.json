@@ -1,659 +1,208 @@
 {
-  "generatedAt": "2026-06-11T08:06:51.438Z",
-  "totalSteps": 34,
-  "documentedSteps": 33,
-  "undocumentedSteps": 1,
+  "generatedAt": "2026-06-12T00:00:00.000Z",
+  "totalSteps": 20,
+  "documentedSteps": 0,
+  "undocumentedSteps": 20,
   "steps": [
     {
-      "expression": "I add {string} to the basket",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:27",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I am on the homepage",
+      "expression": "the user is on the Brochure home page",
       "parameters": [],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:14",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I enter my delivery address {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:53",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I proceed to checkout",
-      "parameters": [],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:40",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I should see my saved address {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:92",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I should see the order confirmation page",
-      "parameters": [],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:66",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "the order total should be {int}",
-      "parameters": [
-        "{int}"
-      ],
-      "app": "app-a",
-      "area": "imported",
-      "domain": "app-a/imported",
-      "status": "wanted",
-      "requester": "TBD",
-      "sourceRef": "src\\steps\\app-a\\imported\\checkout.steps.ts:79",
-      "doc": {
-        "params": {},
-        "intent": "<da completare>",
-        "wanted": true,
-        "requester": "TBD"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I search for the product {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "app-a",
-      "area": "orders",
-      "domain": "app-a/orders",
-      "status": "wanted",
-      "requester": "DEMO-001",
-      "assignee": "steve",
-      "sourceRef": "src\\steps\\app-a\\orders\\orders.steps.ts:15",
-      "doc": {
-        "params": {
-          "product": "The product name to search for."
-        },
-        "intent": "Searches the catalog for a product by name.",
-        "wanted": true,
-        "requester": "DEMO-001",
-        "assignee": "steve"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I am a registered user",
-      "parameters": [],
-      "app": "auth",
+      "app": "brochure-clinic",
       "area": "auth",
-      "domain": "auth",
-      "status": "implemented",
-      "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:16",
-      "doc": {
-        "params": {},
-        "intent": "Registers the test user so they can authenticate.",
-        "post": "A user account exists, with the default role.",
-        "page": "LoginPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I am a registered user with role {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "auth",
-      "area": "auth",
-      "domain": "auth",
-      "status": "implemented",
-      "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:26",
-      "doc": {
-        "params": {
-          "role": "The role to assign: \"admin\" | \"standard\"."
-        },
-        "intent": "Registers the test user with a specific role.",
-        "post": "A user account exists with the given role.",
-        "page": "LoginPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I land on my dashboard",
-      "parameters": [],
-      "app": "auth",
-      "area": "auth",
-      "domain": "auth",
-      "status": "implemented",
-      "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:47",
-      "doc": {
-        "params": {},
-        "intent": "Verifies the user reached their dashboard after login.",
-        "page": "LoginPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "I log in with valid credentials",
-      "parameters": [],
-      "app": "auth",
-      "area": "auth",
-      "domain": "auth",
-      "status": "implemented",
-      "page": "LoginPage",
-      "sourceRef": "src\\steps\\auth\\auth.steps.ts:39",
-      "doc": {
-        "params": {},
-        "intent": "Authenticates the current user with valid credentials.",
-        "pre": "A registered user exists.",
-        "post": "An authenticated session is active.",
-        "page": "LoginPage"
-      },
-      "documented": true
+      "domain": "brochure-clinic/auth",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
     },
     {
       "expression": "the user clicks the Login button",
       "parameters": [],
       "app": "brochure-clinic",
-      "area": "brochure-clinic",
-      "domain": "brochure-clinic",
+      "area": "auth",
+      "domain": "brochure-clinic/auth",
       "status": "wanted",
-      "page": "BrochureHomePage",
-      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:26",
-      "doc": {
-        "params": {},
-        "intent": "Clicks the primary Login button visible on the current page.",
-        "page": "BrochureHomePage",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user enters valid login credentials on the {string} page",
+      "parameters": ["{string}"],
+      "app": "brochure-clinic",
+      "area": "auth",
+      "domain": "brochure-clinic/auth",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
     },
     {
       "expression": "the user completes SMS verification",
       "parameters": [],
       "app": "brochure-clinic",
-      "area": "brochure-clinic",
-      "domain": "brochure-clinic",
+      "area": "auth",
+      "domain": "brochure-clinic/auth",
       "status": "wanted",
-      "page": "ClinicSmsVerificationPage",
-      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:52",
-      "doc": {
-        "params": {},
-        "intent": "Completes the entire SMS two-factor verification flow in one step.",
-        "post": "SMS code verified, session active.",
-        "page": "ClinicSmsVerificationPage",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user enters valid login credentials on the {string} page",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "brochure-clinic",
-      "area": "brochure-clinic",
-      "domain": "brochure-clinic",
-      "status": "wanted",
-      "page": "ClinicLoginPage",
-      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:37",
-      "doc": {
-        "params": {
-          "page": "The page where credentials are entered (e.g. \"Clinic login\")."
-        },
-        "intent": "Enters valid email and password credentials on the named login page.",
-        "page": "ClinicLoginPage",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user is on the Brochure home page",
-      "parameters": [],
-      "app": "brochure-clinic",
-      "area": "brochure-clinic",
-      "domain": "brochure-clinic",
-      "status": "wanted",
-      "page": "BrochureHomePage",
-      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:16",
-      "doc": {
-        "params": {},
-        "intent": "Navigates to the Boots Brochure home page as the test entry point.",
-        "post": "Browser is on the Brochure home page.",
-        "page": "BrochureHomePage",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
     },
     {
       "expression": "the user is successfully logged in",
       "parameters": [],
       "app": "brochure-clinic",
-      "area": "brochure-clinic",
-      "domain": "brochure-clinic",
+      "area": "auth",
+      "domain": "brochure-clinic/auth",
       "status": "wanted",
-      "sourceRef": "src\\steps\\brochure-clinic\\auth.steps.ts:61",
-      "doc": {
-        "params": {},
-        "intent": "Asserts the user has an authenticated session after login.",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "I am logged in as a {string} user",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "common",
-      "area": "common",
-      "domain": "common",
-      "status": "implemented",
-      "sourceRef": "src\\steps\\common\\common.steps.ts:29",
-      "doc": {
-        "params": {}
-      },
+      "sourceRef": "feature",
       "documented": false
     },
     {
       "expression": "the user is on the {string} page",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "common",
-      "area": "common",
-      "domain": "common",
+      "parameters": ["{string}"],
+      "app": "brochure-clinic",
+      "area": "auth",
+      "domain": "brochure-clinic/auth",
       "status": "wanted",
-      "sourceRef": "src\\steps\\common\\common.steps.ts:22",
-      "doc": {
-        "params": {
-          "page": "The page title or URL segment (e.g. \"My Account\", \"Summary\")."
-        },
-        "intent": "Asserts or navigates to any named page. Shared across all domains.",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
     },
     {
-      "expression": "I place the order",
+      "expression": "an existing logged-in user",
       "parameters": [],
-      "app": "orders",
-      "area": "orders",
-      "domain": "orders",
-      "status": "implemented",
-      "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:46",
-      "doc": {
-        "params": {},
-        "intent": "Submits the current cart as an order.",
-        "pre": "The cart contains at least one product.",
-        "post": "An order is created.",
-        "page": "CartPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "the cart contains the following products:",
-      "parameters": [],
-      "app": "orders",
-      "area": "orders",
-      "domain": "orders",
-      "status": "implemented",
-      "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:29",
-      "doc": {
-        "params": {},
-        "intent": "Adds several products to the cart from a table.",
-        "post": "The cart contains every product/quantity listed.",
-        "page": "CartPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "the cart contains the product {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "orders",
-      "area": "orders",
-      "domain": "orders",
-      "status": "implemented",
-      "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:17",
-      "doc": {
-        "params": {
-          "product": "The product name to add."
-        },
-        "intent": "Adds a single product to the cart.",
-        "post": "The cart contains the named product, quantity 1.",
-        "page": "CartPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "the order is confirmed",
-      "parameters": [],
-      "app": "orders",
-      "area": "orders",
-      "domain": "orders",
-      "status": "implemented",
-      "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:54",
-      "doc": {
-        "params": {},
-        "intent": "Verifies the order was confirmed.",
-        "page": "CartPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "the order status is {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "orders",
-      "area": "orders",
-      "domain": "orders",
-      "status": "implemented",
-      "page": "CartPage",
-      "sourceRef": "src\\steps\\orders\\orders.steps.ts:64",
-      "doc": {
-        "params": {
-          "status": "Expected status, e.g. \"pending\"."
-        },
-        "intent": "Verifies the order has the expected status.",
-        "page": "CartPage"
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user clicks {string} on the {string} service page",
-      "parameters": [
-        "{string}",
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
       "status": "wanted",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:33",
-      "doc": {
-        "params": {
-          "cta": "Button label (e.g. \"Get started online\", \"View our in store service\").",
-          "service": "The service page name (e.g. \"Weight Loss Treatment Service\")."
-        },
-        "intent": "Clicks a primary call-to-action on a service landing page.",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user clicks next on the {string} questionnaire page",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:150",
-      "doc": {
-        "params": {
-          "page": "The questionnaire page name."
-        },
-        "intent": "Clicks the Next button to advance from a questionnaire page.",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user confirms the medicine selection",
-      "parameters": [],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
-      "status": "wanted",
-      "page": "MedicineConfirmationPage",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:79",
-      "doc": {
-        "params": {},
-        "intent": "Clicks continue on the medicine confirmation page.",
-        "page": "MedicineConfirmationPage",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user enters height {string} in {string} and weight {string} in {string}",
-      "parameters": [
-        "{string}",
-        "{string}",
-        "{string}",
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
-      "status": "wanted",
-      "page": "HeightAndWeightPage",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:106",
-      "doc": {
-        "params": {
-          "height": "Numeric value as string (e.g. \"175\", \"5\").",
-          "heightUnit": "\"cm\" | \"ft/in\".",
-          "weight": "Numeric value as string (e.g. \"80\", \"12\").",
-          "weightUnit": "\"kg\" | \"st/lbs\"."
-        },
-        "intent": "Enters height and weight with explicit unit selection.",
-        "page": "HeightAndWeightPage",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user flags the consent checkbox and continues on the {string} page",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:89",
-      "doc": {
-        "params": {
-          "page": "The page name (e.g. \"Important Info\", \"GP or Bariatric Team\")."
-        },
-        "intent": "Flags the mandatory consent checkbox and clicks continue.",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user selects {string} and enters {string} on the {string} questionnaire page",
-      "parameters": [
-        "{string}",
-        "{string}",
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:137",
-      "doc": {
-        "params": {
-          "option": "The option label to select (triggers the text input).",
-          "value": "The free-text value to enter in the associated input field.",
-          "page": "The questionnaire page name."
-        },
-        "intent": "Selects an option that requires additional free-text on a questionnaire page.",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user selects {string} as their service status",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
-      "status": "wanted",
-      "page": "ServiceBeforePage",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:48",
-      "doc": {
-        "params": {
-          "status": "One of: \"I'm New\" | \"I haven't been here for over 3 months\" |"
-        },
-        "intent": "Selects the user's returning-patient status at the start of the flow.",
-        "page": "ServiceBeforePage",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
     },
     {
       "expression": "the user selects {string} from the popular services menu",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
+      "parameters": ["{string}"],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
       "status": "wanted",
-      "page": "BrochureHomePage",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:19",
-      "doc": {
-        "params": {
-          "service": "The service label (e.g. \"Weight loss\", \"Hair loss\", \"Acne\")."
-        },
-        "intent": "Selects a Boots service from the popular services navigation menu.",
-        "page": "BrochureHomePage",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
     },
     {
-      "expression": "the user selects {string} on the {string} questionnaire page",
-      "parameters": [
-        "{string}",
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
+      "expression": "the user selects {string} on the weight loss service page",
+      "parameters": ["{string}"],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
       "status": "wanted",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:122",
-      "doc": {
-        "params": {
-          "option": "The exact option label to select.",
-          "page": "The questionnaire page name (e.g. \"Ethnic Background\","
-        },
-        "intent": "Selects a single option on any questionnaire page and clicks next.",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user selects {string} as their service status",
+      "parameters": ["{string}"],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
     },
     {
       "expression": "the user selects medicine {string} with quantity {string} and coaching {string}",
-      "parameters": [
-        "{string}",
-        "{string}",
-        "{string}"
-      ],
-      "app": "weight-loss",
-      "area": "weight-loss",
-      "domain": "weight-loss",
+      "parameters": ["{string}", "{string}", "{string}"],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
       "status": "wanted",
-      "page": "MedicinePreferencePage",
-      "sourceRef": "src\\steps\\weight-loss\\questionnaire.steps.ts:66",
-      "doc": {
-        "params": {
-          "medicine": "Medicine name: \"Wegovy\" | \"Mounjaro\" | \"Nevolat\" | \"Orlistat\" |",
-          "quantity": "Dose string (e.g. \"0.25mg\", \"5mg\", \"3 Pens\"). Empty string when",
-          "coaching": "\"with\" | \"without\"."
-        },
-        "intent": "Selects a weight loss medicine with dosage tier and coaching option.",
-        "page": "MedicinePreferencePage",
-        "wanted": true
-      },
-      "documented": true
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user completes the medicine confirmation",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user confirms the important information and continues",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user enters their height and weight",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user completes the medical history questionnaire with no pre-existing conditions",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user places the order choosing store pickup",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the user verifies their identity with photo ID and selfie",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the system shows the order submission confirmation",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "a secure message is sent to the user account",
+      "parameters": [],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
+    },
+    {
+      "expression": "the order is placed on PIMS with status {string}",
+      "parameters": ["{string}"],
+      "app": "brochure-clinic",
+      "area": "weightloss",
+      "domain": "brochure-clinic/weightloss",
+      "status": "wanted",
+      "sourceRef": "feature",
+      "documented": false
     }
   ]
 }
