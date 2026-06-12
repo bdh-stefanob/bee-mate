@@ -401,7 +401,10 @@ function EditorContent() {
       )}
 
       {/* Main area */}
-      <div className="flex-1 min-w-0 overflow-y-auto p-4 lg:p-6 flex flex-col gap-3">
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+
+      {/* Header + tab bar — fixed, non scrollano */}
+      <div className="shrink-0 px-4 lg:px-6 pt-4 lg:pt-6 flex flex-col gap-3">
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -469,6 +472,11 @@ function EditorContent() {
           +
         </button>
       </div>
+
+      </div> {/* end header+tab bar */}
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-4 lg:px-6 pb-4 lg:pb-6 flex flex-col gap-3">
 
       {/* Two-column layout */}
       <div className="flex flex-col lg:flex-row gap-4">
@@ -550,6 +558,7 @@ function EditorContent() {
           </div>
         </div>
       </div>
+      </div> {/* end scrollable content */}
       </div> {/* end main area */}
     </div>
   );
