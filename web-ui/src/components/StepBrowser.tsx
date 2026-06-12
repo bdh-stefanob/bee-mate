@@ -22,16 +22,29 @@ export interface StepBrowserProps {
 
 function guessKeyword(expr: string): GherkinKeyword {
   const l = expr.toLowerCase();
+
+  // Given: preconditions / starting state
   if (
     l.startsWith('i am') || l.startsWith('i have') ||
     l.startsWith('there is') || l.startsWith('there are') ||
-    l.startsWith('a ') || l.startsWith('an ')
+    l.startsWith('a ') || l.startsWith('an ') ||
+    l.startsWith('the user is on the') || l.startsWith('the user has') ||
+    l.startsWith('the user is a') || l.startsWith('the user is logged')
   ) return 'Given';
+
+  // Then: system outcomes / assertions
   if (
+    l.startsWith('the system') ||
     l.startsWith('i should') || l.startsWith('it should') ||
-    l.startsWith('the ') || l.startsWith('my ') ||
-    l.startsWith('they should')
+    l.startsWith('they should') || l.startsWith('my ') ||
+    /^the user (is successfully|lands on)/.test(l) ||
+    /^the order (is|has|was)/.test(l) ||
+    /^a (secure|confirmation|message|notification)/.test(l)
   ) return 'Then';
+
+  // When: user actions (default for "the user does something")
+  if (l.startsWith('the user')) return 'When';
+
   return 'When';
 }
 
