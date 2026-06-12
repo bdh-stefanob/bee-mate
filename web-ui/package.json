@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:fresh": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\" && next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
