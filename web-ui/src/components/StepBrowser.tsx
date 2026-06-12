@@ -103,10 +103,26 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
     [steps]
   );
 
+  const areaCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    steps.forEach(s => map.set(s.area, (map.get(s.area) ?? 0) + 1));
+    return map;
+  }, [steps]);
+
+  const kwCounts = useMemo(() => {
+    const base = areaFilter ? steps.filter(s => s.area === areaFilter) : steps;
+    const kw = (s: CatalogStep) => s.keyword ?? guessKeyword(s.expression);
+    return {
+      Given: base.filter(s => kw(s) === 'Given').length,
+      When:  base.filter(s => kw(s) === 'When').length,
+      Then:  base.filter(s => kw(s) === 'Then').length,
+    };
+  }, [steps, areaFilter]);
+
   const filtered = useMemo(() => {
     let list = steps;
     if (areaFilter) list = list.filter(s => s.area === areaFilter);
-    if (keywordFilter) list = list.filter(s => guessKeyword(s.expression) === keywordFilter);
+    if (keywordFilter) list = list.filter(s => (s.keyword ?? guessKeyword(s.expression)) === keywordFilter);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(s =>
@@ -177,52 +193,76 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
             </div>
           ) : (
             <>
-              {/* Area filter pills */}
-              {areas.length > 1 && (
-                <div className="px-2 pt-2 flex flex-wrap gap-1">
-                  <button
-                    onClick={() => setAreaFilter(null)}
-                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
-                      areaFilter === null
-                        ? 'bg-teal-600 text-white border-teal-600'
-                        : 'border-border text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    {t.stepBrowser.allAreas}
-                  </button>
-                  {areas.map(area => (
+              {/* Filters — area pills + keyword pills */}
+              <div className="px-2 pt-2 pb-1 flex flex-col gap-1">
+                {/* Area */}
+                {areas.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
                     <button
-                      key={area}
-                      onClick={() => setAreaFilter(area === areaFilter ? null : area)}
-                      className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
-                        areaFilter === area
+                      onClick={() => setAreaFilter(null)}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                        areaFilter === null
                           ? 'bg-teal-600 text-white border-teal-600'
                           : 'border-border text-muted-foreground hover:bg-muted'
                       }`}
                     >
-                      {area}
+                      {t.stepBrowser.allAreas}
                     </button>
-                  ))}
-                </div>
-              )}
+                    {areas.map(area => (
+                      <button
+                        key={area}
+                        onClick={() => setAreaFilter(area === areaFilter ? null : area)}
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 ${
+                          areaFilter === area
+                            ? 'bg-teal-600 text-white border-teal-600'
+                            : 'border-border text-muted-foreground hover:bg-muted'
+                        }`}
+                      >
+                        {area}
+                        <span className={`text-[9px] ${areaFilter === area ? 'text-teal-100' : ''}`}>
+                          {areaCounts.get(area)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              {/* Keyword filter pills */}
-              <div className="px-2 pb-1 flex gap-1">
-                {([null, 'Given', 'When', 'Then'] as const).map(kw => (
+                {/* Keyword — sempre colorati, conteggio dinamico */}
+                <div className="flex gap-1">
                   <button
-                    key={kw ?? 'all'}
-                    onClick={() => setKeywordFilter(kw)}
-                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
-                      keywordFilter === kw
-                        ? kw === null
-                          ? 'bg-teal-600 text-white border-teal-600'
-                          : `border-transparent text-white ${kw === 'Given' ? 'bg-teal-700' : kw === 'When' ? 'bg-blue-600' : 'bg-purple-600'}`
+                    onClick={() => setKeywordFilter(null)}
+                    className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                      keywordFilter === null
+                        ? 'bg-foreground text-background border-foreground'
                         : 'border-border text-muted-foreground hover:bg-muted'
                     }`}
                   >
-                    {kw ?? 'All'}
+                    All
                   </button>
-                ))}
+                  {(['Given', 'When', 'Then'] as const).map(kw => {
+                    const active = keywordFilter === kw;
+                    const colorActive = kw === 'Given' ? 'bg-teal-600 text-white border-teal-600'
+                      : kw === 'When' ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-purple-600 text-white border-purple-600';
+                    const colorIdle = kw === 'Given'
+                      ? 'bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+                      : kw === 'When'
+                      ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                      : 'bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+                    return (
+                      <button
+                        key={kw}
+                        onClick={() => setKeywordFilter(active ? null : kw)}
+                        className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 font-medium ${
+                          active ? colorActive : colorIdle
+                        }`}
+                      >
+                        {kw[0]}
+                        <span className="text-[9px] font-normal">{kwCounts[kw]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Search */}
