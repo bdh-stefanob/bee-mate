@@ -85,10 +85,13 @@ if ($dryOutput -match '\b[1-9]\d*\s+undefined\b') {
 }
 Write-Host "Dry-run OK (atteso: 5 scenari / 18 step, 0 undefined)" -ForegroundColor Green
 
-# 5. Step catalog
-Step "npm run catalog"
-npm run catalog
-if ($LASTEXITCODE -ne 0) { throw "npm run catalog fallito" }
+# 5. Step catalog markdown (solo render — non sovrascrive step-catalog.json)
+# NOTA: npm run catalog reimposta step-catalog.json dai .steps.ts implementati,
+# perdendo gli step @wanted del team. Usiamo solo render-markdown.ts che legge
+# step-catalog.json esistente e genera STEP_CATALOG.md senza toccare il catalogo.
+Step "npx ts-node scripts/render-markdown.ts"
+npx ts-node scripts/render-markdown.ts
+if ($LASTEXITCODE -ne 0) { throw "render-markdown.ts fallito" }
 if (-not (Test-Path STEP_CATALOG.md)) { throw "STEP_CATALOG.md non generato" }
 Write-Host "STEP_CATALOG.md rigenerato" -ForegroundColor Green
 
