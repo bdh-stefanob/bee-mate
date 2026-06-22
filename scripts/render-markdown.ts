@@ -67,23 +67,23 @@ for (const domain of [...byDomain.keys()].sort()) {
       s.status === 'deprecated' ? '⛔ ' : '';
     const undocFlag = s.documented ? "" : " ⚠️ _undocumented_";
     md += `### ${statusBadge}\`${s.expression}\`${undocFlag}\n\n`;
-    if (s.doc.intent) md += `${s.doc.intent}\n\n`;
+    if (s.doc?.intent) md += `${s.doc.intent}\n\n`;
     if (s.status === 'wanted' && (s.requester || s.assignee)) {
       md += `_Requester: ${s.requester ?? '—'} — Assignee: ${s.assignee ?? '—'}_\n\n`;
     }
     if (s.status === 'deprecated' && s.replacedBy) {
       md += `**Sostituito da:** \`${s.replacedBy}\`\n\n`;
     }
-    if (Object.keys(s.doc.params).length) {
+    if (Object.keys(s.doc?.params ?? {}).length) {
       md += `**Parameters:**\n`;
-      for (const [name, desc] of Object.entries(s.doc.params)) {
+      for (const [name, desc] of Object.entries(s.doc!.params)) {
         md += `- \`${name}\` — ${desc}\n`;
       }
       md += `\n`;
     }
-    if (s.doc.pre) md += `**Pre:** ${s.doc.pre}\n\n`;
-    if (s.doc.post) md += `**Post:** ${s.doc.post}\n\n`;
-    md += `_Implementation:_ \`${s.sourceRef}\`\n\n`;
+    if (s.doc?.pre) md += `**Pre:** ${s.doc.pre}\n\n`;
+    if (s.doc?.post) md += `**Post:** ${s.doc.post}\n\n`;
+    md += `_Source:_ \`${s.sourceRef}\`\n\n`;
   }
 }
 

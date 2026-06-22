@@ -4,8 +4,8 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-06-11T08:06:51.438Z
-Total: **34** steps (10 implemented, 24 wanted, 0 deprecated)
+Last update: 2026-06-22T00:00:00.000Z
+Total: **100** steps (0 implemented, 100 wanted, 0 deprecated)
 
 ## How to use
 
@@ -15,309 +15,407 @@ expression. If it does not, flag it to the step gatekeeper.
 
 ---
 
-## Domain: `app-a/imported` (7 steps)
+## Domain: `brochure-clinic/login` (53 steps)
 
-### 🔧 `I add {string} to the basket`
+### 🔧 `a registered user landed on the Brochure home page` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `a registered user previously logged in with MFA by {string}` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:27`
+_Source:_ `boots-team`
 
-### 🔧 `I am on the homepage`
+### 🔧 `the user previously flagged the 'Remember this device' option` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `the user is on brochure homepage` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:14`
+_Source:_ `boots-team`
 
-### 🔧 `I enter my delivery address {string}`
+### 🔧 `the user 90 days ago flagged the option 'Remember this device'` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `the user inserted valid credentials to login` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:53`
+_Source:_ `boots-team`
 
-### 🔧 `I proceed to checkout`
+### 🔧 `the user landed on 'Register for a Boots Online Doctor Services account'` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `the user inserted credentials to login` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:40`
+_Source:_ `boots-team`
 
-### 🔧 `I should see my saved address {string}`
+### 🔧 `the user flagged the authentication method` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `the user is waiting for the code` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:92`
+_Source:_ `boots-team`
 
-### 🔧 `I should see the order confirmation page`
+### 🔧 `the user selected a service` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `the user started the consultation` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:66`
+_Source:_ `boots-team`
 
-### 🔧 `the order total should be {int}`
+### 🔧 `the user entered all personal info` ⚠️ _undocumented_
 
-<da completare>
+_Source:_ `boots-team`
 
-_Requester: TBD — Assignee: —_
+### 🔧 `the user selected the product to order` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\imported\checkout.steps.ts:79`
+_Source:_ `boots-team`
 
-## Domain: `app-a/orders` (1 steps)
+### 🔧 `the user confirmed he understand the important information` ⚠️ _undocumented_
 
-### 🔧 `I search for the product {string}`
+_Source:_ `boots-team`
 
-Searches the catalog for a product by name.
+### 🔧 `the user completeed all questionnaire answers` ⚠️ _undocumented_
 
-_Requester: DEMO-001 — Assignee: steve_
+_Source:_ `boots-team`
 
-**Parameters:**
-- `product` — The product name to search for.
+### 🔧 `the user uploaded the Selfie/ID photos` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\app-a\orders\orders.steps.ts:15`
+_Source:_ `boots-team`
 
-## Domain: `auth` (4 steps)
+### 🔧 `the user clicks on the Login button` ⚠️ _undocumented_
 
-### `I am a registered user`
+_Source:_ `boots-team`
 
-Registers the test user so they can authenticate.
+### 🔧 `the user lands on the Clinic login page` ⚠️ _undocumented_
 
-**Post:** A user account exists, with the default role.
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\auth\auth.steps.ts:16`
+### 🔧 `the user enters a valid email address` ⚠️ _undocumented_
 
-### `I am a registered user with role {string}`
+_Source:_ `boots-team`
 
-Registers the test user with a specific role.
+### 🔧 `the user enters a valid password` ⚠️ _undocumented_
 
-**Parameters:**
-- `role` — The role to assign: "admin" | "standard".
+_Source:_ `boots-team`
 
-**Post:** A user account exists with the given role.
+### 🔧 `the user clicks on the login button` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\auth\auth.steps.ts:26`
+_Source:_ `boots-team`
 
-### `I land on my dashboard`
+### 🔧 `the user flags the {string}` ⚠️ _undocumented_
 
-Verifies the user reached their dashboard after login.
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\auth\auth.steps.ts:47`
+### 🔧 `the user clicks on Send code` ⚠️ _undocumented_
 
-### `I log in with valid credentials`
+_Source:_ `boots-team`
 
-Authenticates the current user with valid credentials.
+### 🔧 `the user inserts the received code` ⚠️ _undocumented_
 
-**Pre:** A registered user exists.
+_Source:_ `boots-team`
 
-**Post:** An authenticated session is active.
+### 🔧 `the user clicks the verify button` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\auth\auth.steps.ts:39`
+_Source:_ `boots-team`
 
-## Domain: `brochure-clinic` (5 steps)
+### 🔧 `the user in order to re-login clicks on the Login button` ⚠️ _undocumented_
 
-### 🔧 `the user clicks the Login button`
+_Source:_ `boots-team`
 
-Clicks the primary Login button visible on the current page.
+### 🔧 `the user enters {string}` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\brochure-clinic\auth.steps.ts:26`
+_Source:_ `boots-team`
 
-### 🔧 `the user completes SMS verification`
+### 🔧 `the user clicks on the Login link at the bottom of the screen` ⚠️ _undocumented_
 
-Completes the entire SMS two-factor verification flow in one step.
+_Source:_ `boots-team`
 
-**Post:** SMS code verified, session active.
+### 🔧 `the user flags the authentication method` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\brochure-clinic\auth.steps.ts:52`
+_Source:_ `boots-team`
 
-### 🔧 `the user enters valid login credentials on the {string} page`
+### 🔧 `the user after 10 seconds clicks on 'Didn't get the code'` ⚠️ _undocumented_
 
-Enters valid email and password credentials on the named login page.
+_Source:_ `boots-team`
 
-**Parameters:**
-- `page` — The page where credentials are entered (e.g. "Clinic login").
+### 🔧 `the user submits the photos screen` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\brochure-clinic\auth.steps.ts:37`
+_Source:_ `boots-team`
 
-### 🔧 `the user is on the Brochure home page`
+### 🔧 `the system redirects the user on the Clinic login page` ⚠️ _undocumented_
 
-Navigates to the Boots Brochure home page as the test entry point.
+_Source:_ `boots-team`
 
-**Post:** Browser is on the Brochure home page.
+### 🔧 `the user inserts 6 consecutive times an incorrect code` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\brochure-clinic\auth.steps.ts:16`
+_Source:_ `boots-team`
 
-### 🔧 `the user is successfully logged in`
+### 🔧 `the user requests 5 consecutive times to send the MFA code` ⚠️ _undocumented_
 
-Asserts the user has an authenticated session after login.
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\brochure-clinic\auth.steps.ts:61`
+### 🔧 `the user enters 6 consecutive times an invalid password` ⚠️ _undocumented_
 
-## Domain: `common` (2 steps)
+_Source:_ `boots-team`
 
-### `I am logged in as a {string} user` ⚠️ _undocumented_
+### 🔧 `the user received the code` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\common\common.steps.ts:29`
+_Source:_ `boots-team`
 
-### 🔧 `the user is on the {string} page`
+### 🔧 `the user inserts after 10 minutes from receipt` ⚠️ _undocumented_
 
-Asserts or navigates to any named page. Shared across all domains.
+_Source:_ `boots-team`
 
-**Parameters:**
-- `page` — The page title or URL segment (e.g. "My Account", "Summary").
+### 🔧 `the user successfully logs in` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\common\common.steps.ts:22`
+_Source:_ `boots-team`
 
-## Domain: `orders` (5 steps)
+### 🔧 `the user is redirected on My account page` ⚠️ _undocumented_
 
-### `I place the order`
+_Source:_ `boots-team`
 
-Submits the current cart as an order.
+### 🔧 `the system shows the screen to perform the MFA` ⚠️ _undocumented_
 
-**Pre:** The cart contains at least one product.
+_Source:_ `boots-team`
 
-**Post:** An order is created.
+### 🔧 `the user is able to login after the authentication` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\orders\orders.steps.ts:46`
+_Source:_ `boots-team`
 
-### `the cart contains the following products:`
+### 🔧 `the system displays an error message` ⚠️ _undocumented_
 
-Adds several products to the cart from a table.
+_Source:_ `boots-team`
 
-**Post:** The cart contains every product/quantity listed.
+### 🔧 `the user isn't able to login` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\orders\orders.steps.ts:29`
+_Source:_ `boots-team`
 
-### `the cart contains the product {string}`
+### 🔧 `the system locks the account` ⚠️ _undocumented_
 
-Adds a single product to the cart.
+_Source:_ `boots-team`
 
-**Parameters:**
-- `product` — The product name to add.
+### 🔧 `the system shows an error message with a link` ⚠️ _undocumented_
 
-**Post:** The cart contains the named product, quantity 1.
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\orders\orders.steps.ts:17`
+### 🔧 `the user is redirect to the 'Forgot password' flow` ⚠️ _undocumented_
 
-### `the order is confirmed`
+_Source:_ `boots-team`
 
-Verifies the order was confirmed.
+### 🔧 `the user needs to follow the 'Forgot password' flow` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\orders\orders.steps.ts:54`
+_Source:_ `boots-team`
 
-### `the order status is {string}`
+### 🔧 `the system doesn't authenticate the login` ⚠️ _undocumented_
 
-Verifies the order has the expected status.
+_Source:_ `boots-team`
 
-**Parameters:**
-- `status` — Expected status, e.g. "pending".
+### 🔧 `the user needs to login again and authenticate with a new code` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\orders\orders.steps.ts:64`
+_Source:_ `boots-team`
 
-## Domain: `weight-loss` (10 steps)
+### 🔧 `the system retains the selected journey` ⚠️ _undocumented_
 
-### 🔧 `the user clicks {string} on the {string} service page`
+_Source:_ `boots-team`
 
-Clicks a primary call-to-action on a service landing page.
+### 🔧 `the user can select the delivery method` ⚠️ _undocumented_
 
-**Parameters:**
-- `cta` — Button label (e.g. "Get started online", "View our in store service").
-- `service` — The service page name (e.g. "Weight Loss Treatment Service").
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:33`
+### 🔧 `the user can complete the order` ⚠️ _undocumented_
 
-### 🔧 `the user clicks next on the {string} questionnaire page`
+_Source:_ `boots-team`
 
-Clicks the Next button to advance from a questionnaire page.
+## Domain: `brochure-clinic/registration` (47 steps)
 
-**Parameters:**
-- `page` — The questionnaire page name.
+### 🔧 `a user on Brochure home page` ⚠️ _undocumented_
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:150`
+_Source:_ `boots-team`
 
-### 🔧 `the user confirms the medicine selection`
+### 🔧 `the user clicks on the "Login" button` ⚠️ _undocumented_
 
-Clicks continue on the medicine confirmation page.
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:79`
+### 🔧 `the user lands on Clinic login page` ⚠️ _undocumented_
 
-### 🔧 `the user enters height {string} in {string} and weight {string} in {string}`
+_Source:_ `boots-team`
 
-Enters height and weight with explicit unit selection.
+### 🔧 `the user clicks on "Register for a Boots Online Doctor Services account" button` ⚠️ _undocumented_
 
-**Parameters:**
-- `height` — Numeric value as string (e.g. "175", "5").
-- `heightUnit` — "cm" | "ft/in".
-- `weight` — Numeric value as string (e.g. "80", "12").
-- `weightUnit` — "kg" | "st/lbs".
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:106`
+### 🔧 `the user insert the email address` ⚠️ _undocumented_
 
-### 🔧 `the user flags the consent checkbox and continues on the {string} page`
+_Source:_ `boots-team`
 
-Flags the mandatory consent checkbox and clicks continue.
+### 🔧 `the user insert the Password` ⚠️ _undocumented_
 
-**Parameters:**
-- `page` — The page name (e.g. "Important Info", "GP or Bariatric Team").
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:89`
+### 🔧 `the user confirm the Password` ⚠️ _undocumented_
 
-### 🔧 `the user selects {string} and enters {string} on the {string} questionnaire page`
+_Source:_ `boots-team`
 
-Selects an option that requires additional free-text on a questionnaire page.
+### 🔧 `the user select a security question` ⚠️ _undocumented_
 
-**Parameters:**
-- `option` — The option label to select (triggers the text input).
-- `value` — The free-text value to enter in the associated input field.
-- `page` — The questionnaire page name.
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:137`
+### 🔧 `the user insert the security answer` ⚠️ _undocumented_
 
-### 🔧 `the user selects {string} as their service status`
+_Source:_ `boots-team`
 
-Selects the user's returning-patient status at the start of the flow.
+### 🔧 `the user clicks "Continue" button` ⚠️ _undocumented_
 
-**Parameters:**
-- `status` — One of: "I'm New" | "I haven't been here for over 3 months" |
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:48`
+### 🔧 `the user insert the first name` ⚠️ _undocumented_
 
-### 🔧 `the user selects {string} from the popular services menu`
+_Source:_ `boots-team`
 
-Selects a Boots service from the popular services navigation menu.
+### 🔧 `the user insert the last name` ⚠️ _undocumented_
 
-**Parameters:**
-- `service` — The service label (e.g. "Weight loss", "Hair loss", "Acne").
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:19`
+### 🔧 `the user select the birth gender` ⚠️ _undocumented_
 
-### 🔧 `the user selects {string} on the {string} questionnaire page`
+_Source:_ `boots-team`
 
-Selects a single option on any questionnaire page and clicks next.
+### 🔧 `the user insert the date of birth` ⚠️ _undocumented_
 
-**Parameters:**
-- `option` — The exact option label to select.
-- `page` — The questionnaire page name (e.g. "Ethnic Background",
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:122`
+### 🔧 `the user insert the mobile number` ⚠️ _undocumented_
 
-### 🔧 `the user selects medicine {string} with quantity {string} and coaching {string}`
+_Source:_ `boots-team`
 
-Selects a weight loss medicine with dosage tier and coaching option.
+### 🔧 `the user insert the postcode` ⚠️ _undocumented_
 
-**Parameters:**
-- `medicine` — Medicine name: "Wegovy" | "Mounjaro" | "Nevolat" | "Orlistat" |
-- `quantity` — Dose string (e.g. "0.25mg", "5mg", "3 Pens"). Empty string when
-- `coaching` — "with" | "without".
+_Source:_ `boots-team`
 
-_Implementation:_ `src\steps\weight-loss\questionnaire.steps.ts:66`
+### 🔧 `the user insters the {string}` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user flag the {string} about billing and shipping address` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user insert the postcode of Billing address` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user flag the {string} about Term and Conditions` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user select a radio button as autentication metod` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user clicks "Send code" button` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user insert the code received` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user clicks "Verify" button` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user insert the postcode through Find my location functionality` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user selects a service` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user starts the order` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user is redirected to Clinic` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user enters the postal code` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user selects their gender` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user enters their date of birth` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user selects the product to order` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user confirms they understand the important information` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user completes all questionnaire answers` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user uploads Selfie/ID photos` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user insert the address` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user insert the {string}, {string}, {string}` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user {string} and {string} Password` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user insert the email address already registred` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user successfully logged in the application` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user lands on clinic home page` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `an error message is dysplayed` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the "Continue" button is disabled` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user is unable to register a new user` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user lands on clinic delivery method` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user chose the delivery method` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
+
+### 🔧 `the user is able to complete the order` ⚠️ _undocumented_
+
+_Source:_ `boots-team`
 
