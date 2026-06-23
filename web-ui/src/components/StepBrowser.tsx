@@ -147,7 +147,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
     if (hasParams) {
       setPickerStep(step);
     } else {
-      const kw = guessKeyword(step.expression);
+      const kw = step.keyword ?? guessKeyword(step.expression);
       onInsert(`    ${kw} ${step.expression}\n`);
     }
   }, [onInsert]);
