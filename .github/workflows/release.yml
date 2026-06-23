@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: web-ui
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build Electron installer (Windows x64)
         working-directory: web-ui
