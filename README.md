@@ -1,71 +1,209 @@
 # BDD Automation Scaffold
 
-A greenfield test-automation scaffold: **Playwright + Cucumber.js + TypeScript**,
-built around a 4-layer architecture and an anti-noise step standard. The demo
-domain is generic (auth + orders) — replace it with your real flows.
+A test-automation scaffold built on **Playwright + Cucumber.js + TypeScript**, paired with a desktop **BDD Catalog** app that lets the QA team browse, search, and compose Gherkin scenarios without touching the codebase directly.
 
-## Why this exists
+---
 
-Starting an automation suite from zero is the moment architecture matters most.
-Without a standard, every engineer writes steps their own way and the suite fills
-with near-duplicate steps nobody can find — **step noise**. This scaffold makes
-the right way the easy way: reuse an existing step is faster than writing a new
-one. See `CONTRIBUTING.md` for the standard.
+## Table of Contents
 
-## Architecture (4 layers)
+1. [What this is](#what-this-is)
+2. [Architecture](#architecture)
+3. [BDD Catalog App — Pages & Features](#bdd-catalog-app--pages--features)
+4. [Installation](#installation)
+5. [Updates](#updates)
+6. [Step Catalog](#step-catalog)
+7. [Development Setup](#development-setup)
+
+---
+
+## What this is
+
+This repository contains two things that work together:
+
+| Part | What it does |
+|---|---|
+| **Scaffold** (`src/`) | Playwright + Cucumber.js test suite, 4-layer architecture, pre-commit validation |
+| **BDD Catalog** (`web-ui/`) | Electron desktop app — browse steps, write feature files, push to GitHub |
+
+The core idea: instead of every engineer inventing new step definitions, the team reuses steps from a shared catalog. The app makes reuse faster than writing from scratch. New steps go through a `@wanted` proposal flow and require team approval before implementation.
+
+---
+
+## Architecture
+
+The scaffold enforces a strict 4-layer separation:
 
 ```
 src/
-├─ features/   .feature files (Gherkin)   — what the business does
-├─ steps/      thin glue                   — phrase → action call
-│  ├─ common/  shared steps (e.g. login)
-│  ├─ auth/
-│  └─ orders/
-├─ actions/    business intentions         — reusable, no selectors
-├─ pages/      Page Objects                 — selectors, UI mechanics
-├─ api/        API clients                  — endpoints (BE, future)
-├─ fixtures/   test data builders
-└─ support/    World + hooks
+├─ features/          Gherkin .feature files — what the business does
+│  └─ brochure-clinic/
+│     ├─ login/
+│     └─ registration/
+├─ steps/             Thin glue — maps Gherkin phrase → action call
+├─ actions/           Business intentions — reusable, no selectors
+├─ pages/             Page Objects — selectors and UI mechanics only
+├─ fixtures/          Test data builders
+└─ support/           World + hooks
 ```
 
-Each layer talks only to the one below. A Gherkin step maps to ONE action; if
-the UI changes, you fix one Page Object.
+**Rule:** each layer talks only to the one below. Selectors never appear in step definitions. If the UI changes, you fix one Page Object.
 
-## Setup
+See `CONTRIBUTING.md` for the full coding standard.
+
+---
+
+## BDD Catalog App — Pages & Features
+
+### Catalog (`/`)
+
+The home page. Displays all steps in the catalog as a searchable table.
+
+- **Search bar** — filter by step expression, area, or page name
+- **Area filter** — dropdown to narrow by functional area (e.g. `login`, `registration`)
+- **Status filter** — `wanted` (proposed, not yet implemented) / `implemented` / `deprecated`
+- **Click a row** — opens the Step Detail modal to view and edit parameter enums
+- **Double-click a row** — opens the step in the Editor with the expression pre-loaded
+
+### Editor (`/editor`)
+
+The main authoring surface for writing `.feature` files.
+
+- **CodeMirror editor** — Gherkin syntax highlighting, autocomplete triggered on `G`, `W`, `T` keypresses
+- **StepBrowser panel** (right sidebar):
+  - Filter pills **G / W / T** — show only Given, When, or Then steps
+  - Area pills — filter by functional area
+  - Text search — searches expression, area, and page name
+  - Click a step to insert it at cursor; parametric steps open a value picker
+- **Scenario outline panel** — lists all scenarios in the current file, numbered and collapsible; click to scroll to that scenario in the editor
+- **Save** (`Ctrl+S` or Save button) — writes the `.feature` file to `src/features/{app}/{flow}/{slug}.feature`, derived from the `@app @flow` tags
+- **State persistence** — draft survives navigation between pages (stored in `localStorage`)
+
+### Features (`/features`)
+
+Browse all existing `.feature` files in the repository.
+
+- **App → Flow → File tree** — collapsible, organised by directory structure
+- **Edit button** — loads the selected file into the Editor
+- Each entry shows the feature name, number of scenarios, and tags
+
+### Settings (`/settings`)
+
+Configure integrations.
+
+- **GitHub push** — push the current catalog and feature file changes to the remote repository directly from the app
+- **Jira sync** — sync step proposals to Jira tickets (requires API token in `.env`)
+- **Workspace path** — shows the currently selected repository folder
+
+---
+
+## Installation
+
+### Prerequisites
+
+- **Git** — to clone the repository ([git-scm.com](https://git-scm.com))
+- **No Node.js required** — the desktop app is fully standalone
+
+### Step 1 — Clone the repository
+
+```bash
+git clone https://github.com/<org>/<repo>.git
+```
+
+### Step 2 — Download the installer
+
+Go to the [Releases page](../../releases) and download the latest `BDD Catalog Setup x.x.x.exe`.
+
+### Step 3 — Install
+
+Run the installer. It does not require administrator rights and lets you choose the installation directory.
+
+### Step 4 — First launch — Workspace picker
+
+On the first launch, a folder picker dialog appears:
+
+> *"Select the BDD project folder"*
+> *(the folder must contain `step-catalog.json`)*
+
+Navigate to the root of the cloned repository and select it. The app saves this path automatically — subsequent launches open directly without asking again.
+
+### Resetting the workspace
+
+Delete or edit `%APPDATA%\web-ui\bdd-settings.json` to force the picker to reappear on the next launch.
+
+---
+
+## Updates
+
+Releases are published automatically on GitHub via CI whenever a new version tag is pushed.
+
+**To update:**
+
+1. Go to the [Releases page](../../releases)
+2. Download the new `BDD Catalog Setup x.x.x.exe`
+3. Run the installer — it upgrades in place
+
+**To publish a new release** (maintainers only):
+
+```bash
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+GitHub Actions builds the Windows installer and attaches it to the release automatically.
+
+---
+
+## Step Catalog
+
+`step-catalog.json` is the source of truth for all known steps. It is version-controlled so the whole team shares the same catalog.
+
+**Workflow for new steps:**
+
+1. A QA engineer identifies a step that does not exist → flags it `@wanted` in the catalog
+2. The team reviews and approves the expression
+3. A developer implements the step definition (`.steps.ts`) and marks it `implemented`
+
+`STEP_CATALOG.md` is a human-readable version generated from `step-catalog.json`:
+
+```bash
+npx ts-node scripts/render-markdown.ts
+```
+
+> ⚠️ Do not run `npm run catalog` on this repository — it overwrites `step-catalog.json` from the implemented `.steps.ts` files, discarding all `@wanted` steps.
+
+---
+
+## Development Setup
+
+Only needed if you want to contribute to the scaffold or the app.
+
+### Scaffold
 
 ```bash
 npm install
 npx playwright install chromium
+npm test              # run all scenarios
+npm run test:dry      # dry-run — validate steps without executing
 ```
 
-## Run
+### BDD Catalog App (web-ui)
 
 ```bash
-npm test          # run all scenarios
-npm run test:dry  # dry-run (validate steps without executing)
-npm run catalog   # regenerate STEP_CATALOG.md from the code
+cd web-ui
+npm install
+npm run dev           # Next.js dev server at http://localhost:3000
+npm run electron:dev  # full Electron app in dev mode
+npm run electron:build:win   # build Windows installer
 ```
 
-HTML report lands in `reports/cucumber-report.html`.
+### Pre-commit hook
 
-## The step catalog
+The hook validates that every step used in `.feature` files exists in `step-catalog.json`. To bypass for Scenario Outline `<angle>` syntax:
 
-`STEP_CATALOG.md` is generated from the step definitions — never written by hand,
-so it cannot drift. It lists every step, its parameters, its `@intent`
-documentation, and a link to the implementation (file:line). Run `npm run catalog`
-or wire it into CI (see `.github/workflows/`).
+```bash
+SKIP_STEP_VALIDATION=1 git commit -m "..."
+```
 
-## Demo domain note
+### Debug log (Electron)
 
-The `auth` and `orders` features are a **generic placeholder** to demonstrate the
-patterns (declarative login reused across domains, optional data tables,
-parameterised Scenario Outlines). Replace them with your real business flows when
-the project starts for real.
-
-## What to wire up for a real project
-
-- `actions/auth.actions.ts` → connect `ensureRegisteredUser` to your test-data
-  seeding (API client or fixture factory).
-- `pages/*` → real selectors for your app.
-- `playwright.config.ts` → real `BASE_URL`.
-- CI → run `npm test` on PR and `npm run catalog` on merge.
+`%APPDATA%\web-ui\debug.log` — written on every launch; useful for diagnosing startup issues.
