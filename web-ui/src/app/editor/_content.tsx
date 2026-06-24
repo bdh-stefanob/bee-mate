@@ -13,6 +13,7 @@ import { formatGherkin } from '@/lib/gherkin-cm';
 import { useLanguage } from '@/providers/Providers';
 import { useSettings } from '@/hooks/useSettings';
 import { toast } from 'sonner';
+import { CommitPreviewDialog } from '@/components/CommitPreviewDialog';
 
 // ---------------------------------------------------------------------------
 // Tab types
@@ -148,6 +149,7 @@ function EditorInner() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
+  const [preview, setPreview] = useState<{ kind: 'feature' | 'proposal' } | null>(null);
   const [stepExpressions, setStepExpressions] = useState<string[]>([]);
   const editorRef = useRef<GherkinEditorHandle | null>(null);
 
@@ -285,7 +287,7 @@ function EditorInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
 
-  const handleCommitGitHub = useCallback(async () => {
+  const doCommitGitHub = useCallback(async () => {
     if (!settings.githubToken || !settings.githubOwner || !settings.githubRepo) return;
     const featureMatch = content.match(/Feature:\s*(.+)/i);
     const slug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
@@ -299,6 +301,8 @@ function EditorInner() {
           'x-github-owner': settings.githubOwner,
           'x-github-repo': settings.githubRepo,
           'x-github-branch': settings.githubBranch || 'main',
+          'x-commit-name': settings.commitName,
+          'x-commit-email': settings.commitEmail,
         },
         body: JSON.stringify({ content, filePath: `src/features/${slug}.feature` }),
       });
@@ -356,7 +360,7 @@ function EditorInner() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleSave]);
 
-  const handlePropose = useCallback(async () => {
+  const doPropose = useCallback(async () => {
     const selected = [...proposalSelected];
     if (!selected.length) return;
     const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
@@ -373,7 +377,16 @@ function EditorInner() {
     try {
       const res = await fetch('/api/catalog/propose', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-github-token': settings.githubToken,
+          'x-github-owner': settings.githubOwner,
+          'x-github-repo': settings.githubRepo,
+          'x-catalog-branch': settings.catalogBranch || 'catalog',
+          'x-github-branch': settings.githubBranch || 'main',
+          'x-commit-name': settings.commitName,
+          'x-commit-email': settings.commitEmail,
+        },
         body: JSON.stringify({
           steps,
           app:  tags[0] ? slugify(tags[0]) : '',
@@ -381,8 +394,11 @@ function EditorInner() {
         }),
       });
       const data = await res.json() as { ok?: boolean; added?: number; error?: string };
-      if (!data.ok) throw new Error(data.error ?? 'Unknown error');
-      toast.success(`${data.added} step aggiunti al catalogo come @wanted`);
+      if (res.status === 409 || !data.ok) {
+        toast.error(data.error ?? 'Unknown error');
+        return;
+      }
+      toast.success(`${data.added} step proposed — pushed to ${settings.catalogBranch || 'catalog'}`);
       setProposalOpen(false);
       const catalogRes = await fetch('/api/catalog');
       const catalogData = await catalogRes.json() as { steps?: CatalogStep[] };
@@ -392,7 +408,7 @@ function EditorInner() {
     } finally {
       setIsProposing(false);
     }
-  }, [proposalSelected, content, unknownSteps]);
+  }, [proposalSelected, content, unknownSteps, settings]);
 
   const handleDownload = useCallback(() => {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
@@ -443,7 +459,7 @@ function EditorInner() {
             </div>
             <div className="flex items-center gap-2">
               {settings.githubToken && (
-                <button onClick={handleCommitGitHub} disabled={isCommitting || !content.trim()}
+                <button onClick={() => setPreview({ kind: 'feature' })} disabled={isCommitting || !content.trim()}
                   className="px-3 py-1.5 text-sm rounded-md border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   {isCommitting ? t.editor.commitGitHubLoading : t.editor.commitGitHub}
                 </button>
@@ -555,9 +571,9 @@ function EditorInner() {
                         ))}
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={handlePropose} disabled={isProposing || proposalSelected.size === 0}
+                        <button onClick={() => setPreview({ kind: 'proposal' })} disabled={isProposing || proposalSelected.size === 0}
                           className="text-[10px] px-2 py-0.5 rounded bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:opacity-50">
-                          {isProposing ? 'Aggiunta…' : `Aggiungi ${proposalSelected.size} come @wanted`}
+                          {isProposing ? 'Aggiunta…' : `Proponi ${proposalSelected.size} step al catalogo`}
                         </button>
                         <button onClick={() => setProposalOpen(false)}
                           className="text-[10px] px-2 py-0.5 rounded border border-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors">
@@ -590,6 +606,22 @@ function EditorInner() {
 
         </div>
       </div>
+
+      {/* Commit preview dialog — gates both feature push and proposal push (D-08) */}
+      <CommitPreviewDialog
+        open={preview !== null}
+        commitName={settings.commitName}
+        commitEmail={settings.commitEmail}
+        targetBranch={preview?.kind === 'proposal' ? (settings.catalogBranch || 'catalog') : (settings.githubBranch || 'main')}
+        pushing={preview?.kind === 'feature' ? isCommitting : isProposing}
+        onConfirm={async () => {
+          const kind = preview?.kind;
+          if (kind === 'feature') await doCommitGitHub();
+          else if (kind === 'proposal') await doPropose();
+          setPreview(null);
+        }}
+        onCancel={() => setPreview(null)}
+      />
     </div>
   );
 }
