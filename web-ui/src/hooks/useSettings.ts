@@ -6,6 +6,9 @@ export interface AppSettings {
   githubOwner: string;
   githubRepo: string;
   githubBranch: string;
+  catalogBranch: string;   // NEW: step-proposals.json push target (D-01)
+  commitName: string;      // NEW: Git commit author display name (D-07)
+  commitEmail: string;     // NEW: Git commit author email (D-07)
   jiraBaseUrl: string;
   jiraToken: string;
 }
@@ -17,6 +20,9 @@ const DEFAULTS: AppSettings = {
   githubOwner: '',
   githubRepo: '',
   githubBranch: 'main',
+  catalogBranch: 'catalog',
+  commitName: '',
+  commitEmail: '',
   jiraBaseUrl: '',
   jiraToken: '',
 };
