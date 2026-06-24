@@ -73,3 +73,15 @@ Plans:
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.12: Collaborative QA workflow — catalog branch, per-user identity, step proposal (BACKLOG)
+
+**Goal:** Permettere ai colleghi QA di contribuire al catalogo direttamente dall'app senza toccare il branch `main`. Tre sotto-feature collegate:
+1. **Branch selector** — l'app committa/pusha su un branch dedicato (es. `catalog`); il maintainer apre PR `catalog→main` per sincronizzare.
+2. **Per-user commit identity** — ogni collega configura nelle Settings nome, email e PAT GitHub. Prima di ogni commit l'app mostra un riepilogo "Committing as: Nome \<email\> → branch: catalog" con documentazione su come ottenere un PAT.
+3. **Step proposal flow** — step non presente nel catalogo → segnalazione inline nell'editor + bottone "Propose step" → aggiunge a `step-catalog.json` come `status: "wanted"` con `sourceRef` dell'autore → push sul branch catalog per review.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
