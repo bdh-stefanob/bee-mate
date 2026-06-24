@@ -10,12 +10,13 @@ export interface CatalogStep {
   app: string;
   area: string;
   domain: string;
-  status: 'implemented' | 'wanted' | 'deprecated';
+  status: 'implemented' | 'wanted' | 'deprecated' | 'proposed';
   keyword?: 'Given' | 'When' | 'Then';
   page?: string;
   requester?: string;
   sourceRef: string;
   documented: boolean;
+  proposedAt?: string;   // ISO timestamp for proposed entries (D-13)
   paramEnums?: ParamEnumDef[];  // enriched at API time from step-enums.json
   requires?: string[];          // prerequisite step expressions
   doc?: { intent?: string; [key: string]: unknown }; // JSDoc annotations (@intent etc.)

@@ -94,6 +94,27 @@ export default function SettingsPage() {
         {field('githubOwner', t.settings.githubOwner, '')}
         {field('githubRepo', t.settings.githubRepo, '')}
         {field('githubBranch', t.settings.githubBranch, '')}
+        {field('catalogBranch', 'Catalog branch', 'Branch where step proposals are pushed (default: catalog)')}
+      </section>
+
+      {/* Commit identity Section */}
+      <section className="space-y-4">
+        <h2 className="text-base font-semibold text-foreground border-b border-border pb-2">
+          Commit identity
+        </h2>
+        {field('commitName', 'Commit name', 'Display name shown as the Git commit author')}
+        {field('commitEmail', 'Commit email', 'Email shown as the Git commit author')}
+        <p className="text-sm text-muted-foreground">
+          Required scopes: repo, contents:write.{' '}
+          <a
+            href="https://github.com/settings/tokens"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal-600 dark:text-teal-400 hover:underline"
+          >
+            Generate a token
+          </a>
+        </p>
       </section>
 
       {/* Jira Section */}
