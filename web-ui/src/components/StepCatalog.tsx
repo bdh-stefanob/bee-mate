@@ -28,6 +28,7 @@ const STATUS_STYLES: Record<string, string> = {
   wanted:      'bg-[#FF6B2C] text-white border-transparent',
   implemented: 'bg-[#2ECC71] text-white border-transparent',
   deprecated:  'bg-[#9CA3AF] text-white border-transparent',
+  proposed:    'bg-[#F97316] text-white border-transparent',
 };
 
 export default function StepCatalog() {

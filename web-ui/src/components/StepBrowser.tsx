@@ -338,6 +338,13 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                               {step.area}
                             </span>
 
+                            {/* Proposed badge */}
+                            {step.status === 'proposed' && (
+                              <span className="shrink-0 text-[9px] px-1 py-0.5 rounded bg-[#F97316] text-white font-medium">
+                                Proposed
+                              </span>
+                            )}
+
                             {/* Param indicator */}
                             {hasParams && (
                               <span className={`shrink-0 text-[10px] font-semibold ${
