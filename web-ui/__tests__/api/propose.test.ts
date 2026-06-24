@@ -78,7 +78,7 @@ describe('POST /api/catalog/propose — GitHub path (new expression)', () => {
       { status: 404, body: { message: 'Not Found' } },
       { status: 201, body: { content: { sha: 'new_sha' } } },
     ]);
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -150,7 +150,7 @@ describe('POST /api/catalog/propose — GitHub path, duplicate expression', () =
       { status: 200, body: { ref: 'refs/heads/catalog', object: { sha: 'abc123' } } },
       { status: 200, body: { content: base64Content, sha: 'existing_sha' } },
     ]);
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -199,7 +199,7 @@ describe('POST /api/catalog/propose — GitHub path, branch auto-create', () => 
       { status: 404, body: { message: 'Not Found' } },
       { status: 201, body: { content: { sha: 'new_sha' } } },
     ]);
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -237,7 +237,7 @@ describe('POST /api/catalog/propose — FS fallback (no GitHub headers)', () => 
 
   beforeEach(() => {
     fetchMock = vi.fn();
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof fetch;
 
     const existingCatalog = {
       totalSteps: 0,
