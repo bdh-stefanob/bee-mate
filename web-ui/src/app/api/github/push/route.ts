@@ -31,6 +31,13 @@ export async function POST(request: Request) {
   const githubRepo   = request.headers.get('x-github-repo');
   const githubBranch = request.headers.get('x-github-branch') ?? 'main';
 
+  // Commit identity (D-07, T-999.12-06: strip <> injection, cap lengths)
+  const rawName    = request.headers.get('x-commit-name') ?? '';
+  const rawEmail   = request.headers.get('x-commit-email') ?? '';
+  const commitName  = rawName.replace(/[<>]/g, '').slice(0, 100);
+  const commitEmail = rawEmail.slice(0, 200);
+  const author = commitName && commitEmail ? { name: commitName, email: commitEmail } : undefined;
+
   if (!githubToken || !githubOwner || !githubRepo) {
     return NextResponse.json(
       { ok: false, error: 'Missing required headers: x-github-token, x-github-owner, x-github-repo' },
@@ -100,12 +107,13 @@ export async function POST(request: Request) {
     const base64Content = Buffer.from(content, 'utf-8').toString('base64');
 
     // 6. PUT per creare o aggiornare il file
-    const putBody: Record<string, string> = {
+    const putBody: Record<string, unknown> = {
       message: `feat: update ${filePath} via BDD web editor`,
       content: base64Content,
       branch: githubBranch,
     };
     if (sha) putBody.sha = sha;
+    if (author) { putBody.author = author; putBody.committer = author; }
 
     const putRes = await fetch(apiBase, {
       method: 'PUT',
