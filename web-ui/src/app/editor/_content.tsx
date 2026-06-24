@@ -14,6 +14,7 @@ import { useLanguage } from '@/providers/Providers';
 import { useSettings } from '@/hooks/useSettings';
 import { toast } from 'sonner';
 import { CommitPreviewDialog } from '@/components/CommitPreviewDialog';
+import { matchesCatalog } from '@/lib/catalog-match';
 
 // ---------------------------------------------------------------------------
 // Tab types
@@ -52,15 +53,6 @@ const INCOMING_KEY = 'gsd-editor-incoming';
 
 function safeDecodeURI(s: string): string {
   try { return decodeURIComponent(s); } catch { return s; }
-}
-
-function matchesCatalog(stepText: string, expressions: string[]): boolean {
-  return expressions.some(expr => {
-    const segments = expr.split(/\{[^}]+\}/);
-    const pattern = segments.map(s => s.replace(/[.*+?^$|[\]\\()[\]{}]/g, '\\$&')).join('.+');
-    try { return new RegExp(`^${pattern}$`, 'i').test(stepText); }
-    catch { return false; }
-  });
 }
 
 function loadInitialState(stepParam: string | null): { tabs: EditorTab[]; activeId: string } {
