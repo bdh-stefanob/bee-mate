@@ -14,6 +14,7 @@ import { useLanguage } from '@/providers/Providers';
 import { useSettings } from '@/hooks/useSettings';
 import { toast } from 'sonner';
 import { CommitPreviewDialog } from '@/components/CommitPreviewDialog';
+import { ProposeStepModal } from '@/components/ProposeStepModal';
 import { matchesCatalog } from '@/lib/catalog-match';
 
 // ---------------------------------------------------------------------------
@@ -139,6 +140,13 @@ function EditorInner() {
   const [proposalSelected, setProposalSelected] = useState<Set<string>>(new Set());
   const [isProposing, setIsProposing] = useState(false);
 
+  // ProposeStepModal state (click-to-propose from CodeMirror decoration)
+  const [proposeModal, setProposeModal] = useState<{ expression: string; keyword: 'Given' | 'When' | 'Then' } | null>(null);
+  const [proposeError, setProposeError] = useState<string | null>(null);
+
+  // Catalog areas (for ProposeStepModal area dropdown)
+  const [catalogAreas, setCatalogAreas] = useState<string[]>([]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
   const [preview, setPreview] = useState<{ kind: 'feature' | 'proposal' } | null>(null);
@@ -176,12 +184,15 @@ function EditorInner() {
     setProposalSelected(new Set());
   }, [activeTabId]);
 
-  // Load step catalog once
+  // Load step catalog once — also derives catalogAreas for ProposeStepModal
   useEffect(() => {
     fetch('/api/catalog')
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then((data: { steps?: CatalogStep[] }) => {
-        if (data.steps) setStepExpressions(data.steps.map(s => s.expression));
+        if (data.steps) {
+          setStepExpressions(data.steps.map(s => s.expression));
+          setCatalogAreas([...new Set(data.steps.map(s => s.area))].sort());
+        }
       })
       .catch((err: Error) => { toast.error(`Catalog non disponibile: ${err.message}`); });
   }, []);
@@ -402,6 +413,54 @@ function EditorInner() {
     }
   }, [proposalSelected, content, unknownSteps, settings]);
 
+  // Single-step proposal from CodeMirror click-to-propose (ProposeStepModal)
+  const doProposeSingle = useCallback(async (area: string) => {
+    if (!proposeModal) return;
+    const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
+    const tags = tagLine?.[1].match(/@(\S+)/g)?.map(tag => tag.slice(1)) ?? [];
+    const app = tags[0] ? slugify(tags[0]) : '';
+    setIsProposing(true);
+    try {
+      const res = await fetch('/api/catalog/propose', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-github-token': settings.githubToken,
+          'x-github-owner': settings.githubOwner,
+          'x-github-repo': settings.githubRepo,
+          'x-catalog-branch': settings.catalogBranch || 'catalog',
+          'x-github-branch': settings.githubBranch || 'main',
+          'x-commit-name': settings.commitName,
+          'x-commit-email': settings.commitEmail,
+        },
+        body: JSON.stringify({
+          steps: [{ expression: proposeModal.expression, keyword: proposeModal.keyword }],
+          app,
+          area,
+        }),
+      });
+      const data = await res.json() as { ok?: boolean; added?: number; error?: string };
+      if (res.status === 409 || !data.ok) {
+        setProposeError(data.error ?? 'Proposal failed');
+        return;
+      }
+      toast.success(`Step proposed — pushed to ${settings.catalogBranch || 'catalog'}`);
+      setProposeModal(null);
+      setProposeError(null);
+      // Refresh catalog so the underline clears and area list stays current
+      const catalogRes = await fetch('/api/catalog');
+      const catalogData = await catalogRes.json() as { steps?: CatalogStep[] };
+      if (catalogData.steps) {
+        setStepExpressions(catalogData.steps.map(s => s.expression));
+        setCatalogAreas([...new Set(catalogData.steps.map(s => s.area))].sort());
+      }
+    } catch (err: unknown) {
+      setProposeError(err instanceof Error ? err.message : 'Proposal failed');
+    } finally {
+      setIsProposing(false);
+    }
+  }, [proposeModal, content, settings]);
+
   const handleDownload = useCallback(() => {
     const featureMatch = content.match(/Feature:\s*(.+)/i);
     const filename = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
@@ -524,6 +583,7 @@ function EditorInner() {
                 value={content}
                 onChange={setContent}
                 stepExpressions={stepExpressions}
+                onProposeStep={(expression, keyword) => { setProposeError(null); setProposeModal({ expression, keyword }); }}
               />
 
               {/* Unknown steps panel */}
@@ -598,6 +658,19 @@ function EditorInner() {
 
         </div>
       </div>
+
+      {/* ProposeStepModal — single-step proposal from CodeMirror click-to-propose */}
+      <ProposeStepModal
+        open={proposeModal !== null}
+        expression={proposeModal?.expression ?? ''}
+        keyword={proposeModal?.keyword ?? 'When'}
+        areas={catalogAreas}
+        app={(() => { const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m); const tags = tagLine?.[1].match(/@(\S+)/g)?.map(tag => tag.slice(1)) ?? []; return tags[0] ? slugify(tags[0]) : ''; })()}
+        submitting={isProposing}
+        errorText={proposeError}
+        onSubmit={area => doProposeSingle(area)}
+        onClose={() => { setProposeModal(null); setProposeError(null); }}
+      />
 
       {/* Commit preview dialog — gates both feature push and proposal push (D-08) */}
       <CommitPreviewDialog
