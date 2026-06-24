@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: complete
-last_updated: "2026-06-10T13:30:00.000Z"
+status: unknown
+stopped_at: Phase 999.12 context gathered
+last_updated: "2026-06-24T09:33:20.418Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_phases: 12
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State — bdd-automation-scaffold
@@ -101,7 +101,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completato 05-05-PLAN.md — checkpoint human-verify approvato il 2026-06-10. Phase 05 completata.
+**Stopped at:** Phase 999.12 context gathered
 
 **Commands:**
 
