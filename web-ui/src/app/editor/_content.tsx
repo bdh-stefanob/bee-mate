@@ -588,11 +588,11 @@ function EditorInner() {
 
         </div>
 
-        {/* Scrollable content — independent-scroll columns */}
-        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 px-4 lg:px-6 pb-4 lg:pb-6 min-h-0">
+        {/* Scrollable content — page-level scroll; editor flows naturally, Steps column sticks */}
+        <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row gap-4 px-4 lg:px-6 pt-1 pb-4 lg:pb-6">
 
-          {/* LEFT COLUMN — editor scrolls independently */}
-          <div className="flex flex-col gap-3 lg:w-2/3 min-w-0 overflow-y-auto min-h-0">
+          {/* LEFT COLUMN — editor scrolls with the page (NOT sticky) */}
+          <div className="flex flex-col gap-3 lg:w-2/3 min-w-0">
               <GherkinToolbar
                 onInsert={handleInsert}
                 onUndo={handleUndo}
@@ -665,8 +665,8 @@ function EditorInner() {
               />
           </div>
 
-          {/* RIGHT COLUMN — sticky, scrolls independently */}
-          <div className="flex flex-col gap-4 lg:w-1/3 min-w-0 overflow-y-auto min-h-0 lg:sticky lg:top-0 lg:self-start lg:max-h-full">
+          {/* RIGHT COLUMN — Steps stays in view while the editor scrolls (sticky, self-start) */}
+          <div className="flex flex-col gap-4 lg:w-1/3 min-w-0 lg:sticky lg:top-1 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
             <StepBrowser onInsert={handleInsert} />
           </div>
 
