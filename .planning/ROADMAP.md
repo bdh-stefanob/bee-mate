@@ -115,7 +115,7 @@ Plans:
 **Plans:** 2 plans previsti
 
 Plans:
-- [ ] 999.15-01-PLAN.md — Filtro pagina #PAGINA nello StepBrowser (STEP-FILTER-01)
+- [x] 999.15-01-PLAN.md — Filtro pagina #PAGINA nello StepBrowser (STEP-FILTER-01)
 - [ ] 999.15-02-PLAN.md — Snippet intent dichiarativi sotto la search bar (SNIPPET-01)
 
 ---

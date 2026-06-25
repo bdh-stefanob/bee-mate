@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 999.14-02-PLAN.md (fase 999.14 ready_for_verification)
-last_updated: "2026-06-25T16:28:10.863Z"
+status: executing
+stopped_at: Completed 999.15-01-PLAN.md (fase 999.15 plan 1/2 done)
+last_updated: "2026-06-25T16:32:34Z"
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_plans: 13
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State — bdd-automation-scaffold
@@ -23,21 +23,21 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 999.14 — ux-editor-gherkin-lista-step-tags
+**Current Focus:** Phase 999.15 — strumenti-step-editor-filtro-pagina-snippet
 
 ---
 
 ## Current Position
 
-Phase: 999.14
-Plan: Not started
+Phase: 999.15 (strumenti-step-editor-filtro-pagina-snippet) — EXECUTING
+Plan: 2 of 2
 
 | Field | Value |
 |-------|-------|
-| Current Phase | 999.14 — ux-editor-gherkin-lista-step-tags |
+| Current Phase | 999.15 — strumenti-step-editor-filtro-pagina-snippet |
 | Current Plan | 1/2 completato |
 | Status | EXECUTING |
-| Phase Goal | Lista step espandibile per pagina in /tags; editor Gherkin arricchito |
+| Phase Goal | Filtro pagina e snippet nel pannello Steps dell'editor |
 
 **Progress:**
 
@@ -71,6 +71,7 @@ Plan: Not started
 | Phase 999.13 P02 | 8 min | 1 task | 1 file |
 | Phase 999.13 P03 | 15 min | 2/3 tasks (checkpoint pending) | 5 files |
 | Phase 999.14 P01 | 8 min | 2 tasks | 4 files |
+| Phase 999.15 P01 | 5 min | 1 task | 2 files |
 
 ---
 
@@ -91,6 +92,7 @@ Plan: Not started
 - 999.13-05: FeatureImportDialog import alberato — app/flow auto-derivati da tag line + fallback primo page marker; anti-overwrite client-side con confronto coda path normalizzata; slugify replicato localmente (nessuna util condivisa in web-ui/src/lib); verifica visiva end-to-end fase 999.13 approvata dall'utente (tag originale + # #PAGINA preservati, nessun @import<timestamp>)
 - 999.14-01: steps dedup single-file via Set<string> in extractPageMarkers; dedup cross-file via includes() in route.ts + sort alfabetico finale; expandedPages come Set<string> di slug per toggle per-pagina indipendente
 - 999.14-02: layout editor — editor sinistro scrolla con la pagina (overflow-y-auto sul wrapper esterno), SOLO colonna destra Steps sticky (`lg:sticky lg:top-1 lg:self-start`, commit 3ae4ad0 su richiesta utente in verifica visiva); StepBrowser compatto via maxHeight 180px↔480px con toggle "Mostra tutti/Riduci"; box Preview .feature rimosso (i18n keys lasciate inutilizzate)
+- 999.15-01: chip pagina usa stesso stile teal dei chip area (coerenza visiva); pageCounts mostra conteggio totale per pagina non filtrato; riga chip visibile solo se pages.length > 0; toggle ri-click azzera il filtro
 
 ### Known Issues (inherited from existing codebase)
 
@@ -114,7 +116,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.14-02-PLAN.md (fase 999.14 ready_for_verification)
+**Stopped at:** Completed 999.15-01-PLAN.md (fase 999.15 plan 1/2 — filtro pagina StepBrowser done)
 
 **Commands:**
 
