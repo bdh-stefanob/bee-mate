@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 999.13-04-PLAN.md
-last_updated: "2026-06-25T14:03:48.789Z"
+stopped_at: Completed 999.13-05-PLAN.md (phase 999.13 complete)
+last_updated: "2026-06-25T14:47:40.118Z"
 progress:
   total_phases: 13
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State — bdd-automation-scaffold
@@ -23,26 +23,25 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 999.13 — Feature file import + sezione Tags/Hashtag (3/3 piani in corso — checkpoint Task 3 pending)
+**Current Focus:** Phase 999.13 — Feature file import + sezione Tags/Hashtag (COMPLETA — 5/5 piani, verifica visiva end-to-end approvata)
 
 ---
 
 ## Current Position
 
-Phase: 999.13 (feature-file-import-nell-editor-sezione-tags-hashtag) — IN PROGRESS
-Plan: 3 of 3
+Phase: 999.13 (feature-file-import-nell-editor-sezione-tags-hashtag) — COMPLETE
+Plan: 5 of 5
 
 | Field | Value |
 |-------|-------|
 | Current Phase | 999.13 — feature-file-import-nell-editor-sezione-tags-hashtag |
-| Current Plan | 3/3 (Tasks 1-2 completati, Task 3 checkpoint pending) |
-| Status | CHECKPOINT PENDING |
-| Phase Goal | Upload .feature in editor, dialog proposta step con page marker, pagina /tags |
+| Current Plan | 5/5 (tutti i piani completati, verifica visiva end-to-end approvata) |
+| Status | PHASE COMPLETE |
+| Phase Goal | Upload .feature in editor, dialog proposta step con page marker, pagina /tags, fix import tag-aware, import alberato App/Flow |
 
 **Progress:**
 
-[█████████░] 88%
-[█████████-] 83% — 5/6 piani completati (plan 03 Task 3 checkpoint pending)
+[██████████] 100% — 5/5 piani completati (fase 999.13 chiusa)
 
 ```
 
@@ -58,6 +57,7 @@ Plan: 3 of 3
 | Plans complete | 13 |
 | Requirements mapped | 14/14 |
 | Phase 999.13 P04 | 12 min | 2 tasks | 1 files |
+| Phase 999.13 P05 | 40 min | 3 tasks | 3 files |
 
 ### Execution Log
 
@@ -88,6 +88,7 @@ Plan: 3 of 3
 - 999.13-02: justLoadedTabId flag + useEffect dopo unknownSteps useMemo apre pannello proposta con step e page marker pre-selezionati dopo upload .feature
 - 999.13-03: extractPageMarkers replica PAGE_MARKER_RE di _content.tsx (transitiva); GET /api/tags senza parametri client per sicurezza T-999.13-01; relpath POSIX nella risposta
 - 999.13-04: buildFeatureContent cerca tag originale in rawHeaderLines invece di forzare @area; derivazione area usa feature.name → headerTags → 'imported' (rimosso slugify(inputBasename))
+- 999.13-05: FeatureImportDialog import alberato — app/flow auto-derivati da tag line + fallback primo page marker; anti-overwrite client-side con confronto coda path normalizzata; slugify replicato localmente (nessuna util condivisa in web-ui/src/lib); verifica visiva end-to-end fase 999.13 approvata dall'utente (tag originale + # #PAGINA preservati, nessun @import<timestamp>)
 
 ### Known Issues (inherited from existing codebase)
 
@@ -111,7 +112,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.13-04-PLAN.md
+**Stopped at:** Completed 999.13-05-PLAN.md (phase 999.13 complete)
 
 **Commands:**
 
