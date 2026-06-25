@@ -10,7 +10,7 @@
 export function matchesCatalog(stepText: string, expressions: string[]): boolean {
   return expressions.some(expr => {
     const segments = expr.split(/\{[^}]+\}/);
-    const pattern = segments.map(s => s.replace(/[.*+?^$|[\]\\()[\]{}]/g, '\\$&')).join('.+');
+    const pattern = segments.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.+');
     try { return new RegExp(`^${pattern}$`, 'i').test(stepText); }
     catch { return false; }
   });

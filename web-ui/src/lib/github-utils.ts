@@ -131,6 +131,9 @@ export async function branchEnsure(
   // Branch does not exist: get the base branch HEAD sha.
   const baseUrl = `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${baseBranch}`;
   const baseRes = await fetch(baseUrl, { headers: ghHeaders(token) });
+  if (!baseRes.ok) {
+    throw new Error(`GitHub GET base branch failed: ${baseRes.status}`);
+  }
   const baseJson = (await baseRes.json()) as { object: { sha: string } };
   const baseSha = baseJson.object.sha;
 
