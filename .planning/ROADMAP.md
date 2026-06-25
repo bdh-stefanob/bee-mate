@@ -77,13 +77,17 @@ Plans:
 1. **Upload .feature nell'editor** — drag-and-drop o file picker direttamente nel tab dell'editor, senza passare dalla pagina Features. Il contenuto viene caricato in un nuovo tab preservando tutti i commenti (`# #PAGINA`, `# note libere`).
 2. **Import step con hashtag da file caricato** — quando si carica un `.feature`, gli step vengono estratti con il loro `# #PAGINA` marker e proposti come `status: 'proposed'` al catalogo (flusso opzionale, con dialog di conferma).
 3. **Sezione Tags/Hashtag** — nuova pagina `/tags` che aggrega tutti i marker `# #PAGINA` trovati nei feature file presenti in `src/features/`, con count step per pagina e link diretto all'editor.
-**Requirements:** UPLOAD-01, UPLOAD-02, IMPORT-STEP-01, TAGS-01, TAGS-02
-**Plans:** 2/3 plans executed
+4. **Fix preservazione import server** — `scripts/import-scenarios.ts` (`buildFeatureContent`) ricostruiva la feature scartando i tag originali (`@app @flow` → sostituiti da `@import<timestamp>`) e tutte le righe `# #PAGINA`. Il fix preserva tag, titolo e page marker; niente più directory/tag `import-<timestamp>`.
+5. **Import alberato dal bottone Features** — il bottone "Carica .feature" della pagina Features riusa l'import tag-aware e chiede App+Flow (auto-suggeriti dai tag/marker, editabili, autocomplete sui valori esistenti) salvando in `src/features/{app}/{flow}/{nome}.feature`, verbatim e senza sovrascrivere file esistenti.
+**Requirements:** UPLOAD-01, UPLOAD-02, IMPORT-STEP-01, TAGS-01, TAGS-02, IMPORT-FIX-01, UPLOAD-03
+**Plans:** 5 plans
 
 Plans:
 - [x] 999.13-01-PLAN.md — Upload .feature nell'editor: nuovo tab, commenti preservati (Wave 1)
 - [x] 999.13-02-PLAN.md — Dialog proposta step con # #PAGINA dopo upload (Wave 2)
-- [ ] 999.13-03-PLAN.md — Pagina /tags: aggregazione page marker + link editor (Wave 3, checkpoint finale)
+- [x] 999.13-03-PLAN.md — Pagina /tags: aggregazione page marker + link editor (Wave 3)
+- [ ] 999.13-04-PLAN.md — Fix import server: preserva tag/titolo/# #PAGINA (Wave 4)
+- [ ] 999.13-05-PLAN.md — Bottone Features: import tag-aware + dialog alberatura App/Flow (Wave 5, checkpoint finale)
 
 ---
 
