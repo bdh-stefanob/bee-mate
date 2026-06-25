@@ -98,11 +98,11 @@ Plans:
 2. **Colonne editor sticky + pannello Steps collassabile** — le colonne sinistra (Explorer) e destra (Steps) restano fisse durante lo scroll dell'editor; il pannello Steps è riducibile/collassabile con la ricerca come stato di default che poi espande i risultati.
 3. **Rimozione "Preview .feature"** — eliminare la sezione preview in basso a destra (inutile), recuperando spazio per gli step.
 **Requirements:** TAGS-03, EDITOR-UX-01, EDITOR-UX-02
-**Plans:** 2 plans previsti (1/2 completato)
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 999.14-01-PLAN.md — /tags: lista step espandibile per pagina (TAGS-03)
-- [ ] 999.14-02-PLAN.md — Editor: colonne sticky + Steps collassabile + rimozione Preview (EDITOR-UX-01/02)
+- [x] 999.14-02-PLAN.md — Editor: colonne sticky + Steps collassabile + rimozione Preview (EDITOR-UX-01/02)
 
 ---
 
