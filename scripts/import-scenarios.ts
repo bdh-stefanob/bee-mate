@@ -252,9 +252,15 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
   }
 
   // --- Determina area ---
+  // Deriva i tag dall'header originale (es. "@brochure-clinic @login" → ["brochure-clinic", "login"])
+  const headerTagLine = feature.rawHeaderLines.find(l => l.trim().startsWith('@'));
+  const headerTags = headerTagLine
+    ? (headerTagLine.trim().match(/@(\S+)/g) ?? []).map(s => slugify(s.slice(1)))
+    : [];
+  // NON usare più slugify(inputBasename) come fallback: evita "import-<timestamp>" come directory
   const area = areaArg
     ? slugify(areaArg)
-    : slugify(feature.name) || slugify(inputBasename);
+    : slugify(feature.name) || headerTags[1] || headerTags[0] || 'imported';
 
   const featureSlug = slugify(feature.name) || area;
 
@@ -363,7 +369,15 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
 
 function buildFeatureContent(feature: ParsedFeature, area: string): string {
   const lines: string[] = [];
-  lines.push(`@${area}`);
+
+  // A) Preserva il tag originale dall'header se presente; altrimenti fallback a @area
+  const originalTagLine = feature.rawHeaderLines.find(l => l.trim().startsWith('@'));
+  if (originalTagLine) {
+    lines.push(originalTagLine.trim());
+  } else {
+    lines.push(`@${area}`);
+  }
+
   lines.push(`Feature: ${feature.name}`);
   lines.push('');
 
@@ -385,6 +399,12 @@ function buildFeatureContent(feature: ParsedFeature, area: string): string {
 
       if (inExamples && trimmed.startsWith('|')) {
         lines.push(`      ${trimmed}`);
+        continue;
+      }
+
+      // B) Preserva righe commento / page marker (#LOGIN, #PAGINA, ecc.)
+      if (trimmed.startsWith('#')) {
+        lines.push(`    ${trimmed}`);
         continue;
       }
 
