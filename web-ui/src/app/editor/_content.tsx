@@ -141,6 +141,9 @@ function EditorInner() {
   const [proposalSelected, setProposalSelected] = useState<Set<string>>(new Set());
   const [isProposing, setIsProposing] = useState(false);
 
+  // Flag: tab appena caricato da .feature upload → trigger apertura pannello proposta dopo render
+  const [justLoadedTabId, setJustLoadedTabId] = useState<string | null>(null);
+
   // ProposeStepModal state (click-to-propose from CodeMirror decoration)
   const [proposeModal, setProposeModal] = useState<{ expression: string; keyword: 'Given' | 'When' | 'Then' } | null>(null);
   const [proposeError, setProposeError] = useState<string | null>(null);
@@ -235,6 +238,18 @@ function EditorInner() {
     return result;
   }, [content, stepExpressions]);
 
+  // Apri il pannello proposta dopo un upload .feature, una volta che unknownSteps è ricalcolato.
+  // Dipende da unknownSteps (non solo activeTabId) per garantire che il memo sia già aggiornato
+  // quando l'effect gira. Il flag viene consumato subito per evitare riaperture su edit successivi.
+  useEffect(() => {
+    if (!justLoadedTabId || activeTabId !== justLoadedTabId) return;
+    if (unknownSteps.length > 0) {
+      setProposalSelected(new Set(unknownSteps.map(s => s.expression)));
+      setProposalOpen(true);
+    }
+    setJustLoadedTabId(null);
+  }, [justLoadedTabId, unknownSteps, activeTabId]);
+
   // ---------------------------------------------------------------------------
   // Tab management
   // ---------------------------------------------------------------------------
@@ -283,6 +298,7 @@ function EditorInner() {
     const tab = newTab(fileContent);
     setTabs(prev => [...prev, tab]);
     setActiveTabId(tab.id);
+    setJustLoadedTabId(tab.id);
   }, []);
 
   const handleInsert = useCallback((text: string) => {
