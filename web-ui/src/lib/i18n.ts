@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    nav: { catalog: 'Catalog', editor: 'Editor', features: 'Features' },
+    nav: { catalog: 'Catalog', editor: 'Editor', features: 'Features', tags: 'Tags' },
     catalog: {
       title: 'Step Catalog',
       description: 'Search and filter available BDD steps. Double-click a row to open it in the editor.',
@@ -46,6 +46,12 @@ export const translations = {
       colScenarios: 'Scenarios',
       noFiles: 'No feature files found',
     },
+    tags: {
+      title: 'Pages / Tags',
+      stepCount: 'steps',
+      empty: 'No page markers found in feature files',
+      files: 'Files',
+    },
     status: {
       wanted: 'wanted',
       implemented: 'implemented',
@@ -74,7 +80,7 @@ export const translations = {
     },
   },
   it: {
-    nav: { catalog: 'Catalogo', editor: 'Editor', features: 'Feature' },
+    nav: { catalog: 'Catalogo', editor: 'Editor', features: 'Feature', tags: 'Tag' },
     catalog: {
       title: 'Catalogo Step',
       description: 'Cerca e filtra gli step BDD disponibili. Doppio click su una riga per aprirla nell\'editor.',
@@ -119,6 +125,12 @@ export const translations = {
       colArea: 'Area',
       colScenarios: 'Scenari',
       noFiles: 'Nessun file feature trovato',
+    },
+    tags: {
+      title: 'Pagine / Tag',
+      stepCount: 'step',
+      empty: 'Nessun marker di pagina trovato nei feature file',
+      files: 'File',
     },
     status: {
       wanted: 'da fare',
