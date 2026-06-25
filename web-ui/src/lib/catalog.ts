@@ -1,11 +1,17 @@
 import type { CatalogStep } from './types';
-import type { AppSettings } from '@/hooks/useSettings';
+
+interface GitHubSettings {
+  githubToken: string;
+  githubOwner: string;
+  githubRepo: string;
+  catalogBranch: string;
+}
 
 /**
  * Builds the request headers needed for GET /api/catalog to include proposed steps.
  * Returns an empty object when GitHub is not configured (falls back to FS catalog).
  */
-export function buildCatalogHeaders(settings: AppSettings): Record<string, string> {
+export function buildCatalogHeaders(settings: GitHubSettings): Record<string, string> {
   if (!settings.githubToken || !settings.githubOwner || !settings.githubRepo) return {};
   return {
     'x-github-token':   settings.githubToken,
