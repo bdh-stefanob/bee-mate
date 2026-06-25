@@ -13,6 +13,7 @@ interface TagAggregate {
   display: string;
   stepCount: number;
   files: string[];
+  steps: string[];
 }
 
 interface TagsResponse {
@@ -30,6 +31,20 @@ export default function TagsPage() {
   const [pages, setPages] = useState<TagAggregate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Traccia quali pagine hanno gli step espansi (slug come chiave)
+  const [expandedPages, setExpandedPages] = useState<Set<string>>(new Set());
+
+  function toggleSteps(page: string) {
+    setExpandedPages(prev => {
+      const next = new Set(prev);
+      if (next.has(page)) {
+        next.delete(page);
+      } else {
+        next.add(page);
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     fetch('/api/tags')
@@ -83,7 +98,7 @@ export default function TagsPage() {
       {/* Page list */}
       {!loading && !error && pages.length > 0 && (
         <div className="flex flex-col gap-3">
-          {pages.map(({ page, display, stepCount, files }) => (
+          {pages.map(({ page, display, stepCount, files, steps }) => (
             <div
               key={page}
               className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2"
@@ -116,6 +131,34 @@ export default function TagsPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Steps toggle — visibile solo se ci sono step */}
+              {steps && steps.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => toggleSteps(page)}
+                    className="self-start text-xs text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
+                  >
+                    {expandedPages.has(page) ? t.tags.hideSteps : t.tags.showSteps}
+                    <span>{expandedPages.has(page) ? '▲' : '▼'}</span>
+                  </button>
+                  {expandedPages.has(page) && (
+                    <div className="flex flex-col gap-0.5 mt-1">
+                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                        {t.tags.stepsLabel}
+                      </span>
+                      {steps.map((step, i) => (
+                        <span
+                          key={i}
+                          className="font-mono text-xs text-foreground/80 hover:text-foreground px-2 py-0.5 rounded hover:bg-muted transition-colors"
+                        >
+                          {step}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
