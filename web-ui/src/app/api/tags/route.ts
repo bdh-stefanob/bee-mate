@@ -13,10 +13,12 @@ interface TagAggregate {
   page: string;
   /** Etichetta leggibile (es. "LOGIN", "BROCHURE HOMEPAGE") */
   display: string;
-  /** Somma degli step di questa pagina su tutti i file */
+  /** Somma degli step di questa pagina su tutti i file (può essere > steps.length se uno step si ripete tra file) */
   stepCount: number;
   /** Relpath POSIX dei .feature che contengono questa pagina (dedup) */
   files: string[];
+  /** Insieme unico di step (testo Gherkin) associati a questa pagina, deduplicati cross-file, ordinati */
+  steps: string[];
 }
 
 /**
@@ -45,16 +47,27 @@ export async function GET() {
       }
 
       const markers = extractPageMarkers(content);
-      for (const { page, display, stepCount } of markers) {
+      for (const { page, display, stepCount, steps } of markers) {
         if (!aggregate.has(page)) {
-          aggregate.set(page, { page, display, stepCount: 0, files: [] });
+          aggregate.set(page, { page, display, stepCount: 0, files: [], steps: [] });
         }
         const entry = aggregate.get(page)!;
         entry.stepCount += stepCount;
         if (!entry.files.includes(rel)) {
           entry.files.push(rel);
         }
+        // Dedup cross-file: aggiungi solo step non già presenti
+        for (const s of steps) {
+          if (!entry.steps.includes(s)) {
+            entry.steps.push(s);
+          }
+        }
       }
+    }
+
+    // Ordina gli step di ogni pagina alfabeticamente prima di serializzare
+    for (const entry of aggregate.values()) {
+      entry.steps.sort();
     }
 
     const pages = [...aggregate.values()].sort((a, b) => {
