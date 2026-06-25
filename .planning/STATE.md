@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
+milestone: v0.2.0
 milestone_name: milestone
-status: active
-stopped_at: Phase 999.12 COMPLETE — released v0.2.0
-last_updated: "2026-06-25T00:00:00.000Z"
+status: unknown
+stopped_at: Phase 999.12 context gathered
+last_updated: "2026-06-25T13:14:58.433Z"
 progress:
-  total_phases: 12
-  completed_phases: 10
-  total_plans: 3
+  total_phases: 13
+  completed_phases: 1
+  total_plans: 6
   completed_plans: 3
+  percent: 50
 ---
 
 # Project State — bdd-automation-scaffold
