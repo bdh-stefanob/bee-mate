@@ -91,7 +91,7 @@ Plans:
 
 ---
 
-### Phase 999.14: UX editor Gherkin + lista step in /tags (EXECUTING)
+### Phase 999.14: UX editor Gherkin + lista step in /tags ✅ DONE (2026-06-25)
 
 **Goal:** Tre miglioramenti UX su editor e pagina Tags:
 1. **Lista step per pagina in /tags** — oltre al count, mostrare l'elenco espandibile degli step di ciascuna pagina (`# #PAGINA`), riusando l'estrazione esistente.
@@ -103,6 +103,20 @@ Plans:
 Plans:
 - [x] 999.14-01-PLAN.md — /tags: lista step espandibile per pagina (TAGS-03)
 - [x] 999.14-02-PLAN.md — Editor: colonne sticky + Steps collassabile + rimozione Preview (EDITOR-UX-01/02)
+
+---
+
+### Phase 999.15: Strumenti step nell'editor — filtro pagina + snippet intent (BACKLOG)
+
+**Goal:** Aggiungere strumenti sotto la search bar del pannello Steps dell'editor, per velocizzare i QA:
+1. **Filtro per pagina `#PAGINA`** — chip (come i filtri area/keyword) per filtrare gli step del catalogo per schermata, usando il campo `page` già presente su `CatalogStep`. Coerente con la pagina `/tags`.
+2. **Snippet intent dichiarativi** — libreria di blocchi multi-step inseribili come singolo intent (es. "the user completes SMS verification"), in linea con lo standard BDD dichiarativo. Sorgente: file statico nel repo editabile dal team.
+**Requirements:** STEP-FILTER-01, SNIPPET-01
+**Plans:** 2 plans previsti
+
+Plans:
+- [ ] 999.15-01-PLAN.md — Filtro pagina #PAGINA nello StepBrowser (STEP-FILTER-01)
+- [ ] 999.15-02-PLAN.md — Snippet intent dichiarativi sotto la search bar (SNIPPET-01)
 
 ---
 

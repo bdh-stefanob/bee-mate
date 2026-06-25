@@ -4,7 +4,7 @@ milestone: v0.2.0
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 999.14-02-PLAN.md (fase 999.14 ready_for_verification)
-last_updated: "2026-06-25T16:24:36.842Z"
+last_updated: "2026-06-25T16:28:10.863Z"
 progress:
   total_phases: 14
   completed_phases: 3
@@ -29,8 +29,8 @@ progress:
 
 ## Current Position
 
-Phase: 999.14 (ux-editor-gherkin-lista-step-tags) — EXECUTING
-Plan: 2 of 2
+Phase: 999.14
+Plan: Not started
 
 | Field | Value |
 |-------|-------|
