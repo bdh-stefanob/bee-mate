@@ -1,6 +1,6 @@
 # Roadmap
 
-## Completati in questo sprint (2026-06-11)
+## Completati in questo sprint (2026-06-25)
 
 ### Phase 999.1: Step Detail Editor modal nel catalogo ✅ DONE
 
@@ -65,6 +65,12 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
 
+### Phase 999.12: Collaborative QA workflow ✅ DONE (2026-06-25)
+
+**Goal:** Colleghi QA contribuiscono al catalogo dall'app senza toccare `main`. Branch `catalog` dedicato per le proposte, per-user commit identity nelle Settings, step unknown sottolineati in arancione nell'editor con click-to-propose, badge "Proposed" nel catalogo. Release `v0.2.0`.
+
+---
+
 ### Phase 999.11: Auto-salvataggio enum estratti in step-enums.json all'import (BACKLOG)
 
 **Goal:** Quando il parser esteso estrae `"label" [val1,val2]` da uno step importato, salvare automaticamente i valori in `step-enums.json` tramite `PUT /api/enums` invece di mostrarli solo in UI. Il team QA non dovrà aprire il modal del catalogo per ogni step importato.
@@ -74,16 +80,3 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
 
-### Phase 999.12: Collaborative QA workflow — catalog branch, per-user identity, step proposal (BACKLOG)
-
-**Goal:** Permettere ai colleghi QA di contribuire al catalogo direttamente dall'app senza toccare il branch `main`. Tre sotto-feature collegate:
-1. **Branch selector** — l'app committa/pusha su un branch dedicato (es. `catalog`); il maintainer apre PR `catalog→main` per sincronizzare.
-2. **Per-user commit identity** — ogni collega configura nelle Settings nome, email e PAT GitHub. Prima di ogni commit l'app mostra un riepilogo "Committing as: Nome \<email\> → branch: catalog" con documentazione su come ottenere un PAT.
-3. **Step proposal flow** — step non presente nel catalogo → segnalazione inline nell'editor + bottone "Propose step" → aggiunge a `step-catalog.json` come `status: "wanted"` con `sourceRef` dell'autore → push sul branch catalog per review.
-**Requirements:** TBD (no formal requirement IDs — backlog phase)
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 999.12-01-PLAN.md — Foundation: Settings fields, shared github-utils, catalog merge with proposals
-- [x] 999.12-02-PLAN.md — GitHub push infrastructure + commit identity (CommitPreviewDialog, propose route)
-- [x] 999.12-03-PLAN.md — CodeMirror inline highlighting + ProposeStepModal + Proposed badges
