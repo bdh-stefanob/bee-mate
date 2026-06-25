@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useSettings } from '@/hooks/useSettings';
 import { useLanguage } from '@/providers/Providers';
 
@@ -136,13 +137,12 @@ export default function SettingsPage() {
         </h2>
         {settings.jiraBaseUrl && settings.jiraToken ? (
           <div className="space-y-3">
-            <button
+            <Button
               onClick={handleJiraSync}
               disabled={isSyncing}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSyncing ? t.settings.jiraSyncLoading : t.settings.jiraSyncButton}
-            </button>
+            </Button>
             {syncResult && (
               <div className="text-sm text-muted-foreground">
                 <p>{syncResult.synced} scenari sincronizzati</p>

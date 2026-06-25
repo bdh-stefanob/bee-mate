@@ -128,7 +128,7 @@ export function ProposeStepModal({
             size="sm"
             disabled={submitting || !area}
             onClick={() => onSubmit(area)}
-            className="bg-teal-600 hover:bg-teal-700 text-white min-h-[44px]"
+            className="min-h-[44px]"
           >
             {submitting ? 'Proposing…' : 'Propose step'}
           </Button>

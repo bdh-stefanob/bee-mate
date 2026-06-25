@@ -107,7 +107,7 @@ export function CommitPreviewDialog({
           <Button
             onClick={onConfirm}
             disabled={pushing || !commitName || !commitEmail}
-            className="min-h-11 py-2.5 bg-teal-600 hover:bg-teal-700 text-white border-transparent disabled:opacity-50"
+            className="min-h-11 py-2.5"
           >
             {pushing ? 'Pushing…' : 'Push to catalog'}
           </Button>
