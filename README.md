@@ -10,9 +10,10 @@ A test-automation scaffold built on **Playwright + Cucumber.js + TypeScript**, p
 2. [Architecture](#architecture)
 3. [BDD Catalog App — Pages & Features](#bdd-catalog-app--pages--features)
 4. [Installation](#installation)
-5. [Updates](#updates)
-6. [Step Catalog](#step-catalog)
-7. [Development Setup](#development-setup)
+5. [Proposing steps to the catalog](#proposing-steps-to-the-catalog)
+6. [Updates](#updates)
+7. [Step Catalog](#step-catalog)
+8. [Development Setup](#development-setup)
 
 ---
 
@@ -75,6 +76,9 @@ The main authoring surface for writing `.feature` files.
   - Text search — searches expression, area, and page name
   - Click a step to insert it at cursor; parametric steps open a value picker
 - **Scenario outline panel** — lists all scenarios in the current file, numbered and collapsible; click to scroll to that scenario in the editor
+- **Unknown step highlighting** — steps not found in the catalog are underlined in orange. Hover for a tooltip; click to open the proposal modal for that step
+- **Propose step panel** — banner at the bottom counts unknown steps in the current file; "Proponi N step al catalogo" sends all of them to the `catalog` branch for review
+- **Commit to GitHub** — pushes the current feature file to the configured branch (a confirmation dialog shows your identity and target branch before pushing)
 - **Save** (`Ctrl+S` or Save button) — writes the `.feature` file to `src/features/{app}/{flow}/{slug}.feature`, derived from the `@app @flow` tags
 - **State persistence** — draft survives navigation between pages (stored in `localStorage`)
 
@@ -88,9 +92,26 @@ Browse all existing `.feature` files in the repository.
 
 ### Settings (`/settings`)
 
-Configure integrations.
+Configure integrations. All values are stored locally in `localStorage` — never committed to the repository.
 
-- **GitHub push** — push the current catalog and feature file changes to the remote repository directly from the app
+**GitHub integration** (required to commit feature files and propose steps):
+
+| Field | Description |
+|---|---|
+| GitHub Token | Personal Access Token with `repo` scope — [generate one here](https://github.com/settings/tokens) |
+| Repository owner | Organisation or username that owns the repo (e.g. `my-org`) |
+| Repository name | Repository name (e.g. `bdd-automation-scaffold`) |
+| Branch | Branch where feature files are committed (default: `main`) |
+| Catalog branch | Branch where step proposals are pushed for review (default: `catalog`) |
+
+**Commit identity** (required to propose steps — your name appears in the Git commit):
+
+| Field | Description |
+|---|---|
+| Commit name | Your display name (e.g. `Jane Smith`) |
+| Commit email | Your GitHub email (e.g. `jane@company.com`) |
+
+**Other integrations:**
 - **Jira sync** — sync step proposals to Jira tickets (requires API token in `.env`)
 - **Workspace path** — shows the currently selected repository folder
 
@@ -129,6 +150,26 @@ Navigate to the root of the cloned repository and select it. The app saves this 
 ### Resetting the workspace
 
 Delete or edit `%APPDATA%\web-ui\bdd-settings.json` to force the picker to reappear on the next launch.
+
+---
+
+## Proposing steps to the catalog
+
+When you write a scenario that uses a step not yet in the catalog, the editor highlights it with an **orange underline**.
+
+**Two ways to propose:**
+
+1. **Click the underlined step** → a modal opens pre-filled with the expression; select the functional area and click *Propose step*
+2. **"Proponi N step al catalogo" button** (bottom banner) → sends all unknown steps in the file at once
+
+Both methods push a `step-proposals.json` file to the `catalog` branch on GitHub, attributed to your commit identity. A confirmation dialog shows exactly *who* is committing and *where* before anything is pushed.
+
+**After proposing:**
+- The step appears in the catalog with a **Proposed** badge (orange)
+- The maintainer reviews the `catalog` branch, adjusts expressions if needed, and merges `catalog → main`
+- A developer implements the step definition and marks it `implemented`
+
+> Steps on the `catalog` branch are visible to everyone in the app immediately — no need to wait for the merge.
 
 ---
 
