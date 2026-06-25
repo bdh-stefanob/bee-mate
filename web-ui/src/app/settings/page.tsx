@@ -8,7 +8,7 @@ import { useLanguage } from '@/providers/Providers';
 
 export default function SettingsPage() {
   const { t } = useLanguage();
-  const { settings, update } = useSettings();
+  const { settings, loaded, update } = useSettings();
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ synced: number; errors: string[] } | null>(null);
@@ -69,6 +69,9 @@ export default function SettingsPage() {
       </label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       <Input
+        // Remount once values hydrate from localStorage so the uncontrolled
+        // input re-reads defaultValue (avoids the controlled/uncontrolled warning).
+        key={loaded ? 'loaded' : 'init'}
         type={type}
         defaultValue={settings[key]}
         onBlur={e => handleBlur(key, e.target.value)}
