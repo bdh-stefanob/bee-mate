@@ -71,7 +71,7 @@ Plans:
 
 ---
 
-### Phase 999.13: Feature file import nell'editor + sezione Tags/Hashtag (BACKLOG)
+### Phase 999.13: Feature file import nell'editor + sezione Tags/Hashtag ✅ DONE (2026-06-25)
 
 **Goal:** Tre miglioramenti collegati per il workflow del team QA:
 1. **Upload .feature nell'editor** — drag-and-drop o file picker direttamente nel tab dell'editor, senza passare dalla pagina Features. Il contenuto viene caricato in un nuovo tab preservando tutti i commenti (`# #PAGINA`, `# note libere`).
@@ -88,6 +88,21 @@ Plans:
 - [x] 999.13-03-PLAN.md — Pagina /tags: aggregazione page marker + link editor (Wave 3)
 - [x] 999.13-04-PLAN.md — Fix import server: preserva tag/titolo/# #PAGINA (Wave 4)
 - [x] 999.13-05-PLAN.md — Bottone Features: import tag-aware + dialog alberatura App/Flow (Wave 5, checkpoint finale)
+
+---
+
+### Phase 999.14: UX editor Gherkin + lista step in /tags (BACKLOG)
+
+**Goal:** Tre miglioramenti UX su editor e pagina Tags:
+1. **Lista step per pagina in /tags** — oltre al count, mostrare l'elenco espandibile degli step di ciascuna pagina (`# #PAGINA`), riusando l'estrazione esistente.
+2. **Colonne editor sticky + pannello Steps collassabile** — le colonne sinistra (Explorer) e destra (Steps) restano fisse durante lo scroll dell'editor; il pannello Steps è riducibile/collassabile con la ricerca come stato di default che poi espande i risultati.
+3. **Rimozione "Preview .feature"** — eliminare la sezione preview in basso a destra (inutile), recuperando spazio per gli step.
+**Requirements:** TAGS-03, EDITOR-UX-01, EDITOR-UX-02
+**Plans:** 2 plans previsti
+
+Plans:
+- [ ] 999.14-01-PLAN.md — /tags: lista step espandibile per pagina (TAGS-03)
+- [ ] 999.14-02-PLAN.md — Editor: colonne sticky + Steps collassabile + rimozione Preview (EDITOR-UX-01/02)
 
 ---
 
