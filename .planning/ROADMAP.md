@@ -81,9 +81,9 @@ Plans:
 2. **Per-user commit identity** — ogni collega configura nelle Settings nome, email e PAT GitHub. Prima di ogni commit l'app mostra un riepilogo "Committing as: Nome \<email\> → branch: catalog" con documentazione su come ottenere un PAT.
 3. **Step proposal flow** — step non presente nel catalogo → segnalazione inline nell'editor + bottone "Propose step" → aggiunge a `step-catalog.json` come `status: "wanted"` con `sourceRef` dell'autore → push sul branch catalog per review.
 **Requirements:** TBD (no formal requirement IDs — backlog phase)
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 999.12-01-PLAN.md — Foundation: Settings fields, shared github-utils, catalog merge with proposals
-- [ ] 999.12-02-PLAN.md — GitHub push infrastructure + commit identity (CommitPreviewDialog, propose route)
-- [ ] 999.12-03-PLAN.md — CodeMirror inline highlighting + ProposeStepModal + Proposed badges
+- [x] 999.12-01-PLAN.md — Foundation: Settings fields, shared github-utils, catalog merge with proposals
+- [x] 999.12-02-PLAN.md — GitHub push infrastructure + commit identity (CommitPreviewDialog, propose route)
+- [x] 999.12-03-PLAN.md — CodeMirror inline highlighting + ProposeStepModal + Proposed badges
