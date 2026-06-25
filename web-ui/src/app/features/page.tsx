@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FeatureSummary } from '@/lib/types';
 import FeaturePreview from '@/components/FeaturePreview';
+import FeatureImportDialog from '@/components/FeatureImportDialog';
 import { useLanguage } from '@/providers/Providers';
 import { toast } from 'sonner';
 
@@ -60,6 +61,8 @@ export default function FeaturesPage() {
   const [collapsedFlows, setCollapsedFlows] = useState<Set<string>>(new Set());
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importTarget, setImportTarget] = useState<{ fileName: string; content: string } | null>(null);
 
   function loadFeatures() {
     setLoading(true);
@@ -89,23 +92,26 @@ export default function FeaturesPage() {
     setUploading(true);
     try {
       const content = await file.text();
-      const res = await fetch('/api/features', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, filePath: file.name }),
-      });
-      const data = await res.json() as { ok?: boolean; path?: string; error?: string };
-      if (!data.ok) throw new Error(data.error ?? 'Errore sconosciuto');
-      toast.success(`Caricato: ${data.path}`);
-      loadFeatures();
+      setImportTarget({ fileName: file.name, content });
+      setImportOpen(true);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Upload fallito');
+      toast.error(err instanceof Error ? err.message : 'Lettura file fallita');
     } finally {
       setUploading(false);
     }
   }
 
   const { tree, flat } = useMemo(() => buildTree(features), [features]);
+
+  const existingApps = useMemo(
+    () => [...new Set(features.map(f => f.app).filter((a): a is string => Boolean(a)))],
+    [features],
+  );
+  const existingFlows = useMemo(
+    () => [...new Set(features.map(f => f.flow).filter((f): f is string => Boolean(f)))],
+    [features],
+  );
+  const existingPaths = useMemo(() => features.map(f => f.file), [features]);
 
   function toggleApp(app: string) {
     setCollapsedApps(prev => {
@@ -163,6 +169,22 @@ export default function FeaturesPage() {
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto flex flex-col gap-4">
+      {importTarget && (
+        <FeatureImportDialog
+          open={importOpen}
+          fileName={importTarget.fileName}
+          content={importTarget.content}
+          existingApps={existingApps}
+          existingFlows={existingFlows}
+          existingPaths={existingPaths}
+          onCancel={() => setImportOpen(false)}
+          onSaved={(p) => {
+            setImportOpen(false);
+            toast.success(`Feature salvata: ${p}`);
+            loadFeatures();
+          }}
+        />
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t.features.title}</h1>
         <div className="flex items-center gap-2">
