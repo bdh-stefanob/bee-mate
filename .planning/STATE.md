@@ -4,7 +4,7 @@ milestone: v0.2.0
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 999.13-05-PLAN.md (phase 999.13 complete)
-last_updated: "2026-06-25T14:47:40.118Z"
+last_updated: "2026-06-25T14:53:39.815Z"
 progress:
   total_phases: 13
   completed_phases: 2
@@ -29,8 +29,8 @@ progress:
 
 ## Current Position
 
-Phase: 999.13 (feature-file-import-nell-editor-sezione-tags-hashtag) — COMPLETE
-Plan: 5 of 5
+Phase: 999.13
+Plan: Not started
 
 | Field | Value |
 |-------|-------|
