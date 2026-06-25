@@ -153,6 +153,31 @@
   border-color: oklch(1 0 0 / 15%);
 }
 
+/* CodeMirror autocomplete dropdown — dark mode overrides */
+.dark .cm-tooltip.cm-tooltip-autocomplete {
+  background: oklch(0.22 0 0);
+  border: 1px solid oklch(1 0 0 / 15%);
+  box-shadow: 0 4px 12px oklch(0 0 0 / 40%);
+}
+.dark .cm-tooltip-autocomplete > ul > li {
+  color: oklch(0.95 0 0);
+}
+.dark .cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.dark .cm-completionLabel {
+  color: inherit;
+}
+.dark .cm-completionMatchedText {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.dark .cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionMatchedText {
+  color: var(--accent-foreground);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
