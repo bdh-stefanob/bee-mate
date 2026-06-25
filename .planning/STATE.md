@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: in_progress
-stopped_at: "999.13-03-PLAN.md Task 2 complete — awaiting checkpoint:human-verify (Task 3)"
-last_updated: "2026-06-25T00:00:00Z"
+status: unknown
+stopped_at: Completed 999.13-04-PLAN.md
+last_updated: "2026-06-25T14:03:48.789Z"
 progress:
   total_phases: 13
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 5
-  percent: 83
+  total_plans: 8
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State — bdd-automation-scaffold
@@ -30,7 +30,7 @@ progress:
 ## Current Position
 
 Phase: 999.13 (feature-file-import-nell-editor-sezione-tags-hashtag) — IN PROGRESS
-Plan: 2 of 3
+Plan: 3 of 3
 
 | Field | Value |
 |-------|-------|
@@ -41,8 +41,9 @@ Plan: 2 of 3
 
 **Progress:**
 
-```
+[█████████░] 88%
 [█████████-] 83% — 5/6 piani completati (plan 03 Task 3 checkpoint pending)
+
 ```
 
 ---
@@ -56,6 +57,7 @@ Plan: 2 of 3
 | Plans total | 13 |
 | Plans complete | 13 |
 | Requirements mapped | 14/14 |
+| Phase 999.13 P04 | 12 min | 2 tasks | 1 files |
 
 ### Execution Log
 
@@ -85,6 +87,7 @@ Plan: 2 of 3
 - 999.13-01: .feature verbatim load in nuovo tab via onLoadFeature prop e openContentInNewTab
 - 999.13-02: justLoadedTabId flag + useEffect dopo unknownSteps useMemo apre pannello proposta con step e page marker pre-selezionati dopo upload .feature
 - 999.13-03: extractPageMarkers replica PAGE_MARKER_RE di _content.tsx (transitiva); GET /api/tags senza parametri client per sicurezza T-999.13-01; relpath POSIX nella risposta
+- 999.13-04: buildFeatureContent cerca tag originale in rawHeaderLines invece di forzare @area; derivazione area usa feature.name → headerTags → 'imported' (rimosso slugify(inputBasename))
 
 ### Known Issues (inherited from existing codebase)
 
@@ -108,7 +111,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** 999.13-03 Tasks 1-2 completati — checkpoint:human-verify Task 3 (verifica visiva end-to-end fase 999.13) in attesa di approvazione utente
+**Stopped at:** Completed 999.13-04-PLAN.md
 
 **Commands:**
 
@@ -117,6 +120,7 @@ npm test             # 5 scenari / 18 step / 0 undefined
 npm run test:dry     # dry-run senza eseguire
 npm run catalog      # rigenera STEP_CATALOG.md + step-catalog.json
 cd web-ui && npm run dev   # avvia web-ui per verifica visiva
+
 ```
 
 **Repo status (Phase 05 complete):**
