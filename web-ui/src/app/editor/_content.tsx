@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { CommitPreviewDialog } from '@/components/CommitPreviewDialog';
 import { ProposeStepModal } from '@/components/ProposeStepModal';
 import { matchesCatalog } from '@/lib/catalog-match';
+import { buildCatalogHeaders } from '@/lib/catalog';
 
 // ---------------------------------------------------------------------------
 // Tab types
@@ -104,7 +105,7 @@ function loadInitialState(stepParam: string | null): { tabs: EditorTab[]; active
 
 function EditorInner() {
   const { t } = useLanguage();
-  const { settings } = useSettings();
+  const { settings, loaded: settingsLoaded } = useSettings();
   const searchParams = useSearchParams();
   const stepParam = searchParams.get('step');
 
@@ -184,9 +185,10 @@ function EditorInner() {
     setProposalSelected(new Set());
   }, [activeTabId]);
 
-  // Load step catalog once — also derives catalogAreas for ProposeStepModal
+  // Load step catalog once settings are hydrated — also derives catalogAreas for ProposeStepModal
   useEffect(() => {
-    fetch('/api/catalog')
+    if (!settingsLoaded) return;
+    fetch('/api/catalog', { headers: buildCatalogHeaders(settings) })
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then((data: { steps?: CatalogStep[] }) => {
         if (data.steps) {
@@ -195,7 +197,7 @@ function EditorInner() {
         }
       })
       .catch((err: Error) => { toast.error(`Catalog non disponibile: ${err.message}`); });
-  }, []);
+  }, [settingsLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Unknown steps in current content — with resolved keyword (And/But inherit previous)
   // Page markers: comment lines like "# #LOGIN" or "# #HOMEPAGE-POPULAR SERVICES MENU"
@@ -403,7 +405,7 @@ function EditorInner() {
       }
       toast.success(`${data.added} step proposed — pushed to ${settings.catalogBranch || 'catalog'}`);
       setProposalOpen(false);
-      const catalogRes = await fetch('/api/catalog');
+      const catalogRes = await fetch('/api/catalog', { headers: buildCatalogHeaders(settings) });
       const catalogData = await catalogRes.json() as { steps?: CatalogStep[] };
       if (catalogData.steps) setStepExpressions(catalogData.steps.map(s => s.expression));
     } catch (err: unknown) {
@@ -448,7 +450,7 @@ function EditorInner() {
       setProposeModal(null);
       setProposeError(null);
       // Refresh catalog so the underline clears and area list stays current
-      const catalogRes = await fetch('/api/catalog');
+      const catalogRes = await fetch('/api/catalog', { headers: buildCatalogHeaders(settings) });
       const catalogData = await catalogRes.json() as { steps?: CatalogStep[] };
       if (catalogData.steps) {
         setStepExpressions(catalogData.steps.map(s => s.expression));

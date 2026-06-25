@@ -8,6 +8,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import type { CatalogStep } from '@/lib/types';
+import { buildCatalogHeaders } from '@/lib/catalog';
+import { useSettings } from '@/hooks/useSettings';
 import { useLanguage } from '@/providers/Providers';
 import { StepParamPicker, type GherkinKeyword } from '@/components/StepParamPicker';
 import { toast } from 'sonner';
@@ -80,6 +82,7 @@ function SkeletonRow() {
 
 export function StepBrowser({ onInsert }: StepBrowserProps) {
   const { t } = useLanguage();
+  const { settings, loaded } = useSettings();
   const [steps, setSteps] = useState<CatalogStep[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(true);
@@ -91,12 +94,13 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    fetch('/api/catalog')
+    if (!loaded) return;
+    fetch('/api/catalog', { headers: buildCatalogHeaders(settings) })
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(data => { if (data.steps) setSteps(data.steps); })
       .catch((err: Error) => { toast.error(`Step catalog non disponibile: ${err.message}`); })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const areas = useMemo(
     () => [...new Set(steps.map(s => s.area))].sort(),

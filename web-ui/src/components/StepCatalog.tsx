@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CatalogStep } from '@/lib/types';
-import { filterSteps, uniqueAreas, uniqueStatuses } from '@/lib/catalog';
+import { filterSteps, uniqueAreas, uniqueStatuses, buildCatalogHeaders } from '@/lib/catalog';
+import { useSettings } from '@/hooks/useSettings';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -34,6 +35,7 @@ const STATUS_STYLES: Record<string, string> = {
 export default function StepCatalog() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { settings, loaded } = useSettings();
   const [steps, setSteps] = useState<CatalogStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,8 @@ export default function StepCatalog() {
   const [selectedStep, setSelectedStep] = useState<CatalogStep | null>(null);
 
   useEffect(() => {
-    fetch('/api/catalog')
+    if (!loaded) return;
+    fetch('/api/catalog', { headers: buildCatalogHeaders(settings) })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -56,7 +59,7 @@ export default function StepCatalog() {
         setError(err instanceof Error ? err.message : 'Errore caricamento catalog');
         setLoading(false);
       });
-  }, []);
+  }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const areas = uniqueAreas(steps);
   const statuses = uniqueStatuses(steps);
