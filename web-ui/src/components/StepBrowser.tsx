@@ -91,6 +91,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   const [keywordFilter, setKeywordFilter] = useState<GherkinKeyword | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pickerStep, setPickerStep] = useState<CatalogStep | null>(null);
+  const [expandedList, setExpandedList] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -284,7 +285,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
 
               {/* Step list */}
               <ul ref={listRef} role="listbox" aria-label="Step expressions"
-                  className="overflow-y-auto" style={{ maxHeight: '480px' }}>
+                  className="overflow-y-auto" style={{ maxHeight: expandedList ? '480px' : '180px' }}>
                 {isLoading ? (
                   <li aria-busy="true">
                     <div className="space-y-1 py-1">
@@ -382,6 +383,18 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                   })
                 )}
               </ul>
+
+              {/* Expand / collapse list toggle */}
+              {!isLoading && filtered.length > 0 && (
+                <button
+                  onClick={() => setExpandedList(e => !e)}
+                  className="w-full px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/50 border-t border-border transition-colors text-center"
+                >
+                  {expandedList
+                    ? `Riduci ▲`
+                    : `Mostra tutti (${filtered.length}) ▼`}
+                </button>
+              )}
             </>
           )}
         </div>
