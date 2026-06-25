@@ -588,10 +588,12 @@ function EditorInner() {
 
         </div>
 
-        {/* Scrollable content — page-level scroll; editor flows naturally, Steps column sticks.
-            min-h-0 is REQUIRED so this flex-1 child can shrink below content height and actually scroll
-            (without it the parent's overflow-hidden clips the tall editor instead of scrolling). */}
-        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col lg:flex-row gap-4 px-4 lg:px-6 pt-1 pb-4 lg:pb-6">
+        {/* Scrollable content — plain BLOCK scroll container (NOT flex), so wheel scroll over the
+            CodeMirror editor bubbles up and scrolls normally. min-h-0 lets this flex-1 child actually
+            scroll instead of being clipped by the parent's overflow-hidden. The inner row holds the
+            two columns; the Steps column is sticky so it stays in view while the editor scrolls. */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 lg:px-6 pt-1 pb-4 lg:pb-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-start">
 
           {/* LEFT COLUMN — editor scrolls with the page (NOT sticky) */}
           <div className="flex flex-col gap-3 lg:w-2/3 min-w-0">
@@ -667,11 +669,12 @@ function EditorInner() {
               />
           </div>
 
-          {/* RIGHT COLUMN — Steps stays in view while the editor scrolls (sticky, self-start) */}
-          <div className="flex flex-col gap-4 lg:w-1/3 min-w-0 lg:sticky lg:top-1 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+          {/* RIGHT COLUMN — Steps stays in view while the editor scrolls (sticky) */}
+          <div className="flex flex-col gap-4 lg:w-1/3 min-w-0 lg:sticky lg:top-0 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
             <StepBrowser onInsert={handleInsert} />
           </div>
 
+          </div>
         </div>
       </div>
 
