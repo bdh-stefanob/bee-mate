@@ -588,8 +588,10 @@ function EditorInner() {
 
         </div>
 
-        {/* Scrollable content — page-level scroll; editor flows naturally, Steps column sticks */}
-        <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row gap-4 px-4 lg:px-6 pt-1 pb-4 lg:pb-6">
+        {/* Scrollable content — page-level scroll; editor flows naturally, Steps column sticks.
+            min-h-0 is REQUIRED so this flex-1 child can shrink below content height and actually scroll
+            (without it the parent's overflow-hidden clips the tall editor instead of scrolling). */}
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col lg:flex-row gap-4 px-4 lg:px-6 pt-1 pb-4 lg:pb-6">
 
           {/* LEFT COLUMN — editor scrolls with the page (NOT sticky) */}
           <div className="flex flex-col gap-3 lg:w-2/3 min-w-0">
