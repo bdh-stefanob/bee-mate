@@ -18,6 +18,11 @@ export interface PageMarkerCount {
   display: string;
   /** Numero di step (righe Given/When/Then/And/But) sotto questa pagina */
   stepCount: number;
+  /**
+   * Testo degli step (gruppo 2 di STEP_LINE_RE) trovati sotto questa pagina nel file corrente,
+   * deduplicati (Set → array). Campo aggiuntivo — backward-compatible.
+   */
+  steps: string[];
 }
 
 /**
@@ -27,7 +32,7 @@ export interface PageMarkerCount {
  * Aggrega le ripetizioni dello stesso marker (i file reali ripetono #LOGIN prima di ogni step).
  */
 export function extractPageMarkers(content: string): PageMarkerCount[] {
-  const counts = new Map<string, { display: string; stepCount: number }>();
+  const counts = new Map<string, { display: string; stepCount: number; stepsSet: Set<string> }>();
   let currentPage = '';
   let currentDisplay = '';
 
@@ -37,7 +42,7 @@ export function extractPageMarkers(content: string): PageMarkerCount[] {
       currentDisplay = pm[1].trim();
       currentPage = currentDisplay.toLowerCase().replace(/\s+/g, '-');
       if (!counts.has(currentPage)) {
-        counts.set(currentPage, { display: currentDisplay, stepCount: 0 });
+        counts.set(currentPage, { display: currentDisplay, stepCount: 0, stepsSet: new Set() });
       }
       continue;
     }
@@ -45,6 +50,7 @@ export function extractPageMarkers(content: string): PageMarkerCount[] {
     if (sm && currentPage) {
       const entry = counts.get(currentPage)!;
       entry.stepCount += 1;
+      entry.stepsSet.add(sm[2].trim());
     }
   }
 
@@ -52,5 +58,6 @@ export function extractPageMarkers(content: string): PageMarkerCount[] {
     page,
     display: v.display,
     stepCount: v.stepCount,
+    steps: [...v.stepsSet],
   }));
 }
