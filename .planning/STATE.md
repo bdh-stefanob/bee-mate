@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 999.13-05-PLAN.md (phase 999.13 complete)
-last_updated: "2026-06-25T14:53:39.815Z"
+status: executing
+stopped_at: Completed 999.14-01-PLAN.md
+last_updated: "2026-06-25T16:03:35Z"
 progress:
-  total_phases: 13
+  total_phases: 14
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_plans: 10
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State — bdd-automation-scaffold
@@ -23,27 +23,25 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 999.13 — Feature file import + sezione Tags/Hashtag (COMPLETA — 5/5 piani, verifica visiva end-to-end approvata)
+**Current Focus:** Phase 999.14 — ux-editor-gherkin-lista-step-tags
 
 ---
 
 ## Current Position
 
-Phase: 999.13
-Plan: Not started
+Phase: 999.14 (ux-editor-gherkin-lista-step-tags) — EXECUTING
+Plan: 2 of 2
 
 | Field | Value |
 |-------|-------|
-| Current Phase | 999.13 — feature-file-import-nell-editor-sezione-tags-hashtag |
-| Current Plan | 5/5 (tutti i piani completati, verifica visiva end-to-end approvata) |
-| Status | PHASE COMPLETE |
-| Phase Goal | Upload .feature in editor, dialog proposta step con page marker, pagina /tags, fix import tag-aware, import alberato App/Flow |
+| Current Phase | 999.14 — ux-editor-gherkin-lista-step-tags |
+| Current Plan | 1/2 completato |
+| Status | EXECUTING |
+| Phase Goal | Lista step espandibile per pagina in /tags; editor Gherkin arricchito |
 
 **Progress:**
 
-[██████████] 100% — 5/5 piani completati (fase 999.13 chiusa)
-
-```
+[█████████░] 90% — 9/10 piani completati (999.14-01 chiuso, 999.14-02 in coda)
 
 ---
 
@@ -71,6 +69,7 @@ Plan: Not started
 | Phase 999.13 P01 | 12 min | 2 tasks | 2 files |
 | Phase 999.13 P02 | 8 min | 1 task | 1 file |
 | Phase 999.13 P03 | 15 min | 2/3 tasks (checkpoint pending) | 5 files |
+| Phase 999.14 P01 | 8 min | 2 tasks | 4 files |
 
 ---
 
@@ -89,6 +88,7 @@ Plan: Not started
 - 999.13-03: extractPageMarkers replica PAGE_MARKER_RE di _content.tsx (transitiva); GET /api/tags senza parametri client per sicurezza T-999.13-01; relpath POSIX nella risposta
 - 999.13-04: buildFeatureContent cerca tag originale in rawHeaderLines invece di forzare @area; derivazione area usa feature.name → headerTags → 'imported' (rimosso slugify(inputBasename))
 - 999.13-05: FeatureImportDialog import alberato — app/flow auto-derivati da tag line + fallback primo page marker; anti-overwrite client-side con confronto coda path normalizzata; slugify replicato localmente (nessuna util condivisa in web-ui/src/lib); verifica visiva end-to-end fase 999.13 approvata dall'utente (tag originale + # #PAGINA preservati, nessun @import<timestamp>)
+- 999.14-01: steps dedup single-file via Set<string> in extractPageMarkers; dedup cross-file via includes() in route.ts + sort alfabetico finale; expandedPages come Set<string> di slug per toggle per-pagina indipendente
 
 ### Known Issues (inherited from existing codebase)
 
@@ -112,7 +112,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.13-05-PLAN.md (phase 999.13 complete)
+**Stopped at:** Completed 999.14-01-PLAN.md
 
 **Commands:**
 
