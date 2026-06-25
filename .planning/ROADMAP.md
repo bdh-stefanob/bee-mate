@@ -78,10 +78,10 @@ Plans:
 2. **Import step con hashtag da file caricato** — quando si carica un `.feature`, gli step vengono estratti con il loro `# #PAGINA` marker e proposti come `status: 'proposed'` al catalogo (flusso opzionale, con dialog di conferma).
 3. **Sezione Tags/Hashtag** — nuova pagina `/tags` che aggrega tutti i marker `# #PAGINA` trovati nei feature file presenti in `src/features/`, con count step per pagina e link diretto all'editor.
 **Requirements:** UPLOAD-01, UPLOAD-02, IMPORT-STEP-01, TAGS-01, TAGS-02
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 999.13-01-PLAN.md — Upload .feature nell'editor: nuovo tab, commenti preservati (Wave 1)
+- [x] 999.13-01-PLAN.md — Upload .feature nell'editor: nuovo tab, commenti preservati (Wave 1)
 - [ ] 999.13-02-PLAN.md — Dialog proposta step con # #PAGINA dopo upload (Wave 2)
 - [ ] 999.13-03-PLAN.md — Pagina /tags: aggregazione page marker + link editor (Wave 3, checkpoint finale)
 
