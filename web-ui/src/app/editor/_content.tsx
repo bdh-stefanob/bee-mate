@@ -279,6 +279,12 @@ function EditorInner() {
     });
   }, []);
 
+  const openContentInNewTab = useCallback((fileContent: string) => {
+    const tab = newTab(fileContent);
+    setTabs(prev => [...prev, tab]);
+    setActiveTabId(tab.id);
+  }, []);
+
   const handleInsert = useCallback((text: string) => {
     editorRef.current?.insertAtCursor(text);
   }, []);
@@ -639,7 +645,10 @@ function EditorInner() {
                 </div>
               )}
 
-              <ImportDropzone onImported={featureContent => setContent(featureContent)} />
+              <ImportDropzone
+                onImported={featureContent => setContent(featureContent)}
+                onLoadFeature={openContentInNewTab}
+              />
             </div>
 
             {/* RIGHT COLUMN */}
