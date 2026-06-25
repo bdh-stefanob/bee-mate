@@ -7,6 +7,7 @@ import { isExtendedFormat, parseExtendedFormat, type ExtractedStepEnum } from '@
 
 interface ImportDropzoneProps {
   onImported: (featureContent: string) => void;
+  onLoadFeature?: (featureContent: string) => void;
 }
 
 type ImportState =
@@ -24,7 +25,7 @@ type ImportState =
  * Su ok: chiama onImported(featureContent) e mostra riepilogo N step nuovi, M skippati.
  * Su errore: mostra il messaggio di errore.
  */
-export function ImportDropzone({ onImported }: ImportDropzoneProps) {
+export function ImportDropzone({ onImported, onLoadFeature }: ImportDropzoneProps) {
   const { t } = useLanguage();
   const [state, setState] = useState<ImportState>({ status: 'idle' });
   const [isDragging, setIsDragging] = useState(false);
@@ -37,6 +38,21 @@ export function ImportDropzone({ onImported }: ImportDropzoneProps) {
     }
 
     setState({ status: 'loading' });
+
+    // .feature files contain valid Gherkin — load verbatim, never process via import-scenarios
+    if (file.name.endsWith('.feature')) {
+      const text = await file.text();
+      if (onLoadFeature) {
+        onLoadFeature(text);
+        setState({ status: 'success', newCount: 0, skipCount: 0, featurePath: file.name });
+        toast.success('Feature caricato in un nuovo tab');
+      } else {
+        // Fallback: no onLoadFeature prop — keep backward-compat behaviour for other call sites
+        onImported(text);
+        setState({ status: 'success', newCount: 0, skipCount: 0, featurePath: file.name });
+      }
+      return;
+    }
 
     const text = await file.text();
 
