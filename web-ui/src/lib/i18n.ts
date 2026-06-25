@@ -39,6 +39,7 @@ export const translations = {
       allPages: 'All pages',
       loading: 'Loading…',
       noResults: 'No steps found',
+      snippets: 'Snippets',
     },
     features: {
       title: 'Feature Files',
@@ -135,6 +136,7 @@ export const translations = {
       allPages: 'Tutte le pagine',
       loading: 'Caricamento…',
       noResults: 'Nessuno step trovato',
+      snippets: 'Snippet',
     },
     features: {
       title: 'File Feature',
