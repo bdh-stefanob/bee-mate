@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: in_progress
-stopped_at: "Completed 999.13-02-PLAN.md"
+stopped_at: "999.13-03-PLAN.md Task 2 complete — awaiting checkpoint:human-verify (Task 3)"
 last_updated: "2026-06-25T00:00:00Z"
 progress:
   total_phases: 13
   completed_phases: 1
   total_plans: 6
   completed_plans: 5
-  percent: 67
+  percent: 83
 ---
 
 # Project State — bdd-automation-scaffold
@@ -23,7 +23,7 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 999.13 — Feature file import + sezione Tags/Hashtag (2/3 piani completati)
+**Current Focus:** Phase 999.13 — Feature file import + sezione Tags/Hashtag (3/3 piani in corso — checkpoint Task 3 pending)
 
 ---
 
@@ -35,14 +35,14 @@ Plan: 2 of 3
 | Field | Value |
 |-------|-------|
 | Current Phase | 999.13 — feature-file-import-nell-editor-sezione-tags-hashtag |
-| Current Plan | 2/3 completati |
-| Status | IN PROGRESS |
+| Current Plan | 3/3 (Tasks 1-2 completati, Task 3 checkpoint pending) |
+| Status | CHECKPOINT PENDING |
 | Phase Goal | Upload .feature in editor, dialog proposta step con page marker, pagina /tags |
 
 **Progress:**
 
 ```
-[████████--] 67% — 5/6 piani completati (phase 999.13)
+[█████████-] 83% — 5/6 piani completati (plan 03 Task 3 checkpoint pending)
 ```
 
 ---
@@ -68,6 +68,7 @@ Plan: 2 of 3
 | Phase 05 P05 | 20 min | 3 tasks (incl. checkpoint) | 5 files |
 | Phase 999.13 P01 | 12 min | 2 tasks | 2 files |
 | Phase 999.13 P02 | 8 min | 1 task | 1 file |
+| Phase 999.13 P03 | 15 min | 2/3 tasks (checkpoint pending) | 5 files |
 
 ---
 
@@ -83,6 +84,7 @@ Plan: 2 of 3
 - Checkpoint 05-05 Task 3 approvato (verified-pending): verifica visiva desktop confermata dall'utente il 2026-06-10, approfondimento programmato dall'utente in seguito
 - 999.13-01: .feature verbatim load in nuovo tab via onLoadFeature prop e openContentInNewTab
 - 999.13-02: justLoadedTabId flag + useEffect dopo unknownSteps useMemo apre pannello proposta con step e page marker pre-selezionati dopo upload .feature
+- 999.13-03: extractPageMarkers replica PAGE_MARKER_RE di _content.tsx (transitiva); GET /api/tags senza parametri client per sicurezza T-999.13-01; relpath POSIX nella risposta
 
 ### Known Issues (inherited from existing codebase)
 
@@ -106,7 +108,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.13-02-PLAN.md — prossimo: 999.13-03-PLAN.md (pagina /tags)
+**Stopped at:** 999.13-03 Tasks 1-2 completati — checkpoint:human-verify Task 3 (verifica visiva end-to-end fase 999.13) in attesa di approvazione utente
 
 **Commands:**
 
