@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 999.14-01-PLAN.md
-last_updated: "2026-06-25T16:03:35Z"
+status: unknown
+stopped_at: Completed 999.14-02-PLAN.md (fase 999.14 ready_for_verification)
+last_updated: "2026-06-25T16:24:36.842Z"
 progress:
   total_phases: 14
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
-  percent: 90
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State — bdd-automation-scaffold
@@ -41,7 +41,7 @@ Plan: 2 of 2
 
 **Progress:**
 
-[█████████░] 90% — 9/10 piani completati (999.14-01 chiuso, 999.14-02 in coda)
+[██████████] 100%
 
 ---
 
@@ -56,6 +56,7 @@ Plan: 2 of 2
 | Requirements mapped | 14/14 |
 | Phase 999.13 P04 | 12 min | 2 tasks | 1 files |
 | Phase 999.13 P05 | 40 min | 3 tasks | 3 files |
+| Phase 999.14 P02 | 15 min | 3 tasks | 2 files |
 
 ### Execution Log
 
@@ -89,6 +90,7 @@ Plan: 2 of 2
 - 999.13-04: buildFeatureContent cerca tag originale in rawHeaderLines invece di forzare @area; derivazione area usa feature.name → headerTags → 'imported' (rimosso slugify(inputBasename))
 - 999.13-05: FeatureImportDialog import alberato — app/flow auto-derivati da tag line + fallback primo page marker; anti-overwrite client-side con confronto coda path normalizzata; slugify replicato localmente (nessuna util condivisa in web-ui/src/lib); verifica visiva end-to-end fase 999.13 approvata dall'utente (tag originale + # #PAGINA preservati, nessun @import<timestamp>)
 - 999.14-01: steps dedup single-file via Set<string> in extractPageMarkers; dedup cross-file via includes() in route.ts + sort alfabetico finale; expandedPages come Set<string> di slug per toggle per-pagina indipendente
+- 999.14-02: layout editor — editor sinistro scrolla con la pagina (overflow-y-auto sul wrapper esterno), SOLO colonna destra Steps sticky (`lg:sticky lg:top-1 lg:self-start`, commit 3ae4ad0 su richiesta utente in verifica visiva); StepBrowser compatto via maxHeight 180px↔480px con toggle "Mostra tutti/Riduci"; box Preview .feature rimosso (i18n keys lasciate inutilizzate)
 
 ### Known Issues (inherited from existing codebase)
 
@@ -112,7 +114,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.14-01-PLAN.md
+**Stopped at:** Completed 999.14-02-PLAN.md (fase 999.14 ready_for_verification)
 
 **Commands:**
 
