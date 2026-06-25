@@ -91,17 +91,17 @@ Plans:
 
 ---
 
-### Phase 999.14: UX editor Gherkin + lista step in /tags (BACKLOG)
+### Phase 999.14: UX editor Gherkin + lista step in /tags (EXECUTING)
 
 **Goal:** Tre miglioramenti UX su editor e pagina Tags:
 1. **Lista step per pagina in /tags** — oltre al count, mostrare l'elenco espandibile degli step di ciascuna pagina (`# #PAGINA`), riusando l'estrazione esistente.
 2. **Colonne editor sticky + pannello Steps collassabile** — le colonne sinistra (Explorer) e destra (Steps) restano fisse durante lo scroll dell'editor; il pannello Steps è riducibile/collassabile con la ricerca come stato di default che poi espande i risultati.
 3. **Rimozione "Preview .feature"** — eliminare la sezione preview in basso a destra (inutile), recuperando spazio per gli step.
 **Requirements:** TAGS-03, EDITOR-UX-01, EDITOR-UX-02
-**Plans:** 2 plans previsti
+**Plans:** 2 plans previsti (1/2 completato)
 
 Plans:
-- [ ] 999.14-01-PLAN.md — /tags: lista step espandibile per pagina (TAGS-03)
+- [x] 999.14-01-PLAN.md — /tags: lista step espandibile per pagina (TAGS-03)
 - [ ] 999.14-02-PLAN.md — Editor: colonne sticky + Steps collassabile + rimozione Preview (EDITOR-UX-01/02)
 
 ---
