@@ -89,6 +89,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   const [query, setQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
   const [keywordFilter, setKeywordFilter] = useState<GherkinKeyword | null>(null);
+  const [pageFilter, setPageFilter] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pickerStep, setPickerStep] = useState<CatalogStep | null>(null);
   const [expandedList, setExpandedList] = useState(false);
@@ -124,10 +125,22 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
     };
   }, [steps, areaFilter]);
 
+  const pages = useMemo(
+    () => [...new Set(steps.map(s => s.page).filter(Boolean) as string[])].sort(),
+    [steps]
+  );
+
+  const pageCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    steps.forEach(s => { if (s.page) map.set(s.page, (map.get(s.page) ?? 0) + 1); });
+    return map;
+  }, [steps]);
+
   const filtered = useMemo(() => {
     let list = steps;
     if (areaFilter) list = list.filter(s => s.area === areaFilter);
     if (keywordFilter) list = list.filter(s => (s.keyword ?? guessKeyword(s.expression)) === keywordFilter);
+    if (pageFilter) list = list.filter(s => s.page === pageFilter);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(s =>
@@ -137,9 +150,9 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
       );
     }
     return list;
-  }, [steps, areaFilter, keywordFilter, query]);
+  }, [steps, areaFilter, keywordFilter, pageFilter, query]);
 
-  useEffect(() => { setActiveIndex(0); }, [query, areaFilter, keywordFilter]);
+  useEffect(() => { setActiveIndex(0); }, [query, areaFilter, keywordFilter, pageFilter]);
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -282,6 +295,38 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                   aria-label="Filter steps"
                 />
               </div>
+
+              {/* Page filter chips — shown only when catalog has pages */}
+              {pages.length > 0 && (
+                <div className="flex flex-wrap gap-1 px-2 pb-1">
+                  <button
+                    onClick={() => setPageFilter(null)}
+                    className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                      pageFilter === null
+                        ? 'bg-teal-600 text-white border-teal-600'
+                        : 'border-border text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {t.stepBrowser.allPages}
+                  </button>
+                  {pages.map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setPageFilter(page === pageFilter ? null : page)}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 ${
+                        pageFilter === page
+                          ? 'bg-teal-600 text-white border-teal-600'
+                          : 'border-border text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {page}
+                      <span className={`text-[9px] ${pageFilter === page ? 'text-teal-100' : ''}`}>
+                        {pageCounts.get(page)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Step list */}
               <ul ref={listRef} role="listbox" aria-label="Step expressions"
