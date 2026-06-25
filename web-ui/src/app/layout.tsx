@@ -41,6 +41,9 @@ export default function RootLayout({
               <Link href="/features" className="text-sm text-teal-100 hover:text-white transition-colors">
                 Features
               </Link>
+              <Link href="/tags" className="text-sm text-teal-100 hover:text-white transition-colors">
+                Tags
+              </Link>
               <NavSettingsLink />
               <div className="ml-auto flex items-center gap-1">
                 <LanguageToggle />
