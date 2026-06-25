@@ -71,6 +71,22 @@ Plans:
 
 ---
 
+### Phase 999.13: Feature file import nell'editor + sezione Tags/Hashtag (BACKLOG)
+
+**Goal:** Tre miglioramenti collegati per il workflow del team QA:
+1. **Upload .feature nell'editor** — drag-and-drop o file picker direttamente nel tab dell'editor, senza passare dalla pagina Features. Il contenuto viene caricato in un nuovo tab preservando tutti i commenti (`# #PAGINA`, `# note libere`).
+2. **Import step con hashtag da file caricato** — quando si carica un `.feature`, gli step vengono estratti con il loro `# #PAGINA` marker e proposti come `status: 'proposed'` al catalogo (flusso opzionale, con dialog di conferma).
+3. **Sezione Tags/Hashtag** — nuova pagina `/tags` che aggrega tutti i marker `# #PAGINA` trovati nei feature file presenti in `src/features/`, con count step per pagina e link diretto all'editor.
+**Requirements:** UPLOAD-01, UPLOAD-02, IMPORT-STEP-01, TAGS-01, TAGS-02
+**Plans:** 3 plans
+
+Plans:
+- [ ] 999.13-01-PLAN.md — Upload .feature nell'editor: nuovo tab, commenti preservati (Wave 1)
+- [ ] 999.13-02-PLAN.md — Dialog proposta step con # #PAGINA dopo upload (Wave 2)
+- [ ] 999.13-03-PLAN.md — Pagina /tags: aggregazione page marker + link editor (Wave 3, checkpoint finale)
+
+---
+
 ### Phase 999.11: Auto-salvataggio enum estratti in step-enums.json all'import (BACKLOG)
 
 **Goal:** Quando il parser esteso estrae `"label" [val1,val2]` da uno step importato, salvare automaticamente i valori in `step-enums.json` tramite `PUT /api/enums` invece di mostrarli solo in UI. Il team QA non dovrà aprire il modal del catalogo per ogni step importato.
