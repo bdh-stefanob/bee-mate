@@ -245,19 +245,24 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
   const content = fs.readFileSync(resolvedInput, 'utf-8');
   const feature = parseScenarios(content);
 
-  // Nome Feature: dall'header, o basename del file input
-  const inputBasename = path.basename(resolvedInput, path.extname(resolvedInput));
-  if (!feature.name) {
-    feature.name = inputBasename;
-  }
-
-  // --- Determina area ---
-  // Deriva i tag dall'header originale (es. "@brochure-clinic @login" → ["brochure-clinic", "login"])
+  // --- Determina i tag dell'header originale (es. "@brochure-clinic @login" → ["brochure-clinic", "login"]) ---
   const headerTagLine = feature.rawHeaderLines.find(l => l.trim().startsWith('@'));
   const headerTags = headerTagLine
     ? (headerTagLine.trim().match(/@(\S+)/g) ?? []).map(s => slugify(s.slice(1)))
     : [];
-  // NON usare più slugify(inputBasename) come fallback: evita "import-<timestamp>" come directory
+
+  // Nome Feature: dall'header. Se assente, NON usare il basename di un tmp file
+  // (es. "import-1750857600000" generato da /api/import) — ripiega sui tag o su "Imported".
+  const inputBasename = path.basename(resolvedInput, path.extname(resolvedInput));
+  const isTempBasename = /^import-\d+$/.test(inputBasename);
+  if (!feature.name) {
+    feature.name = isTempBasename
+      ? (headerTags[1] || headerTags[0] || 'Imported')
+      : inputBasename;
+  }
+
+  // --- Determina area ---
+  // NON usare slugify(inputBasename) come fallback: evita "import-<timestamp>" come directory/tag
   const area = areaArg
     ? slugify(areaArg)
     : slugify(feature.name) || headerTags[1] || headerTags[0] || 'imported';
