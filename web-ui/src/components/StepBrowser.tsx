@@ -13,6 +13,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { useLanguage } from '@/providers/Providers';
 import { StepParamPicker, type GherkinKeyword } from '@/components/StepParamPicker';
 import { toast } from 'sonner';
+import { STEP_SNIPPETS } from '@/lib/step-snippets';
 
 export interface StepBrowserProps {
   onInsert: (expression: string) => void;
@@ -93,6 +94,7 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [pickerStep, setPickerStep] = useState<CatalogStep | null>(null);
   const [expandedList, setExpandedList] = useState(false);
+  const [snippetsOpen, setSnippetsOpen] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -327,6 +329,35 @@ export function StepBrowser({ onInsert }: StepBrowserProps) {
                   ))}
                 </div>
               )}
+
+              {/* Snippets — collapsible section, default collapsed */}
+              <div className="border-t border-border/50">
+                <button
+                  onClick={() => setSnippetsOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  aria-expanded={snippetsOpen}
+                >
+                  <span>{t.stepBrowser.snippets} {snippetsOpen ? '▲' : '▼'}</span>
+                  <span className="text-[10px] font-normal">{STEP_SNIPPETS.length}</span>
+                </button>
+                {snippetsOpen && (
+                  <div className="px-2 pb-2 flex flex-wrap gap-1">
+                    {STEP_SNIPPETS.map(snippet => (
+                      <button
+                        key={snippet.id}
+                        title={snippet.description}
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          onInsert(snippet.lines.join('\n') + '\n');
+                        }}
+                        className="text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+                      >
+                        {snippet.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Step list */}
               <ul ref={listRef} role="listbox" aria-label="Step expressions"
