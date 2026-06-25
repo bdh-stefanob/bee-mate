@@ -98,7 +98,7 @@ export default function StepCatalog() {
           className="h-9 w-64"
         />
 
-        <Select value={area || undefined} onValueChange={v => setArea((v ?? '') === '__all__' ? '' : (v ?? ''))}>
+        <Select value={area || null} onValueChange={v => setArea((v ?? '') === '__all__' ? '' : (v ?? ''))}>
           <SelectTrigger className="h-9 w-40">
             <SelectValue placeholder={t.catalog.filterArea} />
           </SelectTrigger>
@@ -110,7 +110,7 @@ export default function StepCatalog() {
           </SelectContent>
         </Select>
 
-        <Select value={status || undefined} onValueChange={v => setStatus((v ?? '') === '__all__' ? '' : (v ?? ''))}>
+        <Select value={status || null} onValueChange={v => setStatus((v ?? '') === '__all__' ? '' : (v ?? ''))}>
           <SelectTrigger className="h-9 w-40">
             <SelectValue placeholder={t.catalog.filterStatus} />
           </SelectTrigger>

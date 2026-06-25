@@ -45,12 +45,16 @@ function readStorage(): AppSettings {
 
 export function useSettings(): {
   settings: AppSettings;
+  /** True once values have been hydrated from localStorage (client-side). */
+  loaded: boolean;
   update: (patch: Partial<AppSettings>) => void;
 } {
   const [settings, setSettings] = useState<AppSettings>(DEFAULTS);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setSettings(readStorage());
+    setLoaded(true);
   }, []);
 
   const update = useCallback((patch: Partial<AppSettings>) => {
@@ -65,5 +69,5 @@ export function useSettings(): {
     });
   }, []);
 
-  return { settings, update };
+  return { settings, loaded, update };
 }

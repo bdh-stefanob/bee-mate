@@ -98,7 +98,7 @@ export function ProposeStepModal({
               Area
             </label>
             <Select
-              value={area || undefined}
+              value={area || null}
               onValueChange={v => setArea(v ?? '')}
             >
               <SelectTrigger id="propose-area-select" className="h-9 w-full">
