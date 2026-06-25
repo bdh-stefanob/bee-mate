@@ -51,6 +51,9 @@ export const translations = {
       stepCount: 'steps',
       empty: 'No page markers found in feature files',
       files: 'Files',
+      showSteps: 'Show steps',
+      hideSteps: 'Hide steps',
+      stepsLabel: 'Steps',
     },
     featureImport: {
       title: 'Import feature',
@@ -143,6 +146,9 @@ export const translations = {
       stepCount: 'step',
       empty: 'Nessun marker di pagina trovato nei feature file',
       files: 'File',
+      showSteps: 'Mostra step',
+      hideSteps: 'Nascondi step',
+      stepsLabel: 'Step',
     },
     featureImport: {
       title: 'Importa feature',
