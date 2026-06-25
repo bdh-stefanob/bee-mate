@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: unknown
-stopped_at: Phase 999.12 context gathered
-last_updated: "2026-06-25T13:14:58.433Z"
+status: in_progress
+stopped_at: "Completed 999.13-02-PLAN.md"
+last_updated: "2026-06-25T00:00:00Z"
 progress:
   total_phases: 13
   completed_phases: 1
   total_plans: 6
-  completed_plans: 3
-  percent: 50
+  completed_plans: 5
+  percent: 67
 ---
 
 # Project State — bdd-automation-scaffold
 
-*Last updated: 2026-06-10*
+*Last updated: 2026-06-25*
 
 ---
 
@@ -23,26 +23,26 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 05 — stability-integrations (COMPLETATA)
+**Current Focus:** Phase 999.13 — Feature file import + sezione Tags/Hashtag (2/3 piani completati)
 
 ---
 
 ## Current Position
 
-Phase: 05 (stability-integrations) — COMPLETE
-Plan: 5 of 5
+Phase: 999.13 (feature-file-import-nell-editor-sezione-tags-hashtag) — IN PROGRESS
+Plan: 2 of 3
 
 | Field | Value |
 |-------|-------|
-| Current Phase | 05 — stability-integrations |
-| Current Plan | 5/5 completati |
-| Status | COMPLETE |
-| Phase Goal | Web-UI stabile, Settings, GitHub integration, Jira integration, layout desktop corretto |
+| Current Phase | 999.13 — feature-file-import-nell-editor-sezione-tags-hashtag |
+| Current Plan | 2/3 completati |
+| Status | IN PROGRESS |
+| Phase Goal | Upload .feature in editor, dialog proposta step con page marker, pagina /tags |
 
 **Progress:**
 
 ```
-[██████████] 100% — 13/13 piani completati
+[████████--] 67% — 5/6 piani completati (phase 999.13)
 ```
 
 ---
@@ -66,6 +66,8 @@ Plan: 5 of 5
 | Phase 05 P03 | 12 min | 2 tasks | 3 files |
 | Phase 05 P04 | 15 min | 2 tasks | 3 files |
 | Phase 05 P05 | 20 min | 3 tasks (incl. checkpoint) | 5 files |
+| Phase 999.13 P01 | 12 min | 2 tasks | 2 files |
+| Phase 999.13 P02 | 8 min | 1 task | 1 file |
 
 ---
 
@@ -79,6 +81,8 @@ Plan: 5 of 5
 - EXT-03 (DiagnosticCollection) in Phase 4 prima di EXT-07 (CodeAction) in Phase 5: la CodeAction si appoggia sul DiagnosticProvider
 - QUAL-01 + QUAL-02 ultimi: i test E2E e il packaging hanno senso solo dopo che i feature sono completi
 - Checkpoint 05-05 Task 3 approvato (verified-pending): verifica visiva desktop confermata dall'utente il 2026-06-10, approfondimento programmato dall'utente in seguito
+- 999.13-01: .feature verbatim load in nuovo tab via onLoadFeature prop e openContentInNewTab
+- 999.13-02: justLoadedTabId flag + useEffect dopo unknownSteps useMemo apre pannello proposta con step e page marker pre-selezionati dopo upload .feature
 
 ### Known Issues (inherited from existing codebase)
 
@@ -102,7 +106,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Phase 999.12 context gathered
+**Stopped at:** Completed 999.13-02-PLAN.md — prossimo: 999.13-03-PLAN.md (pagina /tags)
 
 **Commands:**
 
