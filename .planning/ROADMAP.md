@@ -112,11 +112,11 @@ Plans:
 1. **Filtro per pagina `#PAGINA`** — chip (come i filtri area/keyword) per filtrare gli step del catalogo per schermata, usando il campo `page` già presente su `CatalogStep`. Coerente con la pagina `/tags`.
 2. **Snippet intent dichiarativi** — libreria di blocchi multi-step inseribili come singolo intent (es. "the user completes SMS verification"), in linea con lo standard BDD dichiarativo. Sorgente: file statico nel repo editabile dal team.
 **Requirements:** STEP-FILTER-01, SNIPPET-01
-**Plans:** 2 plans previsti
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 999.15-01-PLAN.md — Filtro pagina #PAGINA nello StepBrowser (STEP-FILTER-01)
-- [ ] 999.15-02-PLAN.md — Snippet intent dichiarativi sotto la search bar (SNIPPET-01)
+- [x] 999.15-02-PLAN.md — Snippet intent dichiarativi sotto la search bar (SNIPPET-01)
 
 ---
 
