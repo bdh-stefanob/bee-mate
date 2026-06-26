@@ -131,6 +131,24 @@ Plans:
 
 ---
 
+### Phase 999.17: Tag-driven placement + movimentazione feature (BACKLOG)
+
+**Goal:** Rendere i tag `@app @flow` la fonte di verità per la collocazione del feature nell'albero, e permettere di definirli/spostarli dall'app. Decisioni utente: **tag = fonte di verità**; movimentazione via **dialog "Sposta" + drag&drop**.
+1. **Dialog di placement riusabile** — generalizza `FeatureImportDialog` (App/Flow + autocomplete + anteprima path + anti-overwrite) e aggiunge un helper che scrive/aggiorna la riga `@app @flow` nel contenuto del feature (i tag restano la fonte di verità).
+2. **Definisci tag al Save / al "+"** — al Save con placement ambiguo (tag insufficienti) e alla creazione di un nuovo tab, il QA può definire App/Flow; i tag vengono scritti nel contenuto. Niente modale ad ogni Ctrl+S.
+3. **Movimentazione (dialog)** — nuovo `POST /api/features/move` (`fs.rename` + `safeFeaturePath` sui due lati, no overwrite silenzioso); bottone "Sposta" sull'albero che riusa il dialog; **aggiorna i tag nel contenuto** (altrimenti il prossimo Save annulla lo spostamento); aggiorna i tab aperti col nuovo path; pulizia cartelle vuote.
+4. **Movimentazione (drag&drop)** — trascinamento del feature su un nodo app/flow diverso nell'albero, riusando l'endpoint move + aggiornamento tag. Checkpoint visivo finale.
+**Requirements:** TAG-PLACE-01, MOVE-01
+**Plans:** 4 plans previsti
+
+Plans:
+- [ ] 999.17-01-PLAN.md — Dialog placement riusabile + helper tag-in-content (TAG-PLACE-01)
+- [ ] 999.17-02-PLAN.md — Definisci tag al Save (ambiguo) + al "+" (TAG-PLACE-01)
+- [ ] 999.17-03-PLAN.md — Endpoint /api/features/move + bottone "Sposta" + sync tag/tab (MOVE-01)
+- [ ] 999.17-04-PLAN.md — Drag&drop nell'albero (MOVE-01, checkpoint finale)
+
+---
+
 ### Phase 999.11: Auto-salvataggio enum estratti in step-enums.json all'import (BACKLOG)
 
 **Goal:** Quando il parser esteso estrae `"label" [val1,val2]` da uno step importato, salvare automaticamente i valori in `step-enums.json` tramite `PUT /api/enums` invece di mostrarli solo in UI. Il team QA non dovrà aprire il modal del catalogo per ogni step importato.
