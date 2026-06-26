@@ -5,7 +5,9 @@
  * - Syntax highlighting via StreamParser (StreamLanguage)
  * - Theme extension mapping highlight tags to design-system CSS custom properties
  * - Gherkin linter (Diagnostic[]) using @codemirror/lint
- *   + @cucumber/gherkin official parser for real compilation errors (with fallback to manual rules)
+ *   + real compilation errors from the official @cucumber/gherkin parser, run
+ *     SERVER-SIDE via the /api/lint endpoint (the parser uses node:module and
+ *     cannot be bundled for the browser), fetched asynchronously by the linter
  */
 
 import { StreamLanguage, StreamParser, HighlightStyle } from '@codemirror/language';
@@ -15,73 +17,34 @@ import { linter, Diagnostic } from '@codemirror/lint';
 import type { Extension } from '@codemirror/state';
 
 // ---------------------------------------------------------------------------
-// @cucumber/gherkin — lazy import with robust fallback
+// Server-side parser bridge (/api/lint)
 // ---------------------------------------------------------------------------
 
-/**
- * Type-safe shape of a parser error from @cucumber/gherkin.
- * CompositeParserException has .errors[]; ParserException has .location directly.
- */
-interface ParserErrorLike {
+/** Shape of a located parser error returned by POST /api/lint */
+interface ServerLintError {
+  line: number;
+  column: number;
   message: string;
-  location?: { line: number; column?: number };
-}
-interface CompositeParserExceptionLike {
-  errors: ParserErrorLike[];
 }
 
 /**
- * Try to parse Gherkin content using the official @cucumber/gherkin parser.
- * Returns an array of located errors (may be empty for valid content).
- * Never throws — returns null if the module is unavailable or parse fails unexpectedly.
+ * Ask the server to parse the document with the official @cucumber/gherkin
+ * parser (which runs in Node, where node:module is available). Returns the list
+ * of compilation errors, or null if the request fails for any reason — the
+ * linter then falls back to the manual rules only, never breaking the editor.
  */
-// Module names split into parts so webpack static analysis cannot resolve them at
-// build time. At runtime in Node.js they concatenate to the real package name;
-// in the browser require() is unavailable and the outer try/catch falls back to
-// the manual rules silently.
-const _GH_PKG  = '@cucumber' + '/gherkin';
-const _MSG_PKG = '@cucumber' + '/messages';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function _nodeRequire(id: string): any {
-  // Use indirect eval-based require so neither webpack nor turbopack can trace the
-  // dependency statically. This is intentional: the modules use node:module and
-  // cannot be bundled; they are only available in Node.js (SSR/test) contexts.
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  return new Function('r', 'return r(arguments[1])')(
-    typeof require !== 'undefined' ? require : () => { throw new Error('no require'); },
-    id,
-  );
-}
-
-function tryParseGherkin(content: string): ParserErrorLike[] | null {
+async function fetchServerLintErrors(content: string): Promise<ServerLintError[] | null> {
   try {
-    const { Parser, AstBuilder, GherkinClassicTokenMatcher } = _nodeRequire(_GH_PKG) as {
-      Parser: new (astBuilder: unknown, tokenMatcher: unknown) => { parse(s: string): unknown };
-      AstBuilder: new (idGenerator: unknown) => unknown;
-      GherkinClassicTokenMatcher: new () => unknown;
-    };
-    const { IdGenerator } = _nodeRequire(_MSG_PKG) as {
-      IdGenerator: { uuid(): () => string };
-    };
-
-    const parser = new Parser(new AstBuilder(IdGenerator.uuid()), new GherkinClassicTokenMatcher());
-    try {
-      parser.parse(content);
-      return []; // valid document — no errors
-    } catch (parseErr) {
-      const composite = parseErr as Partial<CompositeParserExceptionLike> & Partial<ParserErrorLike>;
-      if (Array.isArray(composite.errors)) {
-        return composite.errors as ParserErrorLike[];
-      }
-      // Single ParserException
-      if (composite.message) {
-        return [{ message: composite.message, location: composite.location }];
-      }
-      return null; // unexpected shape — fall back to manual rules
-    }
+    const res = await fetch('/api/lint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { errors?: ServerLintError[] };
+    return Array.isArray(data.errors) ? data.errors : [];
   } catch {
-    // Module not available in this bundle — silent fallback
+    // Network/parse failure — fall back to manual rules silently
     return null;
   }
 }
@@ -195,56 +158,24 @@ const SCENARIO_START_RE = /^\s*(Scenario:|Scenario Outline:|Background:)/;
 const FEATURE_LINE_RE = /^\s*Feature:/;
 
 /**
- * Gherkin linter:
- *  - PARSER ERRORS (via @cucumber/gherkin official parser, with try/catch fallback):
- *      Real compilation errors: broken structure, malformed Examples/tables, invalid blocks
- *  - MANUAL RULES (always active, complement the parser):
- *      ERROR:   step line not inside a Scenario/Background block
- *      WARNING: Scenario block with no step lines
- *      WARNING: document has no Feature: line
- *      WARNING: step keyword not capitalised
+ * Compute the manual-rule diagnostics synchronously.
+ *  - ERROR:   step line not inside a Scenario/Background block
+ *  - WARNING: Scenario block with no step lines
+ *  - WARNING: document has no Feature: line
+ *  - WARNING: step keyword not capitalised
+ *
+ * `skipStepOutsideBlockLines` lets the caller suppress the "step outside block"
+ * error on lines the official parser already flagged, avoiding duplicate squiggles.
  */
-export const gherkinLinter = linter((view) => {
+function computeManualDiagnostics(
+  doc: import('@codemirror/state').Text,
+  skipStepOutsideBlockLines: Set<number>,
+): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
-  const doc = view.state.doc;
-  const content = doc.toString();
   const lines = doc.lines;
-
-  // -------------------------------------------------------------------------
-  // A. Official @cucumber/gherkin parser — real compilation errors
-  // -------------------------------------------------------------------------
-
-  const parserErrors = tryParseGherkin(content);
-  // Track lines already covered by the parser to avoid redundant manual diagnostics
-  const parserErrorLines = new Set<number>();
-
-  if (parserErrors !== null && parserErrors.length > 0) {
-    for (const err of parserErrors) {
-      const rawLine = err.location?.line ?? 1;
-      const rawCol  = err.location?.column ?? 1;
-      // Clamp to valid range
-      const lineNum = Math.max(1, Math.min(rawLine, lines));
-      const lineObj = doc.line(lineNum);
-      const colOffset = Math.max(0, rawCol - 1);
-      const from = lineObj.from + Math.min(colOffset, Math.max(0, lineObj.length));
-      const to   = lineObj.to;
-      diagnostics.push({
-        from,
-        to,
-        severity: 'error',
-        message: err.message,
-      });
-      parserErrorLines.add(lineNum);
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // B. Manual rules — complement the parser; always run as fallback
-  // -------------------------------------------------------------------------
 
   let hasFeature = false;
   let inBlock = false; // inside a Scenario/Background block
-
   let blockHasSteps = false;
   let blockFrom = 0; // character offset of block keyword line start
 
@@ -258,7 +189,6 @@ export const gherkinLinter = linter((view) => {
     }
 
     if (SCENARIO_START_RE.test(text)) {
-      // Close previous block if open
       if (inBlock && !blockHasSteps) {
         diagnostics.push({
           from: blockFrom,
@@ -275,8 +205,7 @@ export const gherkinLinter = linter((view) => {
 
     if (STEP_LINE_RE.test(text)) {
       if (!inBlock) {
-        // Only emit if parser didn't already flag this line
-        if (!parserErrorLines.has(lineNum)) {
+        if (!skipStepOutsideBlockLines.has(lineNum)) {
           diagnostics.push({
             from: line.from,
             to: line.to,
@@ -322,7 +251,54 @@ export const gherkinLinter = linter((view) => {
   }
 
   return diagnostics;
-});
+}
+
+/**
+ * Gherkin linter (async):
+ *  - PARSER ERRORS — real compilation errors from the official @cucumber/gherkin
+ *    parser, computed SERVER-SIDE via POST /api/lint (the parser uses node:module
+ *    and cannot run in the browser). Mapped to error Diagnostics on the right line.
+ *  - MANUAL RULES — always computed synchronously as a complement and as the
+ *    fallback when the /api/lint request fails. The editor never breaks.
+ *
+ * Debounced via { delay: 600 } so the API is not hit on every keystroke.
+ */
+export const gherkinLinter = linter(
+  async (view): Promise<Diagnostic[]> => {
+    const doc = view.state.doc;
+    const lines = doc.lines;
+    const content = doc.toString();
+
+    // 1. Official parser errors (server-side). null → request failed → fallback.
+    const serverErrors = await fetchServerLintErrors(content);
+
+    const diagnostics: Diagnostic[] = [];
+    const parserErrorLines = new Set<number>();
+
+    if (serverErrors && serverErrors.length > 0) {
+      for (const err of serverErrors) {
+        const lineNum = Math.max(1, Math.min(err.line ?? 1, lines));
+        const lineObj = doc.line(lineNum);
+        const colOffset = Math.max(0, (err.column ?? 1) - 1);
+        const from = lineObj.from + Math.min(colOffset, lineObj.length);
+        const to = lineObj.to;
+        diagnostics.push({
+          from,
+          to,
+          severity: 'error',
+          message: err.message,
+        });
+        parserErrorLines.add(lineNum);
+      }
+    }
+
+    // 2. Manual rules — complement + fallback (always run).
+    diagnostics.push(...computeManualDiagnostics(doc, parserErrorLines));
+
+    return diagnostics;
+  },
+  { delay: 600 },
+);
 
 // ---------------------------------------------------------------------------
 // 4. Gherkin auto-formatter
