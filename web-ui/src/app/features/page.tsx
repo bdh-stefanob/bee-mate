@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation';
 import type { FeatureSummary } from '@/lib/types';
 import FeaturePreview from '@/components/FeaturePreview';
 import FeatureImportDialog from '@/components/FeatureImportDialog';
+import FeaturePlacementDialog from '@/components/FeaturePlacementDialog';
 import { useLanguage } from '@/providers/Providers';
 import { toast } from 'sonner';
+
+/** Estrae il basename da un path POSIX o Windows. */
+function basename(filePath: string): string {
+  return filePath.replace(/\\/g, '/').split('/').pop() ?? filePath;
+}
 
 // ---------------------------------------------------------------------------
 // Tree building
@@ -63,6 +69,8 @@ export default function FeaturesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [importTarget, setImportTarget] = useState<{ fileName: string; content: string } | null>(null);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [moveTarget, setMoveTarget] = useState<{ file: string; app: string; flow: string } | null>(null);
 
   function loadFeatures() {
     setLoading(true);
@@ -163,8 +171,57 @@ export default function FeaturesPage() {
         >
           Edit
         </button>
+        <button
+          onClick={e => { e.stopPropagation(); setMoveTarget({ file: f.file, app: f.app ?? '', flow: f.flow ?? '' }); setMoveOpen(true); }}
+          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+            active
+              ? 'border-teal-300 text-teal-100 hover:bg-teal-700'
+              : 'border-border text-muted-foreground hover:border-orange-400 hover:text-orange-500'
+          }`}
+          title="Sposta feature"
+        >
+          Sposta
+        </button>
       </div>
     );
+  }
+
+  async function handleMove(app: string, flow: string) {
+    if (!moveTarget) return;
+    const oldFile = moveTarget.file;
+    const res = await fetch('/api/features/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fromPath: oldFile, app, flow }),
+    });
+    const data = await res.json() as { ok?: boolean; path?: string; error?: string };
+    if (!res.ok) {
+      if (res.status === 409) {
+        toast.error('Esiste già un file in quella destinazione — scegli un percorso diverso.');
+      } else {
+        toast.error(data.error ?? 'Spostamento fallito');
+      }
+      return;
+    }
+    setMoveOpen(false);
+    setMoveTarget(null);
+    toast.success(`Feature spostata: ${data.path}`);
+
+    // Aggiorna i tab persistiti in localStorage che puntano al vecchio path
+    try {
+      const raw = localStorage.getItem('gsd-editor-tabs');
+      if (raw && data.path) {
+        const tabs = JSON.parse(raw) as Array<{ filePath?: string; [key: string]: unknown }>;
+        const updated = tabs.map(tab =>
+          tab.filePath === oldFile ? { ...tab, filePath: data.path } : tab,
+        );
+        localStorage.setItem('gsd-editor-tabs', JSON.stringify(updated));
+      }
+    } catch {
+      // localStorage non disponibile o JSON malformato — non bloccante
+    }
+
+    loadFeatures();
   }
 
   return (
@@ -183,6 +240,21 @@ export default function FeaturesPage() {
             toast.success(`Feature salvata: ${p}`);
             loadFeatures();
           }}
+        />
+      )}
+      {moveTarget && (
+        <FeaturePlacementDialog
+          open={moveOpen}
+          title="Sposta feature"
+          confirmLabel="Sposta"
+          fileBaseName={basename(moveTarget.file)}
+          suggestedApp={moveTarget.app}
+          suggestedFlow={moveTarget.flow}
+          existingApps={existingApps}
+          existingFlows={existingFlows}
+          existingPaths={existingPaths}
+          onCancel={() => { setMoveOpen(false); setMoveTarget(null); }}
+          onConfirm={(app, flow) => handleMove(app, flow)}
         />
       )}
       <div className="flex items-center justify-between">
