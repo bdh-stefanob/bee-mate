@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 999.15-02-PLAN.md (fase 999.15 plan 2/2 — sezione Snippet StepBrowser done; fase 999.15 completa)
-last_updated: "2026-06-26T07:56:28.715Z"
+stopped_at: Completed 999.16-01-PLAN.md (fase 999.16 plan 1/2 — GherkinToolbar sticky wrapper)
+last_updated: "2026-06-26T08:01:09.533Z"
 progress:
-  total_phases: 15
+  total_phases: 16
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_plans: 14
+  completed_plans: 13
+  percent: 93
 ---
 
 # Project State — bdd-automation-scaffold
@@ -23,14 +23,14 @@ progress:
 
 **Core Value:** I QA riusano step esistenti — zero rumore inventato — grazie a tre meccanismi deterministici: autocomplete vincolato sull'extension, validazione pre-commit, gate CI.
 
-**Current Focus:** Phase 999.15 — strumenti-step-editor-filtro-pagina-snippet
+**Current Focus:** Phase 999.16 — editor-toolbar-sticky-linter-gherkin
 
 ---
 
 ## Current Position
 
-Phase: 999.15
-Plan: Not started
+Phase: 999.16 (editor-toolbar-sticky-linter-gherkin) — EXECUTING
+Plan: 2 of 2
 
 | Field | Value |
 |-------|-------|
@@ -41,7 +41,7 @@ Plan: Not started
 
 **Progress:**
 
-[██████████] 100%
+[█████████░] 93%
 
 ---
 
@@ -57,6 +57,7 @@ Plan: Not started
 | Phase 999.13 P04 | 12 min | 2 tasks | 1 files |
 | Phase 999.13 P05 | 40 min | 3 tasks | 3 files |
 | Phase 999.14 P02 | 15 min | 3 tasks | 2 files |
+| Phase 999.16 P01 | 3 | 1 tasks | 1 files |
 
 ### Execution Log
 
@@ -95,6 +96,7 @@ Plan: Not started
 - 999.14-02: layout editor — editor sinistro scrolla con la pagina (overflow-y-auto sul wrapper esterno), SOLO colonna destra Steps sticky (`lg:sticky lg:top-1 lg:self-start`, commit 3ae4ad0 su richiesta utente in verifica visiva); StepBrowser compatto via maxHeight 180px↔480px con toggle "Mostra tutti/Riduci"; box Preview .feature rimosso (i18n keys lasciate inutilizzate)
 - 999.15-01: chip pagina usa stesso stile teal dei chip area (coerenza visiva); pageCounts mostra conteggio totale per pagina non filtrato; riga chip visibile solo se pages.length > 0; toggle ri-click azzera il filtro
 - 999.15-02: snippet intent dichiarativi da file statico TS editabile dal team (web-ui/src/lib/step-snippets.ts, 5 seed); sezione Snippet collassabile default-chiusa tra chip pagina e lista step; click → onInsert(lines.join('\n')+'\n') con onMouseDown+preventDefault per non perdere focus editor; verifica visiva approvata. Fix editor correlati durante checkpoint: scroll a blocco (ef10a2d/ca821d2), id tab univoci (db1431d), import in bottone header (b694aae)
+- 999.16-01: GherkinToolbar sticky via wrapper `lg:sticky lg:top-0 z-10 bg-background` nella colonna editor; bg-background opaco sul wrapper esterno (la toolbar interna ha bg-muted/30 semi-trasparente, insufficiente a coprire il contenuto che scorre sotto)
 
 ### Known Issues (inherited from existing codebase)
 
@@ -118,7 +120,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.15-02-PLAN.md (fase 999.15 plan 2/2 — sezione Snippet StepBrowser done; fase 999.15 completa)
+**Stopped at:** Completed 999.16-01-PLAN.md (fase 999.16 plan 1/2 — GherkinToolbar sticky wrapper)
 
 **Commands:**
 
