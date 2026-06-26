@@ -612,13 +612,15 @@ function EditorInner() {
 
           {/* LEFT COLUMN — editor scrolls with the page (NOT sticky) */}
           <div className="flex flex-col gap-3 lg:w-2/3 min-w-0">
-              <GherkinToolbar
-                onInsert={handleInsert}
-                onUndo={handleUndo}
-                onRedo={handleRedo}
-                onFormat={handleFormat}
-                formatLabel={t.editor.format}
-              />
+              <div className="lg:sticky lg:top-0 z-10 bg-background">
+                <GherkinToolbar
+                  onInsert={handleInsert}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  onFormat={handleFormat}
+                  formatLabel={t.editor.format}
+                />
+              </div>
               <GherkinEditor
                 ref={editorRef}
                 value={content}
