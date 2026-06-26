@@ -32,8 +32,10 @@ interface EditorTab {
 
 let _tabCounter = 0;
 function tabId(): string {
-  // Stable counter-based ID — safe for SSR (never called server-side since ssr:false)
-  return `tab-${++_tabCounter}`;
+  // Counter + random suffix → unique even across reloads (the counter resets to 0 each page load,
+  // but persisted tabs keep ids from prior sessions; the suffix prevents collisions). SSR-safe
+  // (never called server-side since ssr:false).
+  return `tab-${++_tabCounter}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function labelFrom(content: string): string {
@@ -66,6 +68,14 @@ function loadInitialState(stepParam: string | null): { tabs: EditorTab[]; active
     const raw = localStorage.getItem(TABS_KEY);
     persistedTabs = raw ? (JSON.parse(raw) as EditorTab[]) : [];
     persistedActiveId = localStorage.getItem(ACTIVE_KEY) ?? persistedTabs[0]?.id ?? '';
+    // Regenerate ids to guarantee uniqueness — persisted ids from prior sessions can collide
+    // with freshly-generated ones (counter resets per load) and may already be duplicated in
+    // corrupted storage. Remap the active tab by its index so the selection is preserved.
+    if (persistedTabs.length > 0) {
+      const activeIdx = persistedTabs.findIndex(t => t.id === persistedActiveId);
+      persistedTabs = persistedTabs.map(t => ({ ...t, id: tabId() }));
+      persistedActiveId = persistedTabs[activeIdx >= 0 ? activeIdx : 0].id;
+    }
   } catch {}
 
   // Legacy migration: single draft → first tab
