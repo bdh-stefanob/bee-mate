@@ -131,7 +131,7 @@ Plans:
 
 ---
 
-### Phase 999.17: Tag-driven placement + movimentazione feature (BACKLOG)
+### Phase 999.17: Tag-driven placement + movimentazione feature ✅ DONE (2026-06-26)
 
 **Goal:** Rendere i tag `@app @flow` la fonte di verità per la collocazione del feature nell'albero, e permettere di definirli/spostarli dall'app. Decisioni utente: **tag = fonte di verità**; movimentazione via **dialog "Sposta" + drag&drop**.
 1. **Dialog di placement riusabile** — generalizza `FeatureImportDialog` (App/Flow + autocomplete + anteprima path + anti-overwrite) e aggiunge un helper che scrive/aggiorna la riga `@app @flow` nel contenuto del feature (i tag restano la fonte di verità).

@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: COMPLETE
+status: unknown
 stopped_at: Completed 999.17-05-PLAN.md — fase 999.17 completa (verifica visiva approvata)
-last_updated: "2026-06-26T11:00:00.000Z"
+last_updated: "2026-06-26T12:52:26.936Z"
 progress:
   total_phases: 17
   completed_phases: 6
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 19
+  completed_plans: 19
   percent: 100
 ---
 
@@ -29,8 +29,8 @@ progress:
 
 ## Current Position
 
-Phase: 999.17 (tag-driven-placement-movimentazione-feature) — COMPLETE
-Plan: 5 of 5
+Phase: 999.17
+Plan: Not started
 
 | Field | Value |
 |-------|-------|
