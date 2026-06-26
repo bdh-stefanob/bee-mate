@@ -71,6 +71,7 @@ export default function FeaturesPage() {
   const [importTarget, setImportTarget] = useState<{ fileName: string; content: string } | null>(null);
   const [moveOpen, setMoveOpen] = useState(false);
   const [moveTarget, setMoveTarget] = useState<{ file: string; app: string; flow: string } | null>(null);
+  const [dragOverFlow, setDragOverFlow] = useState<string | null>(null);
 
   function loadFeatures() {
     setLoading(true);
@@ -150,6 +151,11 @@ export default function FeaturesPage() {
     return (
       <div
         key={f.file}
+        draggable
+        onDragStart={e => {
+          e.dataTransfer.setData('text/plain', f.file);
+          e.dataTransfer.effectAllowed = 'move';
+        }}
         className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs transition-colors ${
           active ? 'bg-teal-600 text-white' : 'hover:bg-muted text-foreground'
         }`}
@@ -184,6 +190,41 @@ export default function FeaturesPage() {
         </button>
       </div>
     );
+  }
+
+  async function onDropFeature(file: string, app: string, flow: string) {
+    const current = features.find(f => f.file === file);
+    if (current && current.app === app && current.flow === flow) return; // no-op stessa posizione
+    // Riusa la logica handleMove senza duplicare il fetch
+    const oldFile = file;
+    const res = await fetch('/api/features/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fromPath: oldFile, app, flow }),
+    });
+    const data = await res.json() as { ok?: boolean; path?: string; error?: string };
+    if (!res.ok) {
+      if (res.status === 409) {
+        toast.error('Esiste già un file in quella destinazione — scegli un percorso diverso.');
+      } else {
+        toast.error(data.error ?? 'Spostamento fallito');
+      }
+      return;
+    }
+    toast.success(`Feature spostata: ${data.path}`);
+    try {
+      const raw = localStorage.getItem('gsd-editor-tabs');
+      if (raw && data.path) {
+        const tabs = JSON.parse(raw) as Array<{ filePath?: string; [key: string]: unknown }>;
+        const updated = tabs.map(tab =>
+          tab.filePath === oldFile ? { ...tab, filePath: data.path } : tab,
+        );
+        localStorage.setItem('gsd-editor-tabs', JSON.stringify(updated));
+      }
+    } catch {
+      // localStorage non disponibile o JSON malformato — non bloccante
+    }
+    loadFeatures();
   }
 
   async function handleMove(app: string, flow: string) {
@@ -311,7 +352,19 @@ export default function FeaturesPage() {
                       {/* Flow node */}
                       <button
                         onClick={() => toggleFlow(flowKey)}
-                        className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                        onDragOver={e => { e.preventDefault(); setDragOverFlow(flowKey); }}
+                        onDragLeave={() => setDragOverFlow(null)}
+                        onDrop={e => {
+                          e.preventDefault();
+                          const file = e.dataTransfer.getData('text/plain');
+                          setDragOverFlow(null);
+                          if (file) onDropFeature(file, app, flow);
+                        }}
+                        className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-semibold transition-colors ${
+                          dragOverFlow === flowKey
+                            ? 'bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 ring-1 ring-teal-500'
+                            : 'text-muted-foreground hover:bg-muted'
+                        }`}
                         style={{ paddingLeft: '1.25rem' }}
                       >
                         <span>{flowCollapsed ? '▶' : '▼'}</span>
