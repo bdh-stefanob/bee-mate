@@ -7,7 +7,7 @@ import { GherkinToolbar } from '@/components/GherkinToolbar';
 import { StepBrowser } from '@/components/StepBrowser';
 import { FileSidebar } from '@/components/FileSidebar';
 import { ImportDropzone } from '@/components/ImportDropzone';
-import type { CatalogStep } from '@/lib/types';
+import type { CatalogStep, FeatureSummary } from '@/lib/types';
 import { slugify } from '@/lib/repo';
 import { formatGherkin } from '@/lib/gherkin-cm';
 import { useLanguage } from '@/providers/Providers';
@@ -17,6 +17,8 @@ import { CommitPreviewDialog } from '@/components/CommitPreviewDialog';
 import { ProposeStepModal } from '@/components/ProposeStepModal';
 import { matchesCatalog } from '@/lib/catalog-match';
 import { buildCatalogHeaders } from '@/lib/catalog';
+import { FeaturePlacementDialog } from '@/components/FeaturePlacementDialog';
+import { getFeatureTags, setFeatureTags } from '@/lib/feature-tags';
 
 // ---------------------------------------------------------------------------
 // Tab types
@@ -166,6 +168,39 @@ function EditorInner() {
   const [preview, setPreview] = useState<{ kind: 'feature' | 'proposal' } | null>(null);
   const [stepExpressions, setStepExpressions] = useState<string[]>([]);
   const editorRef = useRef<GherkinEditorHandle | null>(null);
+
+  // Placement dialog state
+  const [placementOpen, setPlacementOpen] = useState(false);
+  // 'save' = triggered from handleSave; 'set' = triggered from explicit button
+  const [placementAction, setPlacementAction] = useState<'save' | 'set'>('set');
+
+  // Feature list for placement dialog autocomplete (lazy-loaded on first dialog open)
+  const [featureList, setFeatureList] = useState<FeatureSummary[]>([]);
+  const featureListLoadedRef = useRef(false);
+
+  const existingApps = useMemo(
+    () => [...new Set(featureList.map(f => f.app).filter(Boolean) as string[])].sort(),
+    [featureList]
+  );
+  const existingFlows = useMemo(
+    () => [...new Set(featureList.map(f => f.flow).filter(Boolean) as string[])].sort(),
+    [featureList]
+  );
+  const existingPaths = useMemo(() => featureList.map(f => f.file), [featureList]);
+
+  const loadFeatureList = useCallback(async () => {
+    if (featureListLoadedRef.current) return;
+    featureListLoadedRef.current = true;
+    try {
+      const res = await fetch('/api/features');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as FeatureSummary[];
+      setFeatureList(Array.isArray(data) ? data : []);
+    } catch (err: unknown) {
+      // Non bloccante — il dialog funziona anche senza autocomplete
+      console.warn('Feature list non disponibile:', err instanceof Error ? err.message : err);
+    }
+  }, []);
 
   // Active tab
   const activeTab = useMemo(
@@ -353,29 +388,27 @@ function EditorInner() {
     }
   }, [content, settings, t]);
 
-  const handleSave = useCallback(async () => {
-    if (!content.trim() || !activeTab) return;
-    const featureMatch = content.match(/Feature:\s*(.+)/i);
-    const slug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
-    const tagLine = content.match(/^(@\S+(?:\s+@\S+)*)/m);
-    const tags = tagLine?.[1].match(/@(\S+)/g)?.map(tag => tag.slice(1)) ?? [];
-    const appSlug  = tags[0] ? slugify(tags[0]) : null;
-    const flowSlug = tags[1] ? slugify(tags[1]) : null;
-    const filePath = appSlug && flowSlug ? `${appSlug}/${flowSlug}/${slug}.feature` : `${slug}.feature`;
+  // ---------------------------------------------------------------------------
+  // Save helpers (shared between handleSave and placement dialog confirm)
+  // ---------------------------------------------------------------------------
 
+  const doSaveContent = useCallback(async (contentToSave: string, filePath: string) => {
+    if (!activeTab) return;
     setIsSaving(true);
     try {
       const res = await fetch('/api/features', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, filePath }),
+        body: JSON.stringify({ content: contentToSave, filePath }),
       });
       const data = await res.json() as { ok?: boolean; path?: string; error?: string };
       if (!data.ok) throw new Error(data.error ?? 'Unknown error');
       toast.success(`Salvato in ${data.path}`);
       const savedPath = data.path ?? filePath;
       setTabs(prev => prev.map(tab =>
-        tab.id === activeTab.id ? { ...tab, dirty: false, filePath: savedPath } : tab
+        tab.id === activeTab.id
+          ? { ...tab, content: contentToSave, dirty: false, filePath: savedPath, label: labelFrom(contentToSave) || tab.label }
+          : tab
       ));
       if (unknownSteps.length > 0) {
         setProposalSelected(new Set(unknownSteps.map(s => s.expression)));
@@ -386,7 +419,27 @@ function EditorInner() {
     } finally {
       setIsSaving(false);
     }
-  }, [content, activeTab, unknownSteps]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, unknownSteps]);
+
+  const handleSave = useCallback(async () => {
+    if (!content.trim() || !activeTab) return;
+    const featureMatch = content.match(/Feature:\s*(.+)/i);
+    const slug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
+    const { app, flow } = getFeatureTags(content);
+    const appSlug  = app  ? slugify(app)  : null;
+    const flowSlug = flow ? slugify(flow) : null;
+
+    if (appSlug && flowSlug) {
+      // Tag completi — salva diretto, Ctrl+S resta veloce
+      await doSaveContent(content, `${appSlug}/${flowSlug}/${slug}.feature`);
+    } else {
+      // Tag mancanti — apri il dialog di placement
+      await loadFeatureList();
+      setPlacementAction('save');
+      setPlacementOpen(true);
+    }
+  }, [content, activeTab, doSaveContent, loadFeatureList]);
 
   // Ctrl+S → save
   useEffect(() => {
@@ -554,6 +607,18 @@ function EditorInner() {
                   {isCommitting ? t.editor.commitGitHubLoading : t.editor.commitGitHub}
                 </button>
               )}
+              <button
+                onClick={async () => {
+                  await loadFeatureList();
+                  setPlacementAction('set');
+                  setPlacementOpen(true);
+                }}
+                disabled={!content.trim()}
+                title="Imposta cartella / tag di placement"
+                className="px-3 py-1.5 text-sm rounded-md border border-violet-600 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cartella
+              </button>
               <button onClick={handleSave} disabled={isSaving || !content.trim()} title="Ctrl+S"
                 className="px-3 py-1.5 text-sm rounded-md border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {isSaving ? 'Saving…' : 'Save'}
@@ -689,6 +754,43 @@ function EditorInner() {
           </div>
         </div>
       </div>
+
+      {/* Placement dialog — apre quando i tag @app/@flow mancano al Save, o on-demand da "Cartella" */}
+      {(() => {
+        const featureMatch = content.match(/Feature:\s*(.+)/i);
+        const slug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
+        const { app: tagApp, flow: tagFlow } = getFeatureTags(content);
+        return (
+          <FeaturePlacementDialog
+            open={placementOpen}
+            title={placementAction === 'save' ? 'Salva feature' : 'Imposta cartella / tag'}
+            fileBaseName={`${slug}.feature`}
+            suggestedApp={tagApp ? slugify(tagApp) : ''}
+            suggestedFlow={tagFlow ? slugify(tagFlow) : ''}
+            existingApps={existingApps}
+            existingFlows={existingFlows}
+            existingPaths={existingPaths}
+            confirmLabel={placementAction === 'save' ? 'Salva' : 'Applica tag'}
+            onCancel={() => setPlacementOpen(false)}
+            onConfirm={async (app, flow) => {
+              const updated = setFeatureTags(content, app, flow);
+              if (placementAction === 'save') {
+                const featureMatchUpdated = updated.match(/Feature:\s*(.+)/i);
+                const slugUpdated = slugify(featureMatchUpdated?.[1].trim() ?? 'scenario') || 'scenario';
+                setTabs(prev => prev.map(tab =>
+                  tab.id === activeTab?.id
+                    ? { ...tab, content: updated, dirty: true, label: labelFrom(updated) || tab.label }
+                    : tab
+                ));
+                await doSaveContent(updated, `${app}/${flow}/${slugUpdated}.feature`);
+              } else {
+                setContent(updated);
+              }
+              setPlacementOpen(false);
+            }}
+          />
+        );
+      })()}
 
       {/* ProposeStepModal — single-step proposal from CodeMirror click-to-propose */}
       <ProposeStepModal
