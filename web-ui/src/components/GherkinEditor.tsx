@@ -16,6 +16,7 @@ import { EditorState, RangeSetBuilder } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, undo, redo } from '@codemirror/commands';
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
 import { foldGutter, foldService, foldKeymap } from '@codemirror/language';
+import { lintGutter } from '@codemirror/lint';
 import { gherkinLanguage, gherkinTheme, gherkinLinter } from '@/lib/gherkin-cm';
 import { GHERKIN_PREFIX_RE } from '@/lib/autocomplete';
 import { matchesCatalog } from '@/lib/catalog-match';
@@ -277,6 +278,7 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
             gherkinLanguage,
             gherkinTheme,
             gherkinLinter,
+            lintGutter(),
             lineNumbers(),
             highlightActiveLineGutter(),
             history(),

@@ -35,17 +35,33 @@ interface CompositeParserExceptionLike {
  * Returns an array of located errors (may be empty for valid content).
  * Never throws — returns null if the module is unavailable or parse fails unexpectedly.
  */
+// Module names split into parts so webpack static analysis cannot resolve them at
+// build time. At runtime in Node.js they concatenate to the real package name;
+// in the browser require() is unavailable and the outer try/catch falls back to
+// the manual rules silently.
+const _GH_PKG  = '@cucumber' + '/gherkin';
+const _MSG_PKG = '@cucumber' + '/messages';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function _nodeRequire(id: string): any {
+  // Use indirect eval-based require so neither webpack nor turbopack can trace the
+  // dependency statically. This is intentional: the modules use node:module and
+  // cannot be bundled; they are only available in Node.js (SSR/test) contexts.
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  return new Function('r', 'return r(arguments[1])')(
+    typeof require !== 'undefined' ? require : () => { throw new Error('no require'); },
+    id,
+  );
+}
+
 function tryParseGherkin(content: string): ParserErrorLike[] | null {
   try {
-    // Dynamic require so bundlers that can't resolve this module don't break the chunk
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Parser, AstBuilder, GherkinClassicTokenMatcher } = require('@cucumber/gherkin') as {
+    const { Parser, AstBuilder, GherkinClassicTokenMatcher } = _nodeRequire(_GH_PKG) as {
       Parser: new (astBuilder: unknown, tokenMatcher: unknown) => { parse(s: string): unknown };
       AstBuilder: new (idGenerator: unknown) => unknown;
       GherkinClassicTokenMatcher: new () => unknown;
     };
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { IdGenerator } = require('@cucumber/messages') as {
+    const { IdGenerator } = _nodeRequire(_MSG_PKG) as {
       IdGenerator: { uuid(): () => string };
     };
 
