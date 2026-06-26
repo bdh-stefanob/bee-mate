@@ -25,6 +25,8 @@
     "@codemirror/lint": "^6.9.7",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.43.1",
+    "@cucumber/gherkin": "^41.0.0",
+    "@cucumber/messages": "^33.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",

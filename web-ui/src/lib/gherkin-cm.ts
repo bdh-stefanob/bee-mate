@@ -5,6 +5,7 @@
  * - Syntax highlighting via StreamParser (StreamLanguage)
  * - Theme extension mapping highlight tags to design-system CSS custom properties
  * - Gherkin linter (Diagnostic[]) using @codemirror/lint
+ *   + @cucumber/gherkin official parser for real compilation errors (with fallback to manual rules)
  */
 
 import { StreamLanguage, StreamParser, HighlightStyle } from '@codemirror/language';
@@ -12,6 +13,62 @@ import { syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
 import { linter, Diagnostic } from '@codemirror/lint';
 import type { Extension } from '@codemirror/state';
+
+// ---------------------------------------------------------------------------
+// @cucumber/gherkin — lazy import with robust fallback
+// ---------------------------------------------------------------------------
+
+/**
+ * Type-safe shape of a parser error from @cucumber/gherkin.
+ * CompositeParserException has .errors[]; ParserException has .location directly.
+ */
+interface ParserErrorLike {
+  message: string;
+  location?: { line: number; column?: number };
+}
+interface CompositeParserExceptionLike {
+  errors: ParserErrorLike[];
+}
+
+/**
+ * Try to parse Gherkin content using the official @cucumber/gherkin parser.
+ * Returns an array of located errors (may be empty for valid content).
+ * Never throws — returns null if the module is unavailable or parse fails unexpectedly.
+ */
+function tryParseGherkin(content: string): ParserErrorLike[] | null {
+  try {
+    // Dynamic require so bundlers that can't resolve this module don't break the chunk
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { Parser, AstBuilder, GherkinClassicTokenMatcher } = require('@cucumber/gherkin') as {
+      Parser: new (astBuilder: unknown, tokenMatcher: unknown) => { parse(s: string): unknown };
+      AstBuilder: new (idGenerator: unknown) => unknown;
+      GherkinClassicTokenMatcher: new () => unknown;
+    };
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { IdGenerator } = require('@cucumber/messages') as {
+      IdGenerator: { uuid(): () => string };
+    };
+
+    const parser = new Parser(new AstBuilder(IdGenerator.uuid()), new GherkinClassicTokenMatcher());
+    try {
+      parser.parse(content);
+      return []; // valid document — no errors
+    } catch (parseErr) {
+      const composite = parseErr as Partial<CompositeParserExceptionLike> & Partial<ParserErrorLike>;
+      if (Array.isArray(composite.errors)) {
+        return composite.errors as ParserErrorLike[];
+      }
+      // Single ParserException
+      if (composite.message) {
+        return [{ message: composite.message, location: composite.location }];
+      }
+      return null; // unexpected shape — fall back to manual rules
+    }
+  } catch {
+    // Module not available in this bundle — silent fallback
+    return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // 1. StreamParser for Gherkin
@@ -123,14 +180,51 @@ const FEATURE_LINE_RE = /^\s*Feature:/;
 
 /**
  * Gherkin linter:
- *  - ERROR: step line not inside a Scenario/Background block
- *  - WARNING: Scenario block with no step lines
- *  - WARNING: document has no Feature: line
+ *  - PARSER ERRORS (via @cucumber/gherkin official parser, with try/catch fallback):
+ *      Real compilation errors: broken structure, malformed Examples/tables, invalid blocks
+ *  - MANUAL RULES (always active, complement the parser):
+ *      ERROR:   step line not inside a Scenario/Background block
+ *      WARNING: Scenario block with no step lines
+ *      WARNING: document has no Feature: line
+ *      WARNING: step keyword not capitalised
  */
 export const gherkinLinter = linter((view) => {
   const diagnostics: Diagnostic[] = [];
   const doc = view.state.doc;
+  const content = doc.toString();
   const lines = doc.lines;
+
+  // -------------------------------------------------------------------------
+  // A. Official @cucumber/gherkin parser — real compilation errors
+  // -------------------------------------------------------------------------
+
+  const parserErrors = tryParseGherkin(content);
+  // Track lines already covered by the parser to avoid redundant manual diagnostics
+  const parserErrorLines = new Set<number>();
+
+  if (parserErrors !== null && parserErrors.length > 0) {
+    for (const err of parserErrors) {
+      const rawLine = err.location?.line ?? 1;
+      const rawCol  = err.location?.column ?? 1;
+      // Clamp to valid range
+      const lineNum = Math.max(1, Math.min(rawLine, lines));
+      const lineObj = doc.line(lineNum);
+      const colOffset = Math.max(0, rawCol - 1);
+      const from = lineObj.from + Math.min(colOffset, Math.max(0, lineObj.length));
+      const to   = lineObj.to;
+      diagnostics.push({
+        from,
+        to,
+        severity: 'error',
+        message: err.message,
+      });
+      parserErrorLines.add(lineNum);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // B. Manual rules — complement the parser; always run as fallback
+  // -------------------------------------------------------------------------
 
   let hasFeature = false;
   let inBlock = false; // inside a Scenario/Background block
@@ -165,12 +259,15 @@ export const gherkinLinter = linter((view) => {
 
     if (STEP_LINE_RE.test(text)) {
       if (!inBlock) {
-        diagnostics.push({
-          from: line.from,
-          to: line.to,
-          severity: 'error',
-          message: 'Step keyword (Given/When/Then/And/But) used outside a Scenario or Background block',
-        });
+        // Only emit if parser didn't already flag this line
+        if (!parserErrorLines.has(lineNum)) {
+          diagnostics.push({
+            from: line.from,
+            to: line.to,
+            severity: 'error',
+            message: 'Step keyword (Given/When/Then/And/But) used outside a Scenario or Background block',
+          });
+        }
       } else {
         blockHasSteps = true;
       }
