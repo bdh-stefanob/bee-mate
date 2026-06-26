@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 999.16-01-PLAN.md (fase 999.16 plan 1/2 — GherkinToolbar sticky wrapper)
-last_updated: "2026-06-26T08:01:09.533Z"
+stopped_at: "CHECKPOINT Task 3: verifica visiva toolbar sticky + linter (999.16-02)"
+last_updated: "2026-06-26T08:10:25.503Z"
 progress:
   total_phases: 16
   completed_phases: 4
@@ -58,6 +58,7 @@ Plan: 2 of 2
 | Phase 999.13 P05 | 40 min | 3 tasks | 3 files |
 | Phase 999.14 P02 | 15 min | 3 tasks | 2 files |
 | Phase 999.16 P01 | 3 | 1 tasks | 1 files |
+| Phase 999.16 P02 | 25 | 2 tasks | 4 files |
 
 ### Execution Log
 
@@ -97,6 +98,7 @@ Plan: 2 of 2
 - 999.15-01: chip pagina usa stesso stile teal dei chip area (coerenza visiva); pageCounts mostra conteggio totale per pagina non filtrato; riga chip visibile solo se pages.length > 0; toggle ri-click azzera il filtro
 - 999.15-02: snippet intent dichiarativi da file statico TS editabile dal team (web-ui/src/lib/step-snippets.ts, 5 seed); sezione Snippet collassabile default-chiusa tra chip pagina e lista step; click → onInsert(lines.join('\n')+'\n') con onMouseDown+preventDefault per non perdere focus editor; verifica visiva approvata. Fix editor correlati durante checkpoint: scroll a blocco (ef10a2d/ca821d2), id tab univoci (db1431d), import in bottone header (b694aae)
 - 999.16-01: GherkinToolbar sticky via wrapper `lg:sticky lg:top-0 z-10 bg-background` nella colonna editor; bg-background opaco sul wrapper esterno (la toolbar interna ha bg-muted/30 semi-trasparente, insufficiente a coprire il contenuto che scorre sotto)
+- 999.16-02: @cucumber/gherkin non bundlabile per browser (usa node:module) — linter usa fallback a regole manuali nel client; parser attivo solo in SSR/Node via _nodeRequire con new Function per eludere analisi statica webpack; lintGutter aggiunto come extension CodeMirror; build passa
 
 ### Known Issues (inherited from existing codebase)
 
@@ -120,7 +122,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.16-01-PLAN.md (fase 999.16 plan 1/2 — GherkinToolbar sticky wrapper)
+**Stopped at:** CHECKPOINT Task 3: verifica visiva toolbar sticky + linter (999.16-02)
 
 **Commands:**
 
