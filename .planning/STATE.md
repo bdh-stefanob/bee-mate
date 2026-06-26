@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 999.15-02-PLAN.md (fase 999.15 plan 2/2 done — fase completa)
-last_updated: "2026-06-26T07:52:35Z"
+status: unknown
+stopped_at: Completed 999.15-02-PLAN.md (fase 999.15 plan 2/2 — sezione Snippet StepBrowser done; fase 999.15 completa)
+last_updated: "2026-06-26T07:56:28.715Z"
 progress:
   total_phases: 15
   completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 12
+  completed_plans: 12
   percent: 100
 ---
 
@@ -29,8 +29,8 @@ progress:
 
 ## Current Position
 
-Phase: 999.15 (strumenti-step-editor-filtro-pagina-snippet) — COMPLETE
-Plan: 2 of 2
+Phase: 999.15
+Plan: Not started
 
 | Field | Value |
 |-------|-------|

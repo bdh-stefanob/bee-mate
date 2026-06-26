@@ -56,14 +56,11 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
 
-### Phase 999.10: Filtro `#PageName` nella search bar dello StepBrowser (BACKLOG)
+### Phase 999.10: Filtro `#PageName` nella search bar dello StepBrowser ✅ SUPERATA da 999.15-01 (2026-06-26)
 
-**Goal:** Quando l'utente scrive `#login` nella barra di ricerca del pannello step, filtrare gli step associati alla pagina `#LOGIN` (derivati dai commenti di pagina nei feature file importati). Complementa il filtro per keyword G/W/T già esistente.
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd-review-backlog when ready)
+**Goal:** Filtrare gli step del pannello per pagina `#PAGINA`. **Implementato in 999.15-01** come chip filtro pagina (anziché prefisso `#` nella ricerca testuale) sotto la search bar, usando `CatalogStep.page`. Niente più lavoro residuo.
+**Requirements:** TBD (coperto da STEP-FILTER-01)
+**Plans:** 0 plans — superata
 
 ### Phase 999.12: Collaborative QA workflow ✅ DONE (2026-06-25)
 
@@ -106,7 +103,7 @@ Plans:
 
 ---
 
-### Phase 999.15: Strumenti step nell'editor — filtro pagina + snippet intent (BACKLOG)
+### Phase 999.15: Strumenti step nell'editor — filtro pagina + snippet intent ✅ DONE (2026-06-26)
 
 **Goal:** Aggiungere strumenti sotto la search bar del pannello Steps dell'editor, per velocizzare i QA:
 1. **Filtro per pagina `#PAGINA`** — chip (come i filtri area/keyword) per filtrare gli step del catalogo per schermata, usando il campo `page` già presente su `CatalogStep`. Coerente con la pagina `/tags`.
@@ -117,6 +114,20 @@ Plans:
 Plans:
 - [x] 999.15-01-PLAN.md — Filtro pagina #PAGINA nello StepBrowser (STEP-FILTER-01)
 - [x] 999.15-02-PLAN.md — Snippet intent dichiarativi sotto la search bar (SNIPPET-01)
+
+---
+
+### Phase 999.16: Editor — toolbar sticky + linter live con parser Gherkin (BACKLOG)
+
+**Goal:** Due miglioramenti all'editor Gherkin:
+1. **Toolbar sticky** — la barra Structure/Steps/Undo/Format resta in alto mentre si scorre l'editor (oggi scorre via).
+2. **Linter live potenziato** — il linter esiste già (`gherkinLinter` con regole manuali) ma manca il gutter ed è basato su regex. Integrare il `Parser` sincrono di `@cucumber/gherkin` (browser-safe) per segnalare attivamente veri errori di compilazione del feature, aggiungere `lintGutter()` per le icone d'errore, mantenendo le regole esistenti come complemento. Fallback alle regole manuali se il parser non si bundla nel client.
+**Requirements:** EDITOR-UX-03, LINT-01
+**Plans:** 2 plans previsti
+
+Plans:
+- [ ] 999.16-01-PLAN.md — Toolbar sticky nell'editor (EDITOR-UX-03)
+- [ ] 999.16-02-PLAN.md — Linter live con parser @cucumber/gherkin + lintGutter (LINT-01, checkpoint finale)
 
 ---
 
