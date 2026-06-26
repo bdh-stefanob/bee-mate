@@ -139,11 +139,11 @@ Plans:
 3. **Movimentazione (dialog)** — nuovo `POST /api/features/move` (`fs.rename` + `safeFeaturePath` sui due lati, no overwrite silenzioso); bottone "Sposta" sull'albero che riusa il dialog; **aggiorna i tag nel contenuto** (altrimenti il prossimo Save annulla lo spostamento); aggiorna i tab aperti col nuovo path; pulizia cartelle vuote.
 4. **Movimentazione (drag&drop)** — trascinamento del feature su un nodo app/flow diverso nell'albero, riusando l'endpoint move + aggiornamento tag. Checkpoint visivo finale.
 **Requirements:** TAG-PLACE-01, MOVE-01
-**Plans:** 1/1 plans complete
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 999.17-01-PLAN.md — Dialog placement riusabile + helper tag-in-content (TAG-PLACE-01)
-- [ ] 999.17-02-PLAN.md — Definisci tag al Save (ambiguo) + al "+" (TAG-PLACE-01)
+- [x] 999.17-02-PLAN.md — Definisci tag al Save (ambiguo) + al "+" (TAG-PLACE-01)
 - [ ] 999.17-03-PLAN.md — Endpoint /api/features/move + bottone "Sposta" + sync tag/tab (MOVE-01)
 - [ ] 999.17-04-PLAN.md — Drag&drop nell'albero (MOVE-01, checkpoint finale)
 
