@@ -543,6 +543,11 @@ function EditorInner() {
               <h1 className="text-2xl font-bold text-foreground">{t.editor.title}</h1>
             </div>
             <div className="flex items-center gap-2">
+              <ImportDropzone
+                variant="button"
+                onImported={featureContent => setContent(featureContent)}
+                onLoadFeature={openContentInNewTab}
+              />
               {settings.githubToken && (
                 <button onClick={() => setPreview({ kind: 'feature' })} disabled={isCommitting || !content.trim()}
                   className="px-3 py-1.5 text-sm rounded-md border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -672,11 +677,6 @@ function EditorInner() {
                   )}
                 </div>
               )}
-
-              <ImportDropzone
-                onImported={featureContent => setContent(featureContent)}
-                onLoadFeature={openContentInNewTab}
-              />
           </div>
 
           {/* RIGHT COLUMN — Steps stays in view while the editor scrolls (sticky) */}

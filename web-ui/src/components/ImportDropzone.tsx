@@ -8,6 +8,8 @@ import { isExtendedFormat, parseExtendedFormat, type ExtractedStepEnum } from '@
 interface ImportDropzoneProps {
   onImported: (featureContent: string) => void;
   onLoadFeature?: (featureContent: string) => void;
+  /** 'dropzone' (default) = full drag-drop box; 'button' = compact header button (file picker only). */
+  variant?: 'dropzone' | 'button';
 }
 
 type ImportState =
@@ -25,7 +27,7 @@ type ImportState =
  * Su ok: chiama onImported(featureContent) e mostra riepilogo N step nuovi, M skippati.
  * Su errore: mostra il messaggio di errore.
  */
-export function ImportDropzone({ onImported, onLoadFeature }: ImportDropzoneProps) {
+export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone' }: ImportDropzoneProps) {
   const { t } = useLanguage();
   const [state, setState] = useState<ImportState>({ status: 'idle' });
   const [isDragging, setIsDragging] = useState(false);
@@ -119,6 +121,30 @@ export function ImportDropzone({ onImported, onLoadFeature }: ImportDropzoneProp
     // reset input per permettere di selezionare lo stesso file di nuovo
     e.target.value = '';
   };
+
+  // Compact header-button variant — file picker only (feedback via toast). Used in the editor header.
+  if (variant === 'button') {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={state.status === 'loading'}
+          title="Importa un file .feature o .txt"
+          className="px-3 py-1.5 text-sm rounded-md border border-purple-600 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {state.status === 'loading' ? t.editor.importLoading : 'Import'}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".txt,.feature"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2">
