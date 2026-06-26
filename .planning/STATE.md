@@ -4,13 +4,13 @@ milestone: v0.2.0
 milestone_name: milestone
 status: unknown
 stopped_at: "CHECKPOINT Task 3: verifica visiva toolbar sticky + linter (999.16-02)"
-last_updated: "2026-06-26T08:10:25.503Z"
+last_updated: "2026-06-26T09:50:18.368Z"
 progress:
-  total_phases: 16
-  completed_phases: 4
+  total_phases: 17
+  completed_phases: 5
   total_plans: 14
-  completed_plans: 13
-  percent: 93
+  completed_plans: 14
+  percent: 100
 ---
 
 # Project State — bdd-automation-scaffold
@@ -29,8 +29,8 @@ progress:
 
 ## Current Position
 
-Phase: 999.16 (editor-toolbar-sticky-linter-gherkin) — EXECUTING
-Plan: 2 of 2
+Phase: 999.17
+Plan: Not started
 
 | Field | Value |
 |-------|-------|
