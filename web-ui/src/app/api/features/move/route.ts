@@ -6,23 +6,26 @@ import { setFeatureTags } from '@/lib/feature-tags';
 
 /**
  * POST /api/features/move
- * Body: { fromPath: string, app: string, flow: string }
+ * Body: { fromPath: string, app: string, flow: string, content?: string }
  *   - fromPath: relativo a src/features (es. "brochure-clinic/login/login.feature")
  *   - app/flow: nome app e flow di destinazione (verranno slugificati)
+ *   - content (opzionale): contenuto corrente dell'editor; se presente viene usato al posto
+ *     del contenuto letto dal disco (utile per spostare con modifiche non ancora salvate).
+ *     I tag @app @flow vengono comunque riscritti via setFeatureTags.
  *
  * Operazioni:
  *   1. Valida fromPath con safeFeaturePath → src
  *   2. Slugifica app/flow, calcola toRel, valida con safeFeaturePath → dest
  *   3. Anti-overwrite: se dest esiste ed è diverso da src → 409
- *   4. Leggi contenuto, riscrive i tag @app @flow (setFeatureTags)
+ *   4. Usa content (se fornito) o legge dal disco; riscrive i tag @app @flow (setFeatureTags)
  *   5. Crea directory destinazione, scrive file, rimuove sorgente se diversa
  *   6. Pulisce cartelle vuote risalendo da dirname(src) verso FEATURES_DIR
  *   7. Ritorna { ok: true, path: toRelPOSIX }
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { fromPath?: string; app?: string; flow?: string };
-    const { fromPath, app, flow } = body;
+    const body = await request.json() as { fromPath?: string; app?: string; flow?: string; content?: string };
+    const { fromPath, app, flow, content } = body;
 
     // Validazione input
     if (!fromPath || typeof fromPath !== 'string') {
@@ -66,9 +69,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Leggi, riscrive i tag, scrivi destinazione
-    const content = fs.readFileSync(src, 'utf-8');
-    const updated = setFeatureTags(content, appSlug, flowSlug);
+    // Usa il contenuto fornito (editor) oppure leggi dal disco; riscrive sempre i tag
+    const baseContent = typeof content === 'string' && content.length > 0
+      ? content
+      : fs.readFileSync(src, 'utf-8');
+    const updated = setFeatureTags(baseContent, appSlug, flowSlug);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.writeFileSync(dest, updated, 'utf-8');
 
