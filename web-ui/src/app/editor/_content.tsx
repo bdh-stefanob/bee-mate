@@ -45,6 +45,11 @@ function labelFrom(content: string): string {
   return m ? m[1].trim() : 'Nuovo feature';
 }
 
+/** Restituisce l'ultimo segmento di un path POSIX (es. "app/flow/login.feature" → "login.feature"). */
+function basenameOf(filePath: string): string {
+  return filePath.split('/').pop() ?? filePath;
+}
+
 function newTab(content = '', filePath?: string): EditorTab {
   return { id: tabId(), label: content ? labelFrom(content) : 'Nuovo feature', filePath, content, dirty: false };
 }
@@ -424,22 +429,76 @@ function EditorInner() {
 
   const handleSave = useCallback(async () => {
     if (!content.trim() || !activeTab) return;
-    const featureMatch = content.match(/Feature:\s*(.+)/i);
-    const slug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
-    const { app, flow } = getFeatureTags(content);
-    const appSlug  = app  ? slugify(app)  : null;
-    const flowSlug = flow ? slugify(flow) : null;
 
-    if (appSlug && flowSlug) {
-      // Tag completi — salva diretto, Ctrl+S resta veloce
-      await doSaveContent(content, `${appSlug}/${flowSlug}/${slug}.feature`);
-    } else {
-      // Tag mancanti — apri il dialog di placement
-      await loadFeatureList();
+    // Assicura che existingPaths sia disponibile (cache via ref — costo solo al primo save)
+    await loadFeatureList();
+
+    const featureMatch = content.match(/Feature:\s*(.+)/i);
+    const titleSlug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
+    const { app, flow } = getFeatureTags(content);
+
+    const existingPath = activeTab.filePath;                              // undefined = file nuovo
+    const baseName = existingPath ? basenameOf(existingPath) : `${titleSlug}.feature`;
+
+    if (!app || !flow) {
+      // Tag mancanti → dialog placement (suggerisci app/flow dalla cartella del file esistente)
       setPlacementAction('save');
       setPlacementOpen(true);
+      return;
     }
-  }, [content, activeTab, doSaveContent, loadFeatureList]);
+
+    const appSlug  = slugify(app);
+    const flowSlug = slugify(flow);
+    const targetPath = `${appSlug}/${flowSlug}/${baseName}`;
+
+    if (existingPath && targetPath === existingPath) {
+      // Stessa cartella, stesso file → salva in-place
+      await doSaveContent(content, targetPath);
+    } else if (existingPath && targetPath !== existingPath) {
+      // File esistente, cartella cambiata → SPOSTA usando il contenuto corrente
+      setIsSaving(true);
+      try {
+        const res = await fetch('/api/features/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fromPath: existingPath, app: appSlug, flow: flowSlug, content }),
+        });
+        const data = await res.json() as { ok?: boolean; path?: string; error?: string };
+        if (res.status === 409) {
+          toast.error('Esiste già un file in destinazione — spostamento annullato');
+          return;
+        }
+        if (!data.ok) throw new Error(data.error ?? 'Unknown error');
+        const movedPath = data.path ?? targetPath;
+        toast.success(`Spostato in ${movedPath}`);
+        setTabs(prev => prev.map(tab =>
+          tab.id === activeTab.id
+            ? { ...tab, content, dirty: false, filePath: movedPath, label: labelFrom(content) || tab.label }
+            : tab
+        ));
+        if (unknownSteps.length > 0) {
+          setProposalSelected(new Set(unknownSteps.map(s => s.expression)));
+          setProposalOpen(true);
+        }
+      } catch (err: unknown) {
+        toast.error(`Spostamento fallito: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      // File nuovo
+      // Controlla collisione con un file esistente diverso (confronto sulla coda normalizzata)
+      const targetTail = targetPath.replace(/\\/g, '/');
+      const collision = existingPaths.some(p => p.replace(/\\/g, '/').endsWith(targetTail) || p.replace(/\\/g, '/') === targetTail);
+      if (collision) {
+        // Collisione → dialog placement (che mostra conferma overwrite)
+        setPlacementAction('save');
+        setPlacementOpen(true);
+        return;
+      }
+      await doSaveContent(content, targetPath);
+    }
+  }, [content, activeTab, existingPaths, doSaveContent, loadFeatureList, unknownSteps]);
 
   // Ctrl+S → save
   useEffect(() => {
@@ -758,13 +817,15 @@ function EditorInner() {
       {/* Placement dialog — apre quando i tag @app/@flow mancano al Save, o on-demand da "Cartella" */}
       {(() => {
         const featureMatch = content.match(/Feature:\s*(.+)/i);
-        const slug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
+        const titleSlug = slugify(featureMatch?.[1].trim() ?? 'scenario') || 'scenario';
+        // Nome file stabile: usa il nome del file aperto se esiste, altrimenti deriva dal titolo
+        const stableBaseName = activeTab?.filePath ? basenameOf(activeTab.filePath) : `${titleSlug}.feature`;
         const { app: tagApp, flow: tagFlow } = getFeatureTags(content);
         return (
           <FeaturePlacementDialog
             open={placementOpen}
             title={placementAction === 'save' ? 'Salva feature' : 'Imposta cartella / tag'}
-            fileBaseName={`${slug}.feature`}
+            fileBaseName={stableBaseName}
             suggestedApp={tagApp ? slugify(tagApp) : ''}
             suggestedFlow={tagFlow ? slugify(tagFlow) : ''}
             existingApps={existingApps}
@@ -775,14 +836,47 @@ function EditorInner() {
             onConfirm={async (app, flow) => {
               const updated = setFeatureTags(content, app, flow);
               if (placementAction === 'save') {
-                const featureMatchUpdated = updated.match(/Feature:\s*(.+)/i);
-                const slugUpdated = slugify(featureMatchUpdated?.[1].trim() ?? 'scenario') || 'scenario';
+                const existingPath = activeTab?.filePath;
+                const targetPath = `${app}/${flow}/${stableBaseName}`;
+                // Aggiorna il contenuto con i nuovi tag, poi salva con la stessa logica unificata:
+                // in-place se stesso path, sposta se path cambiato, scrivi diretto se nuovo
                 setTabs(prev => prev.map(tab =>
                   tab.id === activeTab?.id
                     ? { ...tab, content: updated, dirty: true, label: labelFrom(updated) || tab.label }
                     : tab
                 ));
-                await doSaveContent(updated, `${app}/${flow}/${slugUpdated}.feature`);
+                if (existingPath && targetPath === existingPath) {
+                  await doSaveContent(updated, targetPath);
+                } else if (existingPath && targetPath !== existingPath) {
+                  // Sposta usando il contenuto aggiornato (con i nuovi tag già scritti)
+                  setIsSaving(true);
+                  try {
+                    const res = await fetch('/api/features/move', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ fromPath: existingPath, app, flow, content: updated }),
+                    });
+                    const data = await res.json() as { ok?: boolean; path?: string; error?: string };
+                    if (res.status === 409) {
+                      toast.error('Esiste già un file in destinazione — spostamento annullato');
+                      return;
+                    }
+                    if (!data.ok) throw new Error(data.error ?? 'Unknown error');
+                    const movedPath = data.path ?? targetPath;
+                    toast.success(`Spostato in ${movedPath}`);
+                    setTabs(prev => prev.map(tab =>
+                      tab.id === activeTab?.id
+                        ? { ...tab, content: updated, dirty: false, filePath: movedPath, label: labelFrom(updated) || tab.label }
+                        : tab
+                    ));
+                  } catch (err: unknown) {
+                    toast.error(`Spostamento fallito: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                  } finally {
+                    setIsSaving(false);
+                  }
+                } else {
+                  await doSaveContent(updated, targetPath);
+                }
               } else {
                 setContent(updated);
               }
