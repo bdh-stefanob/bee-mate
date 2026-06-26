@@ -117,17 +117,17 @@ Plans:
 
 ---
 
-### Phase 999.16: Editor — toolbar sticky + linter live con parser Gherkin (BACKLOG)
+### Phase 999.16: Editor — toolbar sticky + linter live con parser Gherkin ✅ DONE (2026-06-26)
 
 **Goal:** Due miglioramenti all'editor Gherkin:
 1. **Toolbar sticky** — la barra Structure/Steps/Undo/Format resta in alto mentre si scorre l'editor (oggi scorre via).
 2. **Linter live potenziato** — il linter esiste già (`gherkinLinter` con regole manuali) ma manca il gutter ed è basato su regex. Integrare il `Parser` sincrono di `@cucumber/gherkin` (browser-safe) per segnalare attivamente veri errori di compilazione del feature, aggiungere `lintGutter()` per le icone d'errore, mantenendo le regole esistenti come complemento. Fallback alle regole manuali se il parser non si bundla nel client.
 **Requirements:** EDITOR-UX-03, LINT-01
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 999.16-01-PLAN.md — Toolbar sticky nell'editor (EDITOR-UX-03)
-- [ ] 999.16-02-PLAN.md — Linter live con parser @cucumber/gherkin + lintGutter (LINT-01, checkpoint finale)
+- [x] 999.16-02-PLAN.md — Linter live con parser @cucumber/gherkin + lintGutter (LINT-01, checkpoint finale)
 
 ---
 
