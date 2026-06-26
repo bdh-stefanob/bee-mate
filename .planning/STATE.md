@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
-status: unknown
-stopped_at: Checkpoint 999.17-04 Task 2 — awaiting human-verify
-last_updated: "2026-06-26T10:10:44.384Z"
+status: COMPLETE
+stopped_at: Completed 999.17-05-PLAN.md — fase 999.17 completa (verifica visiva approvata)
+last_updated: "2026-06-26T11:00:00.000Z"
 progress:
   total_phases: 17
   completed_phases: 6
@@ -29,15 +29,15 @@ progress:
 
 ## Current Position
 
-Phase: 999.17 (tag-driven-placement-movimentazione-feature) — EXECUTING
-Plan: 4 of 4
+Phase: 999.17 (tag-driven-placement-movimentazione-feature) — COMPLETE
+Plan: 5 of 5
 
 | Field | Value |
 |-------|-------|
-| Current Phase | 999.15 — strumenti-step-editor-filtro-pagina-snippet |
-| Current Plan | 2/2 completato (fase completa) |
+| Current Phase | 999.17 — tag-driven-placement-movimentazione-feature |
+| Current Plan | 5/5 completato (fase completa) |
 | Status | COMPLETE |
-| Phase Goal | Filtro pagina e snippet nel pannello Steps dell'editor |
+| Phase Goal | Placement file tag-driven + spostamento (move/drag&drop) + Save senza duplicati |
 
 **Progress:**
 
@@ -63,6 +63,7 @@ Plan: 4 of 4
 | Phase 999.17 P02 | 5 min | 1 tasks | 1 files |
 | Phase 999.17 P03 | 10 min | 2 tasks | 2 files |
 | Phase 999.17 P04 | 10 min | 1 tasks | 1 files |
+| Phase 999.17 P05 | 12 min | 3 tasks (incl. checkpoint) | 2 files |
 
 ### Execution Log
 
@@ -104,6 +105,7 @@ Plan: 4 of 4
 - 999.16-01: GherkinToolbar sticky via wrapper `lg:sticky lg:top-0 z-10 bg-background` nella colonna editor; bg-background opaco sul wrapper esterno (la toolbar interna ha bg-muted/30 semi-trasparente, insufficiente a coprire il contenuto che scorre sotto)
 - 999.16-02: @cucumber/gherkin non bundlabile per browser (usa node:module) → PIVOT: parser eseguito LATO SERVER via endpoint Node /api/lint; gherkinLinter reso ASINCRONO ({delay:600} debounce) con fetch a /api/lint + regole manuali come complemento/fallback (try/catch → null su errore, editor mai rotto); next.config serverExternalPackages per i due pacchetti @cucumber; lintGutter aggiunto come extension CodeMirror; build+tsc passano. Rimosso il primo approccio _nodeRequire/new Function client-side (non dava i veri errori nel browser)
 - 999.17-01: FeaturePlacementDialog senza fetch — UI pura, onConfirm delega l'azione al chiamante (save/move/altro); getFeatureTags formalizza il pattern regex di _content.tsx con tipo di ritorno esplicito; slugify replicato localmente nel dialog per autonomia client-side; firma FeatureImportDialog invariata — features/page.tsx non modificato
+- 999.17-05: Save unificato — nome file STABILE (basename del file aperto, non slug del titolo) → niente duplicati al rename del titolo; cartella derivata dai tag @app @flow; file esistente con tag cambiati → relocation via /api/features/move con `content` corrente (no perdita modifiche, no duplicato); file nuovo con collisione su existingPaths → dialog placement (conferma overwrite, mai silenziosa); /api/features/move esteso con `content?` opzionale (backward-compatible col bottone Sposta/drag&drop); onConfirm del placement dialog riusa lo stesso baseName stabile + logica in-place/sposta/nuovo. Checkpoint visivo copriva l'intera fase 999.17 (02/03/04 rimandati qui) — approvato con riserva sulle rifiniture di polish. Commit e12d947 + 84dad88
 
 ### Known Issues (inherited from existing codebase)
 
@@ -127,7 +129,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Checkpoint 999.17-04 Task 2 — awaiting human-verify
+**Stopped at:** Completed 999.17-05-PLAN.md — fase 999.17 completa (verifica visiva approvata)
 
 **Commands:**
 
