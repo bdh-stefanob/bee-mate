@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v0.2.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 999.15-01-PLAN.md (fase 999.15 plan 1/2 done)
-last_updated: "2026-06-25T16:32:34Z"
+stopped_at: Completed 999.15-02-PLAN.md (fase 999.15 plan 2/2 done — fase completa)
+last_updated: "2026-06-26T07:52:35Z"
 progress:
   total_phases: 15
-  completed_phases: 3
-  total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_phases: 4
+  total_plans: 14
+  completed_plans: 14
+  percent: 100
 ---
 
 # Project State — bdd-automation-scaffold
 
-*Last updated: 2026-06-25*
+*Last updated: 2026-06-26*
 
 ---
 
@@ -29,14 +29,14 @@ progress:
 
 ## Current Position
 
-Phase: 999.15 (strumenti-step-editor-filtro-pagina-snippet) — EXECUTING
+Phase: 999.15 (strumenti-step-editor-filtro-pagina-snippet) — COMPLETE
 Plan: 2 of 2
 
 | Field | Value |
 |-------|-------|
 | Current Phase | 999.15 — strumenti-step-editor-filtro-pagina-snippet |
-| Current Plan | 1/2 completato |
-| Status | EXECUTING |
+| Current Plan | 2/2 completato (fase completa) |
+| Status | COMPLETE |
 | Phase Goal | Filtro pagina e snippet nel pannello Steps dell'editor |
 
 **Progress:**
@@ -72,6 +72,7 @@ Plan: 2 of 2
 | Phase 999.13 P03 | 15 min | 2/3 tasks (checkpoint pending) | 5 files |
 | Phase 999.14 P01 | 8 min | 2 tasks | 4 files |
 | Phase 999.15 P01 | 5 min | 1 task | 2 files |
+| Phase 999.15 P02 | 8 min | 3 tasks (incl. checkpoint) | 3 files |
 
 ---
 
@@ -93,6 +94,7 @@ Plan: 2 of 2
 - 999.14-01: steps dedup single-file via Set<string> in extractPageMarkers; dedup cross-file via includes() in route.ts + sort alfabetico finale; expandedPages come Set<string> di slug per toggle per-pagina indipendente
 - 999.14-02: layout editor — editor sinistro scrolla con la pagina (overflow-y-auto sul wrapper esterno), SOLO colonna destra Steps sticky (`lg:sticky lg:top-1 lg:self-start`, commit 3ae4ad0 su richiesta utente in verifica visiva); StepBrowser compatto via maxHeight 180px↔480px con toggle "Mostra tutti/Riduci"; box Preview .feature rimosso (i18n keys lasciate inutilizzate)
 - 999.15-01: chip pagina usa stesso stile teal dei chip area (coerenza visiva); pageCounts mostra conteggio totale per pagina non filtrato; riga chip visibile solo se pages.length > 0; toggle ri-click azzera il filtro
+- 999.15-02: snippet intent dichiarativi da file statico TS editabile dal team (web-ui/src/lib/step-snippets.ts, 5 seed); sezione Snippet collassabile default-chiusa tra chip pagina e lista step; click → onInsert(lines.join('\n')+'\n') con onMouseDown+preventDefault per non perdere focus editor; verifica visiva approvata. Fix editor correlati durante checkpoint: scroll a blocco (ef10a2d/ca821d2), id tab univoci (db1431d), import in bottone header (b694aae)
 
 ### Known Issues (inherited from existing codebase)
 
@@ -116,7 +118,7 @@ None
 
 ## Session Continuity
 
-**Stopped at:** Completed 999.15-01-PLAN.md (fase 999.15 plan 1/2 — filtro pagina StepBrowser done)
+**Stopped at:** Completed 999.15-02-PLAN.md (fase 999.15 plan 2/2 — sezione Snippet StepBrowser done; fase 999.15 completa)
 
 **Commands:**
 
