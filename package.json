@@ -13,6 +13,10 @@
     "jira:sync:dry": "ts-node scripts/jira-sync.ts --dry-run",
     "jira:probe": "ts-node scripts/jira-fetch.ts --probe",
     "jira:fetch": "ts-node scripts/jira-fetch.ts",
+    "confluence:discover": "ts-node scripts/confluence-fetch.ts --discover",
+    "confluence:probe": "ts-node scripts/confluence-fetch.ts --probe",
+    "confluence:fetch": "ts-node scripts/confluence-fetch.ts",
+    "check:extract": "ts-node scripts/lib/atlassian.check.ts",
     "prepare": "husky"
   },
   "keywords": [

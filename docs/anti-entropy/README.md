@@ -20,7 +20,7 @@
 
 ## Il problema in una riga
 
-Tester di aree diverse scrivono casi di test in un formato simil-Gherkin dentro Jira,
+Tester di aree diverse scrivono casi di test in un formato simil-Gherkin dentro Confluence,
 senza vocabolario condiviso ne' punto di verita' unico: lo stesso comportamento viene
 descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 
@@ -36,9 +36,11 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | # | Fatto | Impatto |
 |---|---|---|
 | F1 | I casi di test BDD sono **solo scritti, non automatizzati** | Il catalogo step non puo' essere generato dal codice: diventa **contract-first** |
-| F2 | Vivono **su Jira**, in formato **simil-Gherkin, senza datatable** | Superficie di scrittura = Jira → il sistema dev'essere **read-first**, non gate-first |
+| F2 | Vivono **su Confluence** (NON Jira), in formato **simil-Gherkin, senza datatable** | Superficie di scrittura = Confluence → il sistema dev'essere **read-first**, non gate-first |
 | F3 | Nessuna datatable in uso | Scenari non parametrizzati → duplicazione per variante di dato |
-| F4 | Esiste un token API Jira personale, **mai testato** | Prerequisito della Fase 1; piano B = export CSV |
+| F3b | **Nessun plugin** di test management (niente Xray/Zephyr) | Nessun campo strutturato, nessun issuetype: testo libero in pagine wiki → entropia più alta del previsto |
+| F3c | Confluence ha un **albero vero** (space → pagina → figlie) | La "master folder" è indirizzabile con `ancestor = <pageId>`; il percorso diventa una **dimensione di misura** (entropia per area/team) |
+| F4 | Esiste un token API Atlassian personale, **mai testato** | Prerequisito della Fase 1; su Cloud lo stesso token vale per Jira e Confluence |
 | F5 | Esiste un POC separato Playwright+Cucumber con script `scout` e `generate-pom` | Riusabile come **moltiplicatore**, non come sorgente degli step |
 | F6 | Buona parte del "centro di verita'" esiste gia' in questo scaffold | Schema catalog v2, generatore Markdown, web-ui, estensione VS Code |
 
@@ -49,16 +51,17 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | D1 | La spina dorsale e' **P1 (linguaggio/governance)**, non l'automazione ne' l'AI | E' l'unico dei tre a soddisfare tutti e 4 i paletti senza approvazioni esterne |
 | D2 | **Un componente UI ≠ uno step.** Componente → metodo POM (1:1). Intento business → step (1:N) | Generare uno step per elemento produce Gherkin imperativo: peggiora l'entropia invece di ridurla |
 | D3 | Il catalogo nasce dai **cluster dei test case esistenti**, non da un design a tavolino | Risolve il bootstrap "catalogo vuoto" e fa riconoscere ai colleghi le proprie frasi |
-| D4 | **Fase 1 read-only** su Jira | Azzera meta' delle obiezioni di security prima che vengano sollevate |
+| D4 | **Fase 1 read-only** su Confluence | Confermato dall'utente. Azzera meta' delle obiezioni di security prima che vengano sollevate |
 | D5 | Il sistema e' **AI-agnostic**; il tool AI aziendale e' implementazione di riferimento, non requisito | Un "no" del procurement non deve uccidere l'iniziativa |
 | D6 | L'AI non valida mai se stessa: produce, il **validatore deterministico** giudica | La garanzia anti-entropia non puo' essere probabilistica (cfr. `ROADMAP.md` §3) |
 | D7 | Approccio scelto: **B — Osservatorio + Oracolo** | A resta dentro come nucleo autoconsistente: se l'AI o l'ambiente saltano in demo, la presentazione regge lo stesso |
+| D8 | Il **centro di verita' si pubblica in Confluence** | I tester sono gia' li'. Risolve Q3 (canale per chi non ha il repo) a costo zero e senza nuovi strumenti da imparare |
 
 ## Domande aperte
 
 | # | Domanda | Blocca |
 |---|---|---|
-| Q1 | Il token Jira funziona? Che dialetto REST risponde? In quale campo vivono i test case? | Fase 1 → **risolvibile subito con `npm run jira:probe`** |
+| Q1 | Il token funziona? Quale space e quale ramo contengono i casi di test? Il testo si estrae bene? | Fase 1 → **risolvibile subito con `confluence:discover` → `confluence:probe`** |
 | Q2 | Che decisione vogliamo che prendano i senior a fine demo? | Taglio della presentazione |
 | Q3 | Quanti tester, su quante app, quanti con IDE/repo? | Dimensionamento e canale di distribuzione del catalogo |
 | Q4 | Il tool AI aziendale e' gia' disponibile a tutti o va richiesto? | Blocco 3 |
@@ -68,27 +71,36 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 
 ## Prossimi passi
 
-1. **`npm run jira:probe`** dal PC aziendale → risolve Q1 in 5 minuti. *(strumento pronto)*
-2. `npm run jira:fetch` → primo export, primo conteggio grezzo.
-3. Normalizzatore + clustering → metriche di baseline + candidati step. *(da costruire)*
-4. Sezioni 2-7 del design.
-5. Piano demo e presentazione.
+1. **`npm run confluence:discover`** dal PC aziendale → quali space vedo. *(strumento pronto)*
+2. **`npm run confluence:discover -- --space <KEY>`** → l'albero, per individuare la "master folder". *(pronto)*
+3. **`npm run confluence:probe -- --root <ID>`** → verifica che il testo si estragga bene. *(pronto)*
+4. `npm run confluence:fetch -- --root <ID>` → primo export e primo conteggio grezzo. *(pronto)*
+5. Normalizzatore + clustering → metriche di baseline + candidati step. *(da costruire)*
+6. Sezioni 2-7 del design.
+7. Piano demo e presentazione.
 
 ## Strumenti gia' disponibili in questo repo
 
 | Comando | Cosa fa |
 |---|---|
-| `npm run jira:probe` | Verifica credenziali, rileva il dialetto REST, stampa **tutti** i campi non vuoti di una issue segnalando quali contengono Gherkin. Da lanciare per primo. |
-| `npm run jira:fetch` | Scarica le issue del JQL configurato, estrae i campi testuali, marca i candidati e scrive `reports/jira-export/<timestamp>.json` con un riepilogo di conformita'. |
+| `npm run confluence:discover` | Elenca gli space accessibili. Con `-- --space KEY` stampa l'albero: rami di primo livello con id e numero di pagine. **Da lanciare per primo.** |
+| `npm run confluence:probe -- --root <ID>` | Scarica una pagina e mostra percorso, testo estratto e punteggio Gherkin. Serve a verificare che l'estrazione funzioni su contenuto reale. |
+| `npm run confluence:fetch -- --root <ID>` | Scarica tutto il sottoalbero, estrae il testo, marca i candidati e scrive `reports/confluence-export/<ts>.json` con il riepilogo **aggregato per ramo**. |
+| `npm run check:extract` | Verifica l'estrattore su casi noti (macro di codice, tabelle, liste, entita' accentate). Da rilanciare dopo ogni modifica alla libreria. |
+| `npm run jira:probe` / `jira:fetch` | Equivalenti per Jira. Non sono la sorgente dell'Osservatorio: serviranno per la tracciabilita' verso i ticket. |
 | `npm run catalog` | Rigenera `STEP_CATALOG.md` + `step-catalog.json`. |
 | `npm run validate:steps` | Valida gli step di un `.feature` contro il catalogo. |
 
 Configurazione richiesta in `.env` (mai committato):
 
 ```
-JIRA_URL=https://<tenant>.atlassian.net
-JIRA_EMAIL=nome@azienda.com          # lasciare VUOTO su Jira Server/DC (auth Bearer)
-JIRA_TOKEN=<api token o personal access token>
-JIRA_JQL=project = ABC AND issuetype = Test
-JIRA_FIELDS=                          # opzionale: restringe ai campi noti dopo il probe
+CONFLUENCE_URL=https://<tenant>.atlassian.net
+CONFLUENCE_EMAIL=nome@azienda.com     # lasciare VUOTO su Server/DC (auth Bearer)
+CONFLUENCE_TOKEN=<api token o personal access token>
+CONFLUENCE_SPACE=QA                   # opzionale dopo il discover
+CONFLUENCE_ROOT=                      # opzionale: id della "master folder"
 ```
+
+Su Cloud lo stesso token vale per entrambi i prodotti: se in `.env` ci sono gia'
+`JIRA_URL` / `JIRA_EMAIL` / `JIRA_TOKEN`, il lettore Confluence li usa come fallback
+e non serve ripeterli.

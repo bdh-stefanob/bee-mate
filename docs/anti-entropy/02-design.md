@@ -29,8 +29,9 @@ demo con tutto al 70% invece che con una cosa al 100%.
 ### I quattro blocchi
 
 ```
-              JIRA  ── dove i tester scrivono oggi, e continueranno a scrivere
-                │  read-only (REST o export CSV)
+         CONFLUENCE  ── dove i tester scrivono oggi, e continueranno a scrivere
+                │  read-only (REST + CQL). L'albero space → pagina → figlie
+                │  e' indirizzabile: `ancestor = <pageId>` = la "master folder"
                 ▼
    ┌────────────────────────────┐
    │ 1. OSSERVATORIO            │  parsing tollerante → normalizzazione
@@ -40,7 +41,8 @@ demo con tutto al 70% invece che con una cosa al 100%.
               ▼
    ┌────────────────────────────┐
    │ 2. CENTRO DI VERITA'       │  step-catalog.json + glossario + linee guida
-   │    "come si scrive"        │  pubblicato dove tutti arrivano senza Git
+   │    "come si scrive"        │  ripubblicato IN CONFLUENCE, dove i tester
+   │                            │  gia' sono (nessun nuovo strumento)
    └──────────┬─────────────────┘
               │ consumato da
       ┌───────┴────────┐
@@ -83,7 +85,8 @@ Conseguenze pratiche:
 
 ### Il ribaltamento rispetto alla proposta iniziale
 
-Poiche' i test case sono **scritti ma non automatizzati** (F1), il catalogo non puo'
+Poiche' i test case sono **scritti ma non automatizzati** (F1) e vivono in pagine wiki
+libere senza plugin di test management (F2, F3b), il catalogo non puo'
 essere generato dal codice come previsto in `CONTRIBUTING.md` ("generated from code,
 never written by hand"). Diventa **contract-first**: e' il catalogo la sorgente, e
 l'automazione — quando arrivera' — ne e' un *consumer*.
@@ -94,7 +97,7 @@ implementa"). Ma **rompe un principio scritto del progetto** e come tale va dich
 
 Secondo ribaltamento, sulla sequenza:
 
-> **Fase 1 = misurare, non imporre.** Un job legge i test case da Jira, li normalizza,
+> **Fase 1 = misurare, non imporre.** Un job legge le pagine da Confluence, le normalizza,
 > li confronta col catalogo e produce un report. Nessuno cambia strumento, nessuno cambia
 > abitudine, zero attrito, zero costo — e si ottiene il numero "prima" il giorno stesso.
 > Fase 2 = si pubblicano catalogo e linee guida. Fase 3 = si rimisura.
@@ -116,12 +119,12 @@ da manutenere per sempre".
 
 - **Non sostituisce Jira ne' il test management tool.** I tester continuano a scrivere
   dove scrivono.
-- **In Fase 1 non scrive su Jira.** Sola lettura. Azzera meta' delle domande di rischio
-  prima che vengano fatte.
+- **In Fase 1 non scrive su Confluence.** Sola lettura. Azzera meta' delle domande di
+  rischio prima che vengano fatte.
 - **Non e' un framework di automazione.** L'automazione e' un consumer del catalogo,
   eventuale e successivo.
-- **Non richiede accesso al repo per tutti.** Il catalogo si pubblica dove arrivano
-  anche i non tecnici.
+- **Non richiede accesso al repo per tutti.** Il catalogo si ripubblica in Confluence,
+  dove i tester sono gia'.
 - **Non dipende da un vendor AI specifico.**
 - **Non e' un progetto full-time.** Nucleo: qualche centinaio di righe, zero server,
   zero licenze.
@@ -130,8 +133,21 @@ da manutenere per sempre".
 
 ## Sezione 2 — Osservatorio
 
-⬜ *Da discutere.* Coprira': parsing tollerante, normalizzazione, algoritmo di
-clustering, formato delle metriche, derivazione dei candidati step.
+🟡 *Primo stadio costruito, il resto da discutere.*
+
+**Fatto** — lettura ed estrazione (`scripts/confluence-fetch.ts` + `scripts/lib/atlassian.ts`):
+
+- `--discover` risolve il problema "non so dove sono le pagine": elenca gli space, poi
+  l'albero dello space con id e conteggi per ramo.
+- `--probe` verifica su una pagina reale che l'estrazione funzioni, prima di scaricare tutto.
+- `--fetch` scarica il sottoalbero e aggrega **per ramo**, non solo in totale: e' la
+  differenza fra "abbiamo entropia" e "l'area X ha un problema che l'area Y non ha".
+- Lo storage format di Confluence viene appiattito gestendo i tre posti dove il Gherkin
+  finisce davvero: macro di codice (CDATA), paragrafi con `<br/>`, celle di tabella.
+  Copertura verificata da `npm run check:extract`.
+
+**Da discutere** — normalizzazione, algoritmo di clustering, formato delle metriche,
+derivazione dei candidati step e degli alias.
 
 ## Sezione 3 — Centro di verita'
 

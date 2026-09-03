@@ -86,7 +86,7 @@ strumento di **velocita'**, non di garanzia.
 
 ## 4. Criticita' tecniche
 
-### 4.1 Il testo su Jira non e' Gherkin valido
+### 4.1 Il testo su Confluence non e' Gherkin valido
 
 "Simil-Gherkin senza datatable" significa che un parser Gherkin ufficiale fallisce.
 Serve **parsing tollerante**: strip di bullet/numerazione/markup, normalizzazione
@@ -95,6 +95,12 @@ come parametri candidati. Non e' complicato, ma e' il cuore tecnico della Fase 1
 
 L'assenza di datatable e' gia' un segnale diagnostico: scenari non parametrizzati →
 duplicazione per variante di dato (stesso flusso × 5 dati = 5 test case copiaincollati).
+
+Il fatto che le pagine siano wiki libere, senza plugin di test management, peggiora il
+quadro: non c'e' nessun campo strutturato da cui leggere: il Gherkin puo' stare in un
+paragrafo, in una cella di tabella, in una lista puntata o dentro una macro di codice.
+L'estrattore deve coprirle tutte, e va verificato su casi noti — altrimenti una forma
+non gestita si traduce in pagine che spariscono silenziosamente dalle metriche.
 
 ### 4.2 Framework UI moderni e stabilita' dei locator
 
