@@ -39,24 +39,10 @@
 
 import * as fs from "fs";
 import * as path from "path";
-
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
-
-function loadEnv(envPath = ".env"): void {
-  if (!fs.existsSync(envPath)) return;
-  const raw = fs.readFileSync(envPath, "utf-8");
-  for (const line of raw.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eq = trimmed.indexOf("=");
-    if (eq < 0) continue;
-    const key = trimmed.slice(0, eq).trim();
-    const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
-    if (!(key in process.env)) process.env[key] = val;
-  }
-}
+import {
+  loadEnv, authHeader, scoreGherkin, looksLikeTestCase,
+  adfToText, preview, pct,
+} from "./lib/atlassian";
 
 loadEnv();
 
@@ -66,110 +52,7 @@ const JIRA_TOKEN = process.env["JIRA_TOKEN"] ?? "";
 const JIRA_JQL = process.env["JIRA_JQL"] ?? "";
 const JIRA_FIELDS = process.env["JIRA_FIELDS"] ?? "";
 
-function authHeader(): string {
-  // Cloud usa Basic email:apiToken. Server/DC usa Bearer <PAT>.
-  if (JIRA_EMAIL) {
-    return `Basic ${Buffer.from(`${JIRA_EMAIL}:${JIRA_TOKEN}`).toString("base64")}`;
-  }
-  return `Bearer ${JIRA_TOKEN}`;
-}
-
-// ---------------------------------------------------------------------------
-// Riconoscimento Gherkin (tollerante: il testo reale non e' Gherkin valido)
-// ---------------------------------------------------------------------------
-
-/** Keyword di apertura passo, EN + IT. L'ordine non conta, il match e' per riga. */
-const STEP_KEYWORDS = [
-  "given", "when", "then", "and", "but",
-  "dato", "dati", "data", "date", "quando", "allora", "ma",
-];
-
-/** Keyword di struttura: la loro presenza alza molto la confidenza. */
-const STRUCTURE_KEYWORDS = [
-  "feature", "scenario", "scenario outline", "background", "examples",
-  "funzionalita", "funzionalità", "contesto", "esempi", "schema dello scenario",
-];
-
-interface GherkinScore {
-  stepLines: number;
-  structureLines: number;
-  /** true se compaiono sia un passo di premessa sia uno di azione/verifica. */
-  hasFullTriplet: boolean;
-}
-
-function scoreGherkin(text: string): GherkinScore {
-  let stepLines = 0;
-  let structureLines = 0;
-  let sawPremise = false;
-  let sawAction = false;
-  let sawOutcome = false;
-
-  for (const rawLine of text.split("\n")) {
-    // Normalizza: togli bullet, numerazione, markup e spazi iniziali.
-    const line = rawLine
-      .replace(/^[\s>*\-–—•\d.)\]]+/, "")
-      .replace(/[*_`]/g, "")
-      .trim()
-      .toLowerCase();
-    if (!line) continue;
-
-    const structureHit = STRUCTURE_KEYWORDS.find((k) => line.startsWith(k + ":"));
-    if (structureHit) {
-      structureLines++;
-      continue;
-    }
-
-    // Un passo e': <keyword> + almeno una parola dopo.
-    const stepHit = STEP_KEYWORDS.find(
-      (k) => line.startsWith(k + " ") && line.length > k.length + 2
-    );
-    if (!stepHit) continue;
-
-    stepLines++;
-    if (stepHit === "given" || stepHit.startsWith("dat")) sawPremise = true;
-    if (stepHit === "when" || stepHit === "quando") sawAction = true;
-    if (stepHit === "then" || stepHit === "allora") sawOutcome = true;
-  }
-
-  return {
-    stepLines,
-    structureLines,
-    hasFullTriplet: sawPremise && sawAction && sawOutcome,
-  };
-}
-
-/** Soglia minima per considerare un campo "candidato test case". */
-function looksLikeTestCase(score: GherkinScore): boolean {
-  return score.stepLines >= 2 || score.structureLines >= 1;
-}
-
-// ---------------------------------------------------------------------------
-// Atlassian Document Format → testo piatto
-// ---------------------------------------------------------------------------
-
-/** Nodi ADF dopo cui va inserito un a capo. */
-const BLOCK_NODES = new Set([
-  "paragraph", "heading", "codeBlock", "listItem", "blockquote", "rule", "tableRow",
-]);
-
-function adfToText(node: unknown): string {
-  if (node === null || node === undefined) return "";
-  if (typeof node === "string") return node;
-  if (Array.isArray(node)) return node.map(adfToText).join("");
-  if (typeof node !== "object") return String(node);
-
-  const n = node as Record<string, unknown>;
-  const type = typeof n["type"] === "string" ? (n["type"] as string) : "";
-
-  if (type === "text") return typeof n["text"] === "string" ? (n["text"] as string) : "";
-  if (type === "hardBreak") return "\n";
-
-  const inner = adfToText(n["content"]);
-  // Le celle di tabella vanno separate, altrimenti "GivenX" si incolla a "WhenY".
-  if (type === "tableCell" || type === "tableHeader") return inner.trim() + " | ";
-  if (BLOCK_NODES.has(type)) return inner + "\n";
-  return inner;
-}
+const auth = (): string => authHeader(JIRA_EMAIL, JIRA_TOKEN);
 
 /**
  * Riduce un valore di campo Jira a testo, qualunque forma abbia:
@@ -227,7 +110,7 @@ async function post(url: string, body: object): Promise<Response> {
   return fetch(url, {
     method: "POST",
     headers: {
-      Authorization: authHeader(),
+      Authorization: auth(),
       "Content-Type": "application/json",
       Accept: "application/json",
     },
@@ -328,7 +211,7 @@ async function fetchFieldNames(): Promise<Record<string, string>> {
   for (const apiVersion of ["3", "2"]) {
     try {
       const res = await fetch(`${JIRA_URL}/rest/api/${apiVersion}/field`, {
-        headers: { Authorization: authHeader(), Accept: "application/json" },
+        headers: { Authorization: auth(), Accept: "application/json" },
       });
       if (!res.ok) continue;
       const fields = (await res.json()) as Array<{ id?: string; name?: string }>;
@@ -417,14 +300,6 @@ function extractIssue(
 // Modi
 // ---------------------------------------------------------------------------
 
-function preview(text: string, lines = 12): string {
-  return text
-    .split("\n")
-    .slice(0, lines)
-    .map((l) => "      | " + l.slice(0, 110))
-    .join("\n");
-}
-
 async function runProbe(jql: string): Promise<void> {
   console.log(`\nPROBE — 1 issue, tutti i campi\n  JQL: ${jql}\n`);
 
@@ -499,13 +374,10 @@ async function runFetch(jql: string, limit: number, outPath: string, keepAll: bo
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(output, null, 2), "utf-8");
 
-  const pct = (n: number): string =>
-    extracted.length ? `${Math.round((n / extracted.length) * 100)}%` : "—";
-
   console.log(`  Dialetto REST         : ${mode}`);
   console.log(`  Issue scaricate       : ${extracted.length}`);
-  console.log(`  Con Gherkin plausibile: ${withCandidates.length}  (${pct(withCandidates.length)})`);
-  console.log(`  Con Given+When+Then   : ${withTriplet.length}  (${pct(withTriplet.length)})`);
+  console.log(`  Con Gherkin plausibile: ${withCandidates.length}  (${pct(withCandidates.length, extracted.length)})`);
+  console.log(`  Con Given+When+Then   : ${withTriplet.length}  (${pct(withTriplet.length, extracted.length)})`);
   console.log(`  Righe-passo stimate   : ${totalStepLines}`);
   console.log(`\n  Scritto in: ${outPath}`);
   console.log(`  ATTENZIONE: contiene dati aziendali reali. reports/ e' gitignorato — non spostarlo.\n`);
