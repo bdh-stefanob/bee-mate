@@ -11,6 +11,8 @@
     "catalog:watch": "ts-node scripts/watch-catalog.ts",
     "jira:sync": "ts-node scripts/jira-sync.ts",
     "jira:sync:dry": "ts-node scripts/jira-sync.ts --dry-run",
+    "jira:probe": "ts-node scripts/jira-fetch.ts --probe",
+    "jira:fetch": "ts-node scripts/jira-fetch.ts",
     "prepare": "husky"
   },
   "keywords": [
