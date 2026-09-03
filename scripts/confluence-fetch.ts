@@ -180,7 +180,8 @@ function buildCql(args: string[]): { cql: string; label: string } {
 }
 
 function searchUrl(cql: string, expand: string, pageSize = 50): string {
-  return `${apiRoot}/content/search?cql=${encodeURIComponent(cql)}&expand=${expand}&limit=${pageSize}`;
+  const exp = expand ? `&expand=${expand}` : "";
+  return `${apiRoot}/content/search?cql=${encodeURIComponent(cql)}${exp}&limit=${pageSize}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,48 +272,97 @@ async function runDiscoverSpaces(): Promise<void> {
 }
 
 async function runDiscoverTree(space: string): Promise<void> {
-  console.log(`\nDISCOVER — albero dello space ${space}\n`);
+  console.log(`\nDISCOVER — contenuti dello space ${space}\n`);
 
-  // Solo ancestors: niente body, cosi' resta veloce anche su space grandi.
+  // Un passo solo, senza body: veloce anche su space grandi. Niente filtro su
+  // `type`, perche' la domanda a cui questo comando deve rispondere e' proprio
+  // "di che tipo sono le cose qui dentro".
   const raw = await getAll(
-    searchUrl(`space = "${space}" and type = page`, "ancestors", 100),
+    searchUrl(`space = "${space}"`, "ancestors", 100),
     5000,
-    "pagine"
+    "contenuti"
   );
 
   if (raw.length === 0) {
-    console.log(`  Nessuna pagina in "${space}". Chiave sbagliata o permessi mancanti.`);
+    console.log(
+      `  Nessun contenuto in "${space}".\n` +
+        `  Chiave sbagliata o permessi mancanti. La chiave la leggi dall'URL:\n` +
+        `  .../wiki/spaces/<CHIAVE>/...`
+    );
     return;
   }
 
-  // Raggruppa per ramo di primo livello sotto la radice dello space.
-  interface Branch { title: string; id: string; pages: number; }
-  const branches = new Map<string, Branch>();
-
-  for (const p of raw) {
-    const ancestors = (p["ancestors"] as Array<Record<string, unknown>>) ?? [];
-    // ancestors[0] = home dello space; ancestors[1] = cartella di primo livello.
-    const folder = ancestors[1] ?? ancestors[0];
-    const key = folder ? str(folder, "id") : "(root)";
-    const existing = branches.get(key);
-    if (existing) existing.pages++;
-    else branches.set(key, { title: folder ? str(folder, "title") : "(pagine di primo livello)", id: key, pages: 1 });
+  // ── 1. Censimento dei tipi ────────────────────────────────────────────────
+  // Confluence ha introdotto le Folder come tipo distinto dalle pagine. L'API v1
+  // e' precedente, quindi non diamo per scontato ne' che compaiano ne' che
+  // funzionino da antenato: lo guardiamo e basta.
+  const byType = new Map<string, number>();
+  for (const c of raw) {
+    const t = str(c, "type") || "(sconosciuto)";
+    byType.set(t, (byType.get(t) ?? 0) + 1);
   }
 
-  const sorted = [...branches.values()].sort((a, b) => b.pages - a.pages);
-  console.log(`  ${raw.length} pagine, ${sorted.length} rami di primo livello:\n`);
-  console.log(`  ${"PAGINE".padStart(7)}  ${"ID".padEnd(12)} RAMO`);
-  for (const b of sorted) {
-    console.log(`  ${String(b.pages).padStart(7)}  ${b.id.padEnd(12)} ${b.title}`);
+  console.log(`  ${raw.length} contenuti totali:\n`);
+  for (const [type, count] of [...byType.entries()].sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${String(count).padStart(7)}  ${type}`);
   }
 
-  const biggest = sorted[0];
+  // ── 2. Le cartelle, con id ────────────────────────────────────────────────
+  const folders = raw.filter((c) => str(c, "type").toLowerCase().includes("folder"));
+  if (folders.length > 0) {
+    console.log(`\n  CARTELLE (usa l'id come --root):\n`);
+    console.log(`  ${"ID".padEnd(14)} TITOLO`);
+    for (const f of folders) {
+      console.log(`  ${str(f, "id").padEnd(14)} ${str(f, "title")}`);
+    }
+  }
+
+  // ── 3. Albero delle pagine, ricostruito dagli antenati ────────────────────
+  const pages = raw.filter((c) => str(c, "type") === "page");
+  const withAncestors = pages.filter(
+    (p) => ((p["ancestors"] as Array<Record<string, unknown>>) ?? []).length > 0
+  );
+
+  if (pages.length > 0 && withAncestors.length === 0) {
+    console.log(
+      `\n  ATTENZIONE: nessuna delle ${pages.length} pagine espone antenati.\n` +
+        `  Vuol dire che questa API non vede la gerarchia (probabile se l'albero\n` +
+        `  e' fatto di Folder). Conseguenza pratica: --root potrebbe non filtrare.\n` +
+        `  Ripiego che funziona comunque:  npm run confluence:fetch -- --space ${space}\n` +
+        `  scarica tutto lo space; poi filtriamo i risultati a valle.`
+    );
+  } else if (pages.length > 0) {
+    interface Branch { title: string; id: string; pages: number; }
+    const branches = new Map<string, Branch>();
+
+    for (const p of pages) {
+      const ancestors = (p["ancestors"] as Array<Record<string, unknown>>) ?? [];
+      // ancestors[0] e' spesso la home dello space: il ramo vero e' il secondo.
+      const folder = ancestors[1] ?? ancestors[0];
+      const key = folder ? str(folder, "id") : "(root)";
+      const existing = branches.get(key);
+      if (existing) existing.pages++;
+      else branches.set(key, {
+        title: folder ? str(folder, "title") : "(pagine di primo livello)",
+        id: key,
+        pages: 1,
+      });
+    }
+
+    const sorted = [...branches.values()].sort((a, b) => b.pages - a.pages);
+    console.log(`\n  RAMI (${sorted.length}), per numero di pagine:\n`);
+    console.log(`  ${"PAGINE".padStart(7)}  ${"ID".padEnd(14)} RAMO`);
+    for (const b of sorted) {
+      console.log(`  ${String(b.pages).padStart(7)}  ${b.id.padEnd(14)} ${b.title}`);
+    }
+  }
+
   console.log(
-    `\n  Il ramo che contiene i casi di test e' la tua "master folder".\n` +
-      `  Prossimo passo — guarda cosa c'e' dentro una pagina di quel ramo:\n` +
-      `    npm run confluence:probe -- --root ${biggest && biggest.id !== "(root)" ? biggest.id : "<ID>"}\n` +
-      `  poi scarica tutto il sottoalbero:\n` +
-      `    npm run confluence:fetch -- --root <ID>`
+    `\n  Prossimo passo — verifica che il testo si estragga bene da una pagina\n` +
+      `  del ramo che contiene i casi di test:\n` +
+      `    npm run confluence:probe -- --root <ID>\n` +
+      `  Se --root non restituisce niente, ripiega sullo space intero:\n` +
+      `    npm run confluence:probe -- --space ${space}`
   );
 }
 
@@ -325,7 +375,15 @@ async function runProbe(cql: string, label: string): Promise<void> {
 
   const raw = await getAll(searchUrl(cql, "body.storage,ancestors,space,version", 1), 1, "pagine");
   if (raw.length === 0) {
-    console.log("  Nessuna pagina restituita. Controlla CQL, id o permessi.");
+    console.log(
+      "  Nessuna pagina restituita.\n\n" +
+        "  Se hai usato --root con l'id di una Folder, e' il caso piu' probabile:\n" +
+        "  questa API potrebbe non riconoscere le Folder come antenati, quindi\n" +
+        "  `ancestor = <id>` non trova nulla anche se l'id e' corretto.\n" +
+        "  Ripiego che funziona comunque:\n" +
+        "    npm run confluence:probe -- --space <CHIAVE>\n\n" +
+        "  Altrimenti: id sbagliato, CQL sbagliato o permessi mancanti."
+    );
     return;
   }
 
@@ -359,6 +417,17 @@ async function runFetch(
   console.log(`\nFETCH\n  Bersaglio: ${label}\n  CQL: ${cql}\n  Limite: ${limit}\n`);
 
   const raw = await getAll(searchUrl(cql, "body.storage,ancestors,space,version", 50), limit, "pagine");
+
+  if (raw.length === 0) {
+    console.log(
+      "  Nessuna pagina restituita.\n\n" +
+        "  Con --root sull'id di una Folder e' il caso piu' probabile: questa API\n" +
+        "  potrebbe non riconoscere le Folder come antenati.\n" +
+        "  Ripiego:  npm run confluence:fetch -- --space <CHIAVE>\n"
+    );
+    return;
+  }
+
   const all = raw.map(extractPage).filter((p) => p.textLength >= 20);
   const pages = keepAll ? all : all.filter(looksLikeTestCase);
 
