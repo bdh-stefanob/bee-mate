@@ -190,6 +190,26 @@ costo di una visita completa.
 Queste cose **non** sono verificabili senza un'istanza vera. Sono elencate in
 ordine di rischio.
 
+## CONFERMATO SUL CAMPO (primo run reale)
+
+Su uno spazio aziendale reale, `--discover --space` ha riportato:
+
+```
+ricerca v1  →  797 page
+albero v2   →  826 pagine
+```
+
+**La ricerca v1 non vede 29 pagine su 826 (~3,5%).** L'ipotesi "la CQL non
+attraversa le Folder" non e' piu' teorica: e' misurata. Senza la strada v2 e senza
+il confronto fra le due, l'export sarebbe stato incompleto **senza produrre alcun
+errore** — il caso peggiore, perche' avrebbe falsato ogni metrica a valle senza
+lasciare traccia.
+
+Confermato nello stesso run:
+- le Folder esistono come tipo di contenuto distinto (105 nel censimento v1);
+- l'albero v2 si ricostruisce correttamente e `--root` funziona con id di Folder;
+- il censimento v1 **restituisce** righe di tipo `folder` (assunzione A5: vera).
+
 | # | Assunzione | Come accorgersene | Se sbagliata |
 |---|---|---|---|
 | A1 | Il token e' un API token Cloud con scope sufficienti per la v2 (`read:page`, `read:folder`, `read:hierarchical-content`). Un token classico non-granulare dovrebbe ereditare i permessi dell'utente. | `--discover --space KEY` stampa `API v2 non disponibile: accesso negato alla v2 (403)…` | Rigenerare il token, o usare `--space` come ripiego (funziona in v1 puro) |
