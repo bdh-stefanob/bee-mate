@@ -48,6 +48,7 @@
 import { chromium, type Page } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
+import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
 
 // ---------------------------------------------------------------------------
 // Tipi
@@ -105,63 +106,19 @@ interface RawElement {
 }
 
 /**
- * Gira dentro la pagina. Deve essere autosufficiente: niente closure sul modulo,
- * solo i parametri passati esplicitamente.
+ * Raccoglie gli elementi interattivi usando il probe condiviso.
+ *
+ * La descrizione (ruolo + nome accessibile) NON e' reimplementata qui: arriva da
+ * `DOM_PROBE_SOURCE`, lo stesso codice che usa il recorder. Due implementazioni
+ * diverse divergerebbero, e divergendo romperebbero l'aggancio fra "cosa ha
+ * toccato il tester" e "quale componente e' quello" — che e' il perno del metodo.
  */
-function collectInPage(scopeSelector: string): RawElement[] {
-  const IMPLICIT_ROLE: Record<string, string> = {
-    a: "link", button: "button", select: "combobox", textarea: "textbox",
-  };
-  const INPUT_ROLE: Record<string, string> = {
-    checkbox: "checkbox", radio: "radio", submit: "button", button: "button",
-    search: "searchbox", email: "textbox", password: "textbox", tel: "textbox",
-    text: "textbox", number: "spinbutton", url: "textbox", date: "textbox",
-  };
-  const KEEP = new Set([
-    "button", "link", "textbox", "combobox", "checkbox", "radio",
-    "tab", "menuitem", "searchbox", "spinbutton", "switch", "option",
-  ]);
-
-  function isVisible(el: Element): boolean {
-    const h = el as HTMLElement;
-    if (h.closest('[aria-hidden="true"]')) return false;
-    // Checkbox e radio custom nascondono l'input vero e disegnano la label:
-    // un input di dimensione zero conta se il suo contenitore e' visibile.
-    const isFormControl = ["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName);
-    const box = isFormControl ? ((h.parentElement as HTMLElement | null) ?? h) : h;
-    if (box.offsetWidth === 0 && box.offsetHeight === 0) return false;
-    const s = window.getComputedStyle(box);
-    return !(s.display === "none" || s.visibility === "hidden" || s.opacity === "0");
-  }
-
-  function labelText(el: Element): string {
-    const id = el.getAttribute("id");
-    if (id) {
-      const l = document.querySelector(`label[for="${CSS.escape(id)}"]`);
-      if (l) return l.textContent?.trim().replace(/\s+/g, " ") ?? "";
-    }
-    const wrapper = el.closest("label");
-    return wrapper?.textContent?.trim().replace(/\s+/g, " ") ?? "";
-  }
-
-  /** Nome accessibile, nell'ordine di precedenza che usa anche Playwright. */
-  function accessibleName(el: Element): string {
-    const h = el as HTMLElement;
-    const labelledBy = h.getAttribute("aria-labelledby");
-    if (labelledBy) {
-      const target = document.getElementById(labelledBy);
-      if (target) return target.textContent?.trim().replace(/\s+/g, " ") ?? "";
-    }
-    return (
-      h.getAttribute("aria-label") ||
-      (el as HTMLInputElement).placeholder ||
-      h.textContent?.trim().replace(/\s+/g, " ") ||
-      h.getAttribute("title") ||
-      labelText(el) ||
-      (el as HTMLInputElement).value ||
-      ""
-    ).trim();
-  }
+function collectWithProbe(scopeSelector: string): RawElement[] {
+  const probe = (window as unknown as { __bddProbe: {
+    describe(el: Element): { role: string; name: string } | null;
+    isVisible(el: Element): boolean;
+    roles: string[];
+  } }).__bddProbe;
 
   const selector = [
     "a[href]", "button", 'input:not([type="hidden"])', "select", "textarea",
@@ -174,22 +131,14 @@ function collectInPage(scopeSelector: string): RawElement[] {
   const out: RawElement[] = [];
 
   root.querySelectorAll(selector).forEach((el) => {
-    if (!isVisible(el)) return;
-
-    const h = el as HTMLElement;
-    let role = h.getAttribute("role") ?? "";
-    if (!role) {
-      const tag = el.tagName.toLowerCase();
-      role = tag === "input"
-        ? (INPUT_ROLE[(el as HTMLInputElement).type] ?? "textbox")
-        : (IMPLICIT_ROLE[tag] ?? "");
-    }
-    if (!KEEP.has(role)) return;
+    if (!probe.isVisible(el)) return;
+    const described = probe.describe(el);
+    if (!described) return;
 
     const input = el as HTMLInputElement;
     out.push({
-      role,
-      name: accessibleName(el),
+      role: described.role,
+      name: described.name,
       href: (el as HTMLAnchorElement).href ?? "",
       disabled: Boolean(input.disabled || input.readOnly),
     });
@@ -301,7 +250,10 @@ async function scan(page: Page, url: string, scope: string, waitMs: number): Pro
   // Le SPA montano dopo il DOMContentLoaded: senza attesa si scansiona uno scheletro.
   await page.waitForTimeout(waitMs);
 
-  const raw = await page.evaluate(collectInPage, scope);
+  // Il probe va iniettato prima di usarlo: la pagina e' gia' caricata, quindi
+  // evaluate e non addInitScript.
+  await page.evaluate(DOM_PROBE_SOURCE);
+  const raw = await page.evaluate(collectWithProbe, scope);
 
   // Conta le occorrenze PRIMA di deduplicare: e' il dato che rende un locator
   // ambiguo, e si perde se si deduplica per primo.

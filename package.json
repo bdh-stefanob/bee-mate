@@ -17,6 +17,7 @@
     "confluence:probe": "ts-node scripts/confluence-fetch.ts --probe",
     "confluence:fetch": "ts-node scripts/confluence-fetch.ts",
     "scout": "ts-node scripts/scout.ts",
+    "record": "ts-node scripts/record.ts",
     "rules:sync": "ts-node scripts/sync-rules.ts",
     "rules:check": "ts-node scripts/sync-rules.ts --check",
     "check:extract": "ts-node scripts/lib/atlassian.check.ts",
