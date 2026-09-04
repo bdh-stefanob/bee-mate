@@ -45,6 +45,8 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | F4 | Esiste un token API Atlassian personale, **mai testato** | Prerequisito della Fase 1; su Cloud lo stesso token vale per Jira e Confluence |
 | F5 | Esiste un POC separato Playwright+Cucumber con script `scout` e `generate-pom` | Riusabile come **moltiplicatore**, non come sorgente degli step |
 | F6 | Buona parte del "centro di verita'" esiste gia' in questo scaffold | Schema catalog v2, generatore Markdown, web-ui, estensione VS Code |
+| F7 | **Esiste gia' una convenzione parziale**: molti domini hanno pagine `<dominio>`, `<dominio> - Business`, `<dominio> - Flow Design`, `<dominio> - Testing Coverage`, ma applicata in modo disuguale | Cambia la tesi della proposta: non si porta ordine nel caos, si **completa e si rende verificabile una struttura che il team ha gia' iniziato**. Molto piu' facile da far accettare |
+| F8 | Nel primo run reale la ricerca v1 ha visto 797 pagine, l'albero v2 826 | La CQL non attraversa le Folder: **misurato, non ipotizzato**. Senza il confronto fra le due strade l'export sarebbe stato incompleto senza errori |
 
 ## Decisioni prese
 
@@ -66,7 +68,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | Q1 | Il token funziona? Quale space e quale ramo contengono i casi di test? Il testo si estrae bene? | Fase 1 → **risolvibile subito con `confluence:discover` → `confluence:probe`** |
 | Q2 | Che decisione vogliamo che prendano i senior a fine demo? | Taglio della presentazione |
 | Q3 | Quanti tester, su quante app, quanti con IDE/repo? | Dimensionamento e canale di distribuzione del catalogo |
-| Q4 | Il tool AI aziendale e' gia' disponibile a tutti o va richiesto? | Blocco 3 |
+| ~~Q4~~ | ~~Il tool AI aziendale e' gia' disponibile?~~ **RISOLTA**: nello spazio wiki esiste una guida di setup del tool AI con accesso via IAM Identity Center → e' gia' configurato in azienda. Il Blocco 3 non e' piu' condizionale. | — |
 | Q5 | Esiste un gatekeeper designato e accetta un SLA sulle approvazioni? | Sostenibilita' del processo |
 | Q6 | L'app sotto test ha una component library / design system condiviso? | Se si', le POM si modellano sui **componenti** invece che sulle pagine: riuso molto maggiore |
 | Q7 | La demo gira su ambiente QA reale o su app neutra? | Rischio dati + rischio scenico |
