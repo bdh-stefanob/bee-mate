@@ -54,6 +54,8 @@
  *
  * Flag:
  *   --discover       elenca gli space; con --space stampa l'albero reale
+ *   --all-spaces     nel discover, mostra anche gli space personali (nascosti
+ *                    per default: sono centinaia e sono la rubrica del personale)
  *   --probe          scarica 1 pagina e mostra testo estratto + punteggio
  *   --space KEY      tutte le pagine dello space
  *   --root ID        la pagina O LA FOLDER e tutto il suo sottoalbero
@@ -447,24 +449,43 @@ async function fetchV2Pages(api: V2Api, subtree: V2Subtree): Promise<Array<Recor
 // Modo: discover
 // ---------------------------------------------------------------------------
 
-async function runDiscoverSpaces(): Promise<void> {
+/**
+ * Elenca gli space, nascondendo per default quelli personali.
+ *
+ * In un'installazione aziendale ogni dipendente ha il suo spazio personale: su
+ * centinaia di righe, quelle che servono sono qualche decina e finiscono sepolte.
+ * Peggio, l'elenco completo e' di fatto la rubrica del personale — roba che non
+ * ha motivo di passare per un terminale, tantomeno di finire incollata altrove.
+ * Restano disponibili con --all-spaces.
+ */
+async function runDiscoverSpaces(showPersonal: boolean): Promise<void> {
   console.log(`\nDISCOVER — space accessibili\n`);
-  const spaces = await getAll(`${apiRoot}/space?limit=100`, 500, "space trovati");
+  const spaces = await getAll(`${apiRoot}/space?limit=100`, 2000, "space trovati");
 
   if (spaces.length === 0) {
     console.log("  Nessuno space visibile con queste credenziali.");
     return;
   }
 
-  for (const s of spaces) {
-    const key = str(s, "key");
-    const name = str(s, "name");
-    const type = str(s, "type");
-    console.log(`  ${key.padEnd(12)} ${name}${type === "personal" ? "  (personale)" : ""}`);
+  const isPersonal = (s: Record<string, unknown>): boolean =>
+    str(s, "type") === "personal" || str(s, "key").startsWith("~");
+
+  const shown = showPersonal ? spaces : spaces.filter((s) => !isPersonal(s));
+  const hidden = spaces.length - shown.length;
+
+  const rows = shown
+    .map((s) => ({ key: str(s, "key"), name: str(s, "name"), personal: isPersonal(s) }))
+    .sort((a, b) => a.key.localeCompare(b.key));
+
+  const width = Math.min(14, Math.max(6, ...rows.map((r) => r.key.length)));
+  for (const r of rows) {
+    console.log(`  ${r.key.padEnd(width)}  ${r.name}${r.personal ? "  (personale)" : ""}`);
   }
 
   console.log(
-    `\n  ${spaces.length} space.\n\n` +
+    `\n  ${shown.length} space` +
+      (hidden > 0 ? ` (piu' ${hidden} personali, nascosti — usa --all-spaces per vederli)` : "") +
+      `.\n\n` +
       `  Prossimo passo — guarda dentro quello che contiene i casi di test:\n` +
       `    npm run confluence:discover -- --space <KEY>`
   );
@@ -1044,7 +1065,7 @@ async function main(): Promise<void> {
   if (discover) {
     const space = argValue(args, "--space") ?? ENV_SPACE;
     if (space) await runDiscoverTree(space);
-    else await runDiscoverSpaces();
+    else await runDiscoverSpaces(args.includes("--all-spaces"));
     return;
   }
   if (!target) return;
