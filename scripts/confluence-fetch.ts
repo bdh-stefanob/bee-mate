@@ -46,11 +46,17 @@
  *
  * Flusso previsto — discover, poi probe, poi fetch:
  *
- *   npm run confluence:discover                 # quali space vedo?
- *   npm run confluence:discover -- --space QA   # com'e' fatto l'albero, e dove
- *                                               # sono le pagine con Gherkin?
- *   npm run confluence:probe -- --root 123456   # una pagina: cosa ci estraggo?
- *   npm run confluence:fetch -- --root 123456   # tutto il sottoalbero → JSON
+ *   npm run confluence:discover          # quali space vedo?
+ *   npm run confluence:discover -- QA    # albero dello space, con gli id
+ *   npm run confluence:probe    -- 123456   # una pagina: cosa ci estraggo?
+ *   npm run confluence:fetch    -- 123456   # tutto il sottoalbero → JSON
+ *
+ * ARGOMENTO NUDO, non `--root 123456`: npm riconosce `space` e `root` come
+ * proprie opzioni di configurazione e se le mangia anche dopo il `--`, sia
+ * nella forma separata sia con l'uguale. Allo script non arriva nulla, e il
+ * comando non fallisce: ignora il bersaglio. Cifre = id, non-cifre = chiave.
+ *   Con npx     →  qualsiasi forma: npx ts-node scripts/confluence-fetch.ts --probe --root 123456
+ *   Sempre      →  CONFLUENCE_ROOT / CONFLUENCE_SPACE in .env, zero argomenti.
  *
  * Flag:
  *   --discover       elenca gli space; con --space stampa l'albero reale
@@ -251,11 +257,19 @@ function buildCql(args: string[]): Target {
   }
 
   throw new Error(
-    "Nessun bersaglio. Indica dove guardare con uno di:\n" +
-      '  --space QA            tutte le pagine dello space\n' +
-      '  --root 123456         la pagina O la folder e tutto il suo sottoalbero\n' +
-      '  --cql "..."           CQL esplicito\n' +
-      "  oppure CONFLUENCE_SPACE / CONFLUENCE_ROOT / CONFLUENCE_CQL in .env\n\n" +
+    "Nessun bersaglio. Indica dove guardare.\n\n" +
+      "  Con npm run — usa l'argomento NUDO, senza nome di flag:\n" +
+      "    npm run confluence:probe -- 1234567      (cifre = id di pagina o folder)\n" +
+      "    npm run confluence:probe -- QA           (non-cifre = chiave di space)\n\n" +
+      "  Con npx — qualsiasi forma:\n" +
+      "    npx ts-node scripts/confluence-fetch.ts --probe --root 1234567\n" +
+      "    npx ts-node scripts/confluence-fetch.ts --probe --space QA\n" +
+      '    npx ts-node scripts/confluence-fetch.ts --probe --cql "..."\n\n' +
+      "  Oppure, sempre valido: CONFLUENCE_ROOT / CONFLUENCE_SPACE / CONFLUENCE_CQL\n" +
+      "  in .env, e poi il comando senza argomenti.\n\n" +
+      "  PERCHE' l'argomento nudo: npm riconosce `space` e `root` come proprie\n" +
+      "  opzioni di configurazione e se le mangia anche dopo il `--`, sia nella\n" +
+      "  forma `--root 123` sia in `--root=123`. Allo script non arriva nulla.\n\n" +
       "  Se non sai da dove partire:  npm run confluence:discover"
   );
 }
@@ -379,7 +393,7 @@ function describeRootFailure(reason: "not-found" | "forbidden", detail: string, 
     `  Cause tipiche: id copiato male, contenuto nel cestino, oppure id preso da\n` +
     `  un URL "tiny" (.../x/AbCd) che NON e' l'id numerico.\n` +
     `  L'id numerico si legge dall'URL .../pages/<ID>/... o da:\n` +
-    `    npm run confluence:discover -- --space <CHIAVE>`
+    `    npm run confluence:discover -- <CHIAVE>`
   );
 }
 
@@ -489,7 +503,7 @@ async function runDiscoverSpaces(showPersonal: boolean): Promise<void> {
       (hidden > 0 ? ` (piu' ${hidden} personali, nascosti — usa --all-spaces per vederli)` : "") +
       `.\n\n` +
       `  Prossimo passo — guarda dentro quello che contiene i casi di test:\n` +
-      `    npm run confluence:discover -- --space <KEY>`
+      `    npm run confluence:discover -- <KEY>`
   );
 }
 
@@ -691,7 +705,7 @@ async function runDiscoverTree(space: string): Promise<void> {
         `\n  ATTENZIONE: nessuna delle ${pages.length} pagine espone antenati nella v1.\n` +
           `  Vuol dire che questa API non vede la gerarchia (tipico se l'albero e'\n` +
           `  fatto di Folder). Conseguenza pratica: --root potrebbe non filtrare.\n` +
-          `  Ripiego che funziona comunque:  npm run confluence:fetch -- --space ${space}\n` +
+          `  Ripiego che funziona comunque:  npm run confluence:fetch -- ${space}\n` +
           `  scarica tutto lo space; poi filtriamo i risultati a valle.`
       );
     } else if (pages.length > 0) {
@@ -724,9 +738,9 @@ async function runDiscoverTree(space: string): Promise<void> {
   console.log(
     `\n  Prossimo passo — verifica che il testo si estragga bene da una pagina\n` +
       `  del ramo che contiene i casi di test:\n` +
-      `    npm run confluence:probe -- --root <ID>\n` +
+      `    npm run confluence:probe -- <ID>\n` +
       `  Se --root non restituisce niente, ripiega sullo space intero:\n` +
-      `    npm run confluence:probe -- --space ${space}`
+      `    npm run confluence:probe -- ${space}`
   );
 }
 
@@ -780,7 +794,7 @@ async function runProbe(target: Target): Promise<void> {
       `  Nessuna pagina restituita, e la strada v2 non e' percorribile: ${v2Reason}\n\n` +
         `  Se l'id e' quello di una Folder, la ricerca v1 non puo' trovarla:\n` +
         `  \`ancestor = <id>\` non e' supportato sui contenuti non-pagina.\n` +
-        `  Ripiego:  npm run confluence:probe -- --space <CHIAVE>`
+        `  Ripiego:  npm run confluence:probe -- <CHIAVE>`
     );
     return;
   }
@@ -921,7 +935,7 @@ async function chooseFetchSource(
       console.log(
         `  La v1 non ha restituito nulla e la strada v2 non e' percorribile: ${v2Reason}\n` +
           `  Se --root e' l'id di una Folder, la v1 non puo' trovarla.\n` +
-          `  Ripiego:  npm run confluence:fetch -- --space <CHIAVE>\n`
+          `  Ripiego:  npm run confluence:fetch -- <CHIAVE>\n`
       );
     }
     return v1;
@@ -970,7 +984,7 @@ async function runFetch(
     console.log(
       "  Nessuna pagina restituita da nessuna delle due strade.\n\n" +
         "  Cause tipiche: id o CQL sbagliati, contenuto nel cestino, permessi mancanti.\n" +
-        "  Ripiego che funziona comunque:  npm run confluence:fetch -- --space <CHIAVE>\n"
+        "  Ripiego che funziona comunque:  npm run confluence:fetch -- <CHIAVE>\n"
     );
     return;
   }
