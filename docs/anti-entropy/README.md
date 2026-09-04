@@ -39,6 +39,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 |---|---|---|
 | F1 | I casi di test BDD sono **solo scritti, non automatizzati** | Il catalogo step non puo' essere generato dal codice: diventa **contract-first** |
 | F2 | Vivono **su Confluence** (NON Jira), in formato **simil-Gherkin, senza datatable** | Superficie di scrittura = Confluence → il sistema dev'essere **read-first**, non gate-first |
+| F2b | **Confermato sul campo**: il Gherkin sta **dentro celle di tabella**, colonne tipo `Feature / Test Case Scenario / Test Cases`, passi Given/When/And/Then. Su due rami campionati: 58% e 50% di pagine con passi riconosciuti | L'estrattore li legge correttamente (verificato su pagine da 26k e 12k caratteri). La struttura a tabella e' la forma reale, non un'eccezione |
 | F3 | Nessuna datatable in uso | Scenari non parametrizzati → duplicazione per variante di dato |
 | F3b | **Nessun plugin** di test management (niente Xray/Zephyr) | Nessun campo strutturato, nessun issuetype: testo libero in pagine wiki → entropia più alta del previsto |
 | F3c | Confluence ha un **albero vero** (space → pagina → figlie) | La "master folder" è indirizzabile con `ancestor = <pageId>`; il percorso diventa una **dimensione di misura** (entropia per area/team) |
@@ -47,6 +48,8 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | F6 | Buona parte del "centro di verita'" esiste gia' in questo scaffold | Schema catalog v2, generatore Markdown, web-ui, estensione VS Code |
 | F7 | **Esiste gia' una convenzione parziale**: molti domini hanno pagine `<dominio>`, `<dominio> - Business`, `<dominio> - Flow Design`, `<dominio> - Testing Coverage`, ma applicata in modo disuguale | Cambia la tesi della proposta: non si porta ordine nel caos, si **completa e si rende verificabile una struttura che il team ha gia' iniziato**. Molto piu' facile da far accettare |
 | F8 | Nel primo run reale la ricerca v1 ha visto 797 pagine, l'albero v2 826 | La CQL non attraversa le Folder: **misurato, non ipotizzato**. Senza il confronto fra le due strade l'export sarebbe stato incompleto senza errori |
+| F9 | I casi di test veri stanno in **due rami scollegati**, senza antenato comune tranne la radice dello spazio: uno sotto l'area QA, uno sotto l'area mobile | **Conferma fisica del problema**: aree diverse, alberi diversi, nessun punto di verita' condiviso. E' la slide piu' diretta della presentazione |
+| F10 | Il ramo di documentazione per dominio (`- Testing Coverage` ecc.) **non contiene casi di test**: 0 pagine su 21 con Given+When+Then | La documentazione di dominio e i casi di test vivono separati. Il corpus da misurare e' il secondo, non il primo — e la distinzione non era ovvia dai nomi delle cartelle |
 
 ## Decisioni prese
 
@@ -72,14 +75,14 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | Q5 | Esiste un gatekeeper designato e accetta un SLA sulle approvazioni? | Sostenibilita' del processo |
 | Q6 | L'app sotto test ha una component library / design system condiviso? | Se si', le POM si modellano sui **componenti** invece che sulle pagine: riuso molto maggiore |
 | Q7 | La demo gira su ambiente QA reale o su app neutra? | Rischio dati + rischio scenico |
-| Q8 | Il corpus reale e' bilingue (IT + EN)? | Il clustering e' lessicale: non unisce lingue diverse. Se il mix e' significativo serve una tabella di corrispondenza in fase di curation |
+| ~~Q8~~ | ~~Il corpus e' bilingue?~~ **PROBABILMENTE NO**: entrambi i campioni sono interamente in inglese. Da confermare sull'intero corpus, ma il limite del clustering lessicale sulle lingue miste non dovrebbe toccarci | — |
 
 ## Prossimi passi
 
-1. **`npm run confluence:discover`** dal PC aziendale → quali space vedo. *(strumento pronto)*
-2. **`npm run confluence:discover -- --space <KEY>`** → l'albero, per individuare la "master folder". *(pronto)*
-3. **`npm run confluence:probe -- --root <ID>`** → verifica che il testo si estragga bene. *(pronto)*
-4. `npm run confluence:fetch -- --root <ID>` → primo export e primo conteggio grezzo. *(pronto)*
+1. ~~`confluence:discover`~~ *(fatto: spazio e albero individuati)*
+2. ~~`confluence:discover -- <KEY>`~~ *(fatto: 105 folder, id disponibili)*
+3. ~~`confluence:probe`~~ *(fatto: corpus individuato in due rami, estrazione verificata)*
+4. **`confluence:fetch` sui due rami** → primo export reale.
 5. ~~Normalizzatore + clustering~~ *(costruito — soglie da tarare sui dati veri)*
 6. Taratura delle soglie di clustering leggendo la lista dei near-miss sul corpus reale.
 7. Sessione col gatekeeper: dai cluster alle voci canoniche + alias.
