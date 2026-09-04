@@ -238,12 +238,14 @@ function buildCql(args: string[]): Target {
   const explicit = argValue(args, "--cql") ?? ENV_CQL;
   if (explicit) return { cql: explicit, label: "CQL esplicito" };
 
-  const root = argValue(args, "--root") ?? ENV_ROOT;
+  const bare = positional(args);
+
+  const root = argValue(args, "--root") ?? bare.root ?? ENV_ROOT;
   if (root) {
     return { cql: `ancestor = ${root} and type = page`, label: `sottoalbero di ${root}`, rootId: root };
   }
 
-  const space = argValue(args, "--space") ?? ENV_SPACE;
+  const space = argValue(args, "--space") ?? bare.space ?? ENV_SPACE;
   if (space) {
     return { cql: `space = "${space}" and type = page`, label: `space ${space}`, spaceKey: space };
   }
@@ -1028,9 +1030,44 @@ async function runFetch(
 // CLI
 // ---------------------------------------------------------------------------
 
+/**
+ * Legge il valore di un flag, accettando sia `--x v` sia `--x=v`.
+ *
+ * La forma con l'uguale non e' un vezzo: lanciando via `npm run ... -- --space QA`,
+ * npm intercetta `--space` come propria opzione di configurazione e allo script
+ * arriva solo `QA`. Il sintomo e' subdolo — il comando "funziona" ma ignora il
+ * bersaglio — quindi accettiamo anche `--space=QA`, che npm lascia passare intatto.
+ */
 function argValue(args: string[], flag: string): string | undefined {
+  const withEquals = args.find((a) => a.startsWith(flag + "="));
+  if (withEquals) return withEquals.slice(flag.length + 1);
+
   const i = args.indexOf(flag);
   return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
+}
+
+/**
+ * Argomento libero, senza flag: `... --discover SEDT` o `... --probe 123456`.
+ * Ultima rete di sicurezza per quando npm ha divorato il nome del flag.
+ * Tutto cifre → id di pagina/folder; altrimenti → chiave di space.
+ */
+function positional(args: string[]): { space?: string; root?: string } {
+  const KNOWN_FLAGS = ["--space", "--root", "--cql", "--limit", "--out"];
+  const bare: string[] = [];
+
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (a.startsWith("-")) {
+      // Salta anche il valore, se il flag lo prende nella forma separata.
+      if (KNOWN_FLAGS.includes(a)) i++;
+      continue;
+    }
+    bare.push(a);
+  }
+
+  const first = bare[0];
+  if (!first) return {};
+  return /^\d+$/.test(first) ? { root: first } : { space: first };
 }
 
 async function main(): Promise<void> {
@@ -1063,7 +1100,7 @@ async function main(): Promise<void> {
   apiRoot = await detectApiRoot();
 
   if (discover) {
-    const space = argValue(args, "--space") ?? ENV_SPACE;
+    const space = argValue(args, "--space") ?? positional(args).space ?? ENV_SPACE;
     if (space) await runDiscoverTree(space);
     else await runDiscoverSpaces(args.includes("--all-spaces"));
     return;
