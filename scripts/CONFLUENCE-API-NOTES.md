@@ -207,6 +207,12 @@ lasciare traccia.
 
 Confermato nello stesso run:
 - le Folder esistono come tipo di contenuto distinto (105 nel censimento v1);
+- **assunzione A6 RISOLTA, in positivo**: `ancestor = <id-folder>` in CQL v1
+  **funziona**. Un `--probe` su un id di Folder e' stato servito dalla strada
+  v1 senza bisogno del ripiego v2. CONFCLOUD-80607 risulta quindi implementato
+  davvero, non chiuso come duplicato. Resta comunque vero che la v1 vede meno
+  pagine della v2 a livello di space (797 vs 826): le due cose sono distinte e
+  il confronto fra le due strade serve ancora;
 - l'albero v2 si ricostruisce correttamente e `--root` funziona con id di Folder;
 - il censimento v1 **restituisce** righe di tipo `folder` (assunzione A5: vera).
 
