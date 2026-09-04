@@ -201,6 +201,11 @@ export function adfToText(node: unknown): string {
 const ENTITIES: Record<string, string> = {
   nbsp: " ", amp: "&", lt: "<", gt: ">", quot: '"', apos: "'",
   mdash: "—", ndash: "–", hellip: "…", laquo: "«", raquo: "»",
+  // Le frecce compaiono spesso nelle tabelle di esito ("input &rarr; risultato"):
+  // lasciarle codificate sporca il testo e, peggio, il fingerprint del clustering.
+  rarr: "→", larr: "←", harr: "↔", darr: "↓", uarr: "↑",
+  rArr: "⇒", lArr: "⇐", times: "×", divide: "÷", plusmn: "±",
+  check: "✓", cross: "✗", trade: "™", copy: "©", reg: "®",
   lsquo: "'", rsquo: "'", ldquo: "“", rdquo: "”", bull: "•", middot: "·",
   agrave: "à", aacute: "á", egrave: "è", eacute: "é", igrave: "ì", iacute: "í",
   ograve: "ò", oacute: "ó", ugrave: "ù", uacute: "ú", ccedil: "ç", ntilde: "ñ",

@@ -90,6 +90,16 @@ const CASES: Case[] = [
     excludes: ["&#39;", "&#xE8;"],
   },
   {
+    name: "frecce e simboli nelle tabelle di esito",
+    html:
+      "<table><tbody><tr><td>Given the card is invalid</td><td>errore inline &rarr; l'utente non prosegue</td></tr>" +
+      "<tr><td>When the user confirms</td><td>3DS &rArr; challenge</td></tr>" +
+      "<tr><td>Then the payment fails</td><td>&cross; rifiutato</td></tr></tbody></table>",
+    candidate: true,
+    contains: ["errore inline → l'utente non prosegue", "3DS ⇒ challenge"],
+    excludes: ["&rarr;", "&rArr;", "&cross;"],
+  },
+  {
     name: "pagina di prosa senza Gherkin — deve essere scartata",
     html: `<p>Questa pagina descrive il processo di rilascio.</p><p>Contatti: team QA.</p>`,
     candidate: false,
