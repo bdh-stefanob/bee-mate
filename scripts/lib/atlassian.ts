@@ -38,6 +38,63 @@ export function authHeader(email: string, token: string): string {
   return `Bearer ${token}`;
 }
 
+/**
+ * Controlla che una base URL letta da .env sia plausibile, e spiega il refuso.
+ *
+ * Serve perche' un valore incollato male resta sintatticamente valido:
+ * `https://tenant.atlassian.netAltroTesto` e' un URL legittimo con un host che
+ * non esiste, quindi l'unico sintomo e' un "fetch failed" che sembra un problema
+ * di rete o di permessi. Far dedurre un errore di battitura da un errore di
+ * connessione costa un giro di prove inutile.
+ *
+ * Restituisce l'URL normalizzato (senza slash finale) o lancia con una diagnosi.
+ */
+export function validateBaseUrl(raw: string, varName: string): string {
+  const value = raw.trim().replace(/\/+$/, "");
+
+  if (/\s/.test(value)) {
+    throw new Error(
+      `${varName} contiene spazi: ${JSON.stringify(value)}\n` +
+        `  Deve essere solo l'URL, senza virgolette e senza testo attorno.`
+    );
+  }
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(
+      `${varName} non e' un URL valido: ${JSON.stringify(value)}\n` +
+        `  Atteso qualcosa come https://<tenant>.atlassian.net`
+    );
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`${varName}: protocollo non supportato (${url.protocol}). Usa https.`);
+  }
+
+  // Un hostname puo' contenere solo lettere, cifre, punti e trattini. Apostrofi,
+  // accenti o underscore significano quasi sempre testo incollato per sbaglio.
+  const badChars = url.hostname.match(/[^a-zA-Z0-9.-]/g);
+  if (badChars) {
+    throw new Error(
+      `${varName} ha un host che non puo' esistere: ${JSON.stringify(url.hostname)}\n` +
+        `  Caratteri non ammessi in un hostname: ${[...new Set(badChars)].join(" ")}\n` +
+        `  Sembra che dopo l'URL sia finito del testo incollato per sbaglio.\n` +
+        `  La riga in .env deve essere esattamente:\n` +
+        `    ${varName}=https://<tenant>.atlassian.net`
+    );
+  }
+
+  if (!url.hostname.includes(".")) {
+    throw new Error(
+      `${varName}: host senza punto (${JSON.stringify(url.hostname)}), probabilmente incompleto.`
+    );
+  }
+
+  return value;
+}
+
 // ---------------------------------------------------------------------------
 // Riconoscimento Gherkin — tollerante per definizione
 // ---------------------------------------------------------------------------
