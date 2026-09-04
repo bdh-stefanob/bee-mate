@@ -71,7 +71,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   loadEnv, authHeader, scoreGherkin, looksLikeTestCase,
-  storageToText, preview, pct,
+  storageToText, preview, pct, validateBaseUrl,
 } from "./lib/atlassian";
 import {
   detectV2, resolveNode, fetchDescendants, fetchSpacePages, fetchFolder,
@@ -1029,6 +1029,10 @@ async function main(): Promise<void> {
   }
 
   v2Disabled = args.includes("--no-v2");
+  // Prima di qualunque chiamata: un URL incollato male resta sintatticamente
+  // valido e fallisce come se fosse un problema di rete. Meglio dirlo subito.
+  validateBaseUrl(BASE_URL, process.env["CONFLUENCE_URL"] ? "CONFLUENCE_URL" : "JIRA_URL");
+
   const discover = args.includes("--discover");
 
   // Il bersaglio si valida prima di toccare la rete: un "manca --space" e' un

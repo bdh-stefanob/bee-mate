@@ -41,7 +41,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   loadEnv, authHeader, scoreGherkin, looksLikeTestCase,
-  adfToText, preview, pct,
+  adfToText, preview, pct, validateBaseUrl,
 } from "./lib/atlassian";
 
 loadEnv();
@@ -405,6 +405,10 @@ async function main(): Promise<void> {
     );
     process.exit(1);
   }
+
+  // Un URL incollato male resta sintatticamente valido e fallisce come se fosse
+  // un problema di rete: meglio riconoscerlo prima di provare gli endpoint.
+  validateBaseUrl(JIRA_URL, "JIRA_URL");
 
   const jql = argValue(args, "--jql") ?? JIRA_JQL;
   if (!jql) {
