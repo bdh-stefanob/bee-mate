@@ -748,33 +748,88 @@ async function runDiscoverTree(space: string): Promise<void> {
 // Modo: probe
 // ---------------------------------------------------------------------------
 
-function printProbe(p: ExtractedPage, route: string): void {
-  const verdict = looksLikeTestCase(p)
-    ? `>>> CANDIDATO (${p.stepLines} passi, ${p.structureLines} keyword struttura${p.hasFullTriplet ? ", tripletta completa" : ""})`
-    : `    nessuna traccia di Gherkin`;
+/** Quante pagine campiona il probe prima di scegliere quale mostrare. */
+const PROBE_SAMPLE = 25;
 
-  console.log(`  Strada   : ${route}`);
-  console.log(`  Titolo   : ${p.title}`);
-  console.log(`  Id       : ${p.id}   (usalo come --root per prendere il sottoalbero)`);
-  console.log(`  Percorso : ${[p.spaceKey, ...p.pathTitles].join(" / ") || "(radice)"}`);
-  console.log(`  Versione : ${p.version}`);
-  console.log(`  Testo    : ${p.textLength} caratteri`);
+/**
+ * Mostra la pagina PIU' RAPPRESENTATIVA del campione, non la prima.
+ *
+ * Il probe serve a rispondere a una domanda sola: "l'estrazione funziona sul
+ * contenuto reale?". La prima pagina che l'API restituisce e' arbitraria, e in
+ * un albero wiki e' spesso un segnaposto con due link — da cui non si capisce
+ * niente. Campionando e ordinando per densita' di passi, si vede il caso
+ * migliore (l'estrazione funziona?) e insieme la distribuzione (quanto materiale
+ * e' davvero fatto di casi di test?), che e' l'altra domanda che conta.
+ */
+function printProbeSample(pages: ExtractedPage[], route: string): void {
+  const candidates = pages.filter(looksLikeTestCase);
+  const withTriplet = pages.filter((p) => p.hasFullTriplet);
+
+  console.log(`  Strada         : ${route}`);
+  console.log(`  Pagine campionate: ${pages.length}`);
+  console.log(`  Con Gherkin      : ${candidates.length}  (${pct(candidates.length, pages.length)})`);
+  console.log(`  Con Given+When+Then: ${withTriplet.length}  (${pct(withTriplet.length, pages.length)})\n`);
+
+  if (candidates.length > 0) {
+    // Le piu' dense per prime: e' la lista da cui capire dove vivono i test case.
+    const ranked = [...candidates].sort((a, b) => b.stepLines - a.stepLines);
+    console.log(`  Le piu' dense del campione:\n`);
+    console.log(`  ${"PASSI".padStart(6)}  PAGINA`);
+    for (const p of ranked.slice(0, 8)) {
+      const branch = p.pathTitles.slice(-1)[0] ?? "";
+      console.log(`  ${String(p.stepLines).padStart(6)}  ${p.title}${branch ? `   [${branch}]` : ""}`);
+    }
+    console.log("");
+  }
+
+  // La pagina da mostrare: la piu' densa se esiste, altrimenti la piu' lunga —
+  // cosi' anche nel caso peggiore si vede del testo vero e non una pagina vuota.
+  const best =
+    [...candidates].sort((a, b) => b.stepLines - a.stepLines)[0] ??
+    [...pages].sort((a, b) => b.textLength - a.textLength)[0];
+
+  if (!best) {
+    console.log("  Nessuna pagina con testo nel campione.");
+    return;
+  }
+
+  const verdict = looksLikeTestCase(best)
+    ? `>>> CANDIDATO (${best.stepLines} passi, ${best.structureLines} keyword struttura${best.hasFullTriplet ? ", tripletta completa" : ""})`
+    : `    nessuna traccia di Gherkin (mostro la pagina piu' lunga del campione)`;
+
+  console.log(`  ── Pagina mostrata ──`);
+  console.log(`  Titolo   : ${best.title}`);
+  console.log(`  Id       : ${best.id}   (usalo come bersaglio per il suo sottoalbero)`);
+  console.log(`  Percorso : ${[best.spaceKey, ...best.pathTitles].join(" / ") || "(radice)"}`);
+  console.log(`  Testo    : ${best.textLength} caratteri`);
   console.log(`  ${verdict}\n`);
-  console.log(preview(p.text, 30));
+  console.log(preview(best.text, 40));
 
   console.log(
-    `\n  Se il testo qui sopra assomiglia ai vostri casi di test, l'estrazione funziona.\n` +
-      `  Se e' vuoto o illeggibile, incollami l'anteprima: vuol dire che il contenuto\n` +
-      `  vive in una macro che va gestita a parte.`
+    candidates.length > 0
+      ? `\n  Se il testo qui sopra assomiglia ai vostri casi di test, l'estrazione funziona\n` +
+          `  e si puo' passare al fetch.`
+      : `\n  Nessuna delle ${pages.length} pagine campionate contiene qualcosa di\n` +
+          `  riconoscibile come Gherkin. Due possibilita':\n` +
+          `   - il ramo scelto contiene documentazione, non casi di test → scendi piu' in basso;\n` +
+          `   - i casi di test vivono in una macro che va gestita a parte → incollami\n` +
+          `     l'anteprima qui sopra.`
   );
 }
 
 async function runProbe(target: Target): Promise<void> {
-  console.log(`\nPROBE — 1 pagina\n  Bersaglio: ${target.label}\n  CQL: ${target.cql}\n`);
+  console.log(
+    `\nPROBE — campione di ${PROBE_SAMPLE} pagine\n` +
+      `  Bersaglio: ${target.label}\n  CQL: ${target.cql}\n`
+  );
 
-  const raw = await getAll(searchUrl(target.cql, "body.storage,ancestors,space,version", 1), 1, "pagine");
+  const raw = await getAll(
+    searchUrl(target.cql, "body.storage,ancestors,space,version", PROBE_SAMPLE),
+    PROBE_SAMPLE,
+    "pagine"
+  );
   if (raw.length > 0) {
-    printProbe(extractPage(raw[0]!), "v1 + CQL");
+    printProbeSample(raw.map(extractPage).filter((p) => p.textLength > 0), "v1 + CQL");
     return;
   }
 
@@ -821,7 +876,10 @@ async function runProbe(target: Target): Promise<void> {
     return;
   }
 
-  const pages = await fetchV2Pages(api, { ...subtree, pageIds: subtree.pageIds.slice(0, 1) });
+  const pages = await fetchV2Pages(api, {
+    ...subtree,
+    pageIds: subtree.pageIds.slice(0, PROBE_SAMPLE),
+  });
   if (pages.length === 0) {
     console.log("  L'albero contiene pagine ma nessun corpo e' stato restituito (permessi?).");
     return;
@@ -831,7 +889,10 @@ async function runProbe(target: Target): Promise<void> {
     `  Radice: ${subtree.root.title}  (tipo ${subtree.root.type})\n` +
       `  Pagine nel sottoalbero: ${subtree.pageIds.length}\n`
   );
-  printProbe(extractPage(pages[0]!), "v2 gerarchia (fallback automatico)");
+  printProbeSample(
+    pages.map(extractPage).filter((p) => p.textLength > 0),
+    "v2 gerarchia (fallback automatico)"
+  );
 }
 
 // ---------------------------------------------------------------------------
