@@ -14,7 +14,9 @@
 | Doc | Contenuto | Stato |
 |---|---|---|
 | [01-analisi-criticita.md](01-analisi-criticita.md) | Analisi da senior tester: criticita', rischi, cosa manca | ✅ completo |
-| [02-design.md](02-design.md) | Architettura del sistema, i 4 blocchi, i confini | 🟡 Sez. 1 in review |
+| [02-design.md](02-design.md) | Architettura del sistema, i 4 blocchi, i confini | 🟡 Sez. 1 in review, Sez. 2 costruita |
+| [05-referenze.md](05-referenze.md) | Bibliografia verificata: 20 fonti aperte, 5 dichiarate incerte | ✅ completo |
+| [../../scripts/CONFLUENCE-API-NOTES.md](../../scripts/CONFLUENCE-API-NOTES.md) | Ricerca sulle API Confluence + 7 assunzioni da confermare al primo run | ✅ completo |
 | `03-piano-demo.md` | Sceneggiatura della demo, atti, fallback | ⬜ da scrivere |
 | `04-presentazione.md` | Impianto teorico + riferimenti + slide | ⬜ da scrivere |
 
@@ -68,6 +70,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | Q5 | Esiste un gatekeeper designato e accetta un SLA sulle approvazioni? | Sostenibilita' del processo |
 | Q6 | L'app sotto test ha una component library / design system condiviso? | Se si', le POM si modellano sui **componenti** invece che sulle pagine: riuso molto maggiore |
 | Q7 | La demo gira su ambiente QA reale o su app neutra? | Rischio dati + rischio scenico |
+| Q8 | Il corpus reale e' bilingue (IT + EN)? | Il clustering e' lessicale: non unisce lingue diverse. Se il mix e' significativo serve una tabella di corrispondenza in fase di curation |
 
 ## Prossimi passi
 
@@ -75,9 +78,11 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 2. **`npm run confluence:discover -- --space <KEY>`** → l'albero, per individuare la "master folder". *(pronto)*
 3. **`npm run confluence:probe -- --root <ID>`** → verifica che il testo si estragga bene. *(pronto)*
 4. `npm run confluence:fetch -- --root <ID>` → primo export e primo conteggio grezzo. *(pronto)*
-5. Normalizzatore + clustering → metriche di baseline + candidati step. *(da costruire)*
-6. Sezioni 2-7 del design.
-7. Piano demo e presentazione.
+5. ~~Normalizzatore + clustering~~ *(costruito — soglie da tarare sui dati veri)*
+6. Taratura delle soglie di clustering leggendo la lista dei near-miss sul corpus reale.
+7. Sessione col gatekeeper: dai cluster alle voci canoniche + alias.
+8. Sezioni 3-7 del design.
+9. Piano demo e presentazione — **bloccati su Q2**.
 
 ## Strumenti gia' disponibili in questo repo
 
@@ -86,7 +91,8 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | `npm run confluence:discover` | Elenca gli space accessibili. Con `-- --space KEY` stampa l'albero: rami di primo livello con id e numero di pagine. **Da lanciare per primo.** |
 | `npm run confluence:probe -- --root <ID>` | Scarica una pagina e mostra percorso, testo estratto e punteggio Gherkin. Serve a verificare che l'estrazione funzioni su contenuto reale. |
 | `npm run confluence:fetch -- --root <ID>` | Scarica tutto il sottoalbero, estrae il testo, marca i candidati e scrive `reports/confluence-export/<ts>.json` con il riepilogo **aggregato per ramo**. |
-| `npm run check:extract` | Verifica l'estrattore su casi noti (macro di codice, tabelle, liste, entita' accentate). Da rilanciare dopo ogni modifica alla libreria. |
+| `npm run analyze:corpus -- --in <export>` | **Secondo stadio**: normalizza, clusterizza, calcola le metriche di entropia e propone i candidati step. Scrive `-full.json` (frasi reali, resta sulla macchina) e `-summary.md` (soli aggregati, condivisibile dopo rilettura). |
+| `npm run check:all` | Verifica estrattore (8 casi) e normalizzatore/clustering (43 controlli). Da rilanciare dopo ogni modifica alle librerie. |
 | `npm run jira:probe` / `jira:fetch` | Equivalenti per Jira. Non sono la sorgente dell'Osservatorio: serviranno per la tracciabilita' verso i ticket. |
 | `npm run catalog` | Rigenera `STEP_CATALOG.md` + `step-catalog.json`. |
 | `npm run validate:steps` | Valida gli step di un `.feature` contro il catalogo. |
