@@ -192,23 +192,38 @@ async function record(url: string, browserName: string): Promise<Recording> {
   const context: BrowserContext = await browser.newContext();
   let stopped = false;
 
-  // La pagina chiama questa binding per mandarci ogni evento.
+  /**
+   * La pagina chiama questa binding per mandarci ogni evento, e riceve indietro
+   * i totali correnti.
+   *
+   * Il ritorno non e' un dettaglio: l'overlay viene reiniettato a ogni
+   * navigazione, quindi un contatore tenuto nella pagina ripartirebbe da zero
+   * appena si cambia pagina. Il tester farebbe il login, vedrebbe "0 azioni" e
+   * concluderebbe che non sta registrando. Il totale vero lo conosce solo questo
+   * lato, che accumula per tutta la sessione: glielo rimandiamo indietro.
+   */
+  const counts = (): { actions: number; intents: number } => ({
+    actions: events.filter((e) => e.type === "action").length,
+    intents: events.filter((e) => e.type === "intent").length,
+  });
+
   await context.exposeBinding("__bddEmit", async (_source, payload: string) => {
     let event: RawEvent;
     try {
       event = JSON.parse(payload) as RawEvent;
     } catch {
-      return;
+      return counts();
     }
     if (event.type === "ready") {
       if (event.url) pages.add(event.url);
-      return;
+      return counts();
     }
     if (event.type === "stop") {
       stopped = true;
-      return;
+      return counts();
     }
     events.push(event);
+    return counts();
   });
 
   // addInitScript, non evaluate: cosi' l'overlay rinasce a ogni navigazione.
