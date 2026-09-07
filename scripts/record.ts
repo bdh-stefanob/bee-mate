@@ -176,20 +176,30 @@ async function record(url: string, browserName: string): Promise<Recording> {
   const pages = new Set<string>();
   const startedAt = Date.now();
 
+  // Finestra massimizzata: il tester deve vedere l'applicazione come la vede
+  // ogni giorno, non in un rettangolo in mezzo allo schermo.
+  const launchArgs = { headless: false, args: ["--start-maximized"] };
+
   let browser: Browser;
   try {
     browser = await chromium.launch({
-      headless: false,
+      ...launchArgs,
       ...(browserName === "chromium" ? {} : { channel: browserName }),
     });
   } catch {
     // Chrome non installato: si ripiega sul Chromium di Playwright invece di
     // fermarsi. Il tester non deve sapere quale browser sta usando.
     console.log(`  ${browserName} non disponibile, uso il Chromium di Playwright.\n`);
-    browser = await chromium.launch({ headless: false });
+    browser = await chromium.launch(launchArgs);
   }
 
-  const context: BrowserContext = await browser.newContext();
+  // viewport: null fa usare alla pagina la dimensione REALE della finestra.
+  // Senza, Playwright impone 1280x720 a prescindere da quanto e' grande la
+  // finestra: il contenuto resta in un riquadro con bande vuote intorno, e —
+  // molto peggio — a 1280 di larghezza parecchi layout responsive passano alla
+  // versione ridotta, con il menu a panino al posto della barra estesa. Il
+  // tester registrerebbe componenti che l'utente vero non vede mai.
+  const context: BrowserContext = await browser.newContext({ viewport: null });
   let stopped = false;
 
   /**
