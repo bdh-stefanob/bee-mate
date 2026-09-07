@@ -40,6 +40,9 @@
  *   --headed       mostra il browser (default: headless)
  *   --out PATH     file di output (default: reports/scout/<slug>.json)
  *   --wait MS      attesa dopo il caricamento, per SPA lente (default 1500)
+ *   --viewport WxH dimensione della finestra (default 1920x1080). Conta: a
+ *                  larghezze piccole i layout responsive mostrano i componenti
+ *                  mobile, e il dizionario inventarierebbe quelli.
  *
  * L'output va sotto reports/, che e' gitignorato: una scansione di un'app
  * aziendale contiene nomi di funzionalita' reali.
@@ -81,6 +84,8 @@ interface ScoutResult {
   url: string;
   scope: string;
   scoutedAt: string;
+  /** Registrata nell'output: cambiandola cambiano i componenti visibili. */
+  viewport: { width: number; height: number };
   quality: {
     interactiveFound: number;
     usable: number;
@@ -285,6 +290,7 @@ async function scan(page: Page, url: string, scope: string, waitMs: number): Pro
     url,
     scope,
     scoutedAt: new Date().toISOString(),
+    viewport: page.viewportSize() ?? { width: 0, height: 0 },
     quality: {
       interactiveFound: raw.length,
       usable,
@@ -381,9 +387,20 @@ async function main(): Promise<void> {
   const waitMs = Number(argValue(args, "--wait") ?? 1500);
   const outPath = argValue(args, "--out") ?? path.join("reports", "scout", `${slugify(url)}.json`);
 
+  // La viewport NON e' un dettaglio estetico: a 1280 di larghezza — il default
+  // di Playwright — molti layout responsive passano alla versione ridotta, con
+  // il menu a panino al posto della barra estesa. Il dizionario inventarierebbe
+  // i componenti mobile invece di quelli che l'utente vede davvero, e non
+  // corrisponderebbe piu' a quello che il recorder cattura sulla finestra vera.
+  // Esplicita e configurabile, cosi' e' anche riproducibile fra esecuzioni.
+  const [vw, vh] = (argValue(args, "--viewport") ?? "1920x1080")
+    .split("x")
+    .map((n) => Number(n.trim()));
+  const viewport = { width: vw || 1920, height: vh || 1080 };
+
   const browser = await chromium.launch({ headless: !args.includes("--headed") });
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({ viewport });
     const result = await scan(page, url, scope, waitMs);
 
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
