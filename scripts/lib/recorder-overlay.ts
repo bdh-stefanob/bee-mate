@@ -21,8 +21,14 @@
  * Senza questi due, si genererebbero scenari senza confini e senza asserzioni:
  * cose che sembrano test e non lo sono.
  *
- * L'overlay vive in uno shadow DOM con stile isolato, per non ereditare i CSS
- * dell'applicazione ne' inquinarli.
+ * TRE COSE IMPARATE PROVANDOLO SU UN UTENTE VERO
+ *   - Niente prompt() del browser: Playwright chiude i dialoghi da solo, quindi
+ *     il campo non compariva mai. L'input sta dentro la barra.
+ *   - I click sulla barra stessa finivano registrati come azioni dell'utente: il
+ *     controllo va fatto PRIMA di riconoscere l'elemento, perche' i pulsanti
+ *     dentro lo shadow DOM sono a tutti gli effetti dei <button>.
+ *   - La barra copre il contenuto: si trascina, e la posizione sopravvive alle
+ *     navigazioni.
  */
 
 /**
@@ -34,10 +40,10 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
   if (window.__bddRecorder) return;
   if (!window.__bddProbe) return;
 
-  const state = { picking: false, intents: 0, actions: 0 };
+  const state = { picking: false, actions: 0, intents: 0, assertions: 0, mode: null };
 
   /**
-   * Manda l'evento a Node e aggiorna il contatore con quello che Node risponde.
+   * Manda l'evento a Node e aggiorna i contatori con quello che Node risponde.
    *
    * I totali NON si contano qui: l'overlay viene reiniettato a ogni navigazione,
    * quindi un contatore locale ripartirebbe da zero appena si cambia pagina — e
@@ -53,6 +59,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
           if (!counts) return;
           state.actions = counts.actions;
           state.intents = counts.intents;
+          state.assertions = counts.assertions;
           refresh();
         }).catch(function () { /* pagina in navigazione */ });
       }
@@ -62,7 +69,23 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
   // ── Barra ────────────────────────────────────────────────────────────────
   const host = document.createElement('div');
   host.id = '__bdd_recorder_host';
-  host.style.cssText = 'position:fixed;z-index:2147483647;top:12px;right:12px;';
+
+  // La posizione sopravvive alle navigazioni: l'overlay viene ricreato a ogni
+  // pagina, e ritrovarselo ogni volta al punto di partenza sarebbe fastidioso
+  // quanto non poterlo spostare affatto.
+  let pos = { top: 12, left: null, right: 12 };
+  try {
+    const saved = sessionStorage.getItem('__bdd_bar_pos');
+    if (saved) pos = JSON.parse(saved);
+  } catch (e) { /* storage non disponibile: si usa la posizione di default */ }
+
+  function applyPos() {
+    host.style.cssText =
+      'position:fixed;z-index:2147483647;top:' + pos.top + 'px;' +
+      (pos.left === null ? 'right:' + pos.right + 'px;' : 'left:' + pos.left + 'px;');
+  }
+  applyPos();
+
   // 'open' e non 'closed': lo shadow DOM serve a isolare gli stili, non a
   // nascondere la barra. Chiuso non sarebbe ispezionabile ne' da un controllo
   // automatico ne' da chi deve capire perche' non si aggiorna.
@@ -73,7 +96,9 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     ':host{all:initial}',
     '.bar{font:13px system-ui,-apple-system,Segoe UI,sans-serif;background:#111827;color:#f9fafb;',
     'border-radius:10px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;',
-    'flex-direction:column;gap:8px;min-width:230px}',
+    'flex-direction:column;gap:6px;min-width:240px;opacity:.97}',
+    '.grip{cursor:move;text-align:center;color:#6b7280;font:11px system-ui,sans-serif;',
+    'user-select:none;letter-spacing:3px;line-height:1}',
     '.row{display:flex;gap:6px}',
     'button{font:600 12px system-ui,sans-serif;border:0;border-radius:6px;padding:7px 10px;',
     'cursor:pointer;flex:1;background:#374151;color:#f9fafb}',
@@ -84,31 +109,91 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     '.count{font:11px system-ui,sans-serif;color:#9ca3af;text-align:center}',
     '.hint{font:11px system-ui,sans-serif;color:#fbbf24;text-align:center;display:none}',
     '.hint.on{display:block}',
+    '.ask{display:none;flex-direction:column;gap:6px}',
+    '.ask.on{display:flex}',
+    '.ask label{font:11px system-ui,sans-serif;color:#d1d5db}',
+    'input{font:13px system-ui,sans-serif;border:1px solid #4b5563;border-radius:6px;',
+    'padding:7px 9px;background:#1f2937;color:#f9fafb;width:100%;box-sizing:border-box}',
+    'input:focus{outline:2px solid #2563eb;border-color:#2563eb}',
+    '.min{background:transparent;color:#6b7280;flex:0 0 auto;padding:2px 6px;font-size:14px}',
+    '.bar.collapsed .body{display:none}',
     '</style>',
-    '<div class="bar">',
-    '  <div class="row"><button id="intent" class="primary">Fine intento</button></div>',
-    '  <div class="row">',
-    '    <button id="assert">Verifica</button>',
-    '    <button id="note">Nota</button>',
+    '<div class="bar" id="bar">',
+    '  <div class="grip" id="grip">= = =</div>',
+    '  <div class="body" id="body">',
+    '    <div class="ask" id="ask">',
+    '      <label id="asklabel"></label>',
+    '      <input id="askinput" type="text" autocomplete="off">',
+    '      <div class="row">',
+    '        <button id="askok" class="primary">Conferma</button>',
+    '        <button id="askcancel">Annulla</button>',
+    '      </div>',
+    '    </div>',
+    '    <div class="row" id="mainrow"><button id="intent" class="primary">Fine intento</button></div>',
+    '    <div class="row" id="mainrow2">',
+    '      <button id="assert">Verifica</button>',
+    '      <button id="note">Nota</button>',
+    '    </div>',
+    '    <div class="row"><button id="stop" class="stop">Fine registrazione</button></div>',
+    '    <div class="count" id="count">0 azioni · 0 intenti · 0 verifiche</div>',
+    '    <div class="hint" id="hint">Clicca l elemento da verificare</div>',
     '  </div>',
-    '  <div class="row"><button id="stop" class="stop">Fine registrazione</button></div>',
-    '  <div class="count" id="count">0 azioni · 0 intenti</div>',
-    '  <div class="hint" id="hint">Clicca l\'elemento da verificare</div>',
     '</div>',
   ].join('');
 
   const $ = (id) => shadow.getElementById(id);
 
   function refresh() {
-    $('count').textContent = state.actions + ' azioni · ' + state.intents + ' intenti';
+    $('count').textContent =
+      state.actions + ' azioni · ' + state.intents + ' intenti · ' + state.assertions + ' verifiche';
     $('assert').classList.toggle('active', state.picking);
     $('hint').classList.toggle('on', state.picking);
   }
 
+  // ── Campo di testo interno ───────────────────────────────────────────────
+  // NON prompt(): Playwright chiude da solo i dialoghi del browser, quindi il
+  // campo non comparirebbe mai e l'intento andrebbe perso in silenzio.
+
+  function ask(mode, labelText, placeholder) {
+    state.mode = mode;
+    $('asklabel').textContent = labelText;
+    $('askinput').value = '';
+    $('askinput').placeholder = placeholder;
+    $('ask').classList.add('on');
+    $('mainrow').style.display = 'none';
+    $('mainrow2').style.display = 'none';
+    setTimeout(() => $('askinput').focus(), 0);
+  }
+
+  function closeAsk() {
+    state.mode = null;
+    $('ask').classList.remove('on');
+    $('mainrow').style.display = '';
+    $('mainrow2').style.display = '';
+  }
+
+  function confirmAsk() {
+    const text = $('askinput').value.trim();
+    const mode = state.mode;
+    closeAsk();
+    if (!text) return;
+    if (mode === 'intent') emit({ type: 'intent', label: text, at: Date.now() });
+    if (mode === 'note') emit({ type: 'note', text: text, at: Date.now() });
+  }
+
+  $('askok').addEventListener('click', confirmAsk);
+  $('askcancel').addEventListener('click', closeAsk);
+  $('askinput').addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); confirmAsk(); }
+    if (ev.key === 'Escape') { ev.preventDefault(); closeAsk(); }
+  });
+
   $('intent').addEventListener('click', () => {
-    const label = prompt('Cosa ha appena fatto l\'utente?\n(una frase, es. "effettua il login")');
-    if (label === null) return;
-    emit({ type: 'intent', label: label.trim(), at: Date.now() });
+    ask('intent', 'Cosa ha appena fatto l utente?', 'es. effettua il login');
+  });
+
+  $('note').addEventListener('click', () => {
+    ask('note', 'Nota per chi leggera lo scenario:', 'es. attendere la mail');
   });
 
   $('assert').addEventListener('click', () => {
@@ -116,15 +201,39 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     refresh();
   });
 
-  $('note').addEventListener('click', () => {
-    const text = prompt('Nota per chi leggera\' lo scenario:');
-    if (text === null || !text.trim()) return;
-    emit({ type: 'note', text: text.trim(), at: Date.now() });
-  });
-
   $('stop').addEventListener('click', () => {
     emit({ type: 'stop', at: Date.now() });
   });
+
+  // ── Trascinamento ────────────────────────────────────────────────────────
+  (() => {
+    let dragging = false;
+    let startX = 0, startY = 0, startTop = 0, startLeft = 0;
+
+    $('grip').addEventListener('mousedown', (ev) => {
+      dragging = true;
+      startX = ev.clientX;
+      startY = ev.clientY;
+      const box = host.getBoundingClientRect();
+      startTop = box.top;
+      startLeft = box.left;
+      ev.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (ev) => {
+      if (!dragging) return;
+      pos.top = Math.max(0, startTop + (ev.clientY - startY));
+      pos.left = Math.max(0, startLeft + (ev.clientX - startX));
+      pos.right = null;
+      applyPos();
+    }, true);
+
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      try { sessionStorage.setItem('__bdd_bar_pos', JSON.stringify(pos)); } catch (e) { /* niente */ }
+    }, true);
+  })();
 
   function mount() {
     if (!document.body) return;
@@ -148,7 +257,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     if (!root) return;
     try {
       new MutationObserver(mount).observe(root, { childList: true, subtree: false });
-    } catch (e) { /* documento non ancora pronto: si riprova al prossimo evento */ }
+    } catch (e) { /* documento non ancora pronto */ }
   }
 
   if (document.readyState === 'loading') {
@@ -160,10 +269,27 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
 
   // ── Cattura ──────────────────────────────────────────────────────────────
 
+  /**
+   * Vero se l'evento nasce dentro la nostra barra.
+   *
+   * Va controllato PRIMA di riconoscere l'elemento: i pulsanti della barra sono
+   * <button> a tutti gli effetti, quindi cercando il controllo lungo il percorso
+   * dell'evento si trova il nostro prima di arrivare all'host — e i click sulla
+   * barra finiscono registrati come azioni dell'utente, gonfiando il conteggio
+   * con gesti che l'utente non ha mai fatto sull'applicazione.
+   */
+  function fromBar(ev) {
+    const path = ev.composedPath ? ev.composedPath() : [];
+    for (const node of path) {
+      if (node === host || node === shadow) return true;
+    }
+    return ev.target === host;
+  }
+
   function target(ev) {
+    if (fromBar(ev)) return null;
     const path = ev.composedPath ? ev.composedPath() : [ev.target];
     for (const node of path) {
-      if (node === host) return null;              // click sulla nostra barra
       if (node && node.nodeType === 1) {
         const el = window.__bddProbe.closestInteractive(node);
         if (el) return el;
@@ -173,6 +299,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
   }
 
   document.addEventListener('click', (ev) => {
+    if (fromBar(ev)) return;
     const el = target(ev);
     if (!el) return;
     const d = window.__bddProbe.describe(el);
@@ -183,18 +310,18 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       ev.preventDefault();
       ev.stopPropagation();
       state.picking = false;
-      emit({ type: 'assert', role: d.role, name: d.name, text: (el.textContent || '').trim().slice(0, 120), at: Date.now() });
       refresh();
+      emit({
+        type: 'assert', role: d.role, name: d.name,
+        text: (el.textContent || '').trim().slice(0, 120), at: Date.now(),
+      });
       return;
     }
 
     emit({ type: 'action', action: 'click', role: d.role, name: d.name, at: Date.now() });
   }, true);
 
-  /**
-   * Valori gia' registrati per ciascun campo, per non emettere due volte lo
-   * stesso. WeakMap: se l'elemento sparisce dal DOM, sparisce anche da qui.
-   */
+  /** Valori gia' registrati per ciascun campo, per non emettere due volte lo stesso. */
   const lastValue = new WeakMap();
 
   /**
@@ -208,6 +335,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
    * evita il doppione quando scattano entrambi.
    */
   function captureField(ev) {
+    if (fromBar(ev)) return;
     const el = target(ev);
     if (!el || state.picking) return;
     const d = window.__bddProbe.describe(el);

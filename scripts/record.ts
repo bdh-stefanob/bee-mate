@@ -212,9 +212,12 @@ async function record(url: string, browserName: string): Promise<Recording> {
    * concluderebbe che non sta registrando. Il totale vero lo conosce solo questo
    * lato, che accumula per tutta la sessione: glielo rimandiamo indietro.
    */
-  const counts = (): { actions: number; intents: number } => ({
+  const counts = (): { actions: number; intents: number; assertions: number } => ({
     actions: events.filter((e) => e.type === "action").length,
     intents: events.filter((e) => e.type === "intent").length,
+    // Mostrato anche questo nella barra: senza, il tester preme "Verifica",
+    // vede il click bloccato e non ha modo di sapere se e' stato registrato.
+    assertions: events.filter((e) => e.type === "assert").length,
   });
 
   await context.exposeBinding("__bddEmit", async (_source, payload: string) => {
