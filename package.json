@@ -22,7 +22,8 @@
     "rules:check": "ts-node scripts/sync-rules.ts --check",
     "check:extract": "ts-node scripts/lib/atlassian.check.ts",
     "check:normalize": "ts-node scripts/lib/normalize.check.ts",
-    "check:all": "npm run check:extract && npm run check:normalize",
+    "check:stability": "ts-node scripts/lib/stability.check.ts",
+    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability",
     "analyze:corpus": "ts-node scripts/analyze-corpus.ts",
     "prepare": "husky"
   },

@@ -52,13 +52,11 @@ import { chromium, type Page } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
+import { judge, type Stability } from "./lib/stability";
 
 // ---------------------------------------------------------------------------
 // Tipi
 // ---------------------------------------------------------------------------
-
-/** Quanto ci si puo' fidare del locator per questo componente. */
-type Stability = "stable" | "ambiguous" | "unstable" | "unnamed";
 
 /** A che serve il componente: guida il nome del metodo POM. */
 type Kind = "action" | "input" | "navigation" | "choice";
@@ -155,42 +153,6 @@ function collectWithProbe(scopeSelector: string): RawElement[] {
 // ---------------------------------------------------------------------------
 // Giudizio sulla stabilita'
 // ---------------------------------------------------------------------------
-
-/**
- * Nomi che cambiano da esecuzione a esecuzione: un locator costruito su questi
- * si rompe al primo dato diverso. Vanno segnalati, non scartati — il componente
- * esiste, e' il modo di raggiungerlo che va scelto a mano.
- */
-const UNSTABLE_PATTERNS: Array<{ re: RegExp; why: string }> = [
-  { re: /\d{2}[\/.-]\w{2,3}[\/.-]\d{2,4}/, why: "contiene una data" },
-  { re: /\b\d{4,}\b/, why: "contiene un identificativo numerico" },
-  { re: /[\w.+-]+@[\w-]+\.\w+/, why: "contiene un indirizzo email" },
-  { re: /^\s*[£$€]\s?[\d.,]+/, why: "contiene un importo" },
-  { re: /^\d+\s*(items?|risultati|results?)/i, why: "contiene un conteggio" },
-];
-
-function judge(name: string, occurrences: number): { stability: Stability; notes: string[] } {
-  const notes: string[] = [];
-
-  if (!name) {
-    return {
-      stability: "unnamed",
-      notes: ["nessun nome accessibile: non raggiungibile per ruolo+nome, e probabilmente invisibile a uno screen reader"],
-    };
-  }
-  if (name.length > 80) {
-    notes.push("nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo");
-  }
-  for (const { re, why } of UNSTABLE_PATTERNS) {
-    if (re.test(name)) notes.push(why);
-  }
-  if (occurrences > 1) {
-    notes.push(`${occurrences} elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro`);
-    return { stability: "ambiguous", notes };
-  }
-  if (notes.length > 0) return { stability: "unstable", notes };
-  return { stability: "stable", notes: [] };
-}
 
 // ---------------------------------------------------------------------------
 // Da elemento a componente

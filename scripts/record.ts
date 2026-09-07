@@ -43,6 +43,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./lib/recorder-overlay";
+import { judge } from "./lib/stability";
 
 // ---------------------------------------------------------------------------
 // Tipi della traccia
@@ -324,6 +325,37 @@ function report(rec: Recording, outPath: string): void {
   for (const [i, intent] of rec.intents.entries()) {
     console.log(`  ${i + 1}. ${intent.label}`);
     console.log(`     ${intent.steps.length} azioni, ${intent.assertions.length} verifiche`);
+  }
+
+  // Ancoraggi fragili: il caso visto sul campo e' il badge del carrello, il cui
+  // nome accessibile e' "1" — cioe' il conteggio. Come verifica ha senso, come
+  // locator si rompe al secondo prodotto. Va detto adesso, mentre il tester ha
+  // in mente cosa stava verificando: scoprirlo quando il test fallisce fra un
+  // mese costa molto di piu'.
+  const fragile: Array<{ where: string; what: string; why: string[] }> = [];
+  for (const intent of rec.intents) {
+    for (const a of intent.assertions) {
+      const { stability, notes } = judge(a.name, 1);
+      if (stability !== "stable") fragile.push({ where: intent.label, what: `${a.role} "${a.name}"`, why: notes });
+    }
+    for (const st of intent.steps) {
+      const { stability, notes } = judge(st.name, 1);
+      if (stability !== "stable") fragile.push({ where: intent.label, what: `${st.role} "${st.name}"`, why: notes });
+    }
+  }
+
+  if (fragile.length > 0) {
+    console.log(`\n  ANCORAGGI FRAGILI (${fragile.length}) — da rivedere prima di generare:\n`);
+    for (const f of fragile) {
+      console.log(`  ${f.what}   [${f.where}]`);
+      for (const w of f.why) console.log(`      ${w}`);
+    }
+    console.log(
+      `\n  Un nome che contiene un dato cambia a ogni esecuzione: come locator non\n` +
+        `  regge. Se stavi verificando IL VALORE (es. "il carrello mostra 1"), va\n` +
+        `  espresso come verifica di contenuto su un elemento stabile, non come\n` +
+        `  elemento da ritrovare per nome.`
+    );
   }
 
   if (s.assertions === 0) {
