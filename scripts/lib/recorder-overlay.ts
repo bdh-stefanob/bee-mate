@@ -36,15 +36,37 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
 
   const state = { picking: false, intents: 0, actions: 0 };
 
+  /**
+   * Manda l'evento a Node e aggiorna il contatore con quello che Node risponde.
+   *
+   * I totali NON si contano qui: l'overlay viene reiniettato a ogni navigazione,
+   * quindi un contatore locale ripartirebbe da zero appena si cambia pagina — e
+   * il tester vedrebbe "0 azioni" dopo aver appena fatto il login, concludendo
+   * che non sta registrando niente. Il solo posto che conosce il totale vero e'
+   * il lato Node, che accumula per tutta la sessione.
+   */
   function emit(event) {
-    try { window.__bddEmit(JSON.stringify(event)); } catch (e) { /* pagina in chiusura */ }
+    try {
+      const answer = window.__bddEmit(JSON.stringify(event));
+      if (answer && typeof answer.then === 'function') {
+        answer.then(function (counts) {
+          if (!counts) return;
+          state.actions = counts.actions;
+          state.intents = counts.intents;
+          refresh();
+        }).catch(function () { /* pagina in navigazione */ });
+      }
+    } catch (e) { /* pagina in chiusura */ }
   }
 
   // ── Barra ────────────────────────────────────────────────────────────────
   const host = document.createElement('div');
   host.id = '__bdd_recorder_host';
   host.style.cssText = 'position:fixed;z-index:2147483647;top:12px;right:12px;';
-  const shadow = host.attachShadow({ mode: 'closed' });
+  // 'open' e non 'closed': lo shadow DOM serve a isolare gli stili, non a
+  // nascondere la barra. Chiuso non sarebbe ispezionabile ne' da un controllo
+  // automatico ne' da chi deve capire perche' non si aggiorna.
+  const shadow = host.attachShadow({ mode: 'open' });
 
   shadow.innerHTML = [
     '<style>',
@@ -86,9 +108,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
   $('intent').addEventListener('click', () => {
     const label = prompt('Cosa ha appena fatto l\'utente?\n(una frase, es. "effettua il login")');
     if (label === null) return;
-    state.intents++;
     emit({ type: 'intent', label: label.trim(), at: Date.now() });
-    refresh();
   });
 
   $('assert').addEventListener('click', () => {
@@ -110,13 +130,33 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     if (!document.body) return;
     if (!document.getElementById('__bdd_recorder_host')) document.body.appendChild(host);
   }
+
+  /**
+   * Le SPA riscrivono il body: senza un osservatore la barra sparisce a meta'
+   * sessione. Va pero' agganciato SOLO quando esiste un nodo da osservare.
+   *
+   * Questo script viene iniettato prima che il documento esista, quindi
+   * document.documentElement puo' essere null: chiamare observe(null) lancia,
+   * e un'eccezione qui interromperebbe tutto il resto dello script — compresa la
+   * registrazione dei listener. Il sintomo sarebbe il peggiore possibile: la
+   * barra compare (il montaggio e' agganciato a DOMContentLoaded, che sopravvive)
+   * ma non registra niente, e il tester non ha modo di accorgersene se non
+   * guardando il contatore fermo a zero.
+   */
+  function watchForRemount() {
+    const root = document.documentElement || document.body;
+    if (!root) return;
+    try {
+      new MutationObserver(mount).observe(root, { childList: true, subtree: false });
+    } catch (e) { /* documento non ancora pronto: si riprova al prossimo evento */ }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
+    document.addEventListener('DOMContentLoaded', () => { mount(); watchForRemount(); });
   } else {
     mount();
+    watchForRemount();
   }
-  // Le SPA riscrivono il body: senza questo la barra sparisce a meta' sessione.
-  new MutationObserver(mount).observe(document.documentElement, { childList: true, subtree: false });
 
   // ── Cattura ──────────────────────────────────────────────────────────────
 
@@ -148,13 +188,26 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       return;
     }
 
-    state.actions++;
     emit({ type: 'action', action: 'click', role: d.role, name: d.name, at: Date.now() });
-    refresh();
   }, true);
 
-  // change invece di input: interessa il valore finale, non ogni tasto.
-  document.addEventListener('change', (ev) => {
+  /**
+   * Valori gia' registrati per ciascun campo, per non emettere due volte lo
+   * stesso. WeakMap: se l'elemento sparisce dal DOM, sparisce anche da qui.
+   */
+  const lastValue = new WeakMap();
+
+  /**
+   * Registra il valore finale di un campo.
+   *
+   * Agganciata sia a 'change' sia a 'focusout' di proposito. 'change' da solo
+   * non basta: scatta quando il campo perde il fuoco, quindi l'ULTIMO campo
+   * compilato prima di premere un pulsante della nostra barra non lo emetterebbe
+   * mai — e il tester si ritroverebbe uno scenario a cui manca il dato piu'
+   * importante, senza nessun segnale. 'focusout' copre quel caso; la WeakMap
+   * evita il doppione quando scattano entrambi.
+   */
+  function captureField(ev) {
     const el = target(ev);
     if (!el || state.picking) return;
     const d = window.__bddProbe.describe(el);
@@ -170,10 +223,15 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       value = el.value || '';
     }
 
+    // Un campo vuoto che resta vuoto non e' un'azione: il tester ci e' solo
+    // passato sopra.
+    if (value === '' && !lastValue.has(el)) return;
+    if (lastValue.get(el) === value) return;
+    lastValue.set(el, value);
+
     // Mai registrare il contenuto di un campo password: finirebbe in un file
     // che poi qualcuno condivide.
     const secret = el.type === 'password';
-    state.actions++;
     emit({
       type: 'action',
       action: el.type === 'checkbox' || el.type === 'radio' ? 'set' : 'fill',
@@ -182,10 +240,13 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       secret: secret,
       at: Date.now(),
     });
-    refresh();
-  }, true);
+  }
+
+  document.addEventListener('change', captureField, true);
+  document.addEventListener('focusout', captureField, true);
 
   window.__bddRecorder = true;
   emit({ type: 'ready', url: location.href, at: Date.now() });
+  refresh();
 })();
 `;
