@@ -129,15 +129,28 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
 
   for (const e of events) {
     switch (e.type) {
-      case "action":
-        current.steps.push({
+      case "action": {
+        const step: Step = {
           action: e.action ?? "click",
           role: e.role ?? "",
           name: e.name ?? "",
           ...(e.value !== undefined ? { value: e.value } : {}),
           ...(e.secret ? { secret: true } : {}),
-        });
+        };
+        // Un campo compilato piu' volte nello stesso intento vale per il suo
+        // valore FINALE: chi corregge un refuso non vuole ritrovarsi il refuso
+        // nello scenario, e chi lo legge non capirebbe perche' lo stesso campo
+        // viene riempito due volte. Si sostituisce invece di accodare.
+        const previous =
+          step.action === "fill"
+            ? current.steps.findIndex(
+                (s) => s.action === "fill" && s.role === step.role && s.name === step.name
+              )
+            : -1;
+        if (previous >= 0) current.steps[previous] = step;
+        else current.steps.push(step);
         break;
+      }
       case "assert":
         current.assertions.push({
           role: e.role ?? "",
@@ -228,7 +241,8 @@ async function record(url: string, browserName: string): Promise<Recording> {
       return counts();
     }
     if (event.type === "ready") {
-      if (event.url) pages.add(event.url);
+      // about:blank e' la pagina su cui nasce ogni scheda: non l'ha visitata nessuno.
+      if (event.url && event.url !== "about:blank") pages.add(event.url);
       return counts();
     }
     if (event.type === "stop") {
@@ -246,7 +260,7 @@ async function record(url: string, browserName: string): Promise<Recording> {
 
   const page = await context.newPage();
   page.on("framenavigated", (frame) => {
-    if (frame === page.mainFrame()) pages.add(frame.url());
+    if (frame === page.mainFrame() && frame.url() !== "about:blank") pages.add(frame.url());
   });
 
   await page.goto(url, { waitUntil: "domcontentloaded" });
