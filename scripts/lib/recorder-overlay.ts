@@ -298,12 +298,24 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     return null;
   }
 
+  /**
+   * Ruoli per cui un click E' un'azione da registrare.
+   *
+   * Cliccare dentro un campo per scriverci non e' un gesto significativo: e'
+   * implicito nel fatto che poi lo si compila, e registrarlo riempie la traccia
+   * di passi che nessuno vorrebbe mai vedere in uno scenario. Per checkbox,
+   * radio e select il click e' gia' coperto da 'change', che porta anche il
+   * valore: registrarlo due volte produrrebbe passi doppi.
+   */
+  const CLICKABLE = ['button', 'link', 'tab', 'menuitem'];
+
   document.addEventListener('click', (ev) => {
     if (fromBar(ev)) return;
     const el = target(ev);
     if (!el) return;
     const d = window.__bddProbe.describe(el);
     if (!d) return;
+    if (!state.picking && CLICKABLE.indexOf(d.role) < 0) return;
 
     if (state.picking) {
       // In modalita' verifica il click NON e' un'azione: sceglie cosa asserire.
@@ -334,12 +346,20 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
    * importante, senza nessun segnale. 'focusout' copre quel caso; la WeakMap
    * evita il doppione quando scattano entrambi.
    */
+  /**
+   * Ruoli che portano un valore. Un <input type="submit"> ha un attributo value
+   * valorizzato ("Login"), quindi senza questo filtro premere un pulsante generava
+   * un assurdo 'fill' su un pulsante — un passo che non esiste nella realta'.
+   */
+  const VALUED = ['textbox', 'searchbox', 'spinbutton', 'combobox', 'checkbox', 'radio', 'switch'];
+
   function captureField(ev) {
     if (fromBar(ev)) return;
     const el = target(ev);
     if (!el || state.picking) return;
     const d = window.__bddProbe.describe(el);
     if (!d) return;
+    if (VALUED.indexOf(d.role) < 0) return;
 
     const tag = el.tagName;
     let value = '';
