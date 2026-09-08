@@ -17,9 +17,29 @@ interface StepDoc {
   pre?: string;
   post?: string;
 }
+/**
+ * Componente di frontend che uno step tocca davvero.
+ *
+ * Non e' solo un dato per il matching interno: reso nel catalogo dice a chi
+ * legge **su cosa agisce** quello step, che e' spesso l'unico modo per capire
+ * in dieci secondi se e' quello che serve. E rende il catalogo verificabile:
+ * se lo scout non trova piu' quei componenti sulla pagina, lo step e' scaduto
+ * perche' la UI e' cambiata sotto.
+ */
+interface StepComponent {
+  role: string;
+  name: string;
+  /** Pagina su cui vive, se lo step ne tocca piu' di una. */
+  page?: string;
+}
+
 interface CatalogStep {
   expression: string;
   parameters: string[];
+  /** Componenti toccati. Assente = step non ancora ancorato alla UI. */
+  components?: StepComponent[];
+  /** Ultima volta che lo scout ha confermato che esistono ancora. */
+  componentsVerifiedAt?: string;
   app?: string;
   area?: string;
   domain: string;
@@ -52,6 +72,16 @@ const depr = steps.filter((s) => s.status === 'deprecated').length;
 md += `Total: **${catalog.totalSteps}** steps `;
 md += `(${impl} implemented, ${want} wanted, ${depr} deprecated)\n\n`;
 
+// Quanto del catalogo e' agganciato a componenti reali. E' una misura di
+// completezza: uno step senza componenti o e' puramente di business, o non e'
+// mai passato dal recorder — e finche' non lo fa, nessun confronto meccanico
+// puo' proporlo a partire da una registrazione.
+const anchored = steps.filter((s) => (s.components?.length ?? 0) > 0).length;
+if (anchored > 0) {
+  const pct = Math.round((anchored / steps.length) * 100);
+  md += `Ancorati a componenti di frontend: **${anchored}/${steps.length}** (${pct}%)\n\n`;
+}
+
 md += `## How to use\n\n`;
 md += `Before writing a new step in a \`.feature\`, **search here** (Ctrl+F) for\n`;
 md += `an existing step that matches the intent. If it exists, reuse the exact\n`;
@@ -78,6 +108,19 @@ for (const domain of [...byDomain.keys()].sort()) {
       md += `**Parameters:**\n`;
       for (const [name, desc] of Object.entries(s.doc!.params)) {
         md += `- \`${name}\` — ${desc}\n`;
+      }
+      md += `\n`;
+    }
+    // I componenti sono documentazione, non solo dati per il matching: dicono a
+    // chi legge su cosa agisce lo step, che e' spesso il modo piu' rapido per
+    // capire se e' quello giusto.
+    if (s.components?.length) {
+      const verified = s.componentsVerifiedAt
+        ? ` _(confermati sulla pagina il ${s.componentsVerifiedAt.slice(0, 10)})_`
+        : ` _(mai confermati sulla pagina)_`;
+      md += `**Componenti di frontend:**${verified}\n`;
+      for (const c of s.components) {
+        md += `- \`${c.role}\` "${c.name}"${c.page ? ` — pagina \`${c.page}\`` : ""}\n`;
       }
       md += `\n`;
     }
