@@ -16,17 +16,55 @@
  * URL si possono anche tenere in `.env` e referenziare come `${CLINIC_URL}`,
  * cosi' esistono in un posto solo.
  *
- * PERCHE' NESSUNA CREDENZIALE
- * Il login e' sempre manuale, una volta sola, e produce una sessione salvata.
- * La scelta viene dall'esperienza sul campo: nel POC aziendale la strada
- * automatica coi selettori funziona sul caso facile e **degrada a manuale
- * appena compare la MFA** — e per una delle applicazioni e' gia' interamente
- * manuale. Automatizzare il login copre il caso semplice e si arrende su
- * quelli veri, in cambio di selettori da mantenere e credenziali da custodire.
+ * IL LOGIN, E DOVE STA CIASCUNA COSA
+ * Un bersaglio puo' dichiarare i passi del proprio login. I **selettori** stanno
+ * qui, in un file gitignorato, perche' sono flussi aziendali; le **credenziali**
+ * non stanno nemmeno qui: si scrivono come `${VAR}` e si risolvono da `.env`.
+ * Nel repository resta solo il meccanismo che li esegue.
+ *
+ * L'automatismo non e' mai obbligatorio e **non blocca mai**: fa quello che
+ * puo' e lascia finire a mano nello stesso browser. Non e' una cautela
+ * generica — nel POC aziendale il login automatico funziona sul caso semplice e
+ * si ferma davanti alla MFA, e per una delle applicazioni e' gia' interamente
+ * manuale perche' i selettori "non sono ancora mappati". Un automatismo che
+ * fallisse in modo netto sarebbe peggio di nessun automatismo.
  */
 
 import * as fs from "fs";
 import * as path from "path";
+
+/**
+ * Come raggiungere un elemento durante il login.
+ *
+ * `role` + `name` per primo, come in tutto il resto del sistema. `selector`
+ * esiste perche' i moduli di login sono spesso il punto peggiore di
+ * un'applicazione: campi senza nome accessibile, etichette che non sono label,
+ * pulsanti che sono div. Costringere a usare il ruolo dove non c'e' significa
+ * non poterlo automatizzare affatto.
+ */
+export interface LoginLocator {
+  role?: string;
+  name?: string;
+  selector?: string;
+}
+
+export interface LoginStep {
+  /** Campo da compilare. Il valore ammette ${VAR} da .env. */
+  fill?: LoginLocator;
+  value?: string;
+  /** Elemento da premere. */
+  click?: LoginLocator;
+}
+
+export interface LoginRecipe {
+  /**
+   * Cose da chiudere prima, se ci sono: banner di consenso, avvisi.
+   * Sono tollerate: se non compaiono non succede niente.
+   */
+  dismiss?: LoginLocator[];
+  /** I passi veri, in ordine. */
+  steps: LoginStep[];
+}
 
 export interface Target {
   /** Nome corto, quello che si digita. */
@@ -43,13 +81,24 @@ export interface Target {
   session: string;
   /** Nota per chi registra: cosa fare dopo il login. */
   hint?: string;
+  /**
+   * Login automatico, opzionale.
+   *
+   * I selettori vivono qui — in un file gitignorato — e non nel repository:
+   * sono flussi aziendali. Le credenziali NON vivono qui: si scrivono come
+   * ${VAR} e si risolvono da .env, che e' anch'esso gitignorato.
+   *
+   * Non e' mai obbligatorio e non blocca mai: cio' che non riesce si finisce a
+   * mano nello stesso browser.
+   */
+  login?: LoginRecipe;
 }
 
 const CONFIG = "bdd-targets.json";
 const EXAMPLE = "bdd-targets.example.json";
 
 /** Risolve i riferimenti `${VAR}` con le variabili d'ambiente. */
-function expand(value: string): string {
+export function expand(value: string): string {
   return value.replace(/\$\{([A-Z0-9_]+)\}/g, (_, name: string) => process.env[name] ?? "");
 }
 
@@ -64,6 +113,7 @@ export function loadTargets(file = CONFIG): Target[] {
     // Default sensato: una sessione per bersaglio, sotto reports/.
     session: t.session ?? path.join("reports", "sessions", `${name}.json`),
     ...(t.hint ? { hint: t.hint } : {}),
+    ...(t.login ? { login: t.login as LoginRecipe } : {}),
   }));
 }
 
