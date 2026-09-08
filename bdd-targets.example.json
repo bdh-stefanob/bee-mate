@@ -1,26 +1,43 @@
 {
   "_commento": [
     "Copia questo file in bdd-targets.json e mettici i tuoi ambienti.",
-    "bdd-targets.json e' gitignorato: gli indirizzi aziendali non finiscono nel repository.",
-    "Gli URL si possono tenere in .env e referenziare come ${NOME_VARIABILE},",
-    "cosi' esistono in un posto solo.",
-    "Nessuna credenziale qui dentro: il login e' manuale, una volta, con `npm run session`."
+    "bdd-targets.json e' GITIGNORATO: indirizzi e selettori aziendali non finiscono nel repository.",
+    "Le CREDENZIALI non vanno nemmeno qui: si scrivono come ${VARIABILE} e si risolvono da .env.",
+    "Il blocco 'login' e' facoltativo: senza, si accede a mano una volta e la sessione si salva."
   ],
 
   "demo": {
     "url": "https://www.saucedemo.com",
     "readyWhen": "/inventory.html",
-    "hint": "utente standard_user, password secret_sauce (sito pubblico di pratica)"
+    "login": {
+      "steps": [
+        { "fill": { "role": "textbox", "name": "Username" }, "value": "standard_user" },
+        { "fill": { "role": "textbox", "name": "Password" }, "value": "secret_sauce" },
+        { "click": { "role": "button", "name": "Login" } }
+      ]
+    },
+    "hint": "sito pubblico di pratica: le credenziali qui sono innocue e stanno in chiaro apposta"
   },
 
   "app-a": {
     "url": "${APP_A_URL}",
     "readyWhen": "/account",
-    "hint": "dopo il login chiudi il banner dei consensi prima di registrare"
+    "login": {
+      "dismiss": [
+        { "role": "button", "name": "Accept All" }
+      ],
+      "steps": [
+        { "fill": { "role": "textbox", "name": "Email" }, "value": "${APP_A_USER}" },
+        { "fill": { "selector": "[formcontrolname=password]" }, "value": "${APP_A_PASS}" },
+        { "click": { "selector": "#login-button" } }
+      ]
+    },
+    "hint": "se compare la MFA, inserisci il codice a mano: la sessione si salva appena entri"
   },
 
   "app-b": {
     "url": "${APP_B_URL}",
-    "readyWhen": "/home"
+    "readyWhen": "/home",
+    "hint": "nessun login automatico: si accede a mano, una volta"
   }
 }

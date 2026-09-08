@@ -6,16 +6,19 @@
  * Dopo, `record` e `scout` partono gia' autenticati: il login si fa una volta
  * e per giorni non si rifa'.
  *
- * PERCHE' IL LOGIN E' MANUALE
- * Non e' una rinuncia, e' la lezione del POC aziendale: la' il login
- * automatico coi selettori funziona sul caso semplice e **degrada a manuale
- * appena compare la MFA**; per una delle applicazioni e' gia' interamente
- * manuale perche' i selettori "non sono ancora mappati".
+ * IL LOGIN: AUTOMATICO DOVE SI PUO', MANUALE DOVE SERVE
+ * Se il bersaglio dichiara i suoi passi di login, vengono eseguiti. Se non li
+ * dichiara, o se qualcosa non riesce, si finisce a mano nello stesso browser.
  *
- * Automatizzarlo significa mantenere selettori che cambiano, custodire
- * credenziali, e comunque fermarsi davanti a MFA, banner di consenso e stati
- * raggiungibili solo a mano. Farlo a mano costa venti secondi una volta ogni
- * tanto e copre tutto.
+ * I due modi convivono di proposito, ed e' la lezione del POC aziendale: la'
+ * il login automatico funziona sul caso semplice e **si ferma davanti alla
+ * MFA**, e per una delle applicazioni e' gia' interamente manuale perche' i
+ * selettori "non sono ancora mappati". Un automatismo che fallisse in modo
+ * netto sarebbe peggio di nessun automatismo: qui ogni passo che non riesce e'
+ * un avviso, non un errore.
+ *
+ * I selettori vivono in bdd-targets.json, che e' gitignorato. Le credenziali
+ * nemmeno li': si scrivono come ${VAR} e si risolvono da .env.
  *
  * Uso:
  *   npx ts-node scripts/session.ts clinic
@@ -30,7 +33,10 @@ import { chromium } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 import { loadEnv } from "./lib/atlassian";
-import { resolveTarget, sessionAgeHours, type Target } from "./lib/targets";
+import {
+  resolveTarget, sessionAgeHours, expand,
+  type Target, type LoginLocator, type LoginRecipe,
+} from "./lib/targets";
 
 loadEnv();
 
@@ -39,6 +45,77 @@ function argValue(args: string[], flag: string): string | undefined {
   if (eq) return eq.slice(flag.length + 1);
   const i = args.indexOf(flag);
   return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
+}
+
+/** Costruisce il locator dai dati del bersaglio. Ruolo+nome per primo. */
+function locate(
+  page: import("@playwright/test").Page,
+  l: LoginLocator
+): import("@playwright/test").Locator {
+  if (l.role && l.name) {
+    return page.getByRole(l.role as Parameters<typeof page.getByRole>[0], { name: l.name });
+  }
+  if (l.selector) return page.locator(l.selector);
+  if (l.name) return page.getByText(l.name);
+  throw new Error(`Locator incompleto: ${JSON.stringify(l)}`);
+}
+
+function describe(l: LoginLocator): string {
+  if (l.role && l.name) return `${l.role} "${l.name}"`;
+  return l.selector ?? l.name ?? "?";
+}
+
+/**
+ * Esegue i passi di login dichiarati, **senza mai fermare tutto**.
+ *
+ * Ogni fallimento e' un avviso, non un errore: il browser resta aperto e chi
+ * sta usando lo strumento finisce a mano. E' la differenza fra un automatismo
+ * utile e uno che, il giorno in cui un selettore cambia, blocca il lavoro
+ * invece di risparmiare tempo.
+ *
+ * Restituisce quanti passi hanno funzionato, perche' "ne sono passati 2 su 3"
+ * dice a colpo d'occhio dov'e' il problema.
+ */
+async function runLogin(
+  page: import("@playwright/test").Page,
+  recipe: LoginRecipe
+): Promise<{ done: number; total: number }> {
+  // I banner di consenso sono tolleranti per definizione: spesso non ci sono,
+  // e la loro assenza non e' un problema da segnalare.
+  for (const d of recipe.dismiss ?? []) {
+    await locate(page, d)
+      .click({ timeout: 4000 })
+      .then(() => console.log(`    chiuso: ${describe(d)}`))
+      .catch(() => { /* non c'era */ });
+  }
+
+  let done = 0;
+  for (const [i, step] of recipe.steps.entries()) {
+    const n = `${i + 1}/${recipe.steps.length}`;
+    try {
+      if (step.fill) {
+        const value = expand(step.value ?? "");
+        if (!value) {
+          console.log(`    ${n} SALTATO ${describe(step.fill)}: il valore e' vuoto.`);
+          console.log(`       Se usa \${VARIABILE}, controlla che sia in .env`);
+          continue;
+        }
+        await locate(page, step.fill).fill(value, { timeout: 10000 });
+        // Mai stampare il valore: sono credenziali.
+        console.log(`    ${n} compilato ${describe(step.fill)}`);
+        done++;
+      } else if (step.click) {
+        await locate(page, step.click).click({ timeout: 10000 });
+        console.log(`    ${n} premuto ${describe(step.click)}`);
+        done++;
+      }
+    } catch (err) {
+      console.log(`    ${n} NON RIUSCITO su ${describe(step.fill ?? step.click ?? {})}`);
+      console.log(`       ${(err as Error).message.split("\n")[0]}`);
+      console.log(`       Prosegui a mano nel browser: da qui in poi fa lo stesso.`);
+    }
+  }
+  return { done, total: recipe.steps.length };
 }
 
 /** Aspetta l'URL di conferma, oppure che la persona prema Invio. */
@@ -104,6 +181,16 @@ async function main(): Promise<void> {
   const context = await browser.newContext({ viewport: null });
   const page = await context.newPage();
   await page.goto(target.url, { waitUntil: "domcontentloaded" });
+
+  if (target.login) {
+    console.log(`  Login automatico:\n`);
+    const { done, total } = await runLogin(page, target.login);
+    console.log(
+      done === total
+        ? `\n  Tutti i ${total} passi eseguiti.\n`
+        : `\n  ${done} passi su ${total}. Completa a mano quello che manca.\n`
+    );
+  }
 
   await waitUntilReady(page, target);
 
