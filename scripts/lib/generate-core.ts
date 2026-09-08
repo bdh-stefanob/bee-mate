@@ -345,17 +345,39 @@ export interface RankedCandidate {
   why: string[];
 }
 
-const WEIGHT = {
-  /**
-   * L'ancoraggio al componente pesa piu' di tutto, e non e' una preferenza
-   * estetica: e' l'unico segnale **indipendente dalla lingua**. Le etichette
-   * che scrive un tester italiano e un catalogo scritto in inglese non si
-   * incontrano mai per somiglianza lessicale. Il componente si'.
-   */
-  anchor: 0.55,
-  page: 0.15,
-  lexical: 0.3,
-} as const;
+/**
+ * DUE CLASSI DI PROVE, NON UNA MEDIA PONDERATA.
+ *
+ * L'ancoraggio al componente e' **identita'**: role+name vengono dallo stesso
+ * probe nel recorder e nello scout, quindi o e' lo stesso elemento o non lo e'.
+ * La somiglianza fra due frasi e' sempre una **stima**, anche nella stessa
+ * lingua — sul corpus vero il clustering lessicale assorbe solo il 14% della
+ * varieta' (F12).
+ *
+ * Sommarle con dei pesi sembrava naturale e non funziona, e vale la pena dire
+ * perche' invece di riprovarci fra sei mesi. Con la somma, uno step di catalogo
+ * che non dichiara componenti prendeva 0 sull'ancoraggio: veniva punito per un
+ * campo non compilato, non per essere sbagliato. Normalizzando sui soli segnali
+ * disponibili si ottiene l'errore opposto e peggiore — un candidato con **un
+ * solo** segnale debole arriva al punteggio pieno, e batte uno agganciato al
+ * componente giusto ma con parole diverse. Il controllo l'ha preso subito.
+ *
+ * Quindi: prima chi tocca gli stessi componenti, poi chi somiglia come frase.
+ * Due classi ordinate, ognuna col suo criterio. E' anche piu' facile da
+ * spiegare, che con una rosa di candidati non e' un dettaglio: chi la legge
+ * deve poter capire perche' una voce c'e'.
+ */
+const ANCHORED_BASE = 0.5;
+
+/**
+ * Quanto devono somigliare due frasi perche' la somiglianza valga da sola.
+ *
+ * Sotto, la rosa si riempie di voci che condividono una parola, e una rosa
+ * rumorosa invita a scegliere il meno peggio invece di dichiarare che manca —
+ * che e' il modo in cui una quasi-duplicazione entra nel catalogo con la
+ * benedizione dello strumento.
+ */
+const LEXICAL_MIN = 0.45;
 
 function componentKey(role: string, name: string): string {
   return `${role} ${fold(name)}`;
@@ -380,38 +402,55 @@ export function rankCandidates(
     resolved.map((r) => (r.fromPage ?? "").split("/").filter(Boolean).pop() ?? "").filter(Boolean)
   );
 
-  const scored: RankedCandidate[] = [];
+  const anchored: RankedCandidate[] = [];
+  const similar: RankedCandidate[] = [];
 
   for (const step of catalog) {
-    const why: string[] = [];
-
-    // 1. Ancoraggio: quanti dei componenti toccati sono dichiarati da questo step.
     const anchors = step.components ?? [];
     const hit = anchors.filter((c) => touched.has(componentKey(c.role, c.name)));
-    const anchor = anchors.length > 0 ? hit.length / anchors.length : 0;
-    if (hit.length > 0) {
-      why.push(`tocca ${hit.length}/${anchors.length} dei componenti che ha usato il tester`);
-    }
+    const samePage = Boolean(step.page && pageNames.has(step.page));
 
-    // 2. Pagina.
-    const page = step.page && pageNames.has(step.page) ? 1 : 0;
-    if (page) why.push(`stessa pagina (${step.page})`);
-
-    // 3. Somiglianza lessicale, sull'espressione e su ogni alias noto.
+    // La somiglianza si calcola sull'espressione e su ogni alias: un alias e'
+    // una formulazione che qualcuno ha davvero scritto, quindi e' esattamente
+    // il testo che un'altra persona ha piu' probabilita' di riscrivere.
     const forms = [step.expression, ...(step.aliases ?? [])];
     const lexical = Math.max(
       0,
       ...forms.map((f) => (labelTokens.length ? tokenSetRatio(labelTokens, phraseTokens(f)) : 0))
     );
-    if (lexical > 0.4) why.push(`formulazione simile (${Math.round(lexical * 100)}%)`);
 
-    const score = WEIGHT.anchor * anchor + WEIGHT.page * page + WEIGHT.lexical * lexical;
-    // Sotto questa soglia non e' un candidato: e' rumore che allunga la rosa e
-    // invita a scegliere il meno peggio invece di dichiarare che manca.
-    if (score >= 0.2) scored.push({ step, score, why });
+    if (hit.length > 0) {
+      const fraction = hit.length / anchors.length;
+      const why = [`tocca ${hit.length}/${anchors.length} dei componenti che ha usato il tester`];
+      if (samePage) why.push(`stessa pagina (${step.page})`);
+      if (lexical > LEXICAL_MIN) why.push(`e la formulazione somiglia (${Math.round(lexical * 100)}%)`);
+      // Lessico e pagina restano solo come spareggio fra agganciati pari merito.
+      anchored.push({
+        step,
+        score: ANCHORED_BASE + 0.5 * fraction + 0.01 * lexical + (samePage ? 0.01 : 0),
+        why,
+      });
+      continue;
+    }
+
+    // Componenti dichiarati ma DISGIUNTI da quelli toccati: non e' un candidato
+    // debole, e' un'altra intenzione. E' la stessa lettura di D22 — insiemi
+    // disgiunti separano, non avvicinano — e qui vale come esclusione, non come
+    // punteggio basso.
+    if (anchors.length > 0) continue;
+
+    if (lexical >= LEXICAL_MIN) {
+      const why = [`formulazione simile (${Math.round(lexical * 100)}%)`];
+      if (samePage) why.push(`stessa pagina (${step.page})`);
+      similar.push({ step, score: lexical * (ANCHORED_BASE - 0.05), why });
+    }
   }
 
-  return scored.sort((a, b) => b.score - a.score).slice(0, limit);
+  // Prima gli agganciati, poi i somiglianti. Le due classi non si mescolano
+  // nell'ordinamento: una prova di identita' non va messa in gara con una stima.
+  anchored.sort((a, b) => b.score - a.score);
+  similar.sort((a, b) => b.score - a.score);
+  return [...anchored, ...similar].slice(0, limit);
 }
 
 // ---------------------------------------------------------------------------
