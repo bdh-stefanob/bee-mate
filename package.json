@@ -23,7 +23,8 @@
     "check:extract": "ts-node scripts/lib/atlassian.check.ts",
     "check:normalize": "ts-node scripts/lib/normalize.check.ts",
     "check:stability": "ts-node scripts/lib/stability.check.ts",
-    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability",
+    "check:gold": "ts-node scripts/lib/gold.check.ts",
+    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold",
     "analyze:corpus": "ts-node scripts/analyze-corpus.ts",
     "prepare": "husky"
   },
