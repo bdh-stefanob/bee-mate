@@ -7,6 +7,7 @@
 import { setWorldConstructor, World, IWorldOptions } from "@cucumber/cucumber";
 import { Browser, BrowserContext, Page, chromium } from "@playwright/test";
 import { loadEnv } from "../../scripts/lib/atlassian";
+import { resolveTarget, hasSession, sessionAgeHours } from "../../scripts/lib/targets";
 
 // Una sola implementazione del lettore di .env in tutto il progetto: due copie
 // divergono, e la seconda si scopre il giorno in cui una variabile viene letta
@@ -14,16 +15,64 @@ import { loadEnv } from "../../scripts/lib/atlassian";
 loadEnv();
 
 /**
- * L'indirizzo di partenza dell'ambiente sotto test.
+ * Dove girano i test, e da dove viene la sessione.
  *
- * **Non sta nel codice, e non e' una svista.** Le Page Object generate hanno un
- * `path` relativo (`/inventory.html`): l'origine cambia fra locale, staging e
- * collaudo, e scriverla nei file la fisserebbe a un ambiente solo — oltre a far
- * finire un indirizzo aziendale in un repository pubblico.
+ * **L'indirizzo non sta nel codice, e non e' una svista.** Le Page Object
+ * generate hanno un `path` relativo (`/inventory.html`): l'origine cambia fra
+ * locale, collaudo e produzione, e scriverla nei file la fisserebbe a un
+ * ambiente solo — oltre a far finire un indirizzo aziendale in un repository
+ * pubblico.
  *
- * Si mette in `.env`, che e' gitignorato:  BASE_URL=https://...
+ * Due modi, e il primo e' quello buono:
+ *
+ *   BDD_TARGET=clinic npm test    il bersaglio nominato in bdd-targets.json:
+ *                                 porta con se' indirizzo E sessione salvata,
+ *                                 quindi i test partono gia' autenticati
+ *   BASE_URL=https://... npm test un indirizzo e basta, per una prova al volo
+ *
+ * `npm run targets` dice quali bersagli esistono e cosa manca a ciascuno.
  */
-const BASE_URL = process.env["BASE_URL"] ?? "";
+interface Ambiente {
+  baseURL: string;
+  storageState?: string;
+  descrizione: string;
+}
+
+function ambiente(): Ambiente {
+  const nome = process.env["BDD_TARGET"];
+
+  if (nome) {
+    // Se il bersaglio non esiste, `resolveTarget` lancia con l'elenco di quelli
+    // che ci sono. Meglio un fallimento immediato e parlante che trenta scenari
+    // che falliscono uno per uno contro l'ambiente sbagliato.
+    const target = resolveTarget(nome);
+    const eta = sessionAgeHours(target);
+    return {
+      baseURL: target.url,
+      ...(hasSession(target) ? { storageState: target.session } : {}),
+      descrizione: hasSession(target)
+        ? `bersaglio "${nome}", sessione di ${eta} ore fa`
+        : `bersaglio "${nome}", nessuna sessione salvata (npm run session -- ${nome})`,
+    };
+  }
+
+  return {
+    baseURL: process.env["BASE_URL"] ?? "",
+    ...(process.env["STORAGE_STATE"] ? { storageState: process.env["STORAGE_STATE"] } : {}),
+    descrizione: process.env["BASE_URL"] ? "BASE_URL" : "nessun indirizzo configurato",
+  };
+}
+
+// Si risolve una volta sola, all'avvio: cosi' un bersaglio inesistente si
+// scopre subito e non a meta' della prima esecuzione.
+const AMBIENTE = ambiente();
+if (!AMBIENTE.baseURL) {
+  console.warn(
+    `\n  Nessun indirizzo: i percorsi relativi delle Page Object non porteranno da nessuna parte.\n` +
+      `  Rimedio:  BDD_TARGET=<nome> npm test     (vedi: npm run targets)\n` +
+      `        o:  BASE_URL=https://... in .env\n`
+  );
+}
 
 export class CustomWorld extends World {
   browser!: Browser;
@@ -39,10 +88,11 @@ export class CustomWorld extends World {
     // e la causa non si capisce dal messaggio.
     this.browser = await chromium.launch({ headless: process.env["HEADED"] !== "1" });
     this.context = await this.browser.newContext({
-      ...(BASE_URL ? { baseURL: BASE_URL } : {}),
+      ...(AMBIENTE.baseURL ? { baseURL: AMBIENTE.baseURL } : {}),
       // La sessione salvata da `npm run session` evita di rifare il login a ogni
-      // scenario. Assente, si parte da un browser pulito.
-      ...(process.env["STORAGE_STATE"] ? { storageState: process.env["STORAGE_STATE"] } : {}),
+      // scenario. Assente, si parte da un browser pulito — e su un'applicazione
+      // dietro autenticazione questo significa fallire al primo passo.
+      ...(AMBIENTE.storageState ? { storageState: AMBIENTE.storageState } : {}),
     });
     this.page = await this.context.newPage();
   }
