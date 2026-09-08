@@ -33,6 +33,7 @@
  *   --pages DIR      default src/pages/generated
  *   --catalog FILE   default step-catalog.json
  *   --scout DIR      default reports/scout
+ *   --root DIR       progetto da misurare (default: questo). Serve all'arena
  *   --confronta      stampa la tabella di tutte le esecuzioni salvate
  */
 
@@ -43,6 +44,18 @@ import { scoreGherkin, scoreSteps, scorePages, toTable, type RunResult } from ".
 import type { CatalogStep, Component, ScoutResult } from "./lib/generation-contract";
 
 const OUT = path.join("reports", "benchmark");
+
+/**
+ * La radice del progetto da misurare.
+ *
+ * Esiste per il confronto: l'esecuzione **senza regole** non puo' avvenire in
+ * questo repository, perche' Amazon Q carica da solo `.amazonq/rules/`. Misurare
+ * li' significherebbe misurare "con regole" due volte e chiamarla una volta
+ * "senza" — il modo piu' silenzioso di truccare un confronto. L'arena e' una
+ * copia pulita, e questa opzione e' cio' che permette di misurarla.
+ */
+let ROOT = ".";
+const at = (...p: string[]): string => path.join(ROOT, ...p);
 
 function argValue(args: string[], flag: string): string | undefined {
   const eq = args.find((a) => a.startsWith(flag + "="));
@@ -77,8 +90,8 @@ function compiles(): { ok: boolean; errors: string } {
   try {
     execFileSync(
       process.execPath,
-      [path.join("node_modules", "typescript", "bin", "tsc"), "--noEmit", "-p", "tsconfig.json"],
-      { stdio: "pipe" }
+      [path.resolve("node_modules", "typescript", "bin", "tsc"), "--noEmit", "-p", "tsconfig.json"],
+      { stdio: "pipe", cwd: ROOT }
     );
     return { ok: true, errors: "" };
   } catch (err) {
@@ -104,15 +117,15 @@ function compiles(): { ok: boolean; errors: string } {
  * e quindi di contare solo i propri.
  */
 function undefinedSteps(featureDir: string): number {
-  const tmp = path.join(OUT, ".dry-run.ndjson");
+  const tmp = path.resolve(OUT, ".dry-run.ndjson");
   try {
     execFileSync(
       process.execPath,
       [
-        path.join("node_modules", "@cucumber", "cucumber", "bin", "cucumber.js"),
+        path.resolve("node_modules", "@cucumber", "cucumber", "bin", "cucumber.js"),
         "--dry-run", featureDir, "--format", `message:${tmp}`,
       ],
-      { stdio: "pipe" }
+      { stdio: "pipe", cwd: ROOT }
     );
   } catch {
     // Un dry-run che esce male ha comunque prodotto i messaggi fino a dove e'
@@ -124,14 +137,12 @@ function undefinedSteps(featureDir: string): number {
   const pickleUri = new Map<string, string>();
   const caseToPickle = new Map<string, string>();
   const stepToCase = new Map<string, string>();
-  const startedToCase = new Map<string, string>();
   let undef = 0;
 
   interface Msg {
     pickle?: { id: string; uri: string };
     testCase?: { id: string; pickleId: string; testSteps: Array<{ id: string }> };
-    testCaseStarted?: { id: string; testCaseId: string };
-    testStepFinished?: { testCaseStartedId: string; testStepId: string; testStepResult: { status: string } };
+    testStepFinished?: { testStepId: string; testStepResult: { status: string } };
   }
 
   for (const line of fs.readFileSync(tmp, "utf-8").split("\n")) {
@@ -144,7 +155,6 @@ function undefinedSteps(featureDir: string): number {
       caseToPickle.set(m.testCase.id, m.testCase.pickleId);
       for (const s of m.testCase.testSteps) stepToCase.set(s.id, m.testCase.id);
     }
-    if (m.testCaseStarted) startedToCase.set(m.testCaseStarted.id, m.testCaseStarted.testCaseId);
     if (m.testStepFinished && m.testStepFinished.testStepResult.status === "UNDEFINED") {
       const caseId = stepToCase.get(m.testStepFinished.testStepId);
       const uri = caseId ? pickleUri.get(caseToPickle.get(caseId) ?? "") : undefined;
@@ -158,6 +168,7 @@ function undefinedSteps(featureDir: string): number {
 
 function main(): void {
   const args = process.argv.slice(2);
+  ROOT = argValue(args, "--root") ?? ".";
   fs.mkdirSync(OUT, { recursive: true });
 
   if (args.includes("--confronta")) {
@@ -211,7 +222,7 @@ function main(): void {
   const pageTexts = readAll(pagesDir, ".ts");
 
   if (!featureText.trim()) {
-    console.error(`ERRORE: nessuno scenario in ${featureDir}. Non c'e' niente da misurare.`);
+    console.error(`ERRORE: nessuno scenario in ${at(featureDir)}. Non c'e' niente da misurare.`);
     process.exit(1);
   }
 

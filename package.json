@@ -35,7 +35,8 @@
     "generate": "ts-node scripts/generate.ts",
     "check:generate": "ts-node scripts/lib/generate-core.check.ts",
     "benchmark": "ts-node scripts/benchmark.ts",
-    "check:benchmark": "ts-node scripts/lib/benchmark.check.ts"
+    "check:benchmark": "ts-node scripts/lib/benchmark.check.ts",
+    "arena": "ts-node scripts/benchmark-arena.ts"
   },
   "keywords": [
     "playwright",
