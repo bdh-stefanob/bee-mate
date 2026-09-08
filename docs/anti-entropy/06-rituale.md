@@ -237,6 +237,48 @@ blocco decine di scenari e' l'operazione piu' pericolosa dell'intero sistema:
 se va storta una volta, brucia la fiducia nell'iniziativa in modo definitivo.
 L'anteprima con il diff e' obbligatoria e non aggirabile.
 
+### Dove vive tutto: la struttura in Confluence
+
+Il rituale e i suoi materiali stanno dove sta il team, accanto al catalogo:
+
+```
+Consolidamento del linguaggio          pagina madre, stabile, con i collegamenti
+├── Catalogo degli step                generato, sovrascritto a ogni ciclo
+├── Coda — 2026-09                     UNA PAGINA PER SEDUTA
+├── Coda — 2026-10
+└── Registro dei consolidamenti        proiezione dello storico
+```
+
+**Una pagina per seduta, non una riscritta ogni mese.** L'approvazione
+asincrona avviene nei **commenti** di Confluence, e i commenti restano
+attaccati alla pagina. Sovrascrivendo sempre la stessa, la discussione di
+settembre resterebbe appesa a un contenuto diventato nel frattempo quello di
+ottobre: illeggibile fra tre mesi, quando qualcuno chiedera' perche' era stata
+scelta una certa formulazione. Con una pagina per ciclo, ogni seduta conserva
+la sua discussione accanto alla sua coda.
+
+**Cosa e' generato e cosa no.** Catalogo, code e registro sono **proiezioni**:
+si rigenerano e si sovrascrivono, quindi non vanno modificati a mano — le
+modifiche andrebbero perse al ciclo successivo. Il posto dove intervenire sono
+i commenti, che il rigeneratore non tocca.
+
+**La serie storica delle metriche NON vive qui.** La fonte e' un file
+versionato nel repository: sono soli aggregati, nessuna frase reale, quindi e'
+sicuro committarli — e sopravvivono al cambio di macchina, alla cancellazione
+accidentale di una pagina e a chi la "sistema" a mano. La tabella su Confluence
+ne e' solo la resa. Se la storia vivesse solo li', basterebbe una modifica
+ben intenzionata per perdere il dato su cui poggia l'intera dimostrazione.
+
+### Regola di sicurezza sulla scrittura
+
+Lo strumento scrive **solo su pagine che ha creato lui**, riconoscibili da un
+marcatore nel corpo. Puntato a una pagina che non lo porta, **si rifiuta di
+scrivere e si ferma**.
+
+Serve contro l'errore banale e irreversibile: un id copiato male e il tool
+sovrascrive i casi di test di qualcun altro. Una volta sola basta a chiudere
+l'iniziativa, a prescindere da quanto funzioni tutto il resto.
+
 ### Il registro delle sedute
 
 Ogni consolidamento lascia una riga in una tabella, sulla stessa pagina del
