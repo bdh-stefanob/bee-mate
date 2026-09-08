@@ -138,6 +138,78 @@ piu' nessuno in casa.
 
 ---
 
+## Chi risolve cosa
+
+Le colonne della matrice **non le giudica la stessa persona**:
+
+| Criterio | Chi e' qualificato |
+|---|---|
+| Occorrenze, aree distinte | **nessuno** — e' un dato, non un'opinione |
+| Quale frase dice meglio la cosa | **QA / esperto di dominio** |
+| Parametrizzazione, aggancio ai componenti, implementabilita' | **SDET** |
+
+Con due o tre posti e un quarto d'ora, la conseguenza e' che lo strumento deve
+dichiarare **di che giudizio ha bisogno ciascun gruppo**:
+
+```
+Gruppo 7 · 3 varianti · 22 occorrenze · giudizio: LINGUAGGIO
+Gruppo 9 · 2 varianti ·  8 occorrenze · giudizio: TECNICO
+```
+
+Cosi' l'SDET viene coinvolto quando serve, invece di tenere due persone sedute
+per decisioni che ne riguardano una sola. Un gruppo e' TECNICO quando la scelta
+dipende da parametrizzazione o da quali componenti tocca; e' LINGUAGGIO quando
+le varianti sono equivalenti sul piano tecnico e cambia solo come si dice.
+
+## Le quattro decisioni possibili
+
+Offrire solo "scegli quale delle tre" non basta, ed e' un difetto pericoloso:
+**il raggruppamento puo' sbagliare**. Se due intenzioni diverse finiscono nello
+stesso gruppo e l'unica opzione e' sceglierne una, si sancisce una Gold
+sbagliata e due intenti distinti collassano in uno — peggio dell'entropia di
+partenza, perche' adesso e' pure approvata.
+
+| Decisione | Quando |
+|---|---|
+| **eleggi** | una delle varianti diventa Gold |
+| **scrivi** | nessuna va bene: se ne detta una nuova |
+| **spezza** | queste varianti non sono la stessa intenzione |
+| **rinvia** | con un motivo scritto |
+
+**Spezzare e' una decisione di prima classe, non un caso d'errore.** Se ne
+accorge tipicamente l'SDET guardando i componenti: due varianti che toccano
+componenti diversi quasi certamente non sono lo stesso intento.
+
+## Come si registra la decisione
+
+Nessuna interfaccia da costruire: **la coda stessa e' il modulo**. Per ogni
+gruppo una riga precompilata che si modifica sul posto.
+
+```markdown
+## Gruppo 7 — 3 varianti · 22 occorrenze · 2 aree · giudizio: LINGUAGGIO
+
+  [1] the user logs in as {string}                        0.71  ← proposta
+      occorrenze 8 · aree 3 · conformita' 1.00 · componenti si'
+  [2] the user enters credentials and clicks Login        0.53
+      occorrenze 14 · aree 1 · conformita' 0.60 (meccanica UI: clicks)
+
+  ESEMPI REALI
+  [1] dentro lo scenario "Checkout con carta salvata"
+  [2] dentro lo scenario "Primo accesso"
+
+DECISIONE: gold=1
+# gold=N | nuova: <frase> | spezza: 1,2 | rinvia: <motivo>
+```
+
+Si modifica il file, uno script lo rilegge. Costo zero, niente da imparare, e
+resta un documento leggibile fra sei mesi — quando qualcuno chiedera' perche'
+si era scelto cosi'.
+
+**Gli esempi reali contano piu' del punteggio.** Una frase letta da sola sembra
+una cosa; letta dentro il suo scenario ne sembra un'altra. Senza il contesto si
+sceglie sulla forma invece che sul significato, ed e' il modo piu' facile per
+eleggere la Gold sbagliata con tutti d'accordo.
+
 ## Cosa esce (definizione di fatto)
 
 La seduta e' conclusa quando:
