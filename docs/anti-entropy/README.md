@@ -18,6 +18,7 @@
 | [../../.amazonq/rules/](../../.amazonq/rules/) | Le regole che l'assistente AI carica da solo: come si scrive uno scenario, i layer, il catalogo | ✅ completo |
 | [05-referenze.md](05-referenze.md) | Bibliografia verificata: 20 fonti aperte, 5 dichiarate incerte | ✅ completo |
 | [../../scripts/CONFLUENCE-API-NOTES.md](../../scripts/CONFLUENCE-API-NOTES.md) | Ricerca sulle API Confluence + 7 assunzioni da confermare al primo run | ✅ completo |
+| [06-rituale.md](06-rituale.md) | **Il processo**: consolidamento mensile del linguaggio, 15 minuti, con i comandi per eseguirlo | ✅ completo |
 | `03-piano-demo.md` | Sceneggiatura della demo, atti, fallback | ⬜ da scrivere |
 | `04-presentazione.md` | Impianto teorico + riferimenti + slide | ⬜ da scrivere |
 
@@ -76,6 +77,9 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | D13 | Le voci di catalogo dichiarano i **componenti di frontend** che toccano, e sono **visibili nel catalogo** | Non e' solo dato per il matching: e' documentazione (dice su cosa agisce lo step), rende il catalogo **verificabile** (se lo scout non trova piu' quei componenti, lo step e' scaduto) e da' una **metrica di completezza** |
 | D14 | Il catalogo non e' un artefatto da curare una volta: e' un **ciclo periodico** che rilegge, riclusterizza, confronta e propone | Un catalogo curato una volta invecchia dal giorno dopo. Cosi' la misura prima/dopo diventa continua, e il controllo diventa trasversale fra aree |
 | D15 | Il ciclo **propone**, l'umano approva. L'attribuzione delle varianti nuove e' **per area, mai per persona** | Un report che nomina le persone trasforma uno strumento di supporto in uno di valutazione, e da quel momento non lo vuole piu' nessuno in casa |
+| D17 | Le varianti **non si bloccano** in scrittura: si registrano col loro collegamento (dove sono scritte, quale componente toccano) e si fanno convergere a valle, eleggendo la forma **Gold** con una matrice a punteggio in chiaro | Scioglie il collo di bottiglia del gatekeeper, il bootstrap del catalogo vuoto e la resistenza all'adozione. Prezzo: **l'entropia cresce prima di calare**, quindi la misura diventa il meccanismo di controllo, non un accessorio |
+| D18 | La convergenza ha un **rituale mensile di 15 minuti, 2-3 persone**, agganciato a una riunione esistente, con la decisione quasi tutta spostata in asincrono nei 3 giorni precedenti (vedi `06-rituale.md`) | Senza un momento in calendario "a tempo debito" diventa mai. Quindici minuti si fanno anche nelle settimane storte; un'ora si salta e muore in tre mesi |
+| D19 | Il refactor di massa **non avra' mai una modalita' automatica**: anteprima e diff obbligatori | E' l'operazione piu' pericolosa del sistema: se va storta una volta, brucia la fiducia nell'iniziativa in modo definitivo |
 | D16 | Le verifiche registrate hanno un **tipo**: mostra un valore (default) · e' comparso · e' sparito · si e' navigato | In produzione non si verifica "questo e' cliccabile", si verifica che **la UI si sia aggiornata**. Il default era sbagliato ed e' stato corretto |
 
 ## Domande aperte
