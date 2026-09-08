@@ -22,3 +22,7 @@ vscode-extension/*.vsix
 docs-site/.astro/
 docs-site/node_modules/
 docs-site/dist/
+
+# Bersagli e sessioni: indirizzi aziendali e credenziali di fatto.
+# L'esempio (bdd-targets.example.json) e' versionato, il file vero no.
+bdd-targets.json

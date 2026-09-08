@@ -56,6 +56,11 @@ import * as fs from "fs";
 import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
 import { judge, type Stability } from "./lib/stability";
+import { resolveTarget, hasSession, sessionAgeHours } from "./lib/targets";
+import { loadEnv } from "./lib/atlassian";
+
+// I bersagli possono referenziare gli URL come ${VAR}: vanno risolti prima.
+loadEnv();
 
 // ---------------------------------------------------------------------------
 // Tipi
@@ -378,17 +383,20 @@ function slugify(url: string): string {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const url = args.find((a) => /^https?:\/\//i.test(a));
+  const which = args.find((a) => !a.startsWith("-"));
 
-  if (!url) {
+  if (!which) {
     console.error(
-      "ERRORE: manca l'URL da scansionare.\n\n" +
-        "  npm run scout -- https://example.com\n" +
-        "  npx ts-node scripts/scout.ts https://example.com --scope main --headed\n"
+      "ERRORE: manca il bersaglio.\n\n" +
+        "  npm run scout -- clinic               (bersaglio configurato)\n" +
+        "  npm run scout -- https://example.com  (url diretto)\n\n" +
+        "  I bersagli si configurano in bdd-targets.json — vedi bdd-targets.example.json.\n"
     );
     process.exit(1);
   }
 
+  const target = resolveTarget(which);
+  const url = target.url;
   const scope = argValue(args, "--scope") ?? "body";
   const waitMs = Number(argValue(args, "--wait") ?? 1500);
   const outPath = argValue(args, "--out") ?? path.join("reports", "scout", `${slugify(url)}.json`);
@@ -408,7 +416,25 @@ async function main(): Promise<void> {
   // --pause implica --headed: non si puo' fare login in un browser che non si vede.
   const browser = await chromium.launch({ headless: !args.includes("--headed") && !pause });
   try {
-    const page = await browser.newPage({ viewport });
+    // Sessione salvata, se c'e': senza, le pagine interessanti — che sono quasi
+    // tutte dietro autenticazione — restituirebbero il modulo di login, e il
+    // dizionario inventarierebbe quello.
+    const sessionAge = sessionAgeHours(target);
+    const context = await browser.newContext({
+      viewport,
+      ...(hasSession(target) ? { storageState: target.session } : {}),
+    });
+    if (sessionAge !== null) {
+      console.log(`\n  Sessione salvata ${sessionAge} ore fa.`);
+    } else if (target.name !== "(url diretto)") {
+      console.log(
+        `\n  Nessuna sessione salvata per "${target.name}".\n` +
+          `  Se la pagina e' dietro login:  npm run session -- ${target.name}\n` +
+          `  Oppure usa --pause e accedi a mano.`
+      );
+    }
+
+    const page = await context.newPage();
     const result = await scan(page, url, scope, waitMs, pause);
 
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
