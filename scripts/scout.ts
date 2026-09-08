@@ -40,6 +40,9 @@
  *   --headed       mostra il browser (default: headless)
  *   --out PATH     file di output (default: reports/scout/<slug>.json)
  *   --wait MS      attesa dopo il caricamento, per SPA lente (default 1500)
+ *   --pause        apre il browser e ASPETTA che tu prema Invio: serve per le
+ *                  pagine dietro autenticazione. Fai login, naviga dove vuoi,
+ *                  poi torna al terminale. Implica --headed
  *   --viewport WxH dimensione della finestra (default 1920x1080). Conta: a
  *                  larghezze piccole i layout responsive mostrano i componenti
  *                  mobile, e il dizionario inventarierebbe quelli.
@@ -212,8 +215,49 @@ function toComponent(raw: RawElement, occurrences: number): Component {
 // Scansione
 // ---------------------------------------------------------------------------
 
-async function scan(page: Page, url: string, scope: string, waitMs: number): Promise<ScoutResult> {
+/**
+ * Aspetta che chi sta usando lo strumento prema Invio nel terminale.
+ *
+ * Serve alle pagine dietro autenticazione, che sono quasi tutte quelle
+ * interessanti. L'alternativa sarebbe gestire credenziali e sessioni salvate:
+ * piu' codice, piu' cose da configurare e un file di sessione da custodire. Qui
+ * invece si apre il browser, la persona fa login e naviga dove vuole con le sue
+ * mani, e poi si scansiona quello che ha davanti.
+ *
+ * Vale anche per i casi che nessuna automazione coprirebbe: un consenso da
+ * accettare, una MFA, uno stato raggiungibile solo con certi dati.
+ */
+async function waitForEnter(): Promise<void> {
+  console.log(
+    `\n  In pausa.\n\n` +
+      `  Nel browser: accedi e portati sulla pagina che vuoi inventariare.\n` +
+      `  Poi torna qui e premi INVIO per scansionarla.\n`
+  );
+  await new Promise<void>((resolve) => {
+    process.stdin.resume();
+    process.stdin.once("data", () => {
+      process.stdin.pause();
+      resolve();
+    });
+  });
+}
+
+async function scan(
+  page: Page,
+  url: string,
+  scope: string,
+  waitMs: number,
+  pause: boolean
+): Promise<ScoutResult> {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+
+  if (pause) {
+    await waitForEnter();
+    // Si inventaria la pagina su cui la persona si e' fermata, non quella di
+    // partenza: dopo il login e la navigazione l'URL e' quasi sempre un altro.
+    url = page.url();
+  }
+
   // Le SPA montano dopo il DOMContentLoaded: senza attesa si scansiona uno scheletro.
   await page.waitForTimeout(waitMs);
 
@@ -360,10 +404,12 @@ async function main(): Promise<void> {
     .map((n) => Number(n.trim()));
   const viewport = { width: vw || 1920, height: vh || 1080 };
 
-  const browser = await chromium.launch({ headless: !args.includes("--headed") });
+  const pause = args.includes("--pause");
+  // --pause implica --headed: non si puo' fare login in un browser che non si vede.
+  const browser = await chromium.launch({ headless: !args.includes("--headed") && !pause });
   try {
     const page = await browser.newPage({ viewport });
-    const result = await scan(page, url, scope, waitMs);
+    const result = await scan(page, url, scope, waitMs, pause);
 
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, JSON.stringify(result, null, 2), "utf-8");
