@@ -46,6 +46,7 @@ const KIRO_INCLUSION: Record<string, string[]> = {
   "bdd-authoring.md": ["inclusion: fileMatch", "fileMatchPattern: '**/*.feature'"],
   "automation-layers.md": ["inclusion: fileMatch", "fileMatchPattern: 'src/**/*.ts'"],
   "step-catalog.md": ["inclusion: manual"],
+  "from-recording.md": ["inclusion: fileMatch", "fileMatchPattern: 'src/**'"],
 };
 
 /** Default per un file nuovo non ancora mappato: meglio caricarlo sempre che mai. */

@@ -47,6 +47,7 @@ import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./lib/recorder-overlay";
 import { judge } from "./lib/stability";
+import type { Step, Assertion, Intent, Recording } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 
 // ---------------------------------------------------------------------------
@@ -66,42 +67,8 @@ interface RawEvent {
   label?: string;
 }
 
-interface Step {
-  action: "click" | "fill" | "set";
-  role: string;
-  name: string;
-  value?: string;
-  secret?: boolean;
-}
-
-interface Assertion {
-  role: string;
-  name: string;
-  text?: string;
-}
-
-/** Un intento = un gruppo di gesti che il tester ha dichiarato essere un passo. */
-interface Intent {
-  label: string;
-  steps: Step[];
-  assertions: Assertion[];
-  notes: string[];
-}
-
-interface Recording {
-  startUrl: string;
-  recordedAt: string;
-  durationSeconds: number;
-  /** Pagine visitate, nell'ordine. Serve a sapere quali dizionari servono. */
-  pagesVisited: string[];
-  summary: {
-    intents: number;
-    steps: number;
-    assertions: number;
-    unlabelled: number;
-  };
-  intents: Intent[];
-}
+// I tipi della traccia NON si dichiarano qui: vengono dal contratto condiviso,
+// che li legge anche il generatore. Vedi scripts/lib/generation-contract.ts
 
 // ---------------------------------------------------------------------------
 // Da eventi grezzi a intenti

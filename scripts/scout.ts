@@ -55,7 +55,8 @@ import { chromium, type Page } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
-import { judge, type Stability } from "./lib/stability";
+import { judge } from "./lib/stability";
+import type { Kind, Component, ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours } from "./lib/targets";
 import { loadEnv } from "./lib/atlassian";
 
@@ -66,43 +67,10 @@ loadEnv();
 // Tipi
 // ---------------------------------------------------------------------------
 
-/** A che serve il componente: guida il nome del metodo POM. */
-type Kind = "action" | "input" | "navigation" | "choice";
-
-interface Component {
-  role: string;
-  name: string;
-  kind: Kind;
-  /** Espressione Playwright pronta da incollare in una Page Object. */
-  locator: string;
-  /** Nome di metodo suggerito per la Page Object. */
-  method: string;
-  /** Quante volte lo stesso role+name compare nella pagina. */
-  occurrences: number;
-  stability: Stability;
-  /** Perche' e' stato giudicato cosi'. Vuoto se stabile. */
-  notes: string[];
-  href?: string;
-  disabled?: boolean;
-}
-
-interface ScoutResult {
-  url: string;
-  scope: string;
-  scoutedAt: string;
-  /** Registrata nell'output: cambiandola cambiano i componenti visibili. */
-  viewport: { width: number; height: number };
-  quality: {
-    interactiveFound: number;
-    usable: number;
-    unnamed: number;
-    ambiguous: number;
-    unstable: number;
-    /** % di elementi con un nome accessibile stabile e univoco. */
-    accessibleScore: number;
-  };
-  components: Component[];
-}
+// I tipi NON si dichiarano qui: vengono dal contratto condiviso, che li usa
+// anche il generatore. Due copie divergerebbero, e divergendo romperebbero
+// l'aggancio fra registrazione e dizionario, che e' il perno del metodo.
+// Vedi scripts/lib/generation-contract.ts
 
 // ---------------------------------------------------------------------------
 // Estrazione dal DOM
