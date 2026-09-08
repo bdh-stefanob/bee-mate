@@ -93,7 +93,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | Q5 | Esiste un gatekeeper designato e accetta un SLA sulle approvazioni? | Sostenibilita' del processo |
 | Q6 | L'app sotto test ha una component library / design system condiviso? | Se si', le POM si modellano sui **componenti** invece che sulle pagine: riuso molto maggiore |
 | ~~Q7~~ | ~~Demo su ambiente reale o app neutra?~~ **RISOLTA**: si collauda su app pubblica di pratica, poi si ripunta sull'app aziendale prima della demo | — |
-| Q9 | Fase 1 era dichiarata **read-only**. Pubblicare il catalogo su Confluence e' una scrittura: si conferma? | E' molto piu' difendibile della scrittura esclusa (non tocca i casi di test di nessuno: crea una pagina di proprieta' dell'iniziativa), ma resta un cambio rispetto a quanto dichiarato |
+| Q9 | Fase 1 era dichiarata **read-only**. Pubblicare catalogo, code e registro su Confluence e' una scrittura: si conferma? | Perimetro ora definito: **un albero di pagine di proprieta' dell'iniziativa**, sotto un'unica pagina madre, e lo strumento **si rifiuta di scrivere** su pagine che non porta il suo marcatore. Non tocca i casi di test di nessuno. Resta un cambio rispetto a quanto dichiarato, e come tale va detto |
 | ~~Q8~~ | ~~Il corpus e' bilingue?~~ **PROBABILMENTE NO**: entrambi i campioni sono interamente in inglese. Da confermare sull'intero corpus, ma il limite del clustering lessicale sulle lingue miste non dovrebbe toccarci | — |
 
 ## Stato della costruzione
