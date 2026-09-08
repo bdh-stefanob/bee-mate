@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-09-08T00:00:00.000Z",
+  "totalSteps": 3,
+  "steps": [
+    {
+      "expression": "the customer signs in",
+      "keyword": "Given",
+      "parameters": [],
+      "area": "account",
+      "page": "accesso",
+      "components": [
+        { "role": "textbox", "name": "Email" },
+        { "role": "textbox", "name": "Password" },
+        { "role": "button", "name": "Entra" }
+      ]
+    },
+    {
+      "expression": "the customer cancels an order",
+      "keyword": "When",
+      "parameters": [],
+      "area": "orders",
+      "components": [{ "role": "button", "name": "Annulla ordine" }]
+    },
+    {
+      "expression": "the warehouse dispatches the parcel",
+      "keyword": "When",
+      "parameters": [],
+      "area": "logistics"
+    }
+  ]
+}

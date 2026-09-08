@@ -1,0 +1,10 @@
+{
+  "url": "https://esempio.invalid/ordini/4821",
+  "scope": "body",
+  "scoutedAt": "2026-09-08T08:05:00.000Z",
+  "viewport": { "width": 1920, "height": 1080 },
+  "quality": { "interactiveFound": 1, "usable": 1, "unnamed": 0, "ambiguous": 0, "unstable": 0, "accessibleScore": 100 },
+  "components": [
+    { "role": "heading", "name": "I tuoi ordini", "kind": "action", "locator": "getByRole('heading', { name: 'I tuoi ordini' })", "method": "clickITuoiOrdini", "occurrences": 1, "stability": "stable", "notes": [] }
+  ]
+}
