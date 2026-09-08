@@ -19,7 +19,7 @@
 | [05-referenze.md](05-referenze.md) | Bibliografia verificata: 20 fonti aperte, 5 dichiarate incerte | ✅ completo |
 | [../../scripts/CONFLUENCE-API-NOTES.md](../../scripts/CONFLUENCE-API-NOTES.md) | Ricerca sulle API Confluence + 7 assunzioni da confermare al primo run | ✅ completo |
 | [06-rituale.md](06-rituale.md) | **Il processo**: consolidamento mensile del linguaggio, 15 minuti, con i comandi per eseguirlo | ✅ completo |
-| `03-piano-demo.md` | Sceneggiatura della demo, atti, fallback | ⬜ da scrivere |
+| [03-piano-demo.md](03-piano-demo.md) | **Sceneggiatura della demo.** Decide lo scope, non lo riassume: cio' che non e' in scena non si costruisce | ✅ completo |
 | `04-presentazione.md` | Impianto teorico + riferimenti + slide | ⬜ da scrivere |
 
 ## Il problema in una riga
@@ -90,10 +90,11 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | # | Domanda | Blocca |
 |---|---|---|
 | ~~Q1~~ | ~~Il token funziona? Dove sono i casi di test?~~ **RISOLTA**: token classico (quelli con ambito richiedono il gateway `api.atlassian.com`), corpus individuato in due rami, estrazione verificata su pagine reali | — |
-| Q2 | Che decisione vogliamo che prendano i senior a fine demo? | Taglio della presentazione |
+| ~~Q2~~ | ~~Che decisione vogliamo dai senior?~~ **RISOLTA per default**: non e' ancora deciso, quindi si prepara sul taglio "adottate il metodo" — l'unico che regge anche se automazione e AI non arrivano. Gli atti 4-5 si aggiungono senza rifare il resto | — |
 | Q3 | Quanti tester, su quante app, quanti con IDE/repo? | Dimensionamento e canale di distribuzione del catalogo |
+| **DATA** | **Demo entro 2-3 settimane** | Detta il taglio: fuori l'integrazione nell'app e le verifiche tipizzate; dentro presentazione, catena su un solo caso, refactor |
 | ~~Q4~~ | ~~Il tool AI aziendale e' gia' disponibile?~~ **RISOLTA**: nello spazio wiki esiste una guida di setup del tool AI con accesso via IAM Identity Center → e' gia' configurato in azienda. Il Blocco 3 non e' piu' condizionale. | — |
-| Q5 | Esiste un gatekeeper designato e accetta un SLA sulle approvazioni? | Sostenibilita' del processo |
+| Q5 | Chi possiede il rituale? **Deve essere un senior o un gatekeeper designato** (non chi propone l'iniziativa), e va **chiesto esplicitamente in demo** | E' il punto di rottura singolo del modello converge-later: senza proprietario le code non le guarda nessuno |
 | Q6 | L'app sotto test ha una component library / design system condiviso? | Se si', le POM si modellano sui **componenti** invece che sulle pagine: riuso molto maggiore |
 | ~~Q7~~ | ~~Demo su ambiente reale o app neutra?~~ **RISOLTA**: si collauda su app pubblica di pratica, poi si ripunta sull'app aziendale prima della demo | — |
 | Q9 | Fase 1 era dichiarata **read-only**. Pubblicare catalogo, code e registro su Confluence e' una scrittura: si conferma? | Perimetro ora definito: **un albero di pagine di proprieta' dell'iniziativa**, sotto un'unica pagina madre, e lo strumento **si rifiuta di scrivere** su pagine che non porta il suo marcatore. Non tocca i casi di test di nessuno. Resta un cambio rispetto a quanto dichiarato, e come tale va detto |
