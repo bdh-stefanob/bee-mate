@@ -26,9 +26,11 @@ import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import {
-  looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording,
+  looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates,
 } from "./generate-core";
-import type { CatalogStep, Gap, Recording, ScoutResult } from "./generation-contract";
+import type {
+  CatalogStep, Gap, Intent, Recording, ResolvedStep, ScoutResult,
+} from "./generation-contract";
 
 const ROOT = path.join(__dirname, "..", "..");
 const FIXTURES = path.join(ROOT, "test-fixtures", "generate");
@@ -167,6 +169,71 @@ console.log("\n--- rosa dei candidati ---\n");
     "uno step senza niente in comune resta fuori dalla rosa",
     !all.includes("the warehouse dispatches the parcel"),
     `la rosa conteneva: ${all.join(" | ")}`
+  );
+}
+
+{
+  // IL CASO CHE DIVENTERA' NORMALE: etichetta ed espressione nella stessa
+  // lingua, e uno step di catalogo che NON dichiara componenti — che oggi e' la
+  // stragrande maggioranza.
+  //
+  // Prima della normalizzazione uno step del genere prendeva 0 sull'ancoraggio,
+  // cioe' veniva punito per un campo non compilato, e per superare la soglia gli
+  // serviva il 67% di somiglianza lessicale. Lo strumento restava muto proprio
+  // nel caso piu' comune.
+  const intent: Intent = {
+    label: "the customer cancels the order",
+    steps: [{ action: "click", role: "button", name: "Cancel order" }],
+    assertions: [],
+    notes: [],
+  };
+  const soloTesto: CatalogStep[] = [
+    { expression: "the customer cancels an order", keyword: "When" },
+    { expression: "the warehouse dispatches the parcel", keyword: "When" },
+  ];
+  const rosa = rankCandidates(intent, [], soloTesto, 5);
+  eq(
+    "stessa lingua, step non ancorato: entra lo stesso nella rosa",
+    rosa[0]?.step.expression,
+    "the customer cancels an order"
+  );
+  truthy(
+    "e quello che non c'entra resta comunque fuori",
+    !rosa.some((c) => c.step.expression.includes("warehouse")),
+    `la rosa conteneva: ${rosa.map((c) => c.step.expression).join(" | ")}`
+  );
+}
+
+{
+  // L'ancoraggio deve restare piu' forte del lessico: quando i due segnali
+  // indicano candidati diversi, vince il componente. E' identita' contro stima.
+  const intent: Intent = {
+    label: "the user signs in",
+    steps: [{ action: "click", role: "button", name: "Entra" }],
+    assertions: [],
+    notes: [],
+  };
+  const misto: CatalogStep[] = [
+    { expression: "the user signs in to the newsletter", keyword: "When" },
+    { expression: "il cliente accede", keyword: "Given", components: [{ role: "button", name: "Entra" }] },
+  ];
+  const resolvedSteps: ResolvedStep[] = [
+    {
+      step: { action: "click", role: "button", name: "Entra" },
+      component: {
+        role: "button", name: "Entra", kind: "action",
+        locator: "getByRole('button', { name: 'Entra' })", method: "clickEntra",
+        occurrences: 1, stability: "stable", notes: [],
+      },
+      synthesised: false,
+      fromPage: "esempio.invalid/accesso",
+    },
+  ];
+  const rosa = rankCandidates(intent, resolvedSteps, misto, 5);
+  eq(
+    "quando i due segnali litigano, vince il componente",
+    rosa[0]?.step.expression,
+    "il cliente accede"
   );
 }
 
