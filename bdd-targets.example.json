@@ -1,0 +1,26 @@
+{
+  "_commento": [
+    "Copia questo file in bdd-targets.json e mettici i tuoi ambienti.",
+    "bdd-targets.json e' gitignorato: gli indirizzi aziendali non finiscono nel repository.",
+    "Gli URL si possono tenere in .env e referenziare come ${NOME_VARIABILE},",
+    "cosi' esistono in un posto solo.",
+    "Nessuna credenziale qui dentro: il login e' manuale, una volta, con `npm run session`."
+  ],
+
+  "demo": {
+    "url": "https://www.saucedemo.com",
+    "readyWhen": "/inventory.html",
+    "hint": "utente standard_user, password secret_sauce (sito pubblico di pratica)"
+  },
+
+  "app-a": {
+    "url": "${APP_A_URL}",
+    "readyWhen": "/account",
+    "hint": "dopo il login chiudi il banner dei consensi prima di registrare"
+  },
+
+  "app-b": {
+    "url": "${APP_B_URL}",
+    "readyWhen": "/home"
+  }
+}

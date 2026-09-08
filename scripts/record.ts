@@ -26,8 +26,11 @@
  *   - "Verifica": cosa prova che il flusso e' riuscito. Senza, niente `Then`.
  *
  * Uso:
- *   npm run record -- https://example.com
- *   npx ts-node scripts/record.ts https://example.com --out reports/recordings/login.json
+ *   npm run record -- clinic                (bersaglio configurato in bdd-targets.json)
+ *   npm run record -- https://example.com   (url diretto)
+ *
+ * Con un bersaglio configurato parte gia' autenticato, se prima si e' fatto
+ * `npm run session -- clinic`: il login si fa una volta e per giorni non si rifa'.
  *
  * Flag:
  *   --out PATH     file di output (default reports/recordings/<slug>-<ts>.json)
@@ -44,6 +47,7 @@ import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./lib/recorder-overlay";
 import { judge } from "./lib/stability";
+import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 
 // ---------------------------------------------------------------------------
 // Tipi della traccia
@@ -185,7 +189,8 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
 // Sessione
 // ---------------------------------------------------------------------------
 
-async function record(url: string, browserName: string): Promise<Recording> {
+async function record(target: Target, browserName: string): Promise<Recording> {
+  const url = target.url;
   const events: RawEvent[] = [];
   const pages = new Set<string>();
   const startedAt = Date.now();
@@ -213,7 +218,25 @@ async function record(url: string, browserName: string): Promise<Recording> {
   // molto peggio — a 1280 di larghezza parecchi layout responsive passano alla
   // versione ridotta, con il menu a panino al posto della barra estesa. Il
   // tester registrerebbe componenti che l'utente vero non vede mai.
-  const context: BrowserContext = await browser.newContext({ viewport: null });
+  // Sessione salvata, se c'e': si evita di rifare il login a ogni registrazione.
+  //
+  // L'eta' viene detta prima di partire perche' una sessione scaduta si
+  // manifesta con l'applicazione che rimanda al login a meta' registrazione —
+  // un sintomo che non assomiglia per niente alla causa, e che porterebbe a
+  // cercare il problema nel recorder.
+  const sessionAge = sessionAgeHours(target);
+  const context: BrowserContext = await browser.newContext({
+    viewport: null,
+    ...(hasSession(target) ? { storageState: target.session } : {}),
+  });
+  if (sessionAge !== null) {
+    console.log(
+      `  Sessione salvata ${sessionAge} ore fa.` +
+        (sessionAge > 24
+          ? `\n  Se l'applicazione ti rimanda al login, rifalla:  npm run session -- ${target.name}`
+          : "")
+    );
+  }
   let stopped = false;
 
   /**
@@ -402,16 +425,20 @@ function slugify(url: string): string {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const url = args.find((a) => /^https?:\/\//i.test(a));
+  const which = args.find((a) => !a.startsWith("-"));
 
-  if (!url) {
+  if (!which) {
     console.error(
-      "ERRORE: manca l'URL da cui partire.\n\n" +
-        "  npm run record -- https://example.com\n" +
-        "  npx ts-node scripts/record.ts https://example.com --out reports/recordings/login.json\n"
+      "ERRORE: manca il bersaglio.\n\n" +
+        "  npm run record -- clinic               (bersaglio configurato)\n" +
+        "  npm run record -- https://example.com  (url diretto)\n\n" +
+        "  I bersagli si configurano in bdd-targets.json — vedi bdd-targets.example.json.\n"
     );
     process.exit(1);
   }
+
+  const target = resolveTarget(which);
+  const url = target.url;
 
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const outPath =
@@ -419,7 +446,7 @@ async function main(): Promise<void> {
     path.join("reports", "recordings", `${slugify(url)}-${stamp}.json`);
   const browserName = argValue(args, "--browser") ?? "chrome";
 
-  const rec = await record(url, browserName);
+  const rec = await record(target, browserName);
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(rec, null, 2), "utf-8");
