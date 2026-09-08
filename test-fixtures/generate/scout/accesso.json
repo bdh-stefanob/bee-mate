@@ -1,0 +1,12 @@
+{
+  "url": "https://esempio.invalid/accesso",
+  "scope": "body",
+  "scoutedAt": "2026-09-08T08:00:00.000Z",
+  "viewport": { "width": 1920, "height": 1080 },
+  "quality": { "interactiveFound": 3, "usable": 3, "unnamed": 0, "ambiguous": 0, "unstable": 0, "accessibleScore": 100 },
+  "components": [
+    { "role": "textbox", "name": "Email", "kind": "input", "locator": "getByRole('textbox', { name: 'Email' })", "method": "fillEmail", "occurrences": 1, "stability": "stable", "notes": [] },
+    { "role": "textbox", "name": "Password", "kind": "input", "locator": "getByRole('textbox', { name: 'Password' })", "method": "fillPassword", "occurrences": 1, "stability": "stable", "notes": [] },
+    { "role": "button", "name": "Entra", "kind": "action", "locator": "getByRole('button', { name: 'Entra' })", "method": "clickEntra", "occurrences": 1, "stability": "stable", "notes": [] }
+  ]
+}

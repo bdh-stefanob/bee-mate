@@ -82,6 +82,25 @@ interface RawEvent {
  * chiuso. Va segnalato, non nascosto: uno scenario a cui manca l'ultimo passo e'
  * peggio di uno che dichiara di essere incompleto.
  */
+/**
+ * Su quale pagina l'intento e' cominciato e su quale e' finito.
+ *
+ * Le due coincidono quasi sempre. Quando non coincidono, l'intento ha cambiato
+ * pagina — ed e' esattamente il punto in cui il codice generato deve restituire
+ * la Page Object successiva invece di `void`. E' un dato osservato, non una
+ * regola: chi genera non deve indovinare dove finisce una pagina.
+ */
+function boundaries(intent: Intent): { pageUrl?: string; endUrl?: string } {
+  const urls = [...intent.steps, ...intent.assertions]
+    .map((e) => e.url)
+    .filter((u): u is string => Boolean(u));
+  if (urls.length === 0) return {};
+
+  const first = urls[0]!;
+  const last = urls[urls.length - 1]!;
+  return { pageUrl: first, ...(last !== first ? { endUrl: last } : {}) };
+}
+
 function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
   const intents: Intent[] = [];
   let current: Intent = { label: "", steps: [], assertions: [], notes: [] };
@@ -95,6 +114,7 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
       return;
     }
     current.label = label;
+    Object.assign(current, boundaries(current));
     intents.push(current);
     current = { label: "", steps: [], assertions: [], notes: [] };
   };
@@ -108,6 +128,7 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
           name: e.name ?? "",
           ...(e.value !== undefined ? { value: e.value } : {}),
           ...(e.secret ? { secret: true } : {}),
+          ...(e.url ? { url: e.url } : {}),
         };
         // Un campo compilato piu' volte nello stesso intento vale per il suo
         // valore FINALE: chi corregge un refuso non vuole ritrovarsi il refuso
@@ -128,6 +149,7 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
           role: e.role ?? "",
           name: e.name ?? "",
           ...(e.text ? { text: e.text } : {}),
+          ...(e.url ? { url: e.url } : {}),
         });
         break;
       case "note":
@@ -145,6 +167,7 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
     current.steps.length > 0 || current.assertions.length > 0 || current.notes.length > 0;
   if (leftover) {
     current.label = "(non chiuso — il tester non ha premuto Fine intento)";
+    Object.assign(current, boundaries(current));
     intents.push(current);
     unlabelled = 1;
   }
@@ -224,7 +247,7 @@ async function record(target: Target, browserName: string): Promise<Recording> {
     assertions: events.filter((e) => e.type === "assert").length,
   });
 
-  await context.exposeBinding("__bddEmit", async (_source, payload: string) => {
+  await context.exposeBinding("__bddEmit", async (source, payload: string) => {
     let event: RawEvent;
     try {
       event = JSON.parse(payload) as RawEvent;
@@ -240,6 +263,11 @@ async function record(target: Target, browserName: string): Promise<Recording> {
       stopped = true;
       return counts();
     }
+    // L'URL lo stampiglia Node, non la pagina: `page.url()` e' vero anche dopo
+    // un redirect che la pagina non ha avuto tempo di raccontare. Senza, non si
+    // sa a quale Page Object appartiene il gesto, e un intento che attraversa
+    // due pagine finirebbe tutto nella prima.
+    event.url = source.page.url();
     events.push(event);
     return counts();
   });

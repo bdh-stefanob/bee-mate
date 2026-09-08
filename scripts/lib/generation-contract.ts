@@ -53,6 +53,20 @@ export interface Step {
    * prova che non l'abbiamo mai avuto.
    */
   secret?: boolean;
+  /**
+   * Su quale pagina e' avvenuto il gesto.
+   *
+   * Lo stampiglia Node leggendo `page.url()` quando l'evento arriva, non la
+   * pagina dichiarandolo: cosi' vale anche dopo un redirect che la pagina non
+   * ha avuto tempo di raccontare. Senza questo campo non si sa a quale Page
+   * Object appartiene il gesto, e un intento che attraversa due pagine finisce
+   * tutto nella prima.
+   *
+   * Opzionale perche' le registrazioni fatte prima del suo arrivo non ce l'hanno:
+   * in quel caso il generatore lo dichiara e chiede di rifare la registrazione,
+   * invece di indovinare.
+   */
+  url?: string;
 }
 
 /** Cosa il tester ha indicato come "questo e' il risultato che mi aspetto". */
@@ -60,6 +74,8 @@ export interface Assertion {
   role: string;
   name: string;
   text?: string;
+  /** Su quale pagina e' stata dichiarata. Vedi `Step.url`. */
+  url?: string;
 }
 
 /**
@@ -74,6 +90,13 @@ export interface Intent {
   steps: Step[];
   assertions: Assertion[];
   notes: string[];
+  /** Pagina su cui l'intento e' cominciato. Decide quale Page Object lo ospita. */
+  pageUrl?: string;
+  /**
+   * Pagina su cui e' finito. Diversa da `pageUrl` significa che l'intento ha
+   * cambiato pagina: e' li' che serve il return-value chaining.
+   */
+  endUrl?: string;
 }
 
 export interface Recording {
@@ -135,15 +158,35 @@ export interface ScoutResult {
  * Una voce del catalogo, ridotta a cio' che serve alla generazione.
  * La forma completa vive in `step-catalog.json`.
  */
+/** Il componente di frontend a cui uno step di catalogo e' ancorato. */
+export interface StepComponent {
+  role: string;
+  name: string;
+  /** Pagina su cui vive, se lo step ne tocca piu' di una. */
+  page?: string;
+}
+
 export interface CatalogStep {
   expression: string;
-  keyword: string;
-  parameters: string[];
+  keyword?: string;
+  parameters?: string[];
+  app?: string;
   area?: string;
+  domain?: string;
   page?: string;
   status?: string;
-  /** Componenti di frontend a cui lo step e' ancorato, se noti. */
-  components?: string[];
+  /** Formulazioni note della stessa intenzione, raccolte dal corpus. */
+  aliases?: string[];
+  /**
+   * Componenti toccati. Assente = step non ancora ancorato alla UI.
+   *
+   * E' il campo piu' importante per la generazione, e per una ragione che non
+   * si vede subito: e' l'unico aggancio **indipendente dalla lingua**. Le
+   * etichette che scrive un tester italiano non assomigliano a un catalogo
+   * scritto in inglese, e nessuna somiglianza lessicale le fara' incontrare.
+   * Il componente si'.
+   */
+  components?: StepComponent[];
 }
 
 // ---------------------------------------------------------------------------
@@ -155,12 +198,19 @@ export interface CatalogStep {
  *
  * L'aggancio e' **esatto su ruolo+nome**, non fuzzy, ed e' possibile solo
  * perche' recorder e scout descrivono gli elementi con lo stesso codice
- * (`dom-probe.ts`). Quando fallisce, fallisce in modo dichiarato: `component`
- * resta `null` e il generatore lo scrive nel referto invece di indovinare.
+ * (`dom-probe.ts`): e' identita', non somiglianza.
+ *
+ * Quando il dizionario non copre la pagina, il gesto non si butta — role e name
+ * ce li abbiamo e la formula del locator e' la stessa dello scout. Si sintetizza
+ * il componente e lo si **dichiara**: `synthesised` a true, e un avviso nel
+ * referto. Cio' che manca davvero e' il conteggio delle occorrenze, cioe' non
+ * sappiamo se il locator e' univoco sulla pagina.
  */
 export interface ResolvedStep {
   step: Step;
-  component: Component | null;
+  component: Component;
+  /** Ricostruito dalla registrazione perche' il dizionario non lo aveva. */
+  synthesised: boolean;
   /** Da quale dizionario viene. Serve quando un intento attraversa piu' pagine. */
   fromPage: string | null;
 }
