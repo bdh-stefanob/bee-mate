@@ -102,11 +102,47 @@ export function expand(value: string): string {
   return value.replace(/\$\{([A-Z0-9_]+)\}/g, (_, name: string) => process.env[name] ?? "");
 }
 
+/**
+ * Le variabili d'ambiente che un bersaglio si aspetta, lette dal file COSI'
+ * COM'E' — prima di qualunque risoluzione.
+ *
+ * Serve a una domanda molto concreta, che si presenta ogni volta che qualcuno
+ * porta questo progetto su un'altra macchina: **cosa devo mettere in `.env`?**
+ * Senza una risposta, il sintomo e' un login che compila un campo con la stringa
+ * vuota e un'applicazione che risponde "credenziali errate" — cioe' un messaggio
+ * che manda a cercare nel posto sbagliato.
+ *
+ * Legge il file grezzo di proposito: `loadTargets` ha gia' espanso tutto, e a
+ * quel punto una variabile mancante e' indistinguibile da una stringa vuota.
+ */
+export function requiredVars(file = CONFIG): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  if (!fs.existsSync(file)) return out;
+
+  const json = JSON.parse(fs.readFileSync(file, "utf-8")) as Record<string, unknown>;
+  for (const [name, target] of Object.entries(json)) {
+    if (name.startsWith("_")) continue; // le righe di commento del file d'esempio
+    const found = [...JSON.stringify(target).matchAll(/\$\{([A-Z0-9_]+)\}/g)].map((m) => m[1]!);
+    out.set(name, [...new Set(found)]);
+  }
+  return out;
+}
+
+/** Quelle che servono e non ci sono. Mai i valori: solo i nomi. */
+export function missingVars(name: string, file = CONFIG): string[] {
+  return (requiredVars(file).get(name) ?? []).filter((v) => !process.env[v]);
+}
+
 export function loadTargets(file = CONFIG): Target[] {
   if (!fs.existsSync(file)) return [];
   const json = JSON.parse(fs.readFileSync(file, "utf-8")) as Record<string, Partial<Target>>;
 
-  return Object.entries(json).map(([name, t]) => ({
+  return Object.entries(json)
+    // Le chiavi che iniziano per _ sono le righe di commento del file d'esempio:
+    // chi lo copia tale e quale non deve ritrovarsi un bersaglio "_commento"
+    // senza URL, e un messaggio d'errore che parla di una cosa che non esiste.
+    .filter(([name]) => !name.startsWith("_"))
+    .map(([name, t]) => ({
     name,
     url: expand(t.url ?? ""),
     ...(t.readyWhen ? { readyWhen: t.readyWhen } : {}),
