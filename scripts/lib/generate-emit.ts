@@ -319,10 +319,11 @@ export function emitSteps(
           ` * @wanted\n` +
           ` *\n` +
           ` * Uno solo per tutte le verifiche di presenza: uno per elemento sarebbe\n` +
-          ` * uno step nuovo a ogni registrazione.\n` +
+          ` * uno step nuovo a ogni registrazione. La meccanica vive nel World e\n` +
+          ` * non qui: una step definition non deve conoscere selettori.\n` +
           ` */\n` +
           `Then(${ts(VERIFY_STEP)}, async function (this: CustomWorld, atteso: string) {\n` +
-          `  await this.page.getByText(atteso, { exact: false }).first().waitFor({ state: "visible" });\n` +
+          `  await this.expectTextVisible(atteso);\n` +
           `});`
       );
     }
