@@ -1,0 +1,43 @@
+// generato-da: bdd-generate · rigenerabile
+// {{OUT_PATH}}
+//
+// PAGE OBJECT — l'unico layer che conosce i selettori.
+//
+// Generata da:
+//   registrazione : {{SOURCE_RECORDING}}
+//   dizionario    : {{SOURCE_DICTIONARY}}
+//   il            : {{GENERATED_AT}}
+//
+// I locator vengono dal dizionario, non dalla memoria di nessuno. Se uno smette
+// di funzionare, la pagina e' cambiata: si rifa' `npm run scout`, non si tira a
+// indovinare.
+//
+// Togliendo il marcatore in prima riga questo file diventa tuo: la generazione
+// lo salta invece di riscriverlo.
+
+import { type Locator, type Page } from "@playwright/test";
+import { BasePage } from "{{BASE_PAGE_IMPORT}}";
+{{EXTRA_IMPORTS}}
+
+export class {{CLASS_NAME}} extends BasePage {
+  readonly path = "{{PATH}}";
+
+  constructor(page: Page) {
+    super(page);
+  }
+
+  // ─── Componenti ────────────────────────────────────────────────────────────
+  {{LOCATORS}}
+
+  // ─── Riconoscimento ────────────────────────────────────────────────────────
+  // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
+  // gli elementi per cui ha detto "se vedo questo, sono dove volevo essere".
+  async assertLoaded(): Promise<void> {
+    {{ASSERT_LOADED_BODY}}
+  }
+
+  // ─── Azioni ────────────────────────────────────────────────────────────────
+  // Un metodo per componente: e' la meta' meccanica della mappatura. L'altra
+  // meta' — intento -> step Gherkin — e' 1:N e non si genera da qui.
+  {{METHODS}}
+}

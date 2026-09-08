@@ -37,8 +37,13 @@ export class CheckoutPage extends BasePage {
 }
 ```
 
-`BasePage` riceve `page` dal costruttore. **Mai singleton, mai `getInstance()`, mai
-cache statiche**: e' una decisione presa dopo averne misurato il danno — l'istanza
+`BasePage` sta in `src/support/base.page.ts` e riceve `page` dal costruttore. Dichiara
+astratti **`path`** e **`assertLoaded()`**: obbligatori perche' si dimenticano proprio
+quando servono. Una Page Object che non sa dire "sono davvero io" produce fallimenti che
+puntano al posto sbagliato — il test cade sul primo click, e sembra un problema del
+click.
+
+**Mai singleton, mai `getInstance()`, mai cache statiche**: e' una decisione presa dopo averne misurato il danno — l'istanza
 statica sopravviveva fra scenari nello stesso worker e trascinava stato sporco nello
 scenario successivo. Il `World` di Cucumber viene ricreato per ogni scenario, ed e' li'
 che vive lo stato.
@@ -50,20 +55,20 @@ che vive lo stato.
 let visitsList: VisitsListPage;
 let visitDetail: VisitDetailPage;
 
-Given('the clinician is on the visits list', async function (this: CucumberWorld) {
+Given('the clinician is on the visits list', async function (this: CustomWorld) {
     visitsList = new VisitsListPage(this.page);   // init nello step che possiede la transizione
     await visitsList.navigate();
     await visitsList.assertLoaded();
 });
 
-When('the clinician opens the first visit', async function (this: CucumberWorld) {
+When('the clinician opens the first visit', async function (this: CustomWorld) {
     visitDetail = await visitsList.clickFirstVisit();   // return-value chaining
 });
 ```
 
 Tre regole che vanno insieme:
 
-- **`function (this: CucumberWorld)`**, mai arrow function: servono per `this`.
+- **`function (this: CustomWorld)`**, mai arrow function: servono per `this`.
 - **Niente init nei hook `Before`**: la Page Object si crea nello step che la introduce.
 - **Return-value chaining**: un metodo che cambia pagina restituisce la Page Object
   successiva (`Promise<VisitDetailPage>`). Rende esplicita la transizione e toglie

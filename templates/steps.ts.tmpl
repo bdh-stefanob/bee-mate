@@ -1,0 +1,27 @@
+// generato-da: bdd-generate · rigenerabile
+// {{OUT_PATH}}
+//
+// STEP DEFINITION — glue sottile. Traduce la frase Gherkin in chiamate ai metodi
+// delle Page Object. **Mai selettori qui**: se ne compare uno, e' finito nel
+// layer sbagliato.
+//
+// Generato da:
+//   registrazione : {{SOURCE_RECORDING}}
+//   il            : {{GENERATED_AT}}
+//
+// Togliendo il marcatore in prima riga questo file diventa tuo: la generazione
+// lo salta invece di riscriverlo.
+
+import { Given, When, Then } from "@cucumber/cucumber";
+import { CustomWorld } from "{{WORLD_IMPORT}}";
+{{PAGE_IMPORTS}}
+
+// Dichiarate a livello di modulo, non dentro agli step: cosi' sopravvivono da
+// uno step all'altro dello stesso scenario. Non e' stato globale — il World di
+// Cucumber viene ricreato a ogni scenario, e con lui il browser.
+//
+// L'inizializzazione avviene nello step che possiede la transizione, mai in un
+// hook `Before`: e' quello step a sapere su quale pagina ci si trova.
+{{PAGE_DECLARATIONS}}
+
+{{STEP_DEFINITIONS}}
