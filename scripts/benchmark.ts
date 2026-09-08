@@ -34,13 +34,17 @@
  *   --catalog FILE   default step-catalog.json
  *   --scout DIR      default reports/scout
  *   --root DIR       progetto da misurare (default: questo). Serve all'arena
+ *   --referto FILE   scrive anche i SOLI NUMERI, senza una parola di testo.
+ *                    E' la forma da portare fuori da una macchina aziendale:
+ *                    il verdetto completo contiene frasi Gherkin e nomi di
+ *                    componenti veri, e questo repository e' pubblico
  *   --confronta      stampa la tabella di tutte le esecuzioni salvate
  */
 
 import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { scoreGherkin, scoreSteps, scorePages, toTable, type RunResult } from "./lib/benchmark";
+import { scoreGherkin, scoreSteps, scorePages, toTable, toReferto, type RunResult } from "./lib/benchmark";
 import type { CatalogStep, Component, ScoutResult } from "./lib/generation-contract";
 
 const OUT = path.join("reports", "benchmark");
@@ -241,6 +245,16 @@ function main(): void {
   const file = path.join(OUT, `${label.replace(/[^a-z0-9-]/gi, "-")}.json`);
   fs.writeFileSync(file, JSON.stringify(result, null, 2), "utf-8");
 
+  // Il referto: gli stessi numeri, senza le frasi. Misurato su un'applicazione
+  // aziendale il verdetto completo E' materiale aziendale, e questo repository
+  // e' pubblico. Stessa separazione di analyze-corpus: il completo resta qui,
+  // il referto e' quello che si porta in giro.
+  const referto = argValue(args, "--referto");
+  if (referto) {
+    fs.mkdirSync(path.dirname(path.resolve(referto)), { recursive: true });
+    fs.writeFileSync(referto, JSON.stringify(toReferto(result), null, 2), "utf-8");
+  }
+
   console.log(toTable([result]));
   console.log("");
 
@@ -270,6 +284,15 @@ function main(): void {
   }
 
   console.log(`  Salvato in ${file}`);
+  if (referto) {
+    console.log(`  Referto (soli numeri, condivisibile) in ${referto}`);
+  } else {
+    console.log(
+      `\n  Se stai misurando un'applicazione aziendale, questo file contiene frasi\n` +
+        `  Gherkin e nomi di componenti veri. Per portarne fuori solo i numeri:\n` +
+        `    npm run benchmark -- --label ${label} --referto referto.json`
+    );
+  }
   console.log(`  Confronto con le altre esecuzioni:  npm run benchmark -- --confronta\n`);
 }
 
