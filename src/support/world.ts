@@ -47,6 +47,26 @@ export class CustomWorld extends World {
     this.page = await this.context.newPage();
   }
 
+  /**
+   * Verifica che un testo sia visibile sulla pagina corrente.
+   *
+   * Sta qui e non in una step definition per una ragione precisa: la verifica di
+   * presenza non appartiene a nessuna pagina in particolare — vale su qualunque
+   * pagina — e scriverla nello step significherebbe metterci dentro un
+   * selettore. Il World e' supporto, non glue: e' il posto giusto per la
+   * meccanica che non ha una Page Object a cui appartenere.
+   *
+   * Il difetto era nel codice generato, e non l'ha trovato una rilettura: l'ha
+   * trovato la misura "selettori negli step" del benchmark, puntata contro noi
+   * stessi.
+   */
+  async expectTextVisible(text: string, ms = 10_000): Promise<void> {
+    await this.page
+      .getByText(text, { exact: false })
+      .first()
+      .waitFor({ state: "visible", timeout: ms });
+  }
+
   async destroy(): Promise<void> {
     await this.page?.close();
     await this.context?.close();
