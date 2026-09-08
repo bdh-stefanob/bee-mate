@@ -56,6 +56,9 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | F12 | Il clustering assorbe solo il **14%** della varieta' (0,719 → 0,620). Su 353 intenzioni distinte, **246 compaiono una volta sola** | Cambia la diagnosi, in meglio: il problema non e' la parafrasi ma l'assenza di vocabolario. Non stiamo ripulendo duplicati, stiamo creando un linguaggio dove non esiste — tesi piu' difficile da contestare |
 | F13 | **107 step canonici coprirebbero il 57%** di quanto scritto oggi nel ramo QA (323 occorrenze su 569); 32 step coprirebbero il 37% del ramo mobile | E' il numero da slide. L'aritmetica e' rifacibile in riunione: 353 cluster, 107 con >=2 occorrenze, 246 singoletti |
 | F14 | L'azienda usa **Amazon Q Developer**, non Kiro — ma nello spazio wiki esiste anche una guida di setup di Kiro | Le regole vivono in `.amazonq/rules/`; la versione Kiro si genera da quella. Amazon Q ha una **CLI con `--no-interactive`**: l'assistente e' pilotabile da script, cosa che Kiro non permette |
+| F16 | Le etichette che scrive un tester italiano e un catalogo scritto in inglese **non si incontrano mai** per somiglianza lessicale. Li aggancia il **componente** (`role`+`name`), che di lingua non ne ha | Ribalta il peso dei segnali: nella rosa dei candidati l'ancoraggio vale 0,55 contro 0,30 del lessico. E promuove `components` (D13) da campo utile a **campo indispensabile** |
+| F17 | La generazione deterministica produce **un test che gira**, senza che nessun modello tocchi niente: le frasi sono le etichette del tester | Toglie l'unico rischio serio della demo. Se l'assistente delude, resta un test verde scritto con le parole di chi il test l'ha eseguito |
+| F18 | I giudici deterministici c'erano gia' tutti e non costano niente: `tsc` per il codice, il dry-run per la glue, il validatore per le frasi, `conformity()` per lo stile | "L'AI non valida se stessa" (D6) smette di essere un principio e diventa una riga di comando |
 | F15 | L'app desktop del catalogo **esiste gia'** ed e' impacchettata come eseguibile: catalogo cercabile, editor Gherkin con autocomplete vincolato, step sconosciuti evidenziati, proposta `@wanted`, commit su GitHub | Il paletto 3 e' gia' risolto: un tester manuale scarica un .exe e scrive scenari conformi senza toccare il repo. Non e' da costruire |
 
 ## Decisioni prese
@@ -83,6 +86,11 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | D21 | Chi decide risponde in un modo solo: **si scrive solo per dissentire**, il bianco vale approvato. Le sei diramazioni (eleggi · scrivi · parametrizza · scomponi · spezza · rinvia) sono la tassonomia dello **strumento**, non il vocabolario delle persone | Il costo non e' decidere, e' registrare: leggere venti proposte e obiettarne due si fa in cinque minuti, compilare venti righe con una sintassi no — e la seconda volta la riunione si salta. Le alternative compaiono solo a chi dissente, e solo quelle sensate per quel gruppo |
 | D22 | I **componenti** decidono due delle diramazioni: componenti disgiunti = intenzioni diverse (separare); componenti che sono l'**unione** di 2+ voci esistenti = composizione, non nuovo step | Sono confronti fra insiemi, non inferenze semantiche. La seconda **fa decrescere il catalogo** invece di farlo crescere; la prima e' un secondo parere indipendente sul clustering lessicale — uno guarda le parole, l'altro cosa viene toccato sullo schermo |
 | D19 | Il refactor di massa **non avra' mai una modalita' automatica**: anteprima e diff obbligatori | E' l'operazione piu' pericolosa del sistema: se va storta una volta, brucia la fiducia nell'iniziativa in modo definitivo |
+| D23 | Della generazione, **solo due cose** hanno bisogno di un modello: la frase Gherkin e quale metodo chiamare. Scheletro, un metodo per componente, `assertLoaded()` e la glue sono **deterministici** | Deterministico batte corretto-quasi-sempre. E restringe l'AI a scegliere fra opzioni elencate: un modello che sceglie fra cinque candidati sbaglia in modi che un compilatore prende, uno che compone da zero sbaglia in modi che si scoprono in produzione |
+| D24 | La forma del codice generato vive in **`templates/`**, come file veri | Chi non e' d'accordo su come si scrive una Page Object cambia il modello, non il generatore. Una convenzione sepolta nel codice non viene discussa: viene subita e poi aggirata |
+| D25 | **Un solo** passo di verifica, parametrizzato (`Then la pagina mostra {string}`), non uno per elemento | Uno per elemento sarebbe uno step nuovo a ogni registrazione: esattamente l'entropia da togliere. Generico di proposito, l'assistente lo specializza dove l'intento lo merita |
+| D26 | Fra Page Object **generate** niente return-value chaining: la transizione avviene nella glue | Due pagine che si raggiungono a vicenda si importerebbero a vicenda, e con CommonJS uno dei due `require` torna vuoto. Il sintomo — costruttore `undefined` a runtime — non assomiglia alla causa. Deviazione consapevole dalla convenzione del POC |
+| D27 | L'esecuzione **senza regole** si misura in un progetto separato (`npm run arena`), mai in questo repository | Amazon Q carica `.amazonq/rules/` da solo: misurare qui significherebbe misurare "con regole" due volte e chiamarne una "senza". Nessuno in sala se ne accorgerebbe |
 | D16 | Le verifiche registrate hanno un **tipo**: mostra un valore (default) · e' comparso · e' sparito · si e' navigato | In produzione non si verifica "questo e' cliccabile", si verifica che **la UI si sia aggiornata**. Il default era sbagliato ed e' stato corretto |
 
 ## Domande aperte
@@ -109,34 +117,45 @@ mano, la sessione viene registrata, e da li' si derivano scenario e automazione.
 tester esegue a mano  →  traccia semantica          ✅  collaudata su sessione reale
 scout                 →  dizionario componenti      ✅
 regole .md            →  Amazon Q (+ Kiro generato) ✅
-traccia + dizionario + catalogo  →  scenario        ⬜  IL PROSSIMO
-scenario  →  step + Page Object  →  test verde      ⬜
+traccia + dizionario + catalogo  →  scenario        ✅  `npm run generate`
+scenario  →  step + Page Object                     ✅  deterministico, compila
+step + Page Object  →  test verde                   🟡  serve una registrazione nuova
+misura con regole / senza regole                    ✅  `npm run benchmark`, `npm run arena`
 integrazione nell'app desktop                       ⬜  tagliabile
 ```
+
+**Il pezzo che manca per il test verde non e' codice: e' una registrazione.** Le
+quattro esistenti sono state fatte prima che il recorder stampigliasse l'URL su
+ogni gesto, quindi tutto finisce sulla prima pagina — e il generatore lo dichiara
+invece di indovinare. Rifatta la registrazione, la catena si chiude.
 
 | Atto della demo | Stato | Cosa manca |
 |---|---|---|
 | 1. Il problema — i numeri | 🟢 ~90% | Solo metterli in slide: i dati ci sono (F11, F13) |
 | 2. Il rimedio — catalogo | 🟡 ~50% | La macchina c'e' (app desktop, editor vincolato, validatore). Manca il **contenuto** |
-| 3. L'assistente | 🟡 ~40% | Regole pronte, manca la generazione |
-| 4. Registrazione + moltiplicatore | 🟡 ~60% | Recorder e scout pronti, manca **il giunto fra i due e il catalogo** |
-| 5. Test verde | 🔴 0% | Non iniziato |
+| 3. L'assistente | 🟢 ~85% | Regole, due agenti, compito generato, e la misura per dire se servono |
+| 4. Registrazione + moltiplicatore | 🟢 ~90% | Il giunto c'e': traccia → dizionario → catalogo → codice |
+| 5. Test verde | 🟡 ~70% | La catena compila e gira a vuoto. Serve **una registrazione nuova** su cui girare davvero |
 
-**Circa il 50%.**
+**Circa il 75%.**
 
 ### Ordine di lavoro
 
 | # | Pezzo | Giorni | Nota |
 |---|---|---|---|
-| 1 | **Ciclo del catalogo** (confronto, coda di approvazione, ripubblicazione) | 1½ | Sblocca l'atto 2 e rende il catalogo auto-mantenuto |
-| 2 | **Mappa componenti ↔ step** + indice inverso + punteggio | 1 | **Il cuore.** Senza, la generazione ricade su una scelta probabilistica: salta la tesi |
-| 3 | Verifiche tipizzate nel recorder (D16) | ½ | |
-| 4 | Generazione dello scenario | 1½ | |
-| 5 | Step + Page Object, esecuzione | 1½ | |
-| 6 | Piano demo + slide | 2 | **Fermi su Q2** |
+| ~~1~~ | ~~Ciclo del catalogo~~ | — | ✅ `npm run catalog:sync` |
+| ~~2~~ | ~~Mappa componenti ↔ step~~ | — | ✅ ed e' risultata **il cuore davvero**: e' l'unico aggancio che funziona fra lingue diverse (F16) |
+| ~~4~~ | ~~Generazione dello scenario~~ | — | ✅ `npm run generate` |
+| ~~5~~ | ~~Step + Page Object~~ | — | ✅ deterministici, compilano |
+| 5b | **Registrazione nuova + test verde vero** | ½ | Non e' codice: serve rifare una sessione col recorder aggiornato |
+| 3 | Verifiche tipizzate nel recorder (D16) | ½ | Alza la qualita' delle asserzioni generate |
+| 7 | Contenuto del catalogo: eleggere i primi step Gold dal corpus | 1 | Senza, la rosa dei candidati resta spesso vuota e l'assistente non ha da cui scegliere |
+| 8 | Due bottoni nell'app: genera, lancia | 1 | **Il primo da tagliare** |
+| 6 | Piano demo + slide | 2 | **Da non lasciare per ultimo** |
 
-Il punto 6 e' l'unico bloccato da una risposta che non dipende dallo sviluppo.
-Il punto 2 e' quello da non tagliare mai.
+Il punto 7 e' quello che adesso limita di piu' il risultato: la macchina funziona,
+ma pesca da un catalogo di 100 step quasi tutti `@wanted` e non ancora ancorati ai
+componenti.
 
 ### Come funziona il ciclo del catalogo (D14)
 
