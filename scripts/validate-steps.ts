@@ -28,6 +28,16 @@ interface CatalogStep {
   domain: string;
   sourceRef: string;
   doc: { intent?: string; params: Record<string, string> };
+  /**
+   * Formulazioni note della stessa intenzione, raccolte dal corpus esistente.
+   *
+   * Sono il pezzo che fa la differenza fra uno strumento adottato e uno
+   * aggirato. Senza, chi scrive una variante si sente dire "step non a
+   * catalogo, chiedi al gatekeeper" — inutile e frustrante, perche' l'aveva
+   * scritto proprio perche' non sapeva che esistesse. Con gli alias il
+   * validatore sa esattamente cosa intendeva e glielo mette davanti.
+   */
+  aliases?: string[];
 }
 
 interface StepCatalog {
@@ -153,7 +163,14 @@ function main(): void {
     process.exit(0);
   }
 
-  const featureFiles = getStagedFeatureFiles();
+  // Percorsi espliciti se ne arrivano, altrimenti i file in staging.
+  //
+  // Serve alla generazione: uno scenario appena prodotto va validato PRIMA di
+  // essere proposto a chi lo ha chiesto, e in quel momento non e' in staging —
+  // non e' nemmeno detto che finisca mai in un commit. Serve anche per provare
+  // il validatore su un file a mano, senza dover fare git add.
+  const explicit = process.argv.slice(2).filter((a) => a.endsWith(".feature"));
+  const featureFiles = explicit.length > 0 ? explicit : getStagedFeatureFiles();
   if (featureFiles.length === 0) {
     // Nothing to validate.
     process.exit(0);
@@ -173,6 +190,28 @@ function main(): void {
     sourceRef: s.sourceRef,
   }));
 
+  /**
+   * Le varianti note, ognuna con la forma canonica che la sostituisce.
+   *
+   * Cercate DOPO le espressioni canoniche: una frase che e' gia' conforme non
+   * deve passare da qui.
+   */
+  const aliases = catalog.steps.flatMap((s) =>
+    (s.aliases ?? []).map((a) => ({
+      alias: a,
+      regex: cucumberExprToRegex(a),
+      canonical: s.expression,
+    }))
+  );
+
+  /**
+   * In fase di avvio il catalogo e' giovane e quasi tutto e' una variante: se
+   * ogni variante bloccasse un commit, la gente aggirerebbe il controllo e
+   * saremmo punto e a capo. `STEP_VALIDATION_MODE=warn` degrada i blocchi ad
+   * avvisi finche' il catalogo non e' maturo.
+   */
+  const lenient = process.env["STEP_VALIDATION_MODE"] === "warn";
+
   let hasErrors = false;
   const WARN_THRESHOLD = 0.8;
 
@@ -189,7 +228,26 @@ function main(): void {
       const exactMatch = compiled.find((c) => c.regex.test(text));
       if (exactMatch) continue;
 
-      // 2. No exact match — fuzzy search for closest.
+      // 2. Variante nota: sappiamo esattamente cosa intendeva chi ha scritto.
+      //    Non e' un "non conforme" generico — e' una correzione con la riga
+      //    gia' pronta da incollare, che si applica in cinque secondi.
+      const knownVariant = aliases.find((a) => a.regex.test(text));
+      if (knownVariant) {
+        if (!fileHasIssues) {
+          console.error(`\n❌  ${file}`);
+          fileHasIssues = true;
+        }
+        console.error(
+          `   ${lenient ? "⚠️ " : "🔁"}  Line ${line}: variante nota di uno step esistente\n` +
+          `       Hai scritto: "${text}"\n` +
+          `       Usa invece:  "${knownVariant.canonical}"\n` +
+          `       → Stessa intenzione, gia' a catalogo. Sostituisci e prosegui.`
+        );
+        if (!lenient) hasErrors = true;
+        continue;
+      }
+
+      // 3. No exact match — fuzzy search for closest.
       const normText = normExpr(text);
       const best = compiled.reduce(
         (acc, c) => {

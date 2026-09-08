@@ -38,6 +38,8 @@ interface CatalogStep {
   parameters: string[];
   /** Componenti toccati. Assente = step non ancora ancorato alla UI. */
   components?: StepComponent[];
+  /** Formulazioni note della stessa intenzione, raccolte dal corpus. */
+  aliases?: string[];
   /** Ultima volta che lo scout ha confermato che esistono ancora. */
   componentsVerifiedAt?: string;
   app?: string;
@@ -109,6 +111,14 @@ for (const domain of [...byDomain.keys()].sort()) {
       for (const [name, desc] of Object.entries(s.doc!.params)) {
         md += `- \`${name}\` — ${desc}\n`;
       }
+      md += `\n`;
+    }
+    // Gli alias sono documentazione quanto la forma canonica: chi cerca nel
+    // catalogo cerca con le parole SUE, non con quelle approvate. Renderli
+    // visibili rende lo step trovabile anche da chi non conosce la convenzione.
+    if (s.aliases?.length) {
+      md += `**Anche scritto come:** _(varianti note — non usarle: usare la forma sopra)_\n`;
+      for (const a of s.aliases) md += `- \`${a}\`\n`;
       md += `\n`;
     }
     // I componenti sono documentazione, non solo dati per il matching: dicono a
