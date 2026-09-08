@@ -161,54 +161,84 @@ per decisioni che ne riguardano una sola. Un gruppo e' TECNICO quando la scelta
 dipende da parametrizzazione o da quali componenti tocca; e' LINGUAGGIO quando
 le varianti sono equivalenti sul piano tecnico e cambia solo come si dice.
 
-## Le quattro decisioni possibili
+## Come si decide, in concreto
 
-Offrire solo "scegli quale delle tre" non basta, ed e' un difetto pericoloso:
-**il raggruppamento puo' sbagliare**. Se due intenzioni diverse finiscono nello
-stesso gruppo e l'unica opzione e' sceglierne una, si sancisce una Gold
-sbagliata e due intenti distinti collassano in uno — peggio dell'entropia di
-partenza, perche' adesso e' pure approvata.
+### Il principio: il costo non e' decidere, e' registrare
 
-| Decisione | Quando |
-|---|---|
-| **eleggi** | una delle varianti diventa Gold |
-| **scrivi** | nessuna va bene: se ne detta una nuova |
-| **spezza** | queste varianti non sono la stessa intenzione |
-| **rinvia** | con un motivo scritto |
+Leggere venti proposte e obiettarne due si fa in cinque minuti. Compilare venti
+righe di decisione con una sintassi da ricordare, no — e la seconda volta la
+riunione si salta.
 
-**Spezzare e' una decisione di prima classe, non un caso d'errore.** Se ne
-accorge tipicamente l'SDET guardando i componenti: due varianti che toccano
-componenti diversi quasi certamente non sono lo stesso intento.
+Quindi: **si scrive solo per dissentire.** Lasciare in bianco significa
+approvato.
 
-## Come si registra la decisione
+### Cosa vede chi decide
 
-Nessuna interfaccia da costruire: **la coda stessa e' il modulo**. Per ogni
-gruppo una riga precompilata che si modifica sul posto.
+Una proposta, un motivo, un esempio. Nient'altro.
 
 ```markdown
-## Gruppo 7 — 3 varianti · 22 occorrenze · 2 aree · giudizio: LINGUAGGIO
+## Gruppo 12 · 22 occorrenze · 2 aree
 
-  [1] the user logs in as {string}                        0.71  ← proposta
-      occorrenze 8 · aree 3 · conformita' 1.00 · componenti si'
-  [2] the user enters credentials and clicks Login        0.53
-      occorrenze 14 · aree 1 · conformita' 0.60 (meccanica UI: clicks)
+  PROPOSTA   usare due step che esistono gia', invece di crearne uno nuovo
+             "the user confirms the order" + "the user pays"
 
-  ESEMPI REALI
-  [1] dentro lo scenario "Checkout con carta salvata"
-  [2] dentro lo scenario "Primo accesso"
+  PERCHE'    i componenti toccati coincidono esattamente con quei due step
 
-DECISIONE: gold=1
-# gold=N | nuova: <frase> | spezza: 1,2 | rinvia: <motivo>
+  ESEMPIO    dentro lo scenario "Acquisto con carta salvata"
+
+  NON SONO D'ACCORDO — perche': ______________________
 ```
 
-Si modifica il file, uno script lo rilegge. Costo zero, niente da imparare, e
-resta un documento leggibile fra sei mesi — quando qualcuno chiedera' perche'
-si era scelto cosi'.
+### Quando qualcuno dissente
 
-**Gli esempi reali contano piu' del punteggio.** Una frase letta da sola sembra
-una cosa; letta dentro il suo scenario ne sembra un'altra. Senza il contesto si
-sceglie sulla forma invece che sul significato, ed e' il modo piu' facile per
-eleggere la Gold sbagliata con tutti d'accordo.
+Solo allora compaiono le alternative, e **solo quelle sensate per quel gruppo**:
+
+```
+  Cosa preferisci?
+    - un'altra fra queste     [1] …  [2] …
+    - una frase diversa:      ______________________
+    - non sono la stessa cosa, vanno separate
+    - rimandiamo al mese prossimo
+```
+
+Chi non dissente non vede mai queste opzioni e non ha bisogno di conoscerle.
+Chi dissente le trova nel momento in cui servono.
+
+### La tassonomia sta nello strumento, non nella testa delle persone
+
+Dietro le quinte lo strumento distingue sei esiti — eleggi, scrivi,
+parametrizza, scomponi, spezza, rinvia — e sceglie da solo quale proporre, in
+base a segnali meccanici. **Nessuno deve impararli.** Sono il modo in cui lo
+strumento ragiona, non il vocabolario con cui si risponde.
+
+| # | Domanda che si pone lo strumento | Segnale automatico | Cosa propone |
+|---|---|---|---|
+| 1 | E' davvero una sola intenzione? | le varianti toccano **componenti diversi** | separare |
+| 2 | E' una composizione di step esistenti? | i suoi componenti sono l'**unione** di quelli di 2+ voci a catalogo | usare quelli, senza aggiungerne |
+| 3 | Le varianti differiscono solo per un valore? | stessa impronta, parametri diversi | una forma parametrica |
+| 4 | Altrimenti | la matrice a punteggio | la variante col punteggio piu' alto |
+
+**La domanda 2 e' quella che ripaga il campo `components`.** Se una variante
+viene trattata come nuova, il catalogo cresce; se si riconosce che e' la somma
+di due voci esistenti, il catalogo **non cresce** e quello scenario si riscrive
+con step che ci sono gia'. Ed e' un confronto fra insiemi, non un'inferenza
+semantica.
+
+**La domanda 1 usa i componenti come controllo sul clustering.** Due varianti
+fuse perche' le parole si somigliano, ma che toccano componenti disgiunti,
+quasi certamente non sono lo stesso intento: un secondo parere indipendente,
+uno guarda le parole e l'altro cosa viene toccato sullo schermo.
+
+### Il rischio del silenzio, e come si copre
+
+"Silenzio = consenso" puo' voler dire "nessuno ha letto". Tre difese:
+
+- la finestra asincrona dura tre giorni: chi vuole legge con calma;
+- in riunione la conferma in blocco e' **esplicita a voce**, non implicita;
+- il registro annota chi c'era: la decisione ha dei nomi dietro.
+
+Se nonostante tutto nessuno legge mai, non e' un problema di formato — e' che
+il rituale non serve a nessuno, e va saputo invece che mascherato.
 
 ## Cosa esce (definizione di fatto)
 
