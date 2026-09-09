@@ -23,8 +23,13 @@
  * parla, ed e' voluto.
  *
  * Uso:
- *   npm run referto                    scrive referti/<data>.md
- *   npm run referto -- --nome collaudo  per distinguere piu' misure
+ *   npm run referto              scrive referti/<data>-misura.md
+ *   npm run referto -- clinic    scrive referti/<data>-clinic.md
+ *
+ * Il nome si passa come argomento nudo, non come flag. E' la terza volta che un
+ * flag non arriva allo script passando per `npm run -- ...`, e le prime due
+ * volte e' costata una misura sbagliata e un file sovrascritto. Un argomento
+ * senza trattini davanti non lo mangia nessuno.
  */
 
 import * as fs from "fs";
@@ -79,7 +84,8 @@ interface Registrazione {
 
 function main(): void {
   const args = process.argv.slice(2);
-  const nome = argValue(args, "--nome") ?? "misura";
+  // Argomento nudo, con --nome ancora accettato per chi l'aveva imparato.
+  const nome = args.find((a) => !a.startsWith("-")) ?? argValue(args, "--nome") ?? "misura";
   const righe: string[] = [];
 
   righe.push(`# Referto — ${nome}`);
