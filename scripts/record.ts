@@ -54,6 +54,8 @@ import { RECORDER_OVERLAY_SOURCE } from "./lib/recorder-overlay";
 import { judge } from "./lib/stability";
 import type { Step, Assertion, Intent, Recording } from "./lib/generation-contract";
 import { pageIdentity } from "./lib/generate-core";
+import { inventory, mergeInventories } from "./lib/inventory";
+import type { ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 
 // ---------------------------------------------------------------------------
@@ -185,7 +187,23 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
 // Sessione
 // ---------------------------------------------------------------------------
 
-async function record(target: Target, browserName: string): Promise<Recording> {
+/**
+ * Il risultato di una sessione: la traccia E i dizionari delle pagine viste.
+ *
+ * Vengono insieme perche' nascono insieme, ed e' la scoperta che ha cambiato il
+ * metodo: una pagina inventariata a freddo puo' mostrare uno stato diverso da
+ * quello attraversato — `/questions/3` dipende dalle risposte date prima, un
+ * modale cambia cosa e' raggiungibile, una lista dipende dai dati dell'utente.
+ * Il dizionario preso mentre si registra descrive la pagina che il tester ha
+ * davvero avuto davanti, e per generare il codice di QUELLA sessione e' l'unico
+ * che vale.
+ */
+interface Sessione {
+  recording: Recording;
+  dizionari: Map<string, ScoutResult>;
+}
+
+async function record(target: Target, browserName: string): Promise<Sessione> {
   const url = target.url;
   const events: RawEvent[] = [];
   const pages = new Set<string>();
@@ -325,6 +343,40 @@ async function record(target: Target, browserName: string): Promise<Recording> {
     console.log(`  Barra presente. In alto a destra, trascinabile.\n`);
   }
 
+  // ── L'inventario, preso mentre si registra ────────────────────────────────
+  //
+  // A ogni pagina che si assesta si inventaria cio' che c'e'. Con un ritardo, e
+  // annullabile: su un'applicazione a pagina singola le navigazioni arrivano a
+  // raffica, e inventariare a ogni cambio di rotta rallenterebbe chi sta
+  // lavorando — che e' la cosa da non fare mai, perche' un tester rallentato
+  // torna a fare il test senza lo strumento.
+  //
+  // Ogni errore qui e' silenzioso di proposito: una pagina non inventariata e'
+  // un dizionario piu' povero, non una sessione persa. Fermare la registrazione
+  // di qualcuno a meta' per un dettaglio tecnico sarebbe sproporzionato.
+  const dizionari = new Map<string, ScoutResult>();
+  let attesa: NodeJS.Timeout | null = null;
+
+  const inventaria = (): void => {
+    if (attesa) clearTimeout(attesa);
+    attesa = setTimeout(() => {
+      void inventory(page)
+        .then((d) => {
+          const key = pageIdentity(d.url).key;
+          const gia = dizionari.get(key);
+          // Unione, non sostituzione: un modale aperto a meta' sessione mostra
+          // componenti che dopo non ci sono piu', e sono proprio quelli toccati.
+          dizionari.set(key, gia ? mergeInventories(gia, d) : d);
+        })
+        .catch(() => { /* pagina che naviga mentre si legge: si riprovera' */ });
+    }, 1200);
+  };
+
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) inventaria();
+  });
+  inventaria();
+
   // Si aspetta il pulsante di stop oppure la chiusura del browser.
   await new Promise<void>((resolve) => {
     const timer = setInterval(() => {
@@ -339,22 +391,37 @@ async function record(target: Target, browserName: string): Promise<Recording> {
     });
   });
 
+  // Un ultimo inventario prima di chiudere: l'ultima pagina e' quella su cui si
+  // e' fermato il tester, spesso la conferma — cioe' proprio quella che serve
+  // alle verifiche, e l'unica che nessuna navigazione successiva ha catturato.
+  if (attesa) clearTimeout(attesa);
+  await inventory(page)
+    .then((d) => {
+      const key = pageIdentity(d.url).key;
+      const gia = dizionari.get(key);
+      dizionari.set(key, gia ? mergeInventories(gia, d) : d);
+    })
+    .catch(() => { /* browser gia' chiuso dal tester */ });
+
   await browser.close().catch(() => { /* gia' chiuso dal tester */ });
 
   const { intents, unlabelled } = group(events);
 
   return {
-    startUrl: url,
-    recordedAt: new Date(startedAt).toISOString(),
-    durationSeconds: Math.round((Date.now() - startedAt) / 1000),
-    pagesVisited: [...pages],
-    summary: {
-      intents: intents.length,
-      steps: intents.reduce((n, i) => n + i.steps.length, 0),
-      assertions: intents.reduce((n, i) => n + i.assertions.length, 0),
-      unlabelled,
+    recording: {
+      startUrl: url,
+      recordedAt: new Date(startedAt).toISOString(),
+      durationSeconds: Math.round((Date.now() - startedAt) / 1000),
+      pagesVisited: [...pages],
+      summary: {
+        intents: intents.length,
+        steps: intents.reduce((n, i) => n + i.steps.length, 0),
+        assertions: intents.reduce((n, i) => n + i.assertions.length, 0),
+        unlabelled,
+      },
+      intents,
     },
-    intents,
+    dizionari,
   };
 }
 
@@ -362,7 +429,7 @@ async function record(target: Target, browserName: string): Promise<Recording> {
 // Report
 // ---------------------------------------------------------------------------
 
-function report(rec: Recording, outPath: string): void {
+function report(rec: Recording, outPath: string, dizionari?: Map<string, ScoutResult>): void {
   const s = rec.summary;
 
   console.log(`\nREGISTRAZIONE CONCLUSA\n`);
@@ -568,12 +635,31 @@ async function main(): Promise<void> {
     path.join("reports", "recordings", `${slugify(url)}-${stamp}.json`);
   const browserName = argValue(args, "--browser") ?? "chrome";
 
-  const rec = await record(target, browserName);
-  const finale = args.includes("--senza-etichette") ? rec : await nominaIntenti(rec);
+  const sessione = await record(target, browserName);
+  const finale = args.includes("--senza-etichette")
+    ? sessione.recording
+    : await nominaIntenti(sessione.recording);
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(finale, null, 2), "utf-8");
-  report(finale, outPath);
+
+  // I dizionari finiscono dove il generatore li cerca: cosi' `npm run generate`
+  // trova gia' tutto senza che nessuno debba ricordarsi di lanciare lo scout.
+  // Se ne esisteva gia' uno per la stessa pagina, si fondono invece di
+  // sostituirsi: una scansione precedente puo' aver visto stati che questa
+  // sessione non ha attraversato.
+  const scoutDir = path.join("reports", "scout");
+  fs.mkdirSync(scoutDir, { recursive: true });
+  for (const d of sessione.dizionari.values()) {
+    const file = path.join(scoutDir, `${slugify(d.url)}.json`);
+    const precedente = fs.existsSync(file)
+      ? (JSON.parse(fs.readFileSync(file, "utf-8")) as ScoutResult)
+      : null;
+    const unione = precedente ? mergeInventories(precedente, d) : d;
+    fs.writeFileSync(file, JSON.stringify(unione, null, 2), "utf-8");
+  }
+
+  report(finale, outPath, sessione.dizionari);
 }
 
 main().catch((err) => {
