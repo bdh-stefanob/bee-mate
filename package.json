@@ -26,7 +26,7 @@
     "check:stability": "ts-node scripts/lib/stability.check.ts",
     "check:gold": "ts-node scripts/lib/gold.check.ts",
     "check:storage": "ts-node scripts/lib/markdown-storage.check.ts",
-    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark",
+    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling",
     "analyze:corpus": "ts-node scripts/analyze-corpus.ts",
     "catalog:sync": "ts-node scripts/catalog-sync.ts",
     "confluence:publish": "ts-node scripts/confluence-publish.ts",
@@ -40,7 +40,8 @@
     "targets": "ts-node scripts/targets.ts",
     "scout:pausa": "ts-node scripts/scout.ts --pause",
     "diagnosi": "ts-node scripts/diagnosi.ts",
-    "referto": "ts-node scripts/referto.ts"
+    "referto": "ts-node scripts/referto.ts",
+    "check:labelling": "ts-node scripts/lib/labelling.check.ts"
   },
   "keywords": [
     "playwright",
