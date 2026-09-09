@@ -32,6 +32,21 @@ export const DOM_PROBE_SOURCE = String.raw`
 
   const IMPLICIT_ROLE = {
     a: 'link', button: 'button', select: 'combobox', textarea: 'textbox',
+    h1: 'heading', h2: 'heading', h3: 'heading', h4: 'heading', h5: 'heading', h6: 'heading',
+  };
+
+  /**
+   * Ruoli che NON si automatizzano ma si verificano.
+   *
+   * Un titolo, un messaggio di conferma, un totale: non ci si clicca sopra, ma
+   * sono esattamente cio' che dimostra che un passo e' riuscito. Restano fuori
+   * da KEEP — il dizionario dei componenti inventaria cose con cui si
+   * interagisce — ma il recorder deve poterli indicare.
+   */
+  const TEXTUAL_ROLE = {
+    h1: 'heading', h2: 'heading', h3: 'heading', h4: 'heading', h5: 'heading', h6: 'heading',
+    p: 'paragraph', li: 'listitem', td: 'cell', th: 'columnheader',
+    dd: 'definition', dt: 'term', output: 'status', figcaption: 'caption',
   };
   const INPUT_ROLE = {
     checkbox: 'checkbox', radio: 'radio', submit: 'button', button: 'button',
@@ -119,8 +134,46 @@ export const DOM_PROBE_SOURCE = String.raw`
     return { role: role, name: name };
   }
 
+  /**
+   * Come describe, ma accetta anche cio' con cui non si interagisce.
+   *
+   * SERVE ALLE VERIFICHE, ED E' UN BUCO SCOPERTO TARDI. describe() scarta tutto
+   * cio' che non ha un ruolo interattivo, quindi un titolo o un messaggio di
+   * conferma non erano indicabili: la verifica piu' naturale che esista —
+   * "vedo *Grazie per il tuo ordine*" — non si poteva registrare, e il click
+   * cadeva nel vuoto senza spiegazioni.
+   *
+   * Un elemento interattivo con un nome resta la scelta migliore quando c'e':
+   * e' un ancoraggio piu' solido di una frase. Solo se non c'e' si prende il
+   * testo, salendo finche' se ne trova uno — un click arriva spesso su uno
+   * span vuoto dentro al paragrafo.
+   */
+  function describeAny(el) {
+    let node = el;
+    for (let depth = 0; node && depth < 6; depth++) {
+      if (node.nodeType === 1) {
+        const strict = describe(node);
+        if (strict && strict.name) return strict;
+
+        const tag = node.tagName ? node.tagName.toLowerCase() : '';
+        const role = roleOf(node) || TEXTUAL_ROLE[tag] || 'text';
+        const name = accessibleName(node);
+        // Vuoto: si sale. Lunghissimo: e' un contenitore, e si tronca invece di
+        // salire ancora — piu' su sarebbe solo peggio.
+        if (name) {
+          return name.length >= 120
+            ? { role: role, name: name.slice(0, 120), truncated: true }
+            : { role: role, name: name };
+        }
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+
   window.__bddProbe = {
     describe: describe,
+    describeAny: describeAny,
     isVisible: isVisible,
     closestInteractive: closestInteractive,
     roles: Array.from(KEEP),
