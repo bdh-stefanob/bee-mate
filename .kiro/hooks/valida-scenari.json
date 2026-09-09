@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "valida-scenari",
+      "description": "Al salvataggio di un .feature lancia il validatore degli step. Il giudizio sull'entropia e' deterministico e non passa dall'assistente: qui si limita a scattare da solo, invece di dipendere da chi si ricorda di lanciarlo.",
+      "trigger": "PostFileSave",
+      "matcher": "\\.feature$",
+      "action": {
+        "type": "command",
+        "command": "npm run validate:steps"
+      },
+      "timeout": 120,
+      "enabled": true
+    },
+    {
+      "name": "rigenera-catalogo",
+      "description": "STEP_CATALOG.md non si scrive a mano: si rigenera dal codice. Al salvataggio di una step definition il catalogo torna allineato da solo, cosi' chi cerca uno step trova quello che c'e' davvero e non quello che c'era.",
+      "trigger": "PostFileSave",
+      "matcher": "\\.steps\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "npm run catalog"
+      },
+      "timeout": 180,
+      "enabled": true
+    }
+  ]
+}

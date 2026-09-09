@@ -1,6 +1,5 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: '**/*.feature'
+inclusion: always
 ---
 
 # Scrivere scenari Gherkin
