@@ -78,8 +78,14 @@ interface Dizionario {
 }
 interface Registrazione {
   durationSeconds?: number;
+  pagesVisited?: string[];
   summary?: { intents?: number; steps?: number; assertions?: number; unlabelled?: number };
-  intents?: Array<{ pageUrl?: string; steps?: Array<{ url?: string; secret?: boolean }> }>;
+  intents?: Array<{
+    label?: string;
+    pageUrl?: string;
+    steps?: Array<{ url?: string; secret?: boolean; action?: string; role?: string }>;
+    assertions?: Array<{ role?: string }>;
+  }>;
 }
 
 function main(): void {
@@ -179,6 +185,56 @@ function main(): void {
         `recorder stampigliasse la pagina su ogni gesto. Non e' inutile, ma tutto ` +
         `finisce sulla prima Page Object — il generatore lo dichiara.`
     );
+    righe.push("");
+
+    // CHE COSA E' STATO TOCCATO, SENZA DIRE COSA.
+    //
+    // I ruoli ARIA sono vocabolario dello standard, non dell'applicazione:
+    // "button", "textbox", "combobox" non dicono niente di riservato. Bastano
+    // pero' a capire che tipo di sessione e' stata registrata — un modulo, una
+    // navigazione, una scelta fra opzioni — e quindi a diagnosticare da lontano
+    // perche' una registrazione non ha prodotto quello che doveva.
+    righe.push("### Che tipo di gesti");
+    righe.push("");
+
+    const tuttiIntenti = registrazioni.flatMap(
+      (f) => leggi<Registrazione>(path.join(RECORDINGS, f))?.intents ?? []
+    );
+    const gesti = tuttiIntenti.flatMap((i) => i.steps ?? []);
+    const perAzione = conta(gesti, (g) => g.action ?? "?");
+    const perRuolo = conta(gesti, (g) => g.role ?? "?");
+    const conSegreto = gesti.filter((g) => g.secret).length;
+    const etichettati = tuttiIntenti.filter(
+      (i) => i.label && !i.label.startsWith("(")
+    ).length;
+
+    righe.push(`Su ${gesti.length} gesti registrati in tutto:`);
+    righe.push("");
+    for (const [k, n] of [...perAzione.entries()].sort((a, b) => b[1] - a[1])) {
+      righe.push(`- \`${k}\` — ${n}`);
+    }
+    righe.push("");
+    righe.push(
+      `Ruoli toccati: ` +
+        [...perRuolo.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .map(([r, n]) => `\`${r}\` ${n}`)
+          .join(", ")
+    );
+    righe.push("");
+    righe.push(`- intenti con un'etichetta vera: **${etichettati}** su ${tuttiIntenti.length}`);
+    righe.push(`- campi password, mai registrati: ${conSegreto}`);
+    righe.push("");
+
+    if (etichettati === 0 && tuttiIntenti.length > 0) {
+      righe.push(
+        `**Nessun intento etichettato.** O la barra non e' comparsa, o non e' stata ` +
+          `usata: sono le due sole cose che dai gesti non si deducono, e senza di esse ` +
+          `lo scenario generato descrive cosa si fa ma non cosa deve succedere. ` +
+          `Il recorder adesso dice quale dei due casi e'.`
+      );
+      righe.push("");
+    }
   }
   righe.push("");
 
