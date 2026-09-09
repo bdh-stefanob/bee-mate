@@ -1,14 +1,24 @@
-# Amazon Q: cosa gli diamo, e come misuriamo se serve
+# L'assistente: cosa gli diamo, e come misuriamo se serve
+
+> **Il motore e' Kiro**, sia come IDE sia come fornitore del modello a pagamento.
+> Amazon Q resta supportato — e la sua CLI resta utile — ma non e' piu' lo
+> strumento principale. Tutto cio' che segue vale per entrambi: la sorgente e'
+> una sola, le due versioni si generano.
 
 ## I tre modi in cui gli si parla, e a cosa servono
 
-| Meccanismo | Dove vive | Quando entra in gioco |
-|---|---|---|
-| **Regole di progetto** | `.amazonq/rules/*.md` | sempre, da sole, in IDE e in CLI |
-| **Agenti** | `.amazonq/cli-agents/*.json` | quando lo si chiama: `q chat --agent bdd-generate` |
-| **Compito** | `reports/generate/<nome>/brief.md` | una volta per scenario, generato |
+| Meccanismo | Kiro | Amazon Q | Quando entra in gioco |
+|---|---|---|---|
+| **Regole** | `.kiro/steering/*.md` | `.amazonq/rules/*.md` | da sole, secondo l'inclusione |
+| **Agenti** | `.kiro/agents/*.json` | `.amazonq/cli-agents/*.json` | quando lo si chiama per nome |
+| **Automatismi** | `.kiro/hooks/*.json` | — | a un evento dell'editor |
+| **Compito** | `reports/generate/<nome>/brief.md` | idem | una volta per scenario, generato |
 
-Sono tre livelli di specificita' crescente, e servono tutti e tre.
+Le colonne Kiro sono **generate** da quelle Amazon Q con `npm run rules:sync`.
+Due copie scritte a mano divergono in silenzio, ed e' curioso riprodurre qui
+dentro il problema di entropia che il progetto esiste per risolvere.
+
+Sono livelli di specificita' crescente, e servono tutti.
 
 Le **regole** sono cio' che non cambia mai: l'architettura a layer, le
 convenzioni delle Page Object, il divieto di selettori negli step. Vanno lette
@@ -40,19 +50,59 @@ candidati sono cinque. Un modello che sceglie fra cinque opzioni sbaglia in modi
 che un compilatore prende. Un modello che compone da zero sbaglia in modi che si
 scoprono in produzione.
 
-## Da verificare sulla macchina aziendale (due minuti)
+## L'inclusione: il metodo sempre attivo, la meccanica no
 
-Lo schema degli agenti l'ho preso dalla documentazione, non da un'installazione:
+Kiro carica ogni file di steering secondo il suo front-matter, e qui c'e' un modo
+di sbagliare che non fa rumore.
+
+La tentazione e' rendere tutto condizionale per risparmiare contesto. Ma la
+regola piu' importante che abbiamo — *non inventare frasi, cerca prima nel
+catalogo* — serve **proprio quando** qualcuno chiede "scrivimi uno scenario per
+il login" senza avere ancora aperto un `.feature`. Legata a `fileMatch` su
+`**/*.feature`, in quel momento non sarebbe in contesto, e l'assistente si
+comporterebbe esattamente come il problema che stiamo prevenendo.
+
+| File | Inclusione | Perche' |
+|---|---|---|
+| `product.md` | **always** | le tre regole, in ordine di importanza |
+| `bdd-authoring.md` | **always** | il procedimento: cerca, riusa, proponi UNO |
+| `step-catalog.md` | **always** | "cerca nel catalogo" e' inutile senza sapere com'e' fatto |
+| `automation-layers.md` | fileMatch `src/**/*.ts` | dettaglio tecnico |
+| `from-recording.md` | fileMatch `src/**` | serve solo generando |
+
+Centosessantacinque righe sempre attive: il costo di contesto e' modesto, e
+copre tutto cio' che serve per decidere **cosa** scrivere. Condizionale solo cio'
+che serve a scrivere il **codice**, che senza quei file davanti non serve.
+
+## Gli automatismi (solo Kiro)
+
+`.kiro/hooks/valida-scenari.json` fa scattare due cose da sole:
+
+- salvi un `.feature` → parte `npm run validate:steps`
+- salvi un `.steps.ts` → parte `npm run catalog`
+
+Sembra poco ed e' il pezzo che regge il modello nel tempo. Il giudizio
+sull'entropia e' **deterministico** e non passa dall'assistente (D6); l'hook
+toglie l'ultimo anello umano rimasto, che era *ricordarsi di lanciarlo*. E il
+secondo hook fa in modo che chi cerca uno step trovi quello che c'e' davvero e
+non quello che c'era.
+
+## Da verificare sulla macchina aziendale (cinque minuti)
+
+Formati presi dalla documentazione, non da un'installazione:
 
 ```bash
-q --version
-q agent list                 # vede bdd-generate e bdd-authoring?
-q chat --agent bdd-generate  # parte?
+# Kiro: gli agenti e gli hook sono riconosciuti?
+#   IDE → pannello agenti / pannello hook
+kiro-cli --version           # la CLI headless esiste: serve al confronto
+kiro-cli chat --no-interactive --trust-tools=read "elenca gli step del catalogo"
+
+# Amazon Q, se resta disponibile
+q agent list
 ```
 
-Dentro a una sessione, `/agent schema` stampa lo schema della versione
-installata. Se qualche campo non combacia, sono i due file JSON in
-`.amazonq/cli-agents/` da correggere — le regole in `.amazonq/rules/` non
+Se un campo non combacia, si correggono i JSON sorgente in
+`.amazonq/cli-agents/` e si rilancia `npm run rules:sync`. Le regole non
 c'entrano e continuano a funzionare comunque.
 
 ## Il confronto
@@ -61,7 +111,19 @@ La domanda arrivera' in questa forma: *"ma tutto questo impianto serve, o basta
 chiedere all'assistente?"*. E' una domanda legittima, ed e' meglio arrivarci con
 una tabella che con un'opinione.
 
-### La trappola da evitare
+### La trappola numero uno: il modello non fissato
+
+Kiro sta su **Auto** e sceglie il modello in base al tipo di richiesta. Comodo
+per lavorare, **rovinoso per misurare**: due esecuzioni fatte con due modelli
+diversi non misurano le regole, misurano i modelli — e guardando i risultati non
+si vede.
+
+Prima di qualunque confronto il modello va fissato: dal selettore in chat, o col
+campo `model` negli agenti. `npm run rules:sync` lo ripete a ogni esecuzione,
+perche' e' la cosa che si dimentica per prima, dato che non fa male finche' non
+serve.
+
+### La trappola numero due
 
 Amazon Q carica `.amazonq/rules/` **da solo**. Lanciare il compito non guidato in
 questo repository significherebbe misurare "con regole" due volte e chiamarne una
@@ -80,9 +142,10 @@ senza regole perderebbe per una ragione che non c'entra con la domanda.
 npm run generate -- --no-rules
 npm run benchmark -- --label deterministico
 
-# 2. Con le regole: Amazon Q lavora sul compito vincolato
-q chat --agent bdd-generate
-#   > leggi reports/generate/<nome>/brief.md e fai quello che dice
+# 2. Con le regole: l'assistente lavora sul compito vincolato
+#    Kiro, in IDE:  agente bdd-generate, modello FISSATO
+#    oppure headless, che e' riproducibile:
+kiro-cli chat --no-interactive --trust-tools=read,write   "leggi reports/generate/<nome>/brief.md e fai quello che dice"
 npm run benchmark -- --label con-regole
 
 # 3. Senza regole: campo neutro, stessa registrazione, richiesta libera
