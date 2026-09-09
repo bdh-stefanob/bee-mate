@@ -55,9 +55,8 @@ import { type Page } from "@playwright/test";
 import { avviaBrowser, noteRipiego } from "./lib/browser";
 import * as fs from "fs";
 import * as path from "path";
-import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
-import { toComponent, type RawElement } from "./lib/component-naming";
-import type { Kind, Component, ScoutResult } from "./lib/generation-contract";
+import { inventory } from "./lib/inventory";
+import type { Kind, ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours } from "./lib/targets";
 import { loadEnv } from "./lib/atlassian";
 
@@ -81,47 +80,6 @@ loadEnv();
 // li usa anche il generatore, e due copie darebbero nomi di metodo diversi per
 // lo stesso elemento.
 
-/**
- * Raccoglie gli elementi interattivi usando il probe condiviso.
- *
- * La descrizione (ruolo + nome accessibile) NON e' reimplementata qui: arriva da
- * `DOM_PROBE_SOURCE`, lo stesso codice che usa il recorder. Due implementazioni
- * diverse divergerebbero, e divergendo romperebbero l'aggancio fra "cosa ha
- * toccato il tester" e "quale componente e' quello" — che e' il perno del metodo.
- */
-function collectWithProbe(scopeSelector: string): RawElement[] {
-  const probe = (window as unknown as { __bddProbe: {
-    describe(el: Element): { role: string; name: string } | null;
-    isVisible(el: Element): boolean;
-    roles: string[];
-  } }).__bddProbe;
-
-  const selector = [
-    "a[href]", "button", 'input:not([type="hidden"])', "select", "textarea",
-    '[role="button"]', '[role="link"]', '[role="tab"]', '[role="menuitem"]',
-    '[role="checkbox"]', '[role="radio"]', '[role="combobox"]',
-    '[role="textbox"]', '[role="searchbox"]', '[role="switch"]',
-  ].join(", ");
-
-  const root = document.querySelector(scopeSelector) ?? document.body;
-  const out: RawElement[] = [];
-
-  root.querySelectorAll(selector).forEach((el) => {
-    if (!probe.isVisible(el)) return;
-    const described = probe.describe(el);
-    if (!described) return;
-
-    const input = el as HTMLInputElement;
-    out.push({
-      role: described.role,
-      name: described.name,
-      href: (el as HTMLAnchorElement).href ?? "",
-      disabled: Boolean(input.disabled || input.readOnly),
-    });
-  });
-
-  return out;
-}
 
 // ---------------------------------------------------------------------------
 // Giudizio sulla stabilita'
@@ -180,63 +138,12 @@ async function scan(
   // Le SPA montano dopo il DOMContentLoaded: senza attesa si scansiona uno scheletro.
   await page.waitForTimeout(waitMs);
 
-  // L'indirizzo registrato e' SEMPRE quello dove si e' finiti davvero, mai
-  // quello chiesto. Un rimando al login e' silenzioso: si chiede una pagina
-  // interna, l'applicazione risponde col modulo di accesso, e senza questa riga
-  // il dizionario direbbe di essere quello della pagina interna. Sarebbe una
-  // bugia che si scopre molto piu' tardi, quando i locator non trovano niente.
-  url = page.url();
-
-  // Il probe va iniettato prima di usarlo: la pagina e' gia' caricata, quindi
-  // evaluate e non addInitScript.
-  await page.evaluate(DOM_PROBE_SOURCE);
-  const raw = await page.evaluate(collectWithProbe, scope);
-
-  // Conta le occorrenze PRIMA di deduplicare: e' il dato che rende un locator
-  // ambiguo, e si perde se si deduplica per primo.
-  const counts = new Map<string, number>();
-  for (const el of raw) {
-    const key = `${el.role} ${el.name}`;
-    counts.set(key, (counts.get(key) ?? 0) + 1);
-  }
-
-  const seen = new Set<string>();
-  const components: Component[] = [];
-  for (const el of raw) {
-    const key = `${el.role} ${el.name}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    components.push(toComponent(el, counts.get(key) ?? 1));
-  }
-
-  components.sort((a, b) =>
-    a.role === b.role ? a.name.localeCompare(b.name) : a.role.localeCompare(b.role)
-  );
-
-  const unnamed = components.filter((c) => c.stability === "unnamed").length;
-  const ambiguous = components.filter((c) => c.stability === "ambiguous").length;
-  const unstable = components.filter((c) => c.stability === "unstable").length;
-  const usable = components.filter((c) => c.stability === "stable").length;
-
-  return {
-    url,
-    scope,
-    scoutedAt: new Date().toISOString(),
-    viewport: page.viewportSize() ?? { width: 0, height: 0 },
-    quality: {
-      interactiveFound: raw.length,
-      usable,
-      unnamed,
-      ambiguous,
-      unstable,
-      accessibleScore: components.length ? Math.round((usable / components.length) * 100) : 0,
-    },
-    components,
-  };
+  // La raccolta vera sta in lib/inventory.ts, usata anche dal recorder mentre
+  // registra: una pagina inventariata durante la sessione descrive lo stato che
+  // il tester ha davvero attraversato, e due implementazioni divergerebbero.
+  return inventory(page, scope);
 }
 
-// ---------------------------------------------------------------------------
-// Report a schermo
 // ---------------------------------------------------------------------------
 
 function report(result: ScoutResult, outPath: string): void {
