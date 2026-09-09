@@ -172,14 +172,20 @@ async function scan(
   await page.goto(url, { waitUntil: "domcontentloaded" });
 
   if (pause) {
-    await waitForEnter();
     // Si inventaria la pagina su cui la persona si e' fermata, non quella di
     // partenza: dopo il login e la navigazione l'URL e' quasi sempre un altro.
-    url = page.url();
+    await waitForEnter();
   }
 
   // Le SPA montano dopo il DOMContentLoaded: senza attesa si scansiona uno scheletro.
   await page.waitForTimeout(waitMs);
+
+  // L'indirizzo registrato e' SEMPRE quello dove si e' finiti davvero, mai
+  // quello chiesto. Un rimando al login e' silenzioso: si chiede una pagina
+  // interna, l'applicazione risponde col modulo di accesso, e senza questa riga
+  // il dizionario direbbe di essere quello della pagina interna. Sarebbe una
+  // bugia che si scopre molto piu' tardi, quando i locator non trovano niente.
+  url = page.url();
 
   // Il probe va iniettato prima di usarlo: la pagina e' gia' caricata, quindi
   // evaluate e non addInitScript.
@@ -328,6 +334,32 @@ async function main(): Promise<void> {
   const viewport = { width: vw || 1920, height: vh || 1080 };
 
   const pause = args.includes("--pause");
+
+  // LE OPZIONI SI DICHIARANO PRIMA DI PARTIRE, NON SI DEDUCONO DOPO.
+  //
+  // Un flag che non arriva allo script non produce un errore: produce una
+  // scansione diversa da quella che si voleva, con dei numeri che sembrano
+  // buoni. E' successo davvero — un `--pause` non arrivato ha fatto inventariare
+  // la pagina pubblica di un sito invece dell'applicazione dietro il login, e i
+  // numeri erano credibili. Scritto qui sopra, si vede subito.
+  console.log(`
+SCANSIONE — ${url}
+`);
+  console.log(`  Pausa    : ${pause ? "si', aspetto che tu faccia login e navighi" : "NO — scansiono subito questa pagina"}`);
+  console.log(`  Scope    : ${scope}`);
+  console.log(`  Viewport : ${viewport.width}x${viewport.height}`);
+  console.log(`  Attesa   : ${waitMs}ms`);
+  if (!pause) {
+    console.log(
+      `
+  Se questa pagina e' dietro autenticazione, quello che segue sara' il
+` +
+        `  modulo di login. Per fermarti e navigare a mano:
+` +
+        `      npm run scout:pausa -- ${which}`
+    );
+  }
+
   // --pause implica --headed: non si puo' fare login in un browser che non si vede.
   const avvio = await avviaBrowser({ headless: !args.includes("--headed") && !pause });
   const browser = avvio.browser;
@@ -355,6 +387,17 @@ ${nota}`);
 
     const page = await context.newPage();
     const result = await scan(page, url, scope, waitMs, pause);
+
+    // Un reindirizzamento e' la seconda causa di "ho misurato la pagina
+    // sbagliata": si chiede una pagina interna, l'applicazione rimanda al login,
+    // e il dizionario inventaria il modulo di accesso senza che niente lo dica.
+    if (result.url.replace(/\/$/, "") !== url.replace(/\/$/, "")) {
+      console.log(`
+  ATTENZIONE: sei finito su un altro indirizzo.`);
+      console.log(`    chiesto      : ${url}`);
+      console.log(`    scansionato  : ${result.url}`);
+      console.log(`    Se e' un rimando al login, la sessione manca o e' scaduta.`);
+    }
 
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, JSON.stringify(result, null, 2), "utf-8");
