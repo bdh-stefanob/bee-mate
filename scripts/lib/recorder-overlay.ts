@@ -107,7 +107,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     'button.active{background:#b45309}',
     'button.stop{background:#991b1b}button.stop:hover{background:#7f1d1d}',
     '.count{font:11px system-ui,sans-serif;color:#9ca3af;text-align:center}',
-    '.hint{font:11px system-ui,sans-serif;color:#fbbf24;text-align:center;display:none}',
+    '.hint{font:11px system-ui,sans-serif;color:#fbbf24;text-align:center;display:none;max-width:230px;line-height:1.4}',
     '.hint.on{display:block}',
     '.ask{display:none;flex-direction:column;gap:6px}',
     '.ask.on{display:flex}',
@@ -136,7 +136,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     '    </div>',
     '    <div class="row"><button id="stop" class="stop">Fine registrazione</button></div>',
     '    <div class="count" id="count">0 azioni · 0 intenti · 0 verifiche</div>',
-    '    <div class="hint" id="hint">Clicca l elemento da verificare</div>',
+    '    <div class="hint" id="hint">Clicca cio che dimostra che e andata bene: un titolo, un messaggio, un totale</div>',
     '  </div>',
     '</div>',
   ].join('');
@@ -311,24 +311,31 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
 
   document.addEventListener('click', (ev) => {
     if (fromBar(ev)) return;
+
+    // LA MODALITA' VERIFICA SI GESTISCE PER PRIMA, e non e' un dettaglio di
+    // ordine. Prima passava da closestInteractive, che restituisce solo
+    // controlli: un titolo o un messaggio di conferma non erano indicabili, il
+    // click cadeva nel vuoto e la modalita' restava accesa senza spiegazioni.
+    // Cioe' la verifica piu' naturale che esista non si poteva registrare.
+    if (state.picking) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const raw = ev.composedPath ? ev.composedPath()[0] : ev.target;
+      const d = window.__bddProbe.describeAny(raw);
+      // Niente da indicare: si resta in modalita' verifica, cosi' si riprova
+      // senza dover ripremere il pulsante.
+      if (!d || !d.name) return;
+      state.picking = false;
+      refresh();
+      emit({ type: 'assert', role: d.role, name: d.name, text: d.name, at: Date.now() });
+      return;
+    }
+
     const el = target(ev);
     if (!el) return;
     const d = window.__bddProbe.describe(el);
     if (!d) return;
-    if (!state.picking && CLICKABLE.indexOf(d.role) < 0) return;
-
-    if (state.picking) {
-      // In modalita' verifica il click NON e' un'azione: sceglie cosa asserire.
-      ev.preventDefault();
-      ev.stopPropagation();
-      state.picking = false;
-      refresh();
-      emit({
-        type: 'assert', role: d.role, name: d.name,
-        text: (el.textContent || '').trim().slice(0, 120), at: Date.now(),
-      });
-      return;
-    }
+    if (CLICKABLE.indexOf(d.role) < 0) return;
 
     emit({ type: 'action', action: 'click', role: d.role, name: d.name, at: Date.now() });
   }, true);
