@@ -41,7 +41,8 @@
  * un'app aziendale contiene nomi di funzionalita' reali e dati digitati.
  */
 
-import { chromium, type Browser, type BrowserContext } from "@playwright/test";
+import { type Browser, type BrowserContext } from "@playwright/test";
+import { avviaBrowser, noteRipiego } from "./lib/browser";
 import * as fs from "fs";
 import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
@@ -189,18 +190,14 @@ async function record(target: Target, browserName: string): Promise<Recording> {
   // ogni giorno, non in un rettangolo in mezzo allo schermo.
   const launchArgs = { headless: false, args: ["--start-maximized"] };
 
-  let browser: Browser;
-  try {
-    browser = await chromium.launch({
-      ...launchArgs,
-      ...(browserName === "chromium" ? {} : { channel: browserName }),
-    });
-  } catch {
-    // Chrome non installato: si ripiega sul Chromium di Playwright invece di
-    // fermarsi. Il tester non deve sapere quale browser sta usando.
-    console.log(`  ${browserName} non disponibile, uso il Chromium di Playwright.\n`);
-    browser = await chromium.launch(launchArgs);
-  }
+  // Il ripiego fra i browser disponibili sta in `lib/browser.ts`, che li prova
+  // in ordine — a partire da quello chiesto con --browser — e dice quale ha
+  // usato. Il tester non deve sapere quale browser sta pilotando, ma non deve
+  // nemmeno scoprirlo per caso: un browser diverso in silenzio e' peggio.
+  const avvio = await avviaBrowser(launchArgs, browserName);
+  const browser: Browser = avvio.browser;
+  const nota = noteRipiego(avvio);
+  if (nota) console.log(`\n${nota}`);
 
   // viewport: null fa usare alla pagina la dimensione REALE della finestra.
   // Senza, Playwright impone 1280x720 a prescindere da quanto e' grande la

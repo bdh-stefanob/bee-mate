@@ -29,7 +29,7 @@
  * copiato su altre macchine.
  */
 
-import { chromium } from "@playwright/test";
+import { avviaBrowser, noteRipiego } from "./lib/browser";
 import * as fs from "fs";
 import * as path from "path";
 import { loadEnv } from "./lib/atlassian";
@@ -177,7 +177,10 @@ async function main(): Promise<void> {
   if (age !== null) console.log(`  Ne esiste gia' una di ${age} ore fa: verra' sostituita.`);
   console.log("");
 
-  const browser = await chromium.launch({ headless: false, args: ["--start-maximized"] });
+  const avvio = await avviaBrowser({ headless: false, args: ["--start-maximized"] });
+  const browser = avvio.browser;
+  const nota = noteRipiego(avvio);
+  if (nota) console.log(nota);
   const context = await browser.newContext({ viewport: null });
   const page = await context.newPage();
   await page.goto(target.url, { waitUntil: "domcontentloaded" });

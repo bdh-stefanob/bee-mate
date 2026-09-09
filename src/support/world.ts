@@ -5,7 +5,8 @@
 // step definition e le Page Object.
 
 import { setWorldConstructor, World, IWorldOptions } from "@cucumber/cucumber";
-import { Browser, BrowserContext, Page, chromium } from "@playwright/test";
+import { Browser, BrowserContext, Page } from "@playwright/test";
+import { avviaBrowser } from "../../scripts/lib/browser";
 import { loadEnv } from "../../scripts/lib/atlassian";
 import { resolveTarget, hasSession, sessionAgeHours } from "../../scripts/lib/targets";
 
@@ -86,7 +87,12 @@ export class CustomWorld extends World {
   async init(): Promise<void> {
     // HEADED=1 per guardare il test mentre gira: serve quando un passo fallisce
     // e la causa non si capisce dal messaggio.
-    this.browser = await chromium.launch({ headless: process.env["HEADED"] !== "1" });
+    // Passa da `avviaBrowser` come tutto il resto: su una macchina dove i
+    // browser di Playwright non sono stati scaricati, l'alternativa sarebbe
+    // trenta scenari che falliscono con "Executable doesn't exist" invece di
+    // un messaggio che dice quale comando lo risolve.
+    const avvio = await avviaBrowser({ headless: process.env["HEADED"] !== "1" });
+    this.browser = avvio.browser;
     this.context = await this.browser.newContext({
       ...(AMBIENTE.baseURL ? { baseURL: AMBIENTE.baseURL } : {}),
       // La sessione salvata da `npm run session` evita di rifare il login a ogni

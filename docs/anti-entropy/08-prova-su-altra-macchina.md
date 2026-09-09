@@ -19,7 +19,9 @@ domanda giusta.
 ## Da zero a un test che gira
 
 ```bash
-git clone <repo> && cd bdd-automation-scaffold && npm install
+git clone <repo> && cd bdd-automation-scaffold
+npm install
+npx playwright install chromium          # NON lo fa npm install: sono binari a parte
 cp bdd-targets.example.json bdd-targets.json     # mettici i TUOI indirizzi
 
 npm run targets            # cosa c'e', cosa manca
@@ -44,6 +46,27 @@ BDD_TARGET=clinic npm test   # gira, gia' autenticato
 `BDD_TARGET` porta con se' **indirizzo e sessione**: i test partono autenticati
 senza rifare il login a ogni scenario. `HEADED=1` davanti al comando apre il
 browser, che serve quando un passo fallisce e il messaggio non basta.
+
+## Se il download dei browser e' bloccato
+
+Su un portatile aziendale la CDN di Playwright puo' essere chiusa dal proxy, e
+`npx playwright install` fallisce. Non e' un vicolo cieco: Playwright sa pilotare
+il Chrome o l'Edge **gia' installati**, senza scaricare niente.
+
+```bash
+BDD_BROWSER=chrome npm run scout -- https://...      # oppure msedge
+```
+
+In PowerShell: `$env:BDD_BROWSER="chrome"`.
+
+Senza la variabile ci arriva da solo: prova il Chromium di Playwright, poi
+Chrome, poi Edge, e **dice quale ha usato**. Un browser diverso in silenzio
+sarebbe peggio di un errore.
+
+Il compromesso, dichiarato: il Chrome di sistema ha la versione che ha, e non e'
+identico al Chromium di Playwright. Per inventariare nomi accessibili e
+registrare gesti non cambia niente. Per un test che dipende da un dettaglio di
+resa, potrebbe.
 
 ## Piu' ambienti, tutti insieme
 
