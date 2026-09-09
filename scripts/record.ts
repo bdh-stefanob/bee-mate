@@ -281,6 +281,21 @@ async function record(target: Target, browserName: string): Promise<Recording> {
 
   await page.goto(url, { waitUntil: "domcontentloaded" });
 
+  // LA BARRA E' COMPARSA DAVVERO?
+  //
+  // Finora non c'era modo di saperlo, e le due cause davano lo stesso risultato:
+  // una registrazione con zero intenti e zero verifiche puo' voler dire che il
+  // tester non ha premuto i pulsanti, oppure che i pulsanti non c'erano. La
+  // prima si risolve spiegando, la seconda no — e distinguerle a posteriori,
+  // guardando il file, e' impossibile.
+  //
+  // Il montaggio dell'overlay puo' fallire per motivi che non dipendono da noi:
+  // una Content-Security-Policy severa, un'applicazione che ripulisce il body,
+  // un z-index che la copre. Chiederlo al DOM costa una riga.
+  const barraPresente = await page
+    .evaluate(() => Boolean(document.getElementById("__bdd_recorder_host")))
+    .catch(() => false);
+
   console.log(
     `\nREGISTRAZIONE IN CORSO\n\n` +
       `  Esegui il test come lo faresti a mano. Nella barra in alto a destra:\n\n` +
@@ -289,6 +304,21 @@ async function record(target: Target, browserName: string): Promise<Recording> {
       `    Nota           per lasciare un'indicazione a chi leggera' lo scenario\n\n` +
       `  Premi "Fine registrazione" quando hai finito, o chiudi il browser.\n`
   );
+
+  if (!barraPresente) {
+    console.log(
+      `  ATTENZIONE: la barra NON e' comparsa su questa pagina.\n\n` +
+        `  I gesti verranno registrati lo stesso, ma senza i pulsanti non puoi\n` +
+        `  dichiarare i confini fra un passo e l'altro ne' le verifiche — e sono\n` +
+        `  le due sole cose che dai gesti non si deducono.\n\n` +
+        `  Cause tipiche: una Content-Security-Policy severa, oppure\n` +
+        `  l'applicazione che ripulisce il body al primo caricamento.\n` +
+        `  Provala su un'altra pagina della stessa app prima di concludere che\n` +
+        `  non funziona: spesso e' solo la pagina di login a essere blindata.\n`
+    );
+  } else {
+    console.log(`  Barra presente. In alto a destra, trascinabile.\n`);
+  }
 
   // Si aspetta il pulsante di stop oppure la chiusura del browser.
   await new Promise<void>((resolve) => {
