@@ -242,6 +242,35 @@ export function resolveRecording(
   //
   // Non lo indovino e non lo aggiro: lo dichiaro. Il codice generato resta buono
   // per tutto il resto, e chi legge sa che li' serve una decisione.
+  // PIU' INDIRIZZI CHE DIVENTANO UNA PAGINA SOLA.
+  //
+  // `/questions/1` e `/questions/3` collassano su `/questions/:id`, ed e' quasi
+  // sempre giusto: `/orders/1830941` e `/orders/1830942` sono la stessa pagina
+  // con dentro un ordine diverso. Ma su una procedura a passi non lo e': ogni
+  // passo ha domande diverse, e una Page Object sola prenderebbe l'unione dei
+  // componenti di tutti — con locator che sulla pagina corrente non esistono.
+  //
+  // Dall'esterno non si distingue un identificativo da un numero di passo, e
+  // indovinare qui vorrebbe dire sbagliare in silenzio. Si dichiara.
+  const perChiave = new Map<string, Set<string>>();
+  for (const [key, id] of seenKeys) {
+    if (!perChiave.has(key)) perChiave.set(key, new Set());
+    perChiave.get(key)!.add(id.path);
+  }
+  for (const [key, percorsi] of perChiave) {
+    if (percorsi.size > 1) {
+      gaps.push({
+        kind: "ancoraggio-instabile",
+        where: key,
+        detail:
+          `${percorsi.size} indirizzi diversi finiscono sulla stessa Page Object, perche' ` +
+          `il segmento numerico e' stato letto come un identificativo. Giusto per un ` +
+          `dettaglio ("l'ordine 123"), sbagliato per una procedura a passi ("la domanda 3"), ` +
+          `dove ogni passo ha componenti suoi. Se e' il secondo caso, vanno tenute separate.`,
+      });
+    }
+  }
+
   const hosts = [...new Set(pages.map((p) => p.host))];
   if (hosts.length > 1) {
     gaps.push({
