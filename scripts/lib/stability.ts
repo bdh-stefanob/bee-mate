@@ -32,6 +32,23 @@ const UNSTABLE_PATTERNS: Array<{ re: RegExp; why: string }> = [
   { re: /^[\d.,\s]+$/, why: "il nome e' solo un numero: e' un valore che cambia, non un'identita'" },
 ];
 
+/**
+ * Nomi che assomigliano a un dato variabile ma non lo sono.
+ *
+ * Un numero di telefono contiene un gruppo lungo di cifre e viene preso dalla
+ * regola sugli identificativi numerici — ma e' fisso: e' l'etichetta stessa del
+ * pulsante, non un valore che cambia fra un'esecuzione e l'altra. Visto due
+ * volte su pagine vere.
+ *
+ * Perche' vale la pena l'eccezione: un avviso che sbaglia insegna a ignorare gli
+ * avvisi. L'elenco "da rivedere a mano" vale solo se ogni riga merita di essere
+ * guardata.
+ */
+const FALSI_ALLARMI: Array<{ re: RegExp; why: string }> = [
+  { re: /(?:tel|phone|telefono|call)/i, why: "numero di telefono: e' un'etichetta fissa" },
+  { re: /^\s*\+?\d[\d\s().-]{7,17}\s*$/, why: "numero di telefono: e' un'etichetta fissa" },
+];
+
 export function judge(name: string, occurrences: number): { stability: Stability; notes: string[] } {
   const notes: string[] = [];
 
@@ -44,8 +61,11 @@ export function judge(name: string, occurrences: number): { stability: Stability
   if (name.length > 80) {
     notes.push("nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo");
   }
-  for (const { re, why } of UNSTABLE_PATTERNS) {
-    if (re.test(name)) notes.push(why);
+  const falsoAllarme = FALSI_ALLARMI.some(({ re }) => re.test(name));
+  if (!falsoAllarme) {
+    for (const { re, why } of UNSTABLE_PATTERNS) {
+      if (re.test(name)) notes.push(why);
+    }
   }
   if (occurrences > 1) {
     notes.push(`${occurrences} elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro`);

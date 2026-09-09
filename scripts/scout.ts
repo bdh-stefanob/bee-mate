@@ -320,7 +320,12 @@ async function main(): Promise<void> {
   const url = target.url;
   const scope = argValue(args, "--scope") ?? "body";
   const waitMs = Number(argValue(args, "--wait") ?? 1500);
-  const outPath = argValue(args, "--out") ?? path.join("reports", "scout", `${slugify(url)}.json`);
+  // Il nome del file si decide DOPO la scansione, dalla pagina su cui si e'
+  // finiti davvero: con --pause si parte da /login e si finisce altrove, e un
+  // file chiamato come la pagina di partenza direbbe una cosa falsa. Peggio:
+  // due scansioni partite dallo stesso indirizzo si sovrascriverebbero a
+  // vicenda, e la seconda cancellerebbe la prima senza dire niente.
+  const outFlag = argValue(args, "--out");
 
   // La viewport NON e' un dettaglio estetico: a 1280 di larghezza — il default
   // di Playwright — molti layout responsive passano alla versione ridotta, con
@@ -387,16 +392,26 @@ ${nota}`);
 
     const page = await context.newPage();
     const result = await scan(page, url, scope, waitMs, pause);
+    const outPath = outFlag ?? path.join("reports", "scout", `${slugify(result.url)}.json`);
 
-    // Un reindirizzamento e' la seconda causa di "ho misurato la pagina
-    // sbagliata": si chiede una pagina interna, l'applicazione rimanda al login,
-    // e il dizionario inventaria il modulo di accesso senza che niente lo dica.
+    // Cambiare pagina con --pause e' NORMALE: e' il motivo per cui esiste.
+    // Senza pausa e' sospetto: quasi sempre un rimando al login, e il dizionario
+    // starebbe inventariando il modulo di accesso credendo di essere altrove.
+    //
+    // Lo stesso avviso nei due casi addestrerebbe a ignorarlo, che e' il modo
+    // piu' sicuro di rendere inutile un avviso che un giorno servira'.
     if (result.url.replace(/\/$/, "") !== url.replace(/\/$/, "")) {
-      console.log(`
-  ATTENZIONE: sei finito su un altro indirizzo.`);
-      console.log(`    chiesto      : ${url}`);
-      console.log(`    scansionato  : ${result.url}`);
-      console.log(`    Se e' un rimando al login, la sessione manca o e' scaduta.`);
+      if (pause) {
+        console.log(`
+  Hai navigato: inventario ${result.url}`);
+      } else {
+        console.log(`
+  ATTENZIONE: sei finito su un altro indirizzo senza chiederlo.`);
+        console.log(`    chiesto      : ${url}`);
+        console.log(`    scansionato  : ${result.url}`);
+        console.log(`    Quasi sempre e' un rimando al login: la sessione manca o e' scaduta.`);
+        console.log(`    Con  npm run scout:pausa  puoi accedere a mano prima di scansionare.`);
+      }
     }
 
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
