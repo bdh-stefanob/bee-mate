@@ -58,6 +58,12 @@ const CASES: Case[] = [
   // Ma l'eccezione non deve diventare un buco: un ordine resta instabile anche
   // se qualcuno gli scrive accanto la parola "call".
   { name: "Ordine 1830941", stable: false, why: "identificativo: l'eccezione non lo copre" },
+
+  // Il testo del link E' l'URL: succede sui riferimenti bibliografici. Va
+  // segnalato — uno screen reader lo legge per intero — ma per QUELLA ragione,
+  // non per "contiene una data", che manda a cercare un problema inesistente.
+  { name: "https://doi.org/10.1016/S2213-8587(25)00226-8", stable: false, why: "il nome e' un URL" },
+  { name: "https://www.nature.com/articles/s41591-024-02996-7", stable: false, why: "il nome e' un URL" },
 ];
 
 let failures = 0;

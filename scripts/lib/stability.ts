@@ -49,6 +49,21 @@ const FALSI_ALLARMI: Array<{ re: RegExp; why: string }> = [
   { re: /^\s*\+?\d[\d\s().-]{7,17}\s*$/, why: "numero di telefono: e' un'etichetta fissa" },
 ];
 
+/**
+ * Il nome accessibile e' un indirizzo web.
+ *
+ * Succede sui riferimenti bibliografici: il testo del link E' l'URL. Come
+ * ancoraggio non e' instabile — quell'indirizzo non cambia fra un'esecuzione e
+ * l'altra — ma le regole sugli identificativi e sulle date lo prendevano lo
+ * stesso, e davano il motivo SBAGLIATO: "contiene una data" su un DOI manda a
+ * cercare un problema che non c'e'.
+ *
+ * Va segnalato comunque, per un motivo diverso e piu' interessante: uno screen
+ * reader legge quel nome per intero, carattere per carattere. E' il tipo di
+ * difetto che questo strumento trova per caso e che vale piu' dell'automazione.
+ */
+const URL_COME_NOME = /^\s*(https?:\/\/|www\.)\S+\s*$/i;
+
 export function judge(name: string, occurrences: number): { stability: Stability; notes: string[] } {
   const notes: string[] = [];
 
@@ -61,8 +76,14 @@ export function judge(name: string, occurrences: number): { stability: Stability
   if (name.length > 80) {
     notes.push("nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo");
   }
-  const falsoAllarme = FALSI_ALLARMI.some(({ re }) => re.test(name));
-  if (!falsoAllarme) {
+  if (URL_COME_NOME.test(name)) {
+    // Un motivo solo, e quello giusto: impilarci sopra "contiene una data"
+    // manderebbe a cercare un problema inesistente.
+    notes.push(
+      "il nome accessibile e' un indirizzo web: uno screen reader lo legge per intero. " +
+        "Come ancoraggio tiene, ma il link andrebbe scritto con un testo leggibile"
+    );
+  } else if (!FALSI_ALLARMI.some(({ re }) => re.test(name))) {
     for (const { re, why } of UNSTABLE_PATTERNS) {
       if (re.test(name)) notes.push(why);
     }

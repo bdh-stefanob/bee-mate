@@ -232,6 +232,29 @@ export function resolveRecording(
   const pages = uniqueNames([...seenKeys.values()]);
   const nameByKey = new Map(pages.map((p) => [p.key, p]));
 
+  // UN PERCORSO CHE ATTRAVERSA PIU' DOMINI.
+  //
+  // Non e' un caso di scuola: succede quando il viaggio comincia sul sito
+  // vetrina e prosegue nell'applicazione, che e' un'architettura comune e
+  // proprio quella che stiamo guardando. Il problema e' che le Page Object
+  // generate hanno percorsi RELATIVI, risolti contro un solo `baseURL`: quelle
+  // del secondo dominio proverebbero a navigare sul primo.
+  //
+  // Non lo indovino e non lo aggiro: lo dichiaro. Il codice generato resta buono
+  // per tutto il resto, e chi legge sa che li' serve una decisione.
+  const hosts = [...new Set(pages.map((p) => p.host))];
+  if (hosts.length > 1) {
+    gaps.push({
+      kind: "ancoraggio-instabile",
+      where: "(tutta la registrazione)",
+      detail:
+        `Il percorso attraversa ${hosts.length} domini diversi. Le Page Object generate ` +
+        `hanno percorsi relativi a un solo indirizzo di partenza: quelle del secondo ` +
+        `dominio non navigherebbero dove credono. Serve un indirizzo per dominio — ` +
+        `oppure si spezza la registrazione in due, una per dominio.`,
+    });
+  }
+
   const noUrls = recording.intents.every((i) => !i.pageUrl && i.steps.every((s) => !s.url));
   if (noUrls && recording.intents.length > 0) {
     gaps.push({
