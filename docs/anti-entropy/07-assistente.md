@@ -87,18 +87,39 @@ toglie l'ultimo anello umano rimasto, che era *ricordarsi di lanciarlo*. E il
 secondo hook fa in modo che chi cerca uno step trovi quello che c'e' davvero e
 non quello che c'era.
 
+## L'IDE basta. La CLI e' un di piu'
+
+**Il CLI di Kiro e' un prodotto separato dall'IDE**: averlo installato non
+installa l'altro, e sulla macchina aziendale `kiro-cli` puo' semplicemente non
+esserci. Non e' un problema, e vale la pena dire perche' prima che sembri tale.
+
+La misura non passa dall'assistente. `npm run benchmark` legge dei file e li
+giudica con `tsc`, il dry-run di Cucumber e il validatore: gli stessi file
+misurati danno gli stessi numeri, che ci sia arrivato uno script o una persona
+che incolla un compito in chat. **Il CLI cambia come si guida la generazione,
+non cosa si misura.**
+
+| | Con la CLI | Solo IDE |
+|---|---|---|
+| I numeri del confronto | uguali | uguali |
+| Rifare la stessa esecuzione fra un mese | uno script | il compito e' su disco, si reincolla |
+| Metterlo in CI | si' | no |
+| Serve alla dimostrazione | no | — |
+
+Quindi: si parte dall'IDE. Il CLI si installa se e quando serve
+(`curl -fsSL https://cli.kiro.dev/install | bash`) — e su una macchina gestita
+quella riga si concorda con chi la gestisce, non si lancia e basta.
+
 ## Da verificare sulla macchina aziendale (cinque minuti)
 
 Formati presi dalla documentazione, non da un'installazione:
 
-```bash
-# Kiro: gli agenti e gli hook sono riconosciuti?
-#   IDE → pannello agenti / pannello hook
-kiro-cli --version           # la CLI headless esiste: serve al confronto
-kiro-cli chat --no-interactive --trust-tools=read "elenca gli step del catalogo"
+```powershell
+# C'e' gia' qualcosa sul PATH?
+Get-Command kiro-cli, kiro, q -ErrorAction SilentlyContinue
 
-# Amazon Q, se resta disponibile
-q agent list
+# In Kiro (IDE): il pannello agenti vede bdd-authoring e bdd-generate?
+#                il pannello hook vede valida-scenari e rigenera-catalogo?
 ```
 
 Se un campo non combacia, si correggono i JSON sorgente in
@@ -142,10 +163,13 @@ senza regole perderebbe per una ragione che non c'entra con la domanda.
 npm run generate -- --no-rules
 npm run benchmark -- --label deterministico
 
-# 2. Con le regole: l'assistente lavora sul compito vincolato
-#    Kiro, in IDE:  agente bdd-generate, modello FISSATO
-#    oppure headless, che e' riproducibile:
-kiro-cli chat --no-interactive --trust-tools=read,write   "leggi reports/generate/<nome>/brief.md e fai quello che dice"
+# 2. Con le regole: l'assistente lavora sul compito vincolato.
+#    In IDE — la strada che funziona di sicuro:
+#      agente bdd-generate, MODELLO FISSATO (non Auto), e in chat:
+#      "leggi reports/generate/<nome>/brief.md e fai quello che dice"
+#
+#    Se il CLI c'e', la stessa cosa in forma riproducibile:
+#      kiro-cli chat --no-interactive --trust-tools=read,write "leggi ... e fai quello che dice"
 npm run benchmark -- --label con-regole
 
 # 3. Senza regole: campo neutro, stessa registrazione, richiesta libera
