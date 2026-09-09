@@ -45,6 +45,19 @@ const CASES: Case[] = [
 
   // Senza nome non e' raggiungibile per ruolo+nome, ed e' anche un problema a11y.
   { name: "", stable: false, why: "nessun nome accessibile" },
+
+  // I falsi allarmi. Un numero di telefono ha un gruppo lungo di cifre e veniva
+  // preso dalla regola sugli identificativi — ma e' l'etichetta stessa del
+  // pulsante, non un valore che cambia. Visto due volte su pagine vere, ed e'
+  // costato due righe di rumore in un elenco che vale solo se ogni riga merita
+  // di essere guardata.
+  { name: "telephone # 0203 3183773", stable: true, why: "numero di telefono: etichetta fissa" },
+  { name: "+44 20 3318 3773", stable: true, why: "numero di telefono in forma internazionale" },
+  { name: "Call us on 0203 3183 773", stable: true, why: "numero di telefono dentro a una frase" },
+
+  // Ma l'eccezione non deve diventare un buco: un ordine resta instabile anche
+  // se qualcuno gli scrive accanto la parola "call".
+  { name: "Ordine 1830941", stable: false, why: "identificativo: l'eccezione non lo copre" },
 ];
 
 let failures = 0;

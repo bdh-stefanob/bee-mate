@@ -39,7 +39,8 @@
     "arena": "ts-node scripts/benchmark-arena.ts",
     "targets": "ts-node scripts/targets.ts",
     "scout:pausa": "ts-node scripts/scout.ts --pause",
-    "diagnosi": "ts-node scripts/diagnosi.ts"
+    "diagnosi": "ts-node scripts/diagnosi.ts",
+    "referto": "ts-node scripts/referto.ts"
   },
   "keywords": [
     "playwright",
