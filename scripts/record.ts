@@ -42,13 +42,18 @@
  */
 
 import { type Browser, type BrowserContext } from "@playwright/test";
+import * as readline from "readline/promises";
 import { avviaBrowser, noteRipiego } from "./lib/browser";
+import {
+  proponiGruppi, descriviGesto, descriviPagina, etichettaProposta,
+} from "./lib/labelling";
 import * as fs from "fs";
 import * as path from "path";
 import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./lib/recorder-overlay";
 import { judge } from "./lib/stability";
 import type { Step, Assertion, Intent, Recording } from "./lib/generation-contract";
+import { pageIdentity } from "./lib/generate-core";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 
 // ---------------------------------------------------------------------------
@@ -362,7 +367,21 @@ function report(rec: Recording, outPath: string): void {
 
   console.log(`\nREGISTRAZIONE CONCLUSA\n`);
   console.log(`  Durata          : ${rec.durationSeconds}s`);
-  console.log(`  Pagine visitate : ${rec.pagesVisited.length}`);
+  // DUE CONTEGGI, PERCHE' NON SONO LA STESSA COSA.
+  //
+  // Su un'applicazione a pagina singola ogni cambio di rotta e' una
+  // navigazione: un questionario di venti domande produce venti indirizzi. Ma
+  // dopo la normalizzazione — /questions/1 e /questions/3 sono la stessa pagina
+  // con dentro una domanda diversa — restano poche pagine vere, e sono quelle
+  // che diventeranno Page Object.
+  //
+  // Vedere solo il primo numero fa pensare di aver cliccato a caso. Non e'
+  // detto: 36 indirizzi possono essere 5 pagine attraversate per bene.
+  const distinte = new Set(rec.pagesVisited.map((u) => pageIdentity(u).key)).size;
+  console.log(
+    `  Pagine visitate : ${rec.pagesVisited.length} indirizzi` +
+      (distinte !== rec.pagesVisited.length ? `, ${distinte} pagine distinte` : "")
+  );
   console.log(`  Intenti         : ${s.intents}`);
   console.log(`  Azioni          : ${s.steps}`);
   console.log(`  Verifiche       : ${s.assertions}\n`);
@@ -445,6 +464,87 @@ function slugify(url: string): string {
   }
 }
 
+/**
+ * Il passaggio in cui i passi prendono un nome, a registrazione finita.
+ *
+ * PERCHE' NON DURANTE
+ * Perche' chi esegue un test **sta eseguendo un test**: guarda l'applicazione,
+ * non la barra. La prima sessione vera su un'app aziendale ha prodotto 38 gesti
+ * e zero confini, e sarebbe successo a chiunque. Il giudizio resta umano —
+ * cambia solo quando lo si esprime, e alla fine si esprime meglio: si e' appena
+ * visto dove il flusso cambiava davvero.
+ *
+ * I gruppi gia' chiusi con "Fine intento" non si toccano: chi ha usato la barra
+ * ha gia' detto quello che serviva, e riproporglielo sarebbe una punizione.
+ */
+async function nominaIntenti(rec: Recording): Promise<Recording> {
+  const daNominare = rec.intents.filter((i) => !i.label || i.label.startsWith("("));
+  if (daNominare.length === 0) return rec;
+
+  const sciolti = daNominare.flatMap((i) => i.steps);
+  const verifiche = daNominare.flatMap((i) => i.assertions);
+  const gruppi = proponiGruppi(sciolti, verifiche);
+  if (gruppi.length === 0) return rec;
+
+  console.log(`\nCOME SI CHIAMANO QUESTI PASSI?\n`);
+  console.log(
+    `  ${sciolti.length} gesti non sono stati chiusi con "Fine intento". Te li ho\n` +
+      `  divisi dove cambia pagina: e' il confine giusto quasi sempre, ma un modulo\n` +
+      `  lungo su una pagina sola sono tre passi, e due pagine attraversate di corsa\n` +
+      `  sono un passo solo. Tu c'eri, quindi decidi tu.\n\n` +
+      `  Scrivi il nome del passo, in inglese come il catalogo.\n` +
+      `  INVIO da solo tiene quello proposto · "-" unisce al passo precedente\n`
+  );
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const nominati: Intent[] = [];
+
+  try {
+    for (const [i, g] of gruppi.entries()) {
+      console.log(`\n  ── ${i + 1}/${gruppi.length} — ${descriviPagina(g.pageUrl)} ─────────────`);
+      for (const s of g.steps) console.log(`     ${descriviGesto(s)}`);
+      for (const a of g.assertions) console.log(`     verifica: ${a.role} "${a.name}"`);
+
+      const proposta = etichettaProposta(g);
+      const risposta = (await rl.question(`\n  nome${proposta ? ` [${proposta}]` : ""}: `)).trim();
+
+      // Unire e' la correzione piu' frequente, perche' un intento vero attraversa
+      // spesso due pagine: si compila un modulo e si atterra sulla conferma.
+      if (risposta === "-" && nominati.length > 0) {
+        const prec = nominati[nominati.length - 1]!;
+        prec.steps.push(...g.steps);
+        prec.assertions.push(...g.assertions);
+        if (g.endUrl ?? g.pageUrl) prec.endUrl = g.endUrl ?? g.pageUrl;
+        continue;
+      }
+
+      nominati.push({
+        label: risposta || proposta || "(intento senza nome)",
+        steps: g.steps,
+        assertions: g.assertions,
+        notes: [],
+        ...(g.pageUrl ? { pageUrl: g.pageUrl } : {}),
+        ...(g.endUrl ? { endUrl: g.endUrl } : {}),
+      });
+    }
+  } finally {
+    rl.close();
+  }
+
+  const gia = rec.intents.filter((i) => i.label && !i.label.startsWith("("));
+  const intents = [...gia, ...nominati];
+
+  return {
+    ...rec,
+    intents,
+    summary: {
+      ...rec.summary,
+      intents: intents.length,
+      unlabelled: intents.filter((i) => i.label.startsWith("(")).length,
+    },
+  };
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const which = args.find((a) => !a.startsWith("-"));
@@ -469,10 +569,11 @@ async function main(): Promise<void> {
   const browserName = argValue(args, "--browser") ?? "chrome";
 
   const rec = await record(target, browserName);
+  const finale = args.includes("--senza-etichette") ? rec : await nominaIntenti(rec);
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify(rec, null, 2), "utf-8");
-  report(rec, outPath);
+  fs.writeFileSync(outPath, JSON.stringify(finale, null, 2), "utf-8");
+  report(finale, outPath);
 }
 
 main().catch((err) => {
