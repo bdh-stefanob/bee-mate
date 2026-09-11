@@ -21,8 +21,8 @@
  *
  * Uso:
  *   npm run targets              tutti i bersagli, con cosa manca a ciascuno
- *   npm run targets -- clinic    solo quello, con i comandi pronti
- *   npm run targets -- --env     il blocco da incollare in .env
+ *   npm run targets clinic       solo quello, con i comandi pronti
+ *   npm run targets env          il blocco da incollare in .env
  */
 
 import * as fs from "fs";
@@ -31,6 +31,7 @@ import { loadEnv } from "./lib/atlassian";
 import {
   loadTargets, requiredVars, missingVars, hasSession, sessionAgeHours, type Target,
 } from "./lib/targets";
+import { hasFlag, positionals } from "./lib/args";
 
 loadEnv();
 
@@ -88,8 +89,8 @@ function reportTarget(t: Target, dettaglio: boolean): boolean {
 
 function main(): void {
   const args = process.argv.slice(2);
-  const soloEnv = args.includes("--env");
-  const quale = args.find((a) => !a.startsWith("-"));
+  const soloEnv = hasFlag(args, "--env");
+  const quale = positionals(args, ["env"])[0];
 
   if (!fs.existsSync(CONFIG)) {
     console.log(
@@ -140,8 +141,8 @@ function main(): void {
     const ok = pronti.filter(Boolean).length;
     console.log(`  ${ok} su ${pronti.length} pronti all'uso.\n`);
     if (ok < pronti.length) {
-      console.log(`  Per il blocco da incollare in .env:  npm run targets -- --env`);
-      console.log(`  Per i comandi di un bersaglio:       npm run targets -- <nome>\n`);
+      console.log(`  Per il blocco da incollare in .env:  npm run targets env`);
+      console.log(`  Per i comandi di un bersaglio:       npm run targets <nome>\n`);
     }
   }
 

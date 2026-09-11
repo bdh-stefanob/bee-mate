@@ -10,12 +10,15 @@ cosa e' successo. Leggerle costa due minuti; ricaderci e' costato ore.
 
 ## Riga di comando
 
-**Nei comandi da suggerire, mai un flag dopo `npm run x --`.** Su certe combinazioni
-di npm e shell il flag non arriva allo script, e non c'e' errore: arriva
-un'esecuzione *diversa*. E' successo quattro volte (`--space`, `--root`, `--pause`,
-`--nome`): una misura fatta sulla pagina sbagliata, un file sovrascritto. Rimedi:
-argomento nudo (`npm run referto clinic`) o uno script dedicato con il flag dentro
-(`npm run scout:pausa`). Un argomento senza trattini non lo mangia nessuno.
+**Una regola smentita dagli esempi perde.** "Mai un'opzione con i trattini dopo
+`npm run x --`" stava scritta qui, dopo quattro esecuzioni sbagliate senza errore
+(`--space`, `--root`, `--pause`, `--nome`: una misura sulla pagina sbagliata, un
+file sovrascritto). Ma una trentina di esempi, nei documenti e nei messaggi degli
+script, usavano proprio quella forma — e alla prima prova Kiro ha suggerito
+`--scope` cosi'. Ora la regola sui comandi sta in `metodo-di-lavoro.md`, sempre
+attiva; le opzioni si leggono da `lib/args.ts` anche in forma nuda (`scope=main`);
+e `check:args` fallisce su un esempio sbagliato. Quando una regola conta, gli
+esempi li controlla una macchina.
 
 **Uno script dice cosa sta per fare prima di farlo.** Pausa, scope, viewport stampati
 sopra ai risultati: un flag perso diventa visibile invece che deducibile dai numeri.
@@ -120,3 +123,4 @@ Non duplicarla: importala.
 | Identita' di una pagina, aggancio, candidati | `scripts/lib/generate-core.ts` |
 | Confini proposti fra i passi | `scripts/lib/labelling.ts` |
 | Avvio del browser | `scripts/lib/browser.ts` |
+| Lettura delle opzioni da riga di comando | `scripts/lib/args.ts` |

@@ -294,7 +294,7 @@ if (primo) {
   console.log(`      npm run scout:pausa -- <url>     inventaria una pagina di lavoro vera`);
   console.log(`      npm run record     -- <url>      esegui il test a mano`);
   console.log(`      npm run generate                 feature + Page Object + step`);
-  console.log(`      npm run benchmark -- --label deterministico --referto referto.json`);
+  console.log(`      npm run benchmark label=deterministico referto=referto.json`);
 }
 console.log(
   `\n  Il referto e la diagnosi non contengono dati aziendali. Il resto di\n` +

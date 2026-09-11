@@ -17,7 +17,7 @@
  * il lavoro dell'assistente — non farle esistere.
  *
  * IL CONFRONTO, COSTRUITO DENTRO FIN DAL PRIMO GIORNO
- * `--no-rules` scrive anche il compito **senza** vincoli: la registrazione
+ * `no-rules` scrive anche il compito **senza** vincoli: la registrazione
  * grezza e "scrivimi un test". Stesso ingresso, due prompt, e i giudici sono
  * deterministici — compila, gli step sono definiti, le frasi sono nel catalogo.
  * Misurare quanto valgono le regole non costa quasi niente, se l'interruttore
@@ -25,18 +25,18 @@
  *
  * Uso:
  *   npm run generate                        l'ultima registrazione
- *   npm run generate -- reports/recordings/x.json
- *   npm run generate -- --no-rules          scrive anche il compito senza vincoli
- *   npm run generate -- --dry               non scrive niente, dice cosa farebbe
+ *   npm run generate reports/recordings/x.json
+ *   npm run generate no-rules               scrive anche il compito senza vincoli
+ *   npm run generate dry                    non scrive niente, dice cosa farebbe
  *
- * Flag:
- *   --out DIR      radice del codice (default: src)
- *   --name NOME    nome corto per i file generati (default: dalla registrazione)
- *   --dry          prova a vuoto
- *   --no-rules     produce anche brief-naive.md, per il confronto
- *   --scout DIR    dizionari da usare (default: reports/scout)
- *   --catalog F    catalogo da usare (default: step-catalog.json)
- *   --manifest F   scrive l'elenco di cio' che ha prodotto, in JSON. Serve ai
+ * Opzioni, in forma nuda (valgono anche con i trattini: vedi lib/args.ts):
+ *   out=DIR        radice del codice (default: src)
+ *   name=NOME      nome corto per i file generati (default: dalla registrazione)
+ *   dry            prova a vuoto
+ *   no-rules       produce anche brief-naive.md, per il confronto
+ *   scout=DIR      dizionari da usare (default: reports/scout)
+ *   catalog=F      catalogo da usare (default: step-catalog.json)
+ *   manifest=F     scrive l'elenco di cio' che ha prodotto, in JSON. Serve ai
  *                  controlli e servira' all'interfaccia: sapere cosa e' stato
  *                  generato non deve richiedere di leggere l'output a schermo
  */
@@ -53,17 +53,11 @@ import { writeBrief, writeNaiveBrief } from "./lib/generate-brief";
 import type {
   CatalogStep, Component, GeneratedFile, Recording, ScoutResult,
 } from "./lib/generation-contract";
+import { argValue, hasFlag, positionals } from "./lib/args";
 
 const RECORDINGS = path.join("reports", "recordings");
 const DEFAULT_SCOUT = path.join("reports", "scout");
 const DEFAULT_CATALOG = "step-catalog.json";
-
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
 
 function readJson<T>(file: string): T {
   return JSON.parse(fs.readFileSync(file, "utf-8")) as T;
@@ -146,11 +140,13 @@ function methodsLost(file: GeneratedFile): string[] {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const dry = args.includes("--dry");
-  const alsoNaive = args.includes("--no-rules");
+  const dry = hasFlag(args, "--dry");
+  const alsoNaive = hasFlag(args, "--no-rules");
   const outRoot = argValue(args, "--out") ?? "src";
 
-  const given = args.find((a) => !a.startsWith("-") && a.endsWith(".json"));
+  // Il primo .json fra i posizionali. Senza escludere le opzioni in forma nuda,
+  // `catalog=altro.json` verrebbe preso per la registrazione.
+  const given = positionals(args, ["dry", "no-rules"]).find((a) => a.endsWith(".json"));
   const recordingPath = given ?? latestRecording();
   if (!fs.existsSync(recordingPath)) {
     throw new Error(`Registrazione inesistente: ${recordingPath}`);

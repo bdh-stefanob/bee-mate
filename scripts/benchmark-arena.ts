@@ -21,23 +21,17 @@
  * servono?", non "un progetto vuoto funziona?".
  *
  * Uso:
- *   npm run generate -- --no-rules          produce brief-naive.md
- *   npm run arena -- --brief reports/generate/<nome>/brief-naive.md
- *   cd reports/arena/senza-regole && q chat          (senza --agent: nessuna regola)
- *   npm run benchmark -- --label senza-regole --root reports/arena/senza-regole
+ *   npm run generate no-rules               produce brief-naive.md
+ *   npm run arena brief=reports/generate/<nome>/brief-naive.md
+ *   ...l'assistente, aperto da DENTRO reports/arena/senza-regole, senza agente
+ *   npm run benchmark label=senza-regole root=reports/arena/senza-regole
  */
 
 import * as fs from "fs";
 import * as path from "path";
+import { argValue } from "./lib/args";
 
 const ARENA = path.join("reports", "arena", "senza-regole");
-
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
 
 /**
  * Un World minimo: quello che avrebbe chiunque partisse da zero.
@@ -146,7 +140,7 @@ tutto quell'impianto serve, o basta chiedere all'assistente?".
 4. Torna nel repository e misura:
 
 \`\`\`bash
-npm run benchmark -- --label senza-regole --root reports/arena/senza-regole
+npm run benchmark label=senza-regole root=reports/arena/senza-regole
 \`\`\`
 
 Il catalogo e il dizionario restano quelli veri anche misurando qui: sono il
@@ -199,8 +193,8 @@ function main(): void {
   } else {
     console.log(
       `\n   Nessun compito copiato. Generalo con:\n` +
-        `     npm run generate -- --no-rules\n` +
-        `   e poi rilancia con --brief reports/generate/<nome>/brief-naive.md`
+        `     npm run generate no-rules\n` +
+        `   e poi rilancia con:  npm run arena brief=reports/generate/<nome>/brief-naive.md`
     );
   }
 
@@ -223,7 +217,7 @@ function main(): void {
   console.log(`                        lanciarlo dal repository caricherebbe le regole`);
   console.log(`                        da solo, e il confronto non varrebbe piu' niente\n`);
   console.log(`   ...poi, tornato nel repository:`);
-  console.log(`   npm run benchmark -- --label senza-regole --root ${ARENA}\n`);
+  console.log(`   npm run benchmark label=senza-regole root=${ARENA}\n`);
 }
 
 main();

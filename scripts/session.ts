@@ -37,15 +37,9 @@ import {
   resolveTarget, sessionAgeHours, expand,
   type Target, type LoginLocator, type LoginRecipe,
 } from "./lib/targets";
+import { argValue, positionals } from "./lib/args";
 
 loadEnv();
-
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
 
 /** Costruisce il locator dai dati del bersaglio. Ruolo+nome per primo. */
 function locate(
@@ -156,7 +150,7 @@ async function waitUntilReady(
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const which = args.find((a) => !a.startsWith("-"));
+  const which = positionals(args)[0];
 
   if (!which) {
     console.error(

@@ -26,7 +26,7 @@
     "check:stability": "ts-node scripts/lib/stability.check.ts",
     "check:gold": "ts-node scripts/lib/gold.check.ts",
     "check:storage": "ts-node scripts/lib/markdown-storage.check.ts",
-    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling && npm run check:inventory",
+    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling && npm run check:inventory && npm run check:args",
     "analyze:corpus": "ts-node scripts/analyze-corpus.ts",
     "catalog:sync": "ts-node scripts/catalog-sync.ts",
     "confluence:publish": "ts-node scripts/confluence-publish.ts",
@@ -43,7 +43,8 @@
     "referto": "ts-node scripts/referto.ts",
     "check:labelling": "ts-node scripts/lib/labelling.check.ts",
     "check:inventory": "ts-node scripts/lib/inventory.check.ts",
-    "test:bersaglio": "ts-node scripts/test-bersaglio.ts"
+    "test:bersaglio": "ts-node scripts/test-bersaglio.ts",
+    "check:args": "ts-node scripts/lib/args.check.ts"
   },
   "keywords": [
     "playwright",

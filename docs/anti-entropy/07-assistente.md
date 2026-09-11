@@ -162,8 +162,8 @@ senza regole perderebbe per una ragione che non c'entra con la domanda.
 
 ```bash
 # 1. Il punto di partenza: generazione deterministica, nessuna AI coinvolta
-npm run generate -- --no-rules
-npm run benchmark -- --label deterministico
+npm run generate no-rules
+npm run benchmark label=deterministico
 
 # 2. Con le regole: l'assistente lavora sul compito vincolato.
 #    In IDE — la strada che funziona di sicuro:
@@ -172,16 +172,19 @@ npm run benchmark -- --label deterministico
 #
 #    Se il CLI c'e', la stessa cosa in forma riproducibile:
 #      kiro-cli chat --no-interactive --trust-tools=read,write "leggi ... e fai quello che dice"
-npm run benchmark -- --label con-regole
+npm run benchmark label=con-regole
 
 # 3. Senza regole: campo neutro, stessa registrazione, richiesta libera
 git stash                  # si riparte dal deterministico
-npm run arena -- --brief reports/generate/<nome>/brief-naive.md
-cd reports/arena/senza-regole && q chat     # SENZA --agent, e da qui dentro
-cd ../../.. && npm run benchmark -- --label senza-regole --root reports/arena/senza-regole
+npm run arena brief=reports/generate/<nome>/brief-naive.md
+cd reports/arena/senza-regole
+#    l'assistente si apre DA QUI DENTRO, senza agente. Prima di dargli il compito
+#    chiedigli quali regole ha in contesto: deve rispondere nessuna (task 8)
+cd ../../..
+npm run benchmark label=senza-regole root=reports/arena/senza-regole
 
 # 4. La tabella
-npm run benchmark -- --confronta
+npm run benchmark confronta
 ```
 
 Il catalogo e il dizionario restano quelli veri anche misurando l'arena: sono il

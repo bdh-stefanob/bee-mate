@@ -56,6 +56,7 @@ import * as path from "path";
 import { pct } from "./lib/atlassian";
 import { normalizeSteps, type StepBucket } from "./lib/normalize";
 import { load, str, type SourceDoc } from "./lib/corpus";
+import { argValue, hasFlag } from "./lib/args";
 import {
   clusterSteps,
   DEFAULT_CLUSTER_CONFIG,
@@ -502,21 +503,16 @@ function buildSummaryMarkdown(
 // CLI
 // ---------------------------------------------------------------------------
 
-function argValue(args: string[], flag: string): string | undefined {
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
-
 function main(): void {
   const args = process.argv.slice(2);
   const inPath = argValue(args, "--in");
 
   if (!inPath) {
     console.error(
-      "ERRORE: manca --in\n\n" +
-        "  npx ts-node scripts/analyze-corpus.ts --in reports/confluence-export/<ts>.json\n" +
-        "  npx ts-node scripts/analyze-corpus.ts --in src/features\n\n" +
-        "  L'export lo produce:  npm run confluence:fetch -- --root <ID>\n"
+      "ERRORE: manca il corpus da analizzare.\n\n" +
+        "  npm run analyze:corpus in=reports/confluence-export/<ts>.json\n" +
+        "  npm run analyze:corpus in=src/features\n\n" +
+        "  L'export lo produce:  npm run confluence:fetch <ID>\n"
     );
     process.exit(1);
   }
@@ -525,13 +521,13 @@ function main(): void {
 
   const topN = Number(argValue(args, "--top") ?? 25);
   const seedMin = Number(argValue(args, "--seed-min") ?? 2);
-  const withPhrases = args.includes("--with-phrases");
-  const anonymize = args.includes("--anonymize-branches");
+  const withPhrases = hasFlag(args, "--with-phrases");
+  const anonymize = hasFlag(args, "--anonymize-branches");
   const thresholdArg = argValue(args, "--threshold");
 
   const config = { ...DEFAULT_CLUSTER_CONFIG };
   if (thresholdArg !== undefined) config.combinedMin = Number(thresholdArg);
-  if (args.includes("--no-fuzzy")) config.combinedMin = 1.01; // nessuna coppia puo' superarla
+  if (hasFlag(args, "--no-fuzzy")) config.combinedMin = 1.01; // nessuna coppia puo' superarla
 
   // ── Normalizzazione ─────────────────────────────────────────────────────
   const inputs: ClusterInput[] = [];
@@ -555,7 +551,7 @@ function main(): void {
   if (inputs.length === 0) {
     console.error(
       "\nNessun passo riconosciuto nel corpus.\n" +
-        "  Verifica prima l'estrazione:  npm run confluence:probe -- --root <ID>\n"
+        "  Verifica prima l'estrazione:  npm run confluence:probe <ID>\n"
     );
     process.exit(1);
   }

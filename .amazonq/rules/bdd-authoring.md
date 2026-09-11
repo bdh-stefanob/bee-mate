@@ -31,6 +31,14 @@ Regola pratica: se tre o piu' passi consecutivi descrivono interazioni UI che st
 sempre insieme, sono **un solo** step di intento. La meccanica scende nel layer
 `actions/`, i selettori in `pages/`.
 
+**Quando il catalogo ha solo passi granulari.** Se per un'intenzione trovi soltanto
+passi da un campo o un click alla volta, metterli in fila e' riuso sulla carta ed
+entropia nei fatti: lo scenario diventa la sequenza di click che questa regola vieta.
+Qui vince il dichiarativo. Tre o piu' passi di interfaccia sempre insieme contano come
+"nulla corrisponde" al punto 3 del procedimento: proponi **uno** step d'intento
+`@wanted` e fermati. I passi granulari restano nel catalogo; la meccanica che
+descrivono scende in `actions/`.
+
 ## Parametrizzare invece di duplicare
 
 ```gherkin
