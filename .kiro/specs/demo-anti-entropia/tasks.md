@@ -23,6 +23,8 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
 - [x] Benchmark a sette misure, arena per il confronto senza regole, referto
 - [x] Bersagli multipli con login dichiarato, `BDD_TARGET`, diagnosi della macchina
 - [x] Regole e agenti per Kiro generati da una sorgente, hook di validazione
+- [x] Protocollo delle prove sul campo; `npm run test:bersaglio` valido in ogni shell;
+      il referto conta verifiche sui testi e nominazione dei passi
 
 ## Da fare
 
@@ -33,11 +35,14 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
     conferma ogni passo (3-4 in tutto). Nomi dei passi in inglese a fine sessione.
   - Verifica: il riepilogo mostra almeno 3 intenti nominati, almeno 2 verifiche, e le
     pagine inventariate.
+  - Protocollo e cosa riportare: `docs/anti-entropy/10-prove-sul-campo.md`, P1
   - _Requisiti: R2_
 
 - [ ] 2. Generare dalla registrazione e farla girare verde
   - Dipende da: 1, e da 3 se compare il buco multi-dominio
-  - Cosa: `npm run generate`, poi `BDD_TARGET=<bersaglio> npm test`.
+  - Cosa: `npm run generate`, poi `npm run test:bersaglio <bersaglio>` — valido in
+    ogni shell, a differenza di `BDD_TARGET=... npm test` che in PowerShell non funziona.
+  - Protocollo e cosa riportare: `docs/anti-entropy/10-prove-sul-campo.md`, P2
   - Verifica: il test passa; `npm run benchmark -- --label deterministico` compila con
     0 passi senza glue e 0 selettori negli step.
   - _Requisiti: R3, R8_
@@ -100,6 +105,7 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
   - Cosa: procedura in `docs/anti-entropy/07-assistente.md`. **Modello fissato**, non
     Auto. Senza regole solo nell'arena.
   - Verifica: `npm run benchmark -- --confronta` con tre righe; referto committato.
+  - Protocollo: `docs/anti-entropy/10-prove-sul-campo.md`, P8
   - _Requisiti: R6_
 
 - [ ] 9. Agenti Kiro riconosciuti anche da riga di comando
@@ -107,6 +113,7 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
     diversi per gli agenti.
   - Cosa: verificare che `kiro-cli` veda `bdd-generate` e `bdd-authoring`. Se no,
     adattare il generatore in `scripts/sync-rules.ts`, non i file generati.
+  - Insieme a P7: automatismi e agenti riconosciuti nell'IDE.
   - _Requisiti: R4.3_
 
 - [ ] 10. Piano della demo e slide — **da non lasciare per ultimo**
@@ -121,3 +128,16 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
 
 - [ ] 12. (tagliabile) Due pulsanti nell'app desktop: genera, lancia
   - Il primo da tagliare se il tempo stringe.
+
+## Prove sul campo — UMANO
+
+Il protocollo di ciascuna — perche', come, quando va bene, cosa riportare — e' in
+`docs/anti-entropy/10-prove-sul-campo.md`. P1, P2 e P8 coincidono con i task 1, 2 e 8.
+Gli esiti si scrivono nella tabella in fondo a quel documento: solo numeri e si'/no.
+
+- [ ] P3. Kiro segue le regole anche senza file aperti — cinque minuti
+- [ ] P4. Un collega usa il recorder senza spiegazioni a voce — la prova del vincolo V3
+- [ ] P5. Quanto dura una sessione salvata
+- [ ] P6. Le pagine difficili: modulo lungo, lista con azioni per riga, modale aperto
+- [ ] P7. Automatismi e agenti riconosciuti nell'IDE
+- [ ] P9. Pubblicare il catalogo accanto agli scenari — **serve il via libera** (Q9)

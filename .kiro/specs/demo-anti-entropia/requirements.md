@@ -118,8 +118,8 @@ chiedere all'AI?".
 **Storia:** come chi presenta, voglio mostrare uno scenario nato da un test manuale che
 gira verde.
 
-1. QUANDO si lancia `BDD_TARGET=<bersaglio> npm test` IL SISTEMA DEVE eseguire lo
-   scenario generato, gia' autenticato con la sessione salvata.
+1. QUANDO si lancia `npm run test:bersaglio <bersaglio>` IL SISTEMA DEVE eseguire lo
+   scenario generato, gia' autenticato con la sessione salvata, in qualunque shell.
 2. SE l'assistente non e' disponibile ALLORA lo scenario deterministico DEVE girare
    comunque.
 

@@ -565,6 +565,7 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const nominati: Intent[] = [];
+  const esiti = { proposti: gruppi.length, accettati: 0, rinominati: 0, uniti: 0 };
 
   try {
     for (const [i, g] of gruppi.entries()) {
@@ -582,8 +583,12 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
         prec.steps.push(...g.steps);
         prec.assertions.push(...g.assertions);
         if (g.endUrl ?? g.pageUrl) prec.endUrl = g.endUrl ?? g.pageUrl;
+        esiti.uniti++;
         continue;
       }
+
+      if (!risposta || risposta === proposta) esiti.accettati++;
+      else esiti.rinominati++;
 
       nominati.push({
         label: risposta || proposta || "(intento senza nome)",
@@ -604,6 +609,7 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
   return {
     ...rec,
     intents,
+    nominazione: esiti,
     summary: {
       ...rec.summary,
       intents: intents.length,

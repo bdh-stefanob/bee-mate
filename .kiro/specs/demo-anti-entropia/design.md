@@ -24,7 +24,7 @@ Questo documento orienta. Il dettaglio di ogni scelta, con il suo perche', sta i
                            v
          tsc  .  dry-run  .  validate:steps           <- giudici deterministici
                            |
-                           v   BDD_TARGET=<x> npm test
+                           v   npm run test:bersaglio <x>
                        test verde
 ```
 

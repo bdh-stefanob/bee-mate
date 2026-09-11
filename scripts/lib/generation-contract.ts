@@ -107,6 +107,15 @@ export interface Recording {
   pagesVisited: string[];
   summary: { intents: number; steps: number; assertions: number; unlabelled: number };
   intents: Intent[];
+  /**
+   * Come sono stati nominati i passi a fine sessione. Assente se il tester ha
+   * chiuso tutto con la barra.
+   *
+   * Serve a sapere dal campo se i confini proposti sono buoni: tante unioni
+   * vogliono dire che si spezza troppo, tante rinominazioni che la proposta di
+   * nome non aiuta. Sono numeri, non frasi: si possono riportare fuori.
+   */
+  nominazione?: { proposti: number; accettati: number; rinominati: number; uniti: number };
 }
 
 // ---------------------------------------------------------------------------

@@ -24,6 +24,7 @@
 | [07-assistente.md](07-assistente.md) | L'assistente: regole, agenti, automatismi, e come si misura se servono | ✅ completo |
 | [08-prova-su-altra-macchina.md](08-prova-su-altra-macchina.md) | Portare la catena sulla macchina aziendale: ambienti, credenziali, browser | ✅ completo |
 | [09-lavorare-con-kiro.md](09-lavorare-con-kiro.md) | Come far proseguire il lavoro a Kiro, e cosa controllare dopo | ✅ completo |
+| [10-prove-sul-campo.md](10-prove-sul-campo.md) | **Cosa resta da provare sul campo**, in ordine, con cosa riportare e cosa cambia se va male | 🟡 in corso |
 | [../../.kiro/specs/demo-anti-entropia/](../../.kiro/specs/demo-anti-entropia/tasks.md) | **Il piano**: requisiti (EARS), design, task con criteri di chiusura | 🟡 in corso |
 | [05-referenze.md](05-referenze.md) | Bibliografia verificata: 20 fonti aperte, 5 dichiarate incerte | ✅ completo |
 | [../../scripts/CONFLUENCE-API-NOTES.md](../../scripts/CONFLUENCE-API-NOTES.md) | Ricerca sulle API Confluence + 7 assunzioni da confermare al primo run | ✅ completo |
