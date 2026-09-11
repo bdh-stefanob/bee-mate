@@ -19,13 +19,14 @@ domanda giusta.
 ## Da zero a un test che gira
 
 ```bash
-git clone <repo> && cd bdd-automation-scaffold
+git clone <repo>
+cd bdd-automation-scaffold
 npm install
 npx playwright install chromium          # NON lo fa npm install: sono binari a parte
 cp bdd-targets.example.json bdd-targets.json     # mettici i TUOI indirizzi
 
 npm run targets            # cosa c'e', cosa manca
-npm run targets -- --env   # il blocco da incollare in .env
+npm run targets env        # il blocco da incollare in .env
 ```
 
 `npm run targets` non stampa mai un valore: solo nomi di variabile, e se sono

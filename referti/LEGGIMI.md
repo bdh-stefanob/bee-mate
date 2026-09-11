@@ -11,7 +11,7 @@ Ma allora chi misura su una macchina e discute su un'altra dovrebbe ricopiare i
 numeri a mano — e ricopiare a mano significa non farlo. Da qui questa cartella.
 
 ```bash
-npm run referto -- --nome collaudo
+npm run referto collaudo
 ```
 
 ## La regola, che e' strutturale e non una promessa

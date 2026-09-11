@@ -28,12 +28,13 @@
  *
  * Uso:
  *   npm run rules:sync          rigenera regole e agenti
- *   npm run rules:sync -- --check   verifica soltanto, esce 1 se disallineati
- *                                   (da usare in CI)
+ *   npm run rules:check         verifica soltanto, esce 1 se disallineati
+ *                               (da usare in CI)
  */
 
 import * as fs from "fs";
 import * as path from "path";
+import { hasFlag } from "./lib/args";
 
 const SOURCE_DIR = path.join(".amazonq", "rules");
 const KIRO_DIR = path.join(".kiro", "steering");
@@ -160,7 +161,7 @@ function kiroVersion(fileName: string, body: string): string {
 }
 
 function main(): void {
-  const check = process.argv.includes("--check");
+  const check = hasFlag(process.argv.slice(2), "--check");
 
   if (!fs.existsSync(SOURCE_DIR)) {
     console.error(`ERRORE: manca la cartella sorgente ${SOURCE_DIR}`);

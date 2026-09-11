@@ -54,6 +54,23 @@ entra in un commit e' a un push dall'essere pubblico per sempre.
 
 Prima di ogni commit: `git diff --cached`, e cerca indirizzi, nomi, valori.
 
+## Comandi da suggerire
+
+La macchina aziendale usa PowerShell. Tre forme li' non funzionano, e le prime due
+non danno nemmeno errore — danno un'esecuzione diversa:
+
+- **Un'opzione con i trattini dopo `npm run x --`**: npm la trattiene e lo script
+  parte senza. Ogni script accetta la forma nuda, e si suggerisce solo quella:
+  `npm run benchmark label=con-regole`, `npm run generate no-rules`,
+  `npm run targets env`, `npm run scout clinic scope=main`.
+- **`VARIABILE=valore comando`**: e' sintassi bash. Per i test c'e'
+  `npm run test:bersaglio <nome>`.
+- **`&&` fra due comandi**: nella PowerShell di Windows non c'e'. Un comando per riga.
+
+Se l'opzione che serve non ha una forma nuda, dillo invece di proporre un comando
+che sembra funzionare. E se un documento del repository suggerisce una forma
+diversa, e' sbagliato il documento: `npm run check:args` lo trova.
+
 ## Dove si modificano le regole
 
 `.amazonq/rules/` e' la **sorgente**. `.kiro/steering/` e `.kiro/agents/` sono

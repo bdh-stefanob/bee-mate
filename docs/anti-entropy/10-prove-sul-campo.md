@@ -67,7 +67,9 @@ generiche, come `componente-non-nel-dizionario`), e su che **tipo** di passo fal
 visto se lo e' anche nel comportamento.
 
 **Come.** Chat nuova, nessun file aperto: *"Scrivimi uno scenario per il login."* Poi
-con l'agente `bdd-authoring`, su un `.feature`: *"Correggilo tu."*
+con l'agente `bdd-authoring`, su un `.feature`: *"Correggilo tu."* Se ti chiede cosa
+correggere, rispondi *"applica tu la correzione"*: deve dire che non puo' scrivere. Se si
+limita a non farlo, non sappiamo ancora se il limite sugli strumenti c'e'.
 
 **Va bene se:** cerca nel catalogo prima di scrivere · riusa uno step esistente o ne
 propone **uno** nuovo `@wanted` · scrive in forma dichiarativa · `bdd-authoring`
@@ -137,8 +139,8 @@ rigenera il catalogo? Il pannello agenti vede `bdd-authoring` e `bdd-generate`?
 **Come.** La procedura e' in `07-assistente.md`. **Modello fissato**, non Auto. Senza
 regole solo nell'arena.
 
-**Da riportare:** `npm run benchmark -- --label <nome> --referto referto.json` — il file
-`--referto` contiene solo numeri; quelli completi in `reports/benchmark/` no.
+**Da riportare:** `npm run benchmark label=<nome> referto=referto.json` — il file
+indicato in `referto=` contiene solo numeri; quelli completi in `reports/benchmark/` no.
 
 ## P9 — Pubblicare il catalogo accanto agli scenari (serve il via libera)
 
@@ -159,7 +161,7 @@ strumento si rifiuta di scrivere su pagine che non ha creato lui.
 |---|---|---|---|
 | P1 | | | |
 | P2 | | | |
-| P3 | | | |
+| P3 | 2026-09-11 | parziale | cerca nel catalogo: si' · riusa o propone uno solo: si' (riuso esatto) · dichiarativo: no — 7 passi granulari riusati, lo step d'intento proposto come alternativa · l'agente di sola lettura non scrive: si', ma per scelta, da ripetere chiedendogli di applicare. Suggerisce comandi nella forma che si perde. Corretti regola e comandi (F21, F22, D32): si ripete dopo il pull |
 | P4 | | | |
 | P5 | | | |
 | P6 | | | |

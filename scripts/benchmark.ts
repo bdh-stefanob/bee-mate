@@ -5,16 +5,16 @@
  *
  * IL CONFRONTO CHE INTERESSA
  *
- *   npm run generate -- --no-rules            genera, e scrive i due compiti
- *   npm run benchmark -- --label deterministico
+ *   npm run generate no-rules                 genera, e scrive i due compiti
+ *   npm run benchmark label=deterministico
  *
  *   ...dai brief.md all'assistente, lascia che modifichi i file...
- *   npm run benchmark -- --label con-regole
+ *   npm run benchmark label=con-regole
  *
  *   ...ripeti con brief-naive.md in una cartella pulita...
- *   npm run benchmark -- --label senza-regole --features X --steps Y --pages Z
+ *   npm run benchmark label=senza-regole features=X steps=Y pages=Z
  *
- *   npm run benchmark -- --confronta          la tabella di tutte le esecuzioni
+ *   npm run benchmark confronta               la tabella di tutte le esecuzioni
  *
  * Ogni esecuzione salva il suo verdetto sotto reports/benchmark/. Il confronto
  * si fa sui file salvati, non a memoria: rifarlo fra un mese deve dare la stessa
@@ -26,19 +26,19 @@
  * servissero, questa tabella lo direbbe — ed e' il motivo per cui vale la pena
  * costruirla prima di sapere il risultato.
  *
- * Flag:
- *   --label NOME     nome dell'esecuzione (obbligatorio, salvo --confronta)
- *   --features DIR   default src/features/generated
- *   --steps DIR      default src/steps/generated
- *   --pages DIR      default src/pages/generated
- *   --catalog FILE   default step-catalog.json
- *   --scout DIR      default reports/scout
- *   --root DIR       progetto da misurare (default: questo). Serve all'arena
- *   --referto FILE   scrive anche i SOLI NUMERI, senza una parola di testo.
+ * Opzioni, in forma nuda (valgono anche con i trattini: vedi lib/args.ts):
+ *   label=NOME       nome dell'esecuzione (obbligatorio, salvo confronta)
+ *   features=DIR     default src/features/generated
+ *   steps=DIR        default src/steps/generated
+ *   pages=DIR        default src/pages/generated
+ *   catalog=FILE     default step-catalog.json
+ *   scout=DIR        default reports/scout
+ *   root=DIR         progetto da misurare (default: questo). Serve all'arena
+ *   referto=FILE     scrive anche i SOLI NUMERI, senza una parola di testo.
  *                    E' la forma da portare fuori da una macchina aziendale:
  *                    il verdetto completo contiene frasi Gherkin e nomi di
  *                    componenti veri, e questo repository e' pubblico
- *   --confronta      stampa la tabella di tutte le esecuzioni salvate
+ *   confronta        stampa la tabella di tutte le esecuzioni salvate
  */
 
 import { execFileSync } from "child_process";
@@ -46,6 +46,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { scoreGherkin, scoreSteps, scorePages, toTable, toReferto, type RunResult } from "./lib/benchmark";
 import type { CatalogStep, Component, ScoutResult } from "./lib/generation-contract";
+import { argValue, hasFlag } from "./lib/args";
 
 const OUT = path.join("reports", "benchmark");
 
@@ -60,13 +61,6 @@ const OUT = path.join("reports", "benchmark");
  */
 let ROOT = ".";
 const at = (...p: string[]): string => path.join(ROOT, ...p);
-
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
 
 function readAll(dir: string, ext: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -175,7 +169,7 @@ function main(): void {
   ROOT = argValue(args, "--root") ?? ".";
   fs.mkdirSync(OUT, { recursive: true });
 
-  if (args.includes("--confronta")) {
+  if (hasFlag(args, "--confronta")) {
     const runs = fs
       .readdirSync(OUT)
       .filter((f) => f.endsWith(".json"))
@@ -208,9 +202,9 @@ function main(): void {
   const label = argValue(args, "--label");
   if (!label) {
     console.error(
-      "ERRORE: serve --label.\n\n" +
-        "  npm run benchmark -- --label con-regole\n" +
-        "  npm run benchmark -- --confronta\n"
+      "ERRORE: serve il nome dell'esecuzione.\n\n" +
+        "  npm run benchmark label=con-regole\n" +
+        "  npm run benchmark confronta\n"
     );
     process.exit(1);
   }
@@ -290,10 +284,10 @@ function main(): void {
     console.log(
       `\n  Se stai misurando un'applicazione aziendale, questo file contiene frasi\n` +
         `  Gherkin e nomi di componenti veri. Per portarne fuori solo i numeri:\n` +
-        `    npm run benchmark -- --label ${label} --referto referto.json`
+        `    npm run benchmark label=${label} referto=referto.json`
     );
   }
-  console.log(`  Confronto con le altre esecuzioni:  npm run benchmark -- --confronta\n`);
+  console.log(`  Confronto con le altre esecuzioni:  npm run benchmark confronta\n`);
 }
 
 main();

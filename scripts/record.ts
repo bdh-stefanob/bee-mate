@@ -57,6 +57,7 @@ import { pageIdentity } from "./lib/generate-core";
 import { inventory, mergeInventories } from "./lib/inventory";
 import type { ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
+import { argValue, hasFlag, positionals } from "./lib/args";
 
 // ---------------------------------------------------------------------------
 // Tipi della traccia
@@ -515,13 +516,6 @@ function report(rec: Recording, outPath: string, dizionari?: Map<string, ScoutRe
 // CLI
 // ---------------------------------------------------------------------------
 
-function argValue(args: string[], flag: string): string | undefined {
-  const withEquals = args.find((a) => a.startsWith(flag + "="));
-  if (withEquals) return withEquals.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
-
 function slugify(url: string): string {
   try {
     const u = new URL(url);
@@ -620,7 +614,7 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const which = args.find((a) => !a.startsWith("-"));
+  const which = positionals(args, ["senza-etichette"])[0];
 
   if (!which) {
     console.error(
@@ -642,7 +636,7 @@ async function main(): Promise<void> {
   const browserName = argValue(args, "--browser") ?? "chrome";
 
   const sessione = await record(target, browserName);
-  const finale = args.includes("--senza-etichette")
+  const finale = hasFlag(args, "--senza-etichette")
     ? sessione.recording
     : await nominaIntenti(sessione.recording);
 

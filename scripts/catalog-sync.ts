@@ -40,6 +40,7 @@ import { load, type SourceDoc } from "./lib/corpus";
 import { normalizeSteps, normalizeStepLine } from "./lib/normalize";
 import { clusterSteps, type Cluster, type ClusterInput } from "./lib/cluster";
 import { electGold, margin, type Candidate, type ScoredCandidate } from "./lib/gold";
+import { argValue } from "./lib/args";
 
 // ---------------------------------------------------------------------------
 // Catalogo
@@ -359,13 +360,6 @@ function renderReport(
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
-
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
 
 function main(): void {
   const args = process.argv.slice(2);

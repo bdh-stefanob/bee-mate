@@ -32,18 +32,19 @@
  * problema di accessibilita' si'.
  *
  * Uso:
- *   npm run scout -- https://example.com
- *   npx ts-node scripts/scout.ts https://example.com --scope "main" --headed
+ *   npm run scout https://example.com
+ *   npm run scout:pausa clinic                   login a mano, poi scansiona
+ *   npm run scout https://example.com scope=main headed
  *
- * Flag:
- *   --scope SEL    limita la scansione a un selettore (default: body)
- *   --headed       mostra il browser (default: headless)
- *   --out PATH     file di output (default: reports/scout/<slug>.json)
- *   --wait MS      attesa dopo il caricamento, per SPA lente (default 1500)
- *   --pause        apre il browser e ASPETTA che tu prema Invio: serve per le
+ * Opzioni, in forma nuda (valgono anche con i trattini: vedi lib/args.ts):
+ *   scope=SEL      limita la scansione a un selettore (default: body)
+ *   headed         mostra il browser (default: headless)
+ *   out=PATH       file di output (default: reports/scout/<slug>.json)
+ *   wait=MS        attesa dopo il caricamento, per SPA lente (default 1500)
+ *   pause          apre il browser e ASPETTA che tu prema Invio: serve per le
  *                  pagine dietro autenticazione. Fai login, naviga dove vuoi,
- *                  poi torna al terminale. Implica --headed
- *   --viewport WxH dimensione della finestra (default 1920x1080). Conta: a
+ *                  poi torna al terminale. Implica headed. E' npm run scout:pausa
+ *   viewport=WxH   dimensione della finestra (default 1920x1080). Conta: a
  *                  larghezze piccole i layout responsive mostrano i componenti
  *                  mobile, e il dizionario inventarierebbe quelli.
  *
@@ -59,6 +60,7 @@ import { inventory } from "./lib/inventory";
 import type { Kind, ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours } from "./lib/targets";
 import { loadEnv } from "./lib/atlassian";
+import { argValue, hasFlag, positionals } from "./lib/args";
 
 // I bersagli possono referenziare gli URL come ${VAR}: vanno risolti prima.
 loadEnv();
@@ -192,13 +194,6 @@ function report(result: ScoutResult, outPath: string): void {
 // CLI
 // ---------------------------------------------------------------------------
 
-function argValue(args: string[], flag: string): string | undefined {
-  const withEquals = args.find((a) => a.startsWith(flag + "="));
-  if (withEquals) return withEquals.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
-
 function slugify(url: string): string {
   try {
     const u = new URL(url);
@@ -211,7 +206,7 @@ function slugify(url: string): string {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const which = args.find((a) => !a.startsWith("-"));
+  const which = positionals(args, ["pause", "headed"])[0];
 
   if (!which) {
     console.error(
@@ -245,7 +240,7 @@ async function main(): Promise<void> {
     .map((n) => Number(n.trim()));
   const viewport = { width: vw || 1920, height: vh || 1080 };
 
-  const pause = args.includes("--pause");
+  const pause = hasFlag(args, "--pause");
 
   // LE OPZIONI SI DICHIARANO PRIMA DI PARTIRE, NON SI DEDUCONO DOPO.
   //
@@ -273,7 +268,7 @@ SCANSIONE — ${url}
   }
 
   // --pause implica --headed: non si puo' fare login in un browser che non si vede.
-  const avvio = await avviaBrowser({ headless: !args.includes("--headed") && !pause });
+  const avvio = await avviaBrowser({ headless: !hasFlag(args, "--headed") && !pause });
   const browser = avvio.browser;
   const nota = noteRipiego(avvio);
   if (nota) console.log(`

@@ -34,18 +34,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { argValue, positionals } from "./lib/args";
 
 const SCOUT = path.join("reports", "scout");
 const RECORDINGS = path.join("reports", "recordings");
 const CATALOG = "step-catalog.json";
 const OUT_DIR = "referti";
-
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
 
 function leggi<T>(file: string): T | null {
   try {
@@ -91,8 +85,8 @@ interface Registrazione {
 
 function main(): void {
   const args = process.argv.slice(2);
-  // Argomento nudo, con --nome ancora accettato per chi l'aveva imparato.
-  const nome = args.find((a) => !a.startsWith("-")) ?? argValue(args, "--nome") ?? "misura";
+  // Argomento nudo, con nome=... e --nome ancora accettati per chi li aveva imparati.
+  const nome = positionals(args)[0] ?? argValue(args, "--nome") ?? "misura";
   const righe: string[] = [];
 
   righe.push(`# Referto — ${nome}`);

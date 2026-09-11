@@ -72,6 +72,8 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | F17 | La generazione deterministica produce **un test che gira**, senza che nessun modello tocchi niente: le frasi sono le etichette del tester | Toglie l'unico rischio serio della demo. Se l'assistente delude, resta un test verde scritto con le parole di chi il test l'ha eseguito |
 | F18 | I giudici deterministici c'erano gia' tutti e non costano niente: `tsc` per il codice, il dry-run per la glue, il validatore per le frasi, `conformity()` per lo stile | "L'AI non valida se stessa" (D6) smette di essere un principio e diventa una riga di comando |
 | F15 | L'app desktop del catalogo **esiste gia'** ed e' impacchettata come eseguibile: catalogo cercabile, editor Gherkin con autocomplete vincolato, step sconosciuti evidenziati, proposta `@wanted`, commit su GitHub | Il paletto 3 e' gia' risolto: un tester manuale scarica un .exe e scrive scenari conformi senza toccare il repo. Non e' da costruire |
+| F21 | Prima prova di Kiro sulla macchina aziendale (P3, 2026-09-11): si orienta sulla spec, sa dove si modificano le regole, con l'agente di sola lettura non scrive. **Ma ha suggerito un'opzione con i trattini dopo `npm run x --`**, la forma che la lezione vietava — e che una trentina di esempi del repository usavano | Una regola smentita dagli esempi perde: l'assistente segue quello che vede fare, non quello che c'e' scritto di fare. Gli esempi ora li controlla `check:args` (D32) |
+| F22 | Con un catalogo che per il login ha solo passi granulari (un campo, un click alla volta), Kiro li ha riusati in fila: formulazione esatta, scenario imperativo. L'ha detto, e ha proposto lo step d'intento come alternativa | "Riusa" e "dichiarativo" erano due regole scritte, senza dire quale vince. Ora e' scritto in `bdd-authoring.md`: tre o piu' passi di interfaccia sempre insieme contano come "nulla corrisponde" |
 
 ## Decisioni prese
 
@@ -108,6 +110,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | D30 | Gli **hook** di Kiro tolgono l'ultimo anello umano dal controllo deterministico: salvi un `.feature` → parte il validatore; salvi una step definition → si rigenera il catalogo | D6 dice che il giudizio non passa dall'assistente. Restava pero' che qualcuno si ricordasse di lanciarlo — e "mi ricordo" e' la parte che cede per prima |
 | D31 | Il lavoro prosegue con **Kiro** sulla macchina aziendale. Il passaggio non e' un riassunto: e' **nei file** — una spec (`.kiro/specs/demo-anti-entropia/`) con requisiti, design e task verificabili, e due steering nuovi: `metodo-di-lavoro` (sempre) e `lezioni` (sul codice) | Una conoscenza che vive solo in una conversazione si perde con la conversazione. Nei file la legge qualunque assistente, e chiunque la puo' correggere. Le lezioni portano l'incidente che le ha insegnate: una regola senza il suo perche' viene aggirata alla prima occasione |
 | D16 | Le verifiche registrate hanno un **tipo**: mostra un valore (default) · e' comparso · e' sparito · si e' navigato | In produzione non si verifica "questo e' cliccabile", si verifica che **la UI si sia aggiornata**. Il default era sbagliato ed e' stato corretto |
+| D32 | Le opzioni degli script si scrivono **in forma nuda** (`label=x`, `confronta`) e si leggono da una sola libreria, `scripts/lib/args.ts`. `check:args` fallisce se uno script torna a definirne una sua, o se un documento suggerisce un'opzione con i trattini dopo `npm run x --` | Quattro esecuzioni sbagliate senza errore, poi un assistente che ha imparato la forma sbagliata dai nostri stessi esempi (F21). Un argomento senza trattini arriva intatto in ogni shell. Le copie della lettura erano tredici, e non erano d'accordo fra loro |
 
 ## Domande aperte
 
@@ -201,10 +204,10 @@ Confluence → fetch → normalizza → clusterizza
 
 | Comando | Cosa fa |
 |---|---|
-| `npm run confluence:discover` | Elenca gli space accessibili. Con `-- --space KEY` stampa l'albero: rami di primo livello con id e numero di pagine. **Da lanciare per primo.** |
-| `npm run confluence:probe -- --root <ID>` | Scarica una pagina e mostra percorso, testo estratto e punteggio Gherkin. Serve a verificare che l'estrazione funzioni su contenuto reale. |
-| `npm run confluence:fetch -- --root <ID>` | Scarica tutto il sottoalbero, estrae il testo, marca i candidati e scrive `reports/confluence-export/<ts>.json` con il riepilogo **aggregato per ramo**. |
-| `npm run analyze:corpus -- --in <export>` | **Secondo stadio**: normalizza, clusterizza, calcola le metriche di entropia e propone i candidati step. Scrive `-full.json` (frasi reali, resta sulla macchina) e `-summary.md` (soli aggregati, condivisibile dopo rilettura). |
+| `npm run confluence:discover` | Elenca gli space accessibili. Con la chiave (`npm run confluence:discover KEY`) stampa l'albero: rami di primo livello con id e numero di pagine. **Da lanciare per primo.** |
+| `npm run confluence:probe <ID>` | Scarica una pagina e mostra percorso, testo estratto e punteggio Gherkin. Serve a verificare che l'estrazione funzioni su contenuto reale. |
+| `npm run confluence:fetch <ID>` | Scarica tutto il sottoalbero, estrae il testo, marca i candidati e scrive `reports/confluence-export/<ts>.json` con il riepilogo **aggregato per ramo**. |
+| `npm run analyze:corpus in=<export>` | **Secondo stadio**: normalizza, clusterizza, calcola le metriche di entropia e propone i candidati step. Scrive `-full.json` (frasi reali, resta sulla macchina) e `-summary.md` (soli aggregati, condivisibile dopo rilettura). |
 | `npm run record -- <url>` | **Registra un test eseguito a mano** e produce la traccia semantica. La barra chiede al tester i confini di intento e le verifiche. |
 | `npm run scout -- <url>` | Produce il **dizionario dei componenti**: ruolo, nome accessibile, locator, giudizio di stabilita' e indice di accessibilita'. |
 | `npm run rules:sync` | Rigenera `.kiro/steering/` dalla sorgente `.amazonq/rules/`. `rules:check` verifica soltanto (per la CI). |

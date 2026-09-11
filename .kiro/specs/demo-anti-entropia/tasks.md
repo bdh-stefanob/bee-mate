@@ -7,7 +7,9 @@ prepararli, non chiuderli.
 Prima di chiudere qualunque task:
 
 ```bash
-npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
+npx tsc --noEmit -p tsconfig.json
+npm run check:all
+npm run rules:check
 ```
 
 ## Gia' fatto
@@ -25,6 +27,8 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
 - [x] Regole e agenti per Kiro generati da una sorgente, hook di validazione
 - [x] Protocollo delle prove sul campo; `npm run test:bersaglio` valido in ogni shell;
       il referto conta verifiche sui testi e nominazione dei passi
+- [x] Opzioni degli script in forma nuda (`label=x`), lette da `scripts/lib/args.ts`;
+      `check:args` blocca le copie e i comandi suggeriti nella forma che si perde
 
 ## Da fare
 
@@ -43,7 +47,7 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
   - Cosa: `npm run generate`, poi `npm run test:bersaglio <bersaglio>` — valido in
     ogni shell, a differenza di `BDD_TARGET=... npm test` che in PowerShell non funziona.
   - Protocollo e cosa riportare: `docs/anti-entropy/10-prove-sul-campo.md`, P2
-  - Verifica: il test passa; `npm run benchmark -- --label deterministico` compila con
+  - Verifica: il test passa; `npm run benchmark label=deterministico` compila con
     0 passi senza glue e 0 selettori negli step.
   - _Requisiti: R3, R8_
 
@@ -104,7 +108,11 @@ npx tsc --noEmit -p tsconfig.json && npm run check:all && npm run rules:check
   - Dipende da: 2
   - Cosa: procedura in `docs/anti-entropy/07-assistente.md`. **Modello fissato**, non
     Auto. Senza regole solo nell'arena.
-  - Verifica: `npm run benchmark -- --confronta` con tre righe; referto committato.
+  - Prima di misurare: l'arena sta dentro al repository (`reports/arena/`). Non e'
+    verificato che Kiro, aperto li' dentro, non risalga alle regole della cartella
+    madre. Chiedigli quali regole ha in contesto: se ne nomina anche una, l'arena va
+    creata fuori dal repository, altrimenti "senza regole" misura "con regole".
+  - Verifica: `npm run benchmark confronta` con tre righe; referto committato.
   - Protocollo: `docs/anti-entropy/10-prove-sul-campo.md`, P8
   - _Requisiti: R6_
 
@@ -135,7 +143,8 @@ Il protocollo di ciascuna — perche', come, quando va bene, cosa riportare — 
 `docs/anti-entropy/10-prove-sul-campo.md`. P1, P2 e P8 coincidono con i task 1, 2 e 8.
 Gli esiti si scrivono nella tabella in fondo a quel documento: solo numeri e si'/no.
 
-- [ ] P3. Kiro segue le regole anche senza file aperti — cinque minuti
+- [ ] P3. Kiro segue le regole anche senza file aperti — cinque minuti. Prima prova
+      2026-09-11 parziale, regole corrette: si ripete dopo il pull
 - [ ] P4. Un collega usa il recorder senza spiegazioni a voce — la prova del vincolo V3
 - [ ] P5. Quanto dura una sessione salvata
 - [ ] P6. Le pagine difficili: modulo lungo, lista con azioni per riga, modale aperto

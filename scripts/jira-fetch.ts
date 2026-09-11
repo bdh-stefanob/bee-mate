@@ -43,6 +43,7 @@ import {
   loadEnv, authHeader, scoreGherkin, looksLikeTestCase,
   adfToText, preview, pct, validateBaseUrl,
 } from "./lib/atlassian";
+import { argValue, hasFlag } from "./lib/args";
 
 loadEnv();
 
@@ -387,11 +388,6 @@ async function runFetch(jql: string, limit: number, outPath: string, keepAll: bo
 // CLI
 // ---------------------------------------------------------------------------
 
-function argValue(args: string[], flag: string): string | undefined {
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
-
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
@@ -418,7 +414,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (args.includes("--probe")) {
+  if (hasFlag(args, "--probe")) {
     await runProbe(jql);
     return;
   }
@@ -427,7 +423,7 @@ async function main(): Promise<void> {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const outPath = argValue(args, "--out") ?? path.join("reports", "jira-export", `${stamp}.json`);
 
-  await runFetch(jql, limit, outPath, args.includes("--all-fields"));
+  await runFetch(jql, limit, outPath, hasFlag(args, "--all-fields"));
 }
 
 main().catch((err) => {

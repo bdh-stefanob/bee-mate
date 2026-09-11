@@ -87,6 +87,7 @@ import {
   isContainerType, storageValueOf,
   type V2Api, type V2Node, type TreeIndex, type Json,
 } from "./lib/confluence-v2";
+import { argValue, hasFlag, positionals } from "./lib/args";
 
 loadEnv();
 
@@ -1106,22 +1107,6 @@ async function runFetch(
 // ---------------------------------------------------------------------------
 
 /**
- * Legge il valore di un flag, accettando sia `--x v` sia `--x=v`.
- *
- * La forma con l'uguale non e' un vezzo: lanciando via `npm run ... -- --space QA`,
- * npm intercetta `--space` come propria opzione di configurazione e allo script
- * arriva solo `QA`. Il sintomo e' subdolo — il comando "funziona" ma ignora il
- * bersaglio — quindi accettiamo anche `--space=QA`, che npm lascia passare intatto.
- */
-function argValue(args: string[], flag: string): string | undefined {
-  const withEquals = args.find((a) => a.startsWith(flag + "="));
-  if (withEquals) return withEquals.slice(flag.length + 1);
-
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
-
-/**
  * Argomento libero, senza flag: `... --discover SEDT` o `... --probe 123456`.
  * Ultima rete di sicurezza per quando npm ha divorato il nome del flag.
  * Tutto cifre → id di pagina/folder; altrimenti → chiave di space.
@@ -1140,7 +1125,9 @@ function positional(args: string[]): { space?: string; root?: string } {
     bare.push(a);
   }
 
-  const first = bare[0];
+  // Le opzioni in forma nuda e gli interruttori scritti senza trattini non sono
+  // un bersaglio: `probe` non e' la chiave di uno space.
+  const first = positionals(bare, ["discover", "probe", "all-spaces", "all-pages", "no-v2"])[0];
   if (!first) return {};
   return /^\d+$/.test(first) ? { root: first } : { space: first };
 }
@@ -1161,12 +1148,12 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  v2Disabled = args.includes("--no-v2");
+  v2Disabled = hasFlag(args, "--no-v2");
   // Prima di qualunque chiamata: un URL incollato male resta sintatticamente
   // valido e fallisce come se fosse un problema di rete. Meglio dirlo subito.
   validateBaseUrl(BASE_URL, process.env["CONFLUENCE_URL"] ? "CONFLUENCE_URL" : "JIRA_URL");
 
-  const discover = args.includes("--discover");
+  const discover = hasFlag(args, "--discover");
 
   // Il bersaglio si valida prima di toccare la rete: un "manca --space" e' un
   // errore piu' utile di un timeout, e non ha senso farselo nascondere dietro.
@@ -1177,12 +1164,12 @@ async function main(): Promise<void> {
   if (discover) {
     const space = argValue(args, "--space") ?? positional(args).space ?? ENV_SPACE;
     if (space) await runDiscoverTree(space);
-    else await runDiscoverSpaces(args.includes("--all-spaces"));
+    else await runDiscoverSpaces(hasFlag(args, "--all-spaces"));
     return;
   }
   if (!target) return;
 
-  if (args.includes("--probe")) {
+  if (hasFlag(args, "--probe")) {
     await runProbe(target);
     return;
   }
@@ -1191,7 +1178,7 @@ async function main(): Promise<void> {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const outPath = argValue(args, "--out") ?? path.join("reports", "confluence-export", `${stamp}.json`);
 
-  await runFetch(target, limit, outPath, args.includes("--all-pages"));
+  await runFetch(target, limit, outPath, hasFlag(args, "--all-pages"));
 }
 
 main().catch((err) => {

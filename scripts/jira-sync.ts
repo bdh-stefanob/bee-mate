@@ -22,6 +22,7 @@
 
 import * as fs   from "fs";
 import * as path from "path";
+import { hasFlag, positionals } from "./lib/args";
 
 // ---------------------------------------------------------------------------
 // Config da .env
@@ -204,8 +205,8 @@ async function postComment(issueKey: string, body: object): Promise<void> {
 
 async function main(): Promise<void> {
   const args    = process.argv.slice(2);
-  const dryRun  = args.includes("--dry-run");
-  const targets = args.filter((a) => !a.startsWith("--"));
+  const dryRun  = hasFlag(args, "--dry-run");
+  const targets = positionals(args, ["dry-run"]);
   const root    = targets.length > 0 ? targets[0]! : "src/features";
 
   if (!dryRun && (!JIRA_URL || !JIRA_EMAIL || !JIRA_TOKEN)) {

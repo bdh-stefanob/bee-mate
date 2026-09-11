@@ -38,6 +38,7 @@
 import * as fs from "fs";
 import { loadEnv, authHeader, validateBaseUrl } from "./lib/atlassian";
 import { markdownToStorage } from "./lib/markdown-storage";
+import { argValue, hasFlag } from "./lib/args";
 
 loadEnv();
 
@@ -176,20 +177,13 @@ async function updatePage(
 // CLI
 // ---------------------------------------------------------------------------
 
-function argValue(args: string[], flag: string): string | undefined {
-  const eq = args.find((a) => a.startsWith(flag + "="));
-  if (eq) return eq.slice(flag.length + 1);
-  const i = args.indexOf(flag);
-  return i >= 0 && i + 1 < args.length ? args[i + 1] : undefined;
-}
-
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const file = argValue(args, "--file");
   const title = argValue(args, "--title");
   const parent = argValue(args, "--parent") ?? process.env["CONFLUENCE_PARENT"] ?? "";
   const space = argValue(args, "--space") ?? process.env["CONFLUENCE_SPACE"] ?? "";
-  const apply = args.includes("--apply");
+  const apply = hasFlag(args, "--apply");
 
   if (!file || !title || !parent || !space) {
     console.error(
