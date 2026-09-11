@@ -128,18 +128,25 @@ function kiroAgent(q: QAgent, file: string): string {
  * non sarebbe in contesto in quel momento, e l'assistente si comporterebbe
  * esattamente come il problema che stiamo prevenendo.
  *
- * Quindi sempre attivo cio' che serve a decidere COSA scrivere (165 righe in
- * tutto: il costo di contesto e' modesto), condizionale cio' che serve a
- * scrivere il codice — che senza quei file davanti non serve a niente.
+ * Quindi sempre attivo cio' che serve a decidere COSA scrivere e come si
+ * lavora qui (circa 250 righe: il costo di contesto e' modesto), condizionale
+ * cio' che serve a scrivere il codice — che senza quei file davanti non serve.
  */
 const KIRO_INCLUSION: Record<string, string[]> = {
   // Il metodo: sempre.
   "product.md": ["inclusion: always"],
   "bdd-authoring.md": ["inclusion: always"],
   "step-catalog.md": ["inclusion: always"],
+  // Come si lavora sul progetto: sempre. E' il file che orienta un assistente
+  // che arriva senza la conversazione che ha costruito tutto il resto — dove sta
+  // il piano, dove sta lo stato, cosa non si committa mai.
+  "metodo-di-lavoro.md": ["inclusion: always"],
   // La meccanica: solo quando si tocca il codice.
   "automation-layers.md": ["inclusion: fileMatch", "fileMatchPattern: 'src/**/*.ts'"],
   "from-recording.md": ["inclusion: fileMatch", "fileMatchPattern: 'src/**'"],
+  // Le trappole gia' pagate sono quasi tutte di codice: servono quando se ne
+  // scrive, in scripts/ come in src/.
+  "lezioni.md": ["inclusion: fileMatch", "fileMatchPattern: '**/*.ts'"],
 };
 
 /** Default per un file nuovo non ancora mappato: meglio caricarlo sempre che mai. */

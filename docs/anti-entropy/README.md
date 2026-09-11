@@ -9,13 +9,22 @@
 > progetto Jira o persona reale. L'output dei tool (`reports/`) e' gitignorato e non
 > va mai spostato altrove.
 
+> **Come si prosegue.** Il piano operativo, con i criteri di chiusura di ogni task, e'
+> la spec Kiro [`.kiro/specs/demo-anti-entropia/`](../../.kiro/specs/demo-anti-entropia/tasks.md).
+> Come far lavorare l'assistente sul progetto: [09-lavorare-con-kiro.md](09-lavorare-con-kiro.md).
+> Questo documento resta la fonte delle decisioni e del loro perche'.
+
 ## Indice
 
 | Doc | Contenuto | Stato |
 |---|---|---|
 | [01-analisi-criticita.md](01-analisi-criticita.md) | Analisi da senior tester: criticita', rischi, cosa manca | ✅ completo |
 | [02-design.md](02-design.md) | Architettura del sistema, i 4 blocchi, i confini | 🟡 Sez. 1-2 costruite, 3-7 da scrivere |
-| [../../.amazonq/rules/](../../.amazonq/rules/) | Le regole che l'assistente AI carica da solo: come si scrive uno scenario, i layer, il catalogo | ✅ completo |
+| [../../.amazonq/rules/](../../.amazonq/rules/) | **Sorgente** delle regole per l'assistente: metodo, come si lavora, lezioni gia' pagate, layer, catalogo. `.kiro/steering/` si genera da qui | ✅ completo |
+| [07-assistente.md](07-assistente.md) | L'assistente: regole, agenti, automatismi, e come si misura se servono | ✅ completo |
+| [08-prova-su-altra-macchina.md](08-prova-su-altra-macchina.md) | Portare la catena sulla macchina aziendale: ambienti, credenziali, browser | ✅ completo |
+| [09-lavorare-con-kiro.md](09-lavorare-con-kiro.md) | Come far proseguire il lavoro a Kiro, e cosa controllare dopo | ✅ completo |
+| [../../.kiro/specs/demo-anti-entropia/](../../.kiro/specs/demo-anti-entropia/tasks.md) | **Il piano**: requisiti (EARS), design, task con criteri di chiusura | 🟡 in corso |
 | [05-referenze.md](05-referenze.md) | Bibliografia verificata: 20 fonti aperte, 5 dichiarate incerte | ✅ completo |
 | [../../scripts/CONFLUENCE-API-NOTES.md](../../scripts/CONFLUENCE-API-NOTES.md) | Ricerca sulle API Confluence + 7 assunzioni da confermare al primo run | ✅ completo |
 | [06-rituale.md](06-rituale.md) | **Il processo**: consolidamento mensile del linguaggio, 15 minuti, con i comandi per eseguirlo | ✅ completo |
@@ -96,6 +105,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 | D28 | Inclusione delle regole: **il metodo sempre attivo, la meccanica no**. `product.md`, `bdd-authoring.md` e `step-catalog.md` sono `always`; i file tecnici restano condizionali | 165 righe sempre in contesto costano poco e coprono tutto cio' che serve per decidere COSA scrivere. Il risparmio di contesto non vale il rischio che la regola anti-entropia sia assente proprio quando serve |
 | D29 | Gli **agenti** si generano come le regole: sorgente `.amazonq/cli-agents/`, copia `.kiro/agents/`. La mappa degli strumenti e' esplicita e **fallisce** su un nome sconosciuto | Un agente conta piu' di una regola: una regola orienta, un agente **impedisce**. `bdd-authoring` con i soli strumenti di lettura non puo' modificare un file nemmeno volendo. Una traduzione sbagliata degli strumenti gli restituirebbe il permesso di scrivere senza che niente lo segnali |
 | D30 | Gli **hook** di Kiro tolgono l'ultimo anello umano dal controllo deterministico: salvi un `.feature` → parte il validatore; salvi una step definition → si rigenera il catalogo | D6 dice che il giudizio non passa dall'assistente. Restava pero' che qualcuno si ricordasse di lanciarlo — e "mi ricordo" e' la parte che cede per prima |
+| D31 | Il lavoro prosegue con **Kiro** sulla macchina aziendale. Il passaggio non e' un riassunto: e' **nei file** — una spec (`.kiro/specs/demo-anti-entropia/`) con requisiti, design e task verificabili, e due steering nuovi: `metodo-di-lavoro` (sempre) e `lezioni` (sul codice) | Una conoscenza che vive solo in una conversazione si perde con la conversazione. Nei file la legge qualunque assistente, e chiunque la puo' correggere. Le lezioni portano l'incidente che le ha insegnate: una regola senza il suo perche' viene aggirata alla prima occasione |
 | D16 | Le verifiche registrate hanno un **tipo**: mostra un valore (default) · e' comparso · e' sparito · si e' navigato | In produzione non si verifica "questo e' cliccabile", si verifica che **la UI si sia aggiornata**. Il default era sbagliato ed e' stato corretto |
 
 ## Domande aperte

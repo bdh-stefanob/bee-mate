@@ -69,8 +69,10 @@ comporterebbe esattamente come il problema che stiamo prevenendo.
 | `step-catalog.md` | **always** | "cerca nel catalogo" e' inutile senza sapere com'e' fatto |
 | `automation-layers.md` | fileMatch `src/**/*.ts` | dettaglio tecnico |
 | `from-recording.md` | fileMatch `src/**` | serve solo generando |
+| `metodo-di-lavoro.md` | **always** | come si lavora qui: il piano, lo stato, cosa non si committa mai |
+| `lezioni.md` | fileMatch `**/*.ts` | le trappole gia' pagate, con l'incidente che le ha insegnate |
 
-Centosessantacinque righe sempre attive: il costo di contesto e' modesto, e
+Circa duecentocinquanta righe sempre attive: il costo di contesto e' modesto, e
 copre tutto cio' che serve per decidere **cosa** scrivere. Condizionale solo cio'
 che serve a scrivere il **codice**, che senza quei file davanti non serve.
 
