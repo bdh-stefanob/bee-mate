@@ -1,7 +1,7 @@
 {
   "name": "bdd-automation-scaffold",
   "version": "0.1.0",
-  "description": "Greenfield BDD test automation scaffold — Playwright + Cucumber.js + TypeScript. Generic demo domain.",
+  "description": "Greenfield BDD test automation scaffold \u2014 Playwright + Cucumber.js + TypeScript. Generic demo domain.",
   "scripts": {
     "test": "cucumber-js",
     "test:dry": "cucumber-js --dry-run",
@@ -42,7 +42,8 @@
     "diagnosi": "ts-node scripts/diagnosi.ts",
     "referto": "ts-node scripts/referto.ts",
     "check:labelling": "ts-node scripts/lib/labelling.check.ts",
-    "check:inventory": "ts-node scripts/lib/inventory.check.ts"
+    "check:inventory": "ts-node scripts/lib/inventory.check.ts",
+    "test:bersaglio": "ts-node scripts/test-bersaglio.ts"
   },
   "keywords": [
     "playwright",

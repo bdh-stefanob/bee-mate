@@ -26,10 +26,13 @@ loadEnv();
  *
  * Due modi, e il primo e' quello buono:
  *
- *   BDD_TARGET=clinic npm test    il bersaglio nominato in bdd-targets.json:
- *                                 porta con se' indirizzo E sessione salvata,
- *                                 quindi i test partono gia' autenticati
- *   BASE_URL=https://... npm test un indirizzo e basta, per una prova al volo
+ *   npm run test:bersaglio clinic       il bersaglio nominato in bdd-targets.json:
+ *                                       porta con se' indirizzo E sessione salvata,
+ *                                       quindi i test partono gia' autenticati
+ *   npm run test:bersaglio https://...  un indirizzo e basta, per una prova al volo
+ *
+ * Lo script imposta BDD_TARGET o BASE_URL al posto tuo. Scriverli a mano davanti
+ * al comando e' sintassi di bash: in PowerShell non imposta niente.
  *
  * `npm run targets` dice quali bersagli esistono e cosa manca a ciascuno.
  */
@@ -70,7 +73,7 @@ const AMBIENTE = ambiente();
 if (!AMBIENTE.baseURL) {
   console.warn(
     `\n  Nessun indirizzo: i percorsi relativi delle Page Object non porteranno da nessuna parte.\n` +
-      `  Rimedio:  BDD_TARGET=<nome> npm test     (vedi: npm run targets)\n` +
+      `  Rimedio:  npm run test:bersaglio <nome>     (vedi: npm run targets)\n` +
       `        o:  BASE_URL=https://... in .env\n`
   );
 }

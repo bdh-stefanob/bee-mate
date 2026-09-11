@@ -11,6 +11,8 @@ scenario e automazione.
 - **Lo stato vivo** — fatti accertati, decisioni prese e perche', domande aperte:
   `docs/anti-entropy/README.md`. Ha precedenza su qualunque altra fonte.
 - **Le trappole tecniche gia' incontrate**: `lezioni.md`, caricata quando tocchi codice.
+- **Le prove ancora da fare sul campo**, e cosa riportarne:
+  `docs/anti-entropy/10-prove-sul-campo.md`.
 
 ## Cinque principi, in ordine di importanza
 

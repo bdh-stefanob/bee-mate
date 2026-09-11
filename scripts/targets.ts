@@ -79,7 +79,7 @@ function reportTarget(t: Target, dettaglio: boolean): boolean {
     console.log(`         ${mancanti.length > 0 ? "3" : "2"}. npm run scout    -- ${t.name}     dizionario dei componenti`);
     console.log(`         ${mancanti.length > 0 ? "4" : "3"}. npm run record   -- ${t.name}     esegui il test a mano`);
     console.log(`         ${mancanti.length > 0 ? "5" : "4"}. npm run generate`);
-    console.log(`         ${mancanti.length > 0 ? "6" : "5"}. BDD_TARGET=${t.name} npm test`);
+    console.log(`         ${mancanti.length > 0 ? "6" : "5"}. npm run test:bersaglio ${t.name}`);
   }
 
   console.log("");

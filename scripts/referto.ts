@@ -80,6 +80,7 @@ interface Registrazione {
   durationSeconds?: number;
   pagesVisited?: string[];
   summary?: { intents?: number; steps?: number; assertions?: number; unlabelled?: number };
+  nominazione?: { proposti?: number; accettati?: number; rinominati?: number; uniti?: number };
   intents?: Array<{
     label?: string;
     pageUrl?: string;
@@ -235,6 +236,45 @@ function main(): void {
       );
       righe.push("");
     }
+
+    // LE DUE COSE CHE LA PRIMA SESSIONE VERA HA MOSTRATO DEBOLI, contate per
+    // sapere dal campo se le correzioni hanno funzionato: le verifiche sui testi
+    // (prima impossibili) e i confini proposti a fine sessione.
+    const CONTROLLI = new Set([
+      "button", "link", "textbox", "combobox", "checkbox", "radio",
+      "tab", "menuitem", "searchbox", "spinbutton", "switch", "option",
+    ]);
+    const verifiche = tuttiIntenti.flatMap((i) => i.assertions ?? []);
+    const suTesto = verifiche.filter((a) => !CONTROLLI.has(a.role ?? "")).length;
+
+    righe.push("### Verifiche e nomi dei passi");
+    righe.push("");
+    righe.push(
+      `- verifiche: **${verifiche.length}** — su un testo (titolo, messaggio): ${suTesto}, ` +
+        `su un controllo: ${verifiche.length - suTesto}`
+    );
+
+    const nominazioni = registrazioni
+      .map((f) => leggi<Registrazione>(path.join(RECORDINGS, f))?.nominazione)
+      .filter((n): n is NonNullable<Registrazione["nominazione"]> => Boolean(n));
+    if (nominazioni.length > 0) {
+      const somma = (k: "proposti" | "accettati" | "rinominati" | "uniti"): number =>
+        nominazioni.reduce((t, n) => t + (n[k] ?? 0), 0);
+      const proposti = somma("proposti");
+      const uniti = somma("uniti");
+      righe.push(
+        `- passi proposti a fine sessione: ${proposti} — accettati ${somma("accettati")}, ` +
+          `rinominati ${somma("rinominati")}, uniti al precedente ${uniti}`
+      );
+      if (proposti > 0 && uniti / proposti > 0.5) {
+        righe.push("");
+        righe.push(
+          `**Piu' della meta' dei confini proposti e' stata unita.** Il criterio "cambio di ` +
+            `pagina" spezza troppo su questa applicazione: va rivisto in lib/labelling.ts.`
+        );
+      }
+    }
+    righe.push("");
   }
   righe.push("");
 

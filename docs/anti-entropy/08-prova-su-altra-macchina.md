@@ -40,12 +40,16 @@ npm run scout    -- clinic   # dizionario dei componenti
 npm run record   -- clinic   # esegui il test a mano: e' l'atto di specifica
 npm run generate             # feature + Page Object + step. Nessuna AI, e compila
 
-BDD_TARGET=clinic npm test   # gira, gia' autenticato
+npm run test:bersaglio clinic   # gira, gia' autenticato
 ```
 
-`BDD_TARGET` porta con se' **indirizzo e sessione**: i test partono autenticati
-senza rifare il login a ogni scenario. `HEADED=1` davanti al comando apre il
-browser, che serve quando un passo fallisce e il messaggio non basta.
+Il bersaglio porta con se' **indirizzo e sessione**: i test partono autenticati
+senza rifare il login a ogni scenario. Aggiungi `vedi` in fondo al comando per
+aprire il browser, che serve quando un passo fallisce e il messaggio non basta.
+
+Niente `BDD_TARGET=clinic npm test`: e' sintassi di bash, e in PowerShell non
+imposta niente. `test:bersaglio` passa il bersaglio come argomento e funziona in
+ogni shell.
 
 ## Se il download dei browser e' bloccato
 
@@ -87,8 +91,8 @@ Page Object generate hanno **percorsi relativi**: `/visits`, non
 solo — e farebbe finire un indirizzo aziendale in un repository pubblico.
 
 ```bash
-BDD_TARGET=clinic   npm test
-BDD_TARGET=collaudo npm test
+npm run test:bersaglio clinic
+npm run test:bersaglio collaudo
 ```
 
 ## Il login: automatico dove si puo', a mano dove serve
