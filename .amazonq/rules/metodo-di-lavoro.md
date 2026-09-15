@@ -67,6 +67,10 @@ non danno nemmeno errore — danno un'esecuzione diversa:
   `npm run test:bersaglio <nome>`.
 - **`&&` fra due comandi**: nella PowerShell di Windows non c'e'. Un comando per riga.
 
+Per sapere se un'opzione e' arrivata basta la riga che npm stampa prima di partire,
+`> ts-node scripts/...`: se l'opzione li' non c'e', lo script non l'ha ricevuta.
+Verificato sulla macchina aziendale.
+
 Se l'opzione che serve non ha una forma nuda, dillo invece di proporre un comando
 che sembra funzionare. E se un documento del repository suggerisce una forma
 diversa, e' sbagliato il documento: `npm run check:args` lo trova.
