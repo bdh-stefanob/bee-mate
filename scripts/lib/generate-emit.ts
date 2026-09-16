@@ -24,8 +24,15 @@ import type {
   Assertion, Component, GeneratedFile, ResolvedIntent,
 } from "./generation-contract";
 
-/** Il passo di verifica unico, generato per ogni asserzione registrata. */
-export const VERIFY_STEP = "la pagina mostra {string}";
+/**
+ * Il passo di verifica unico, generato per ogni asserzione registrata.
+ *
+ * In inglese come il catalogo: era in italiano, e il risultato erano scenari
+ * meta' e meta' — i passi del tester in inglese, le verifiche in italiano.
+ * Due lingue nello stesso file sono entropia prodotta dal nostro strumento,
+ * proprio quella che il progetto esiste per ridurre.
+ */
+export const VERIFY_STEP = "the page shows {string}";
 
 export interface EmitContext {
   intents: ResolvedIntent[];
