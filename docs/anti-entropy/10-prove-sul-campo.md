@@ -168,7 +168,7 @@ strumento si rifiuta di scrivere su pagine che non ha creato lui.
 
 | Prova | Data | Esito | Numeri e note — niente nomi |
 |---|---|---|---|
-| P1 | | | |
+| P1 | 2026-09-16 | si' | 300s · 6 indirizzi, 5 pagine distinte · 7 intenti (5 nominati durante la sessione con "Fine intento", 2 alla fine) · 12 azioni · 4 verifiche · 2 ancoraggi fragili dichiarati, entrambi nello stesso passo: un nome fatto di sole cifre e il testo di una riga intera. Criterio (>=3 intenti, >=2 verifiche) superato |
 | P2 | | | |
 | P3 | 2026-09-11 | parziale | cerca nel catalogo: si' · riusa o propone uno solo: si' (riuso esatto) · dichiarativo: no — 7 passi granulari riusati, lo step d'intento proposto come alternativa · l'agente di sola lettura non scrive: si', ma per scelta, da ripetere chiedendogli di applicare. Suggerisce comandi nella forma che si perde. Corretti regola e comandi (F21, F22, D32): si ripete dopo il pull. 16/09: i primi due test passano; l'agente di sola lettura pero' poteva usare la shell (F23). Corretti i nomi degli strumenti, e accertato che il limite vero e' l'approvazione umana, non l'assenza di strumenti (F24): senza `--trust-all-tools` il comando viene rifiutato |
 | P4 | | | |
