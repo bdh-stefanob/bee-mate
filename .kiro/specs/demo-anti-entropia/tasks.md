@@ -32,7 +32,8 @@ npm run rules:check
 
 ## Da fare
 
-- [ ] 1. **UMANO** — Registrazione vera con verifiche
+- [x] 1. **UMANO** — Registrazione vera con verifiche — fatta il 2026-09-16: 7 intenti,
+      12 azioni, 4 verifiche, 2 ancoraggi fragili dichiarati (esiti in doc 10, P1)
   - Perche': tutto il resto aspetta una sessione con passi nominati e verifiche; le
     registrazioni esistenti ne sono prive.
   - Cosa: `npm run record <bersaglio>` sul flusso d'ordine. "Verifica" su cio' che
