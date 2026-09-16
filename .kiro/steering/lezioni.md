@@ -109,6 +109,13 @@ poi Edge, e dice quale ha usato. Mai cambiare browser in silenzio.
 **Windows: la giunzione `node_modules` dell'arena si sgancia prima di cancellare.** E
 una shell rimasta dentro una cartella la tiene occupata.
 
+**I fine riga non sono contenuto.** Su una macchina Windows appena clonata
+`rules:check` dichiarava disallineate tutte e nove le regole: git converte LF in CRLF
+quando scrive i file, e il confronto era byte a byte. Nessuno aveva toccato niente.
+Chi confronta due testi che possono venire da un checkout usa `stessoTesto` di
+`lib/eol.ts`. Il danno di un avviso cosi' non e' il messaggio: e' che insegna a
+ignorare gli avvisi.
+
 ## Dove vive la logica condivisa
 
 Non duplicarla: importala.
@@ -124,3 +131,4 @@ Non duplicarla: importala.
 | Confini proposti fra i passi | `scripts/lib/labelling.ts` |
 | Avvio del browser | `scripts/lib/browser.ts` |
 | Lettura delle opzioni da riga di comando | `scripts/lib/args.ts` |
+| Confronto fra testi con fine riga diversi | `scripts/lib/eol.ts` |

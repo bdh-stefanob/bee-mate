@@ -35,6 +35,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { hasFlag } from "./lib/args";
+import { normalizzaFineRiga, stessoTesto } from "./lib/eol";
 
 const SOURCE_DIR = path.join(".amazonq", "rules");
 const KIRO_DIR = path.join(".kiro", "steering");
@@ -178,12 +179,17 @@ function main(): void {
 
   const stale: string[] = [];
   for (const file of files) {
-    const body = fs.readFileSync(path.join(SOURCE_DIR, file), "utf-8");
+    // A LF anche il corpo: cosi' il file generato ha fine riga uniformi, e non
+    // meta' dal front-matter e meta' da come git ha scritto la sorgente.
+    const body = normalizzaFineRiga(fs.readFileSync(path.join(SOURCE_DIR, file), "utf-8"));
     const wanted = kiroVersion(file, body);
     const target = path.join(KIRO_DIR, file);
     const current = fs.existsSync(target) ? fs.readFileSync(target, "utf-8") : "";
 
-    if (current === wanted) continue;
+    // Si confronta il testo, non i fine riga: su Windows git li converte al
+    // checkout, e un confronto byte a byte direbbe "rigenera" su un repository
+    // appena clonato. Vedi lib/eol.ts.
+    if (stessoTesto(current, wanted)) continue;
     stale.push(file);
     if (!check) fs.writeFileSync(target, wanted, "utf-8");
   }
@@ -199,7 +205,7 @@ function main(): void {
     const wanted = kiroAgent(q, file);
     const target = path.join(AGENTS_KIRO, file);
     const current = fs.existsSync(target) ? fs.readFileSync(target, "utf-8") : "";
-    if (current === wanted) continue;
+    if (stessoTesto(current, wanted)) continue;
     stale.push(`${file} (agente)`);
     if (!check) fs.writeFileSync(target, wanted, "utf-8");
   }
