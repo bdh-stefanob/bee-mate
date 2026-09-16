@@ -20,6 +20,13 @@
  * due versioni, e un nome fuori da questa lista ferma la generazione invece di
  * arrivare all'engine e farsi ignorare in silenzio.
  *
+ * E NON BASTA — verificato subito dopo, sulla stessa macchina. Anche con i nomi
+ * giusti, `"tools": ["fs_read"]` non toglie `execute_cmd`: lo strumento resta
+ * disponibile. A fermarlo e' l'**approvazione**, perche' non sta in
+ * `allowedTools` e in modalita' non interattiva viene rifiutato. Dichiarare il
+ * minimo serve — ogni strumento fuori da `allowedTools` richiede un si' umano —
+ * ma la garanzia si enuncia "non scrive senza approvazione", mai "non puo'".
+ *
  * La lista viene dalla documentazione di Kiro, interrogata con l'agente
  * `kiro_help` (`kiro-cli chat --agent kiro_help`). Se una versione futura ne
  * aggiunge, si aggiungono qui — dopo averlo verificato, non per somiglianza.

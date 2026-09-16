@@ -12,7 +12,7 @@ niente da spiegargli a voce: se manca qualcosa, manca nei file, e va aggiunto li
 | Architettura e generazione | `.kiro/steering/automation-layers`, `from-recording` | quando tocca `src/` |
 | Il piano, con i criteri di chiusura | `.kiro/specs/demo-anti-entropia/` | quando apri la spec |
 | Lo stato vivo e le decisioni | `docs/anti-entropy/README.md` | quando lo legge: lo steering glielo indica |
-| Due agenti | `.kiro/agents/` — `bdd-authoring` (sola lettura), `bdd-generate` | quando li scegli |
+| Due agenti | `.kiro/agents/` — `bdd-authoring` (niente scrittura senza il tuo si'), `bdd-generate` | quando li scegli |
 | Due automatismi | `.kiro/hooks/` — valida al salvataggio, rigenera il catalogo | da soli |
 
 `.kiro/steering/` e `.kiro/agents/` si **generano** da `.amazonq/rules/` e
@@ -36,7 +36,9 @@ Frasi di partenza che funzionano:
 - *"Esegui il task N della spec. Scrivi prima il caso di controllo, poi il codice."*
 - *"Ecco l'output del recorder: [solo i numeri]. Cosa ti dice?"*
 - *"Rivedi questo scenario contro il catalogo"* — con l'agente `bdd-authoring`, che
-  non puo' modificare file.
+  non modifica file senza che tu dica di si'. **Non lanciarlo con
+  `--trust-all-tools`** (e nell'IDE non in Autopilot): quel flag gli ridà la shell,
+  verificato il 2026-09-16. Il limite e' l'approvazione, non l'assenza di strumenti.
 
 ## Dopo ogni lavoro di Kiro, tre controlli tuoi
 
