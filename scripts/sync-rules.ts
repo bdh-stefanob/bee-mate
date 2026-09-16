@@ -36,6 +36,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { hasFlag } from "./lib/args";
 import { normalizzaFineRiga, stessoTesto } from "./lib/eol";
+import { validaStrumenti } from "./lib/kiro-tools";
 
 const SOURCE_DIR = path.join(".amazonq", "rules");
 const KIRO_DIR = path.join(".kiro", "steering");
@@ -43,18 +44,12 @@ const AGENTS_SOURCE = path.join(".amazonq", "cli-agents");
 const AGENTS_KIRO = path.join(".kiro", "agents");
 
 /**
- * Gli stessi permessi, detti nei due dialetti.
- *
- * Non e' una tabella di comodo: e' il punto in cui una traduzione sbagliata
- * darebbe a un agente di sola lettura il permesso di scrivere, senza che niente
- * lo segnali. Per questo la mappa e' esplicita e cio' che non conosce fa
- * fallire, invece di passare inalterato.
+ * Gli strumenti NON si traducono. Si chiamano allo stesso modo nelle due
+ * versioni, e i nomi validi stanno in `lib/kiro-tools.ts` con la storia di cosa
+ * e' successo quando li traducevamo: un agente di sola lettura che eseguiva una
+ * shell. Il punto in cui una traduzione sbagliata toglie un limite era previsto
+ * nel commento che stava qui — ed e' stata la traduzione a toglierlo.
  */
-const TOOL_MAP: Record<string, string> = {
-  fs_read: "read",
-  fs_write: "write",
-  execute_bash: "shell",
-};
 
 interface QAgent {
   name: string;
@@ -63,22 +58,6 @@ interface QAgent {
   tools?: string[];
   allowedTools?: string[];
   resources?: string[];
-}
-
-function traduciStrumenti(tools: readonly string[], dove: string): string[] {
-  return tools.map((t) => {
-    const k = TOOL_MAP[t];
-    if (!k) {
-      throw new Error(
-        `${dove}: strumento sconosciuto "${t}".\n` +
-          `  Aggiungilo a TOOL_MAP in scripts/sync-rules.ts.\n` +
-          `  Non lo lascio passare inalterato: un nome che Kiro non riconosce\n` +
-          `  verrebbe ignorato, e un agente di sola lettura potrebbe ritrovarsi\n` +
-          `  senza il limite che lo definisce.`
-      );
-    }
-    return k;
-  });
 }
 
 /**
@@ -97,8 +76,8 @@ function kiroAgent(q: QAgent, file: string): string {
     name: q.name,
     description: q.description,
     prompt: q.prompt,
-    tools: traduciStrumenti(q.tools ?? [], file),
-    allowedTools: traduciStrumenti(q.allowedTools ?? [], file),
+    tools: validaStrumenti(q.tools ?? [], file),
+    allowedTools: validaStrumenti(q.allowedTools ?? [], file),
     // Le risorse vanno ripuntate sulla copia generata: un agente Kiro che
     // leggesse `.amazonq/rules/` funzionerebbe — quei file esistono — ma
     // caricherebbe la versione SENZA front-matter, cioe' senza le regole di

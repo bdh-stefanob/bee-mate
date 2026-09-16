@@ -161,7 +161,7 @@ strumento si rifiuta di scrivere su pagine che non ha creato lui.
 |---|---|---|---|
 | P1 | | | |
 | P2 | | | |
-| P3 | 2026-09-11 | parziale | cerca nel catalogo: si' · riusa o propone uno solo: si' (riuso esatto) · dichiarativo: no — 7 passi granulari riusati, lo step d'intento proposto come alternativa · l'agente di sola lettura non scrive: si', ma per scelta, da ripetere chiedendogli di applicare. Suggerisce comandi nella forma che si perde. Corretti regola e comandi (F21, F22, D32): si ripete dopo il pull |
+| P3 | 2026-09-11 | parziale | cerca nel catalogo: si' · riusa o propone uno solo: si' (riuso esatto) · dichiarativo: no — 7 passi granulari riusati, lo step d'intento proposto come alternativa · l'agente di sola lettura non scrive: si', ma per scelta, da ripetere chiedendogli di applicare. Suggerisce comandi nella forma che si perde. Corretti regola e comandi (F21, F22, D32): si ripete dopo il pull. 16/09: i primi due test passano; l'agente di sola lettura pero' poteva usare la shell (F23), corretto, da riprovare |
 | P4 | | | |
 | P5 | | | |
 | P6 | | | |

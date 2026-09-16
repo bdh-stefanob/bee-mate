@@ -116,6 +116,17 @@ Chi confronta due testi che possono venire da un checkout usa `stessoTesto` di
 `lib/eol.ts`. Il danno di un avviso cosi' non e' il messaggio: e' che insegna a
 ignorare gli avvisi.
 
+## Regole e agenti
+
+**Un nome di strumento che l'engine non conosce non viene rifiutato: viene ignorato.**
+La copia Kiro degli agenti traduceva `fs_read` in `read`, `execute_bash` in `shell`.
+Risultato: l'agente dichiarato **di sola lettura** si e' ritrovato la shell e ha creato
+un file con `echo prova > prova-agente.txt`. La scrittura non e' passata solo perche' il
+nome tradotto risultava un segnaposto vuoto — il limite ha retto per un nostro errore,
+non per una nostra difesa. I nomi veri stanno in `lib/kiro-tools.ts`, non si traducono,
+e `check:kiro-tools` legge i file generati: chi si descrive "sola lettura" non puo'
+avere `fs_write` ne' `execute_bash`.
+
 ## Dove vive la logica condivisa
 
 Non duplicarla: importala.
@@ -132,3 +143,4 @@ Non duplicarla: importala.
 | Avvio del browser | `scripts/lib/browser.ts` |
 | Lettura delle opzioni da riga di comando | `scripts/lib/args.ts` |
 | Confronto fra testi con fine riga diversi | `scripts/lib/eol.ts` |
+| Nomi degli strumenti di un agente | `scripts/lib/kiro-tools.ts` |
