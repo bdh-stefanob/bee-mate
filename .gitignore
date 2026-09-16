@@ -26,3 +26,14 @@ docs-site/dist/
 # Bersagli e sessioni: indirizzi aziendali e credenziali di fatto.
 # L'esempio (bdd-targets.example.json) e' versionato, il file vero no.
 bdd-targets.json
+
+# Codice generato da una registrazione. Porta i nomi delle pagine, dei
+# componenti e a volte i valori digitati dell'applicazione su cui e' stata
+# fatta: se quell'applicazione e' aziendale, questo e' materiale aziendale, e
+# va nel repository aziendale. Il 2026-09-16 un commit l'ha sfiorato — l'ha
+# fermato il validatore degli step, cioe' il controllo sbagliato per il motivo
+# giusto. I nomi dei file bastavano a identificare l'ambiente.
+# Si rigenera in un comando: `npm run generate`.
+src/features/generated/
+src/steps/generated/
+src/pages/generated/
