@@ -129,8 +129,17 @@ lungo · una lista o tabella con azioni per riga · un modale **aperto**.
 
 ## P7 — Automatismi e agenti nell'IDE
 
-**Come.** Salvi un `.feature`: parte `validate:steps`? Salvi una `.steps.ts`: si
-rigenera il catalogo? Il pannello agenti vede `bdd-authoring` e `bdd-generate`?
+**Come.** La prova e' cambiata il 2026-09-16: l'evento "salvataggio di un file" non
+esiste (F25), quindi non c'e' niente da provare salvando. L'automatismo e' dichiarato
+dentro `bdd-generate` e scatta quando **l'assistente** scrive.
+
+1. `kiro-cli agent list` — vede i due agenti? (accertato: si', dalla cartella del
+   workspace)
+2. Fai scrivere un `.feature` a `bdd-generate` e guarda se parte `validate:steps`
+   subito dopo, senza chiederlo.
+3. Nell'IDE: nella barra della chat c'e' un selettore di agente? E se esiste un
+   pannello degli hook, vede qualcosa? Se non vede niente, `.kiro/hooks/` si cancella:
+   un file che sembra un pezzo di metodo e non lo e' e' peggio di un file che manca.
 
 **Da riportare:** tre si'/no.
 

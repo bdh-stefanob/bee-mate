@@ -120,8 +120,12 @@ Formati presi dalla documentazione, non da un'installazione:
 # C'e' gia' qualcosa sul PATH?
 Get-Command kiro-cli, kiro, q -ErrorAction SilentlyContinue
 
-# In Kiro (IDE): il pannello agenti vede bdd-authoring e bdd-generate?
-#                il pannello hook vede valida-scenari e rigenera-catalogo?
+# Gli agenti ci sono, e da dove li prende?
+kiro-cli agent list
+
+# L'automatismo: l'hook sta DENTRO l'agente che scrive (postToolUse su fs_write).
+# Non esiste un evento "salvataggio file": vedi F25.
+# In Kiro (IDE): il selettore di agente c'e' nella barra della chat?
 ```
 
 Se un campo non combacia, si correggono i JSON sorgente in

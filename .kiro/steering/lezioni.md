@@ -124,6 +124,13 @@ nomi inesistenti, e l'agente **di sola lettura** si e' ritrovato i permessi di d
 I nomi veri stanno in `lib/kiro-tools.ts`, non si traducono, e `check:kiro-tools` legge
 i file generati.
 
+**Gli automatismi stanno dentro l'agente, e l'evento "salvataggio file" non esiste.**
+I trigger sono `agentSpawn`, `userPromptSubmit`, `preToolUse`, `postToolUse`, `stop`.
+Una cartella `.kiro/hooks/` con `trigger: PostFileSave` e' configurazione morta: nessun
+errore, nessun effetto, e l'aria di un pezzo di metodo funzionante. Quello che scatta
+davvero e' `postToolUse` su `fs_write` — dopo che **l'assistente** ha scritto — e lancia
+`scripts/hook-post-write.ts`.
+
 **Un agente non impedisce: toglie la fiducia.** Anche con `"tools": ["fs_read"]`,
 `execute_cmd` resta disponibile: a fermarlo e' l'approvazione, perche' non sta in
 `allowedTools` e in modalita' non interattiva viene rifiutato. Con `--trust-all-tools`

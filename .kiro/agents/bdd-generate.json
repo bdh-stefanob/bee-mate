@@ -10,6 +10,15 @@
   "allowedTools": [
     "fs_read"
   ],
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "fs_write",
+        "command": "npx ts-node scripts/hook-post-write.ts",
+        "description": "Dopo ogni file scritto lancia il giudice che gli tocca: il validatore per uno scenario, la rigenerazione del catalogo per una step definition. Il giudizio non passa dall'assistente, e non dipende da chi si ricorda di lanciarlo."
+      }
+    ]
+  },
   "resources": [
     "file://.kiro/steering/**/*.md",
     "file://STEP_CATALOG.md",

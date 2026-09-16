@@ -13,7 +13,7 @@ niente da spiegargli a voce: se manca qualcosa, manca nei file, e va aggiunto li
 | Il piano, con i criteri di chiusura | `.kiro/specs/demo-anti-entropia/` | quando apri la spec |
 | Lo stato vivo e le decisioni | `docs/anti-entropy/README.md` | quando lo legge: lo steering glielo indica |
 | Due agenti | `.kiro/agents/` — `bdd-authoring` (niente scrittura senza il tuo si'), `bdd-generate` | quando li scegli |
-| Due automatismi | `.kiro/hooks/` — valida al salvataggio, rigenera il catalogo | da soli |
+| Un automatismo | dentro `bdd-generate`: dopo ogni file che **l'assistente** scrive, valida lo scenario o rigenera il catalogo | da solo |
 
 `.kiro/steering/` e `.kiro/agents/` si **generano** da `.amazonq/rules/` e
 `.amazonq/cli-agents/` con `npm run rules:sync`. Per cambiare una regola si cambia la

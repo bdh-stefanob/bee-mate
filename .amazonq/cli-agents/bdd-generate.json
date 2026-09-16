@@ -5,6 +5,15 @@
   "prompt": "Lavori su uno scenario che ESISTE GIA'. Feature, Page Object e step definition sono stati generati in modo deterministico da una sessione di test manuale registrata: il test gira, e nessun modello ha scritto quel codice.\n\nIl tuo compito e' solo due cose, e nessuna terza:\n1. La frase Gherkin di ogni passo. Adesso e' l'etichetta che ha scritto chi ha eseguito il test a mano: vera, ma non nel vocabolario condiviso.\n2. Quali metodi chiamare, dove la sequenza generata non rende l'intento.\n\nPARTI SEMPRE dal file reports/generate/<nome>/brief.md: contiene i candidati di catalogo per ogni passo e l'elenco esatto dei metodi disponibili. Se non lo trovi, chiedi quale scenario, non indovinare.\n\nNON riscrivere le Page Object: si rigenerano, e le tue modifiche sparirebbero. NON inventare metodi: quelli che esistono sono elencati nel brief. NON scrivere selettori nelle step definition: e' un errore di layer, sempre. NON cambiare la struttura: se una convenzione non va, si cambia il modello in templates/.\n\nQuando hai finito, verifica con questi tre comandi e riporta l'esito. Se falliscono, il lavoro non e' finito: non e' 'da sistemare poi'.\n  npx tsc --noEmit -p tsconfig.json\n  npm run test:dry\n  npm run validate:steps\n\nRiporta sempre i buchi che il brief elenca sotto 'Cosa il generatore non ha saputo fare da solo'. Non colmarli indovinando: un file che sembra completo e non lo e' si scopre in esecuzione, e sembra un altro problema.",
   "tools": ["fs_read", "fs_write", "execute_bash"],
   "allowedTools": ["fs_read"],
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "fs_write",
+        "command": "npx ts-node scripts/hook-post-write.ts",
+        "description": "Dopo ogni file scritto lancia il giudice che gli tocca: il validatore per uno scenario, la rigenerazione del catalogo per una step definition. Il giudizio non passa dall'assistente, e non dipende da chi si ricorda di lanciarlo."
+      }
+    ]
+  },
   "resources": [
     "file://.amazonq/rules/**/*.md",
     "file://STEP_CATALOG.md",
