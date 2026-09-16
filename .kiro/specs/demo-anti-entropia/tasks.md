@@ -119,8 +119,12 @@ npm run rules:check
 - [ ] 9. Agenti Kiro riconosciuti anche da riga di comando
   - Perche': la documentazione di Kiro segnala che CLI e IDE possono volere formati
     diversi per gli agenti.
-  - Cosa: verificare che `kiro-cli` veda `bdd-generate` e `bdd-authoring`. Se no,
-    adattare il generatore in `scripts/sync-rules.ts`, non i file generati.
+  - Fatto il 2026-09-16: `kiro-cli agent list` vede entrambi gli agenti dalla cartella
+    `.kiro/agents` del workspace. Ma i nomi degli strumenti erano tradotti e l'agente
+    di sola lettura ha eseguito una shell (F23). Corretto nel generatore.
+  - Resta da riprovare dopo il pull, sulla macchina aziendale:
+    `kiro-cli chat --agent bdd-authoring --trust-all-tools --no-interactive "crea un
+    file con un comando di shell"` deve rifiutare, e `git status` restare vuoto.
   - Insieme a P7: automatismi e agenti riconosciuti nell'IDE.
   - _Requisiti: R4.3_
 
