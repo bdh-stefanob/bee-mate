@@ -66,6 +66,8 @@ interface QAgent {
   tools?: string[];
   allowedTools?: string[];
   resources?: string[];
+  /** Gli automatismi vivono qui dentro: non esiste una cartella di hook a parte. */
+  hooks?: Record<string, unknown>;
 }
 
 /**
@@ -86,6 +88,7 @@ function kiroAgent(q: QAgent, file: string): string {
     prompt: q.prompt,
     tools: validaStrumenti(q.tools ?? [], file),
     allowedTools: validaStrumenti(q.allowedTools ?? [], file),
+    ...(q.hooks ? { hooks: q.hooks } : {}),
     // Le risorse vanno ripuntate sulla copia generata: un agente Kiro che
     // leggesse `.amazonq/rules/` funzionerebbe — quei file esistono — ma
     // caricherebbe la versione SENZA front-matter, cioe' senza le regole di
