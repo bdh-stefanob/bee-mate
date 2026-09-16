@@ -19,12 +19,20 @@
  *   Sorgente : .amazonq/cli-agents/*.json
  *   Generata : .kiro/agents/*.json        stessi vincoli, nomi di strumento diversi
  *
- * Gli agenti contano piu' delle regole, e per una ragione che non si vede
- * subito: una regola **orienta**, un agente **impedisce**. `bdd-authoring`
- * dichiara i soli strumenti di lettura, quindi non puo' modificare un file
- * nemmeno volendo. Uno steering che dice "proponi, non modificare" e' un
- * consiglio; `"tools": ["read"]` e' un limite. Chi rivede uno scenario non deve
- * poterlo correggere da solo: quella decisione e' di una persona.
+ * Gli agenti contano piu' delle regole, ma meno di quanto credevamo, e la
+ * differenza e' stata misurata invece che immaginata (2026-09-16, `kiro-cli`).
+ *
+ * Dichiarare `"tools": ["fs_read"]` **non toglie la shell**: `execute_cmd`
+ * resta disponibile. Cambia l'**approvazione**: cio' che non sta in
+ * `allowedTools` richiede un si' umano, e in modalita' non interattiva viene
+ * rifiutato ("no user to approve"). Quindi un agente non impedisce: **toglie la
+ * fiducia**. Chi lancia con `--trust-all-tools` gliela restituisce tutta, e
+ * l'agente di sola lettura crea file.
+ *
+ * Resta vero che uno steering che dice "proponi, non modificare" e' solo un
+ * consiglio, e che un agente con meno strumenti dichiarati chiede permesso piu'
+ * spesso. Ma la garanzia va detta per quello che e': chi rivede uno scenario
+ * non puo' correggerlo **senza che una persona dica di si'**.
  *
  * Uso:
  *   npm run rules:sync          rigenera regole e agenti

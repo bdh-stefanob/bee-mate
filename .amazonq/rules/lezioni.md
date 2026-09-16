@@ -114,13 +114,17 @@ ignorare gli avvisi.
 ## Regole e agenti
 
 **Un nome di strumento che l'engine non conosce non viene rifiutato: viene ignorato.**
-La copia Kiro degli agenti traduceva `fs_read` in `read`, `execute_bash` in `shell`.
-Risultato: l'agente dichiarato **di sola lettura** si e' ritrovato la shell e ha creato
-un file con `echo prova > prova-agente.txt`. La scrittura non e' passata solo perche' il
-nome tradotto risultava un segnaposto vuoto — il limite ha retto per un nostro errore,
-non per una nostra difesa. I nomi veri stanno in `lib/kiro-tools.ts`, non si traducono,
-e `check:kiro-tools` legge i file generati: chi si descrive "sola lettura" non puo'
-avere `fs_write` ne' `execute_bash`.
+La copia Kiro degli agenti traduceva `fs_read` in `read`, `execute_bash` in `shell`:
+nomi inesistenti, e l'agente **di sola lettura** si e' ritrovato i permessi di default.
+I nomi veri stanno in `lib/kiro-tools.ts`, non si traducono, e `check:kiro-tools` legge
+i file generati.
+
+**Un agente non impedisce: toglie la fiducia.** Anche con `"tools": ["fs_read"]`,
+`execute_cmd` resta disponibile: a fermarlo e' l'approvazione, perche' non sta in
+`allowedTools` e in modalita' non interattiva viene rifiutato. Con `--trust-all-tools`
+lo stesso agente crea file. Quindi si dichiara il minimo **e** si dice com'e' fatta la
+garanzia: "non scrive senza che una persona dica di si'". Prometterne una piu' forte
+significa scoprirla falsa il giorno in cui serve.
 
 ## Dove vive la logica condivisa
 

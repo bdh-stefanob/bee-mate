@@ -55,8 +55,11 @@ console.log("\n--- agenti generati ---\n");
       tools?: string[];
     };
     for (const t of a.tools ?? []) if (!KIRO_TOOLS.includes(t)) fuoriLista.push(`${f}: ${t}`);
-    // Un agente che si descrive "sola lettura" non puo' avere la shell: con
-    // `execute_bash` si scrive un file in una riga, e la descrizione mente.
+    // Un agente che si descrive "sola lettura" non dichiara scrittura ne' shell:
+    // con `execute_bash` si scrive un file in una riga, e la descrizione mente.
+    // Necessario, non sufficiente: la shell resta comunque disponibile, solo non
+    // auto-approvata (vedi kiro-tools.ts). Questo controllo tiene onesto cio' che
+    // dichiariamo; a rendere vera la garanzia e' l'approvazione umana.
     const dichiaraSolaLettura = /sola lettura/i.test(a.description ?? "");
     const puoScrivere = (a.tools ?? []).some((t) => t === "fs_write" || t === "execute_bash");
     if (dichiaraSolaLettura && puoScrivere) soloLettura.push(f);
