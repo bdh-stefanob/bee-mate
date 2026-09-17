@@ -73,6 +73,15 @@ raggiungono a vicenda si importerebbero a vicenda, e con CommonJS uno dei due
 `require` torna vuoto: costruttore `undefined` a runtime. La transizione avviene
 nella glue.
 
+**L'elenco e il dettaglio della stessa risorsa sono due pagine con lo stesso nome.**
+`/visite` e `/visite/9712` finivano entrambe in `VisitePage`; la disambiguazione aggiungeva
+il segmento precedente, che non c'era, poi l'host, che era lo stesso — e collidevano di
+nuovo. Il secondo file ha sovrascritto il primo, e il sintomo (8 metodi mancanti, 4
+dichiarazioni doppie) non assomigliava alla causa. Ora il dettaglio si chiama `...Detail`,
+c'e' un'ultima rete numerica, e `generate` si ferma se due file hanno lo stesso percorso.
+Un caso di controllo che prova solo `/admin/settings` contro `/account/settings` non
+prova la disambiguazione: prova un caso.
+
 **Un segmento numerico nel percorso e' un id o un passo?** `/orders/123` e' un id;
 `/questions/3` di un questionario e' un passo, con componenti suoi. Dall'esterno non
 si distingue: il generatore lo dichiara, non indovina.

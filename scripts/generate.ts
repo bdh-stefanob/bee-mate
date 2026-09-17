@@ -202,6 +202,21 @@ async function main(): Promise<void> {
   files.push(emitSteps(ctx, pagesUsed, methodsByPage));
   files.push(emitFeature(ctx, `${slug.replace(/-/g, " ")} — sessione registrata`));
 
+  // Due file con lo stesso percorso: il secondo cancellerebbe il primo senza
+  // dirlo. E' successo con la prima registrazione vera, e il sintomo — metodi
+  // mancanti, dichiarazioni doppie — non assomigliava alla causa. I nomi delle
+  // pagine ora sono univoci per costruzione; questa e' la rete se un giorno non
+  // lo fossero piu'.
+  const percorsi = files.map((f) => f.path);
+  const doppi = [...new Set(percorsi.filter((p, i) => percorsi.indexOf(p) !== i))];
+  if (doppi.length > 0) {
+    throw new Error(
+      `Due file generati con lo stesso percorso: ${doppi.join(", ")}\n` +
+        `  Il secondo sovrascriverebbe il primo. E' un difetto del generatore\n` +
+        `  (nomi delle pagine), non della registrazione: non scrivo niente.`
+    );
+  }
+
   // ── Scrittura ───────────────────────────────────────────────────────────
   console.log(`  FILE\n`);
   const skipped: string[] = [];

@@ -121,21 +121,45 @@ export function pageIdentity(url: string): PageIdentity {
  * dei nomi che andavano bene.
  */
 export function uniqueNames(identities: readonly PageIdentity[]): PageIdentity[] {
-  const byName = new Map<string, PageIdentity[]>();
-  for (const id of identities) {
-    const list = byName.get(id.className) ?? [];
-    list.push(id);
-    byName.set(id.className, list);
-  }
+  // Tre passi, ognuno solo per chi collide ancora dopo il precedente. Il
+  // secondo passo da solo non bastava: l'elenco `/visite` e il dettaglio
+  // `/visite/9712` non hanno un segmento prima da usare, stanno sullo stesso
+  // host, e ricevevano lo stesso prefisso — cioe' collidevano di nuovo. E' uscita
+  // cosi' la prima registrazione vera, con 8 metodi mancanti.
+  const collisioni = (list: readonly PageIdentity[]): Map<string, number> => {
+    const m = new Map<string, number>();
+    for (const p of list) m.set(p.className, (m.get(p.className) ?? 0) + 1);
+    return m;
+  };
+  const base = (id: PageIdentity): string => id.className.replace(/Page$/, "");
 
-  return identities.map((id) => {
-    const clashing = byName.get(id.className)!;
-    if (clashing.length === 1) return id;
+  // 1. Il dettaglio di una risorsa si chiama come tale: e' anche il nome che un
+  //    tester darebbe a quella pagina.
+  let c = collisioni(identities);
+  let result = identities.map((id) => {
+    if ((c.get(id.className) ?? 0) === 1 || !id.pattern.endsWith("/:id")) return id;
+    return { ...id, className: `${base(id)}DetailPage`, slug: kebab(`${base(id)}-detail`) };
+  });
 
+  // 2. Il segmento precedente, o l'host se non c'e'.
+  c = collisioni(result);
+  result = result.map((id) => {
+    if ((c.get(id.className) ?? 0) === 1) return id;
     const segments = id.pattern.split("/").filter((s) => s && s !== ":id");
     const prefix = segments.length >= 2 ? pascal(segments[segments.length - 2]!) : pascal(id.host);
-    const base = id.className.replace(/Page$/, "");
-    return { ...id, className: `${prefix}${base}Page`, slug: kebab(`${prefix}-${base}`) };
+    return { ...id, className: `${prefix}${base(id)}Page`, slug: kebab(`${prefix}-${base(id)}`) };
+  });
+
+  // 3. L'ultima rete: un numero in coda. Brutto, ma un nome brutto si vede; una
+  //    sovrascrittura silenziosa no.
+  c = collisioni(result);
+  const visti = new Map<string, number>();
+  return result.map((id) => {
+    if ((c.get(id.className) ?? 0) === 1) return id;
+    const n = (visti.get(id.className) ?? 0) + 1;
+    visti.set(id.className, n);
+    if (n === 1) return id;
+    return { ...id, className: `${base(id)}${n}Page`, slug: kebab(`${base(id)}-${n}`) };
   });
 }
 

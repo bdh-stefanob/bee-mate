@@ -104,6 +104,44 @@ for (const [segment, expected, why] of [
   eq("chi non collide non viene rinominato", ids[2]!.className, "CarrelloPage");
 }
 
+{
+  // L'incidente del 2026-09-16, sulla prima registrazione vera: l'elenco e il
+  // dettaglio della stessa risorsa. Stesso segmento parlante, nessun segmento
+  // prima da usare come prefisso, stesso host: la disambiguazione produceva di
+  // nuovo due nomi uguali. La seconda Page Object ha sovrascritto la prima, e il
+  // test e' arrivato con 8 metodi mancanti e 4 dichiarazioni doppie.
+  const ids = uniqueNames([
+    pageIdentity("https://esempio.invalid/visite"),
+    pageIdentity("https://esempio.invalid/visite/9712"),
+  ]);
+  eq("elenco e dettaglio hanno due nomi", [ids[0]!.className, ids[1]!.className], ["VisitePage", "VisiteDetailPage"]);
+  eq("e due file", [ids[0]!.slug, ids[1]!.slug], ["visite", "visite-detail"]);
+}
+
+{
+  const ids = uniqueNames([
+    pageIdentity("https://esempio.invalid/negozio/ordini/1"),
+    pageIdentity("https://esempio.invalid/archivio/ordini/2"),
+  ]);
+  eq(
+    "due dettagli in rami diversi",
+    [ids[0]!.className, ids[1]!.className],
+    ["NegozioOrdiniDetailPage", "ArchivioOrdiniDetailPage"]
+  );
+}
+
+{
+  // L'ultima rete: due host diversi che nessuna regola sa separare per nome.
+  // Meglio un numero in coda che una sovrascrittura silenziosa.
+  const ids = uniqueNames([
+    pageIdentity("https://a-b.invalid/x"),
+    pageIdentity("https://a.b.invalid/x"),
+  ]);
+  const nomi = ids.map((i) => i.className);
+  eq("mai due nomi di classe uguali, neanche all'ultima rete", new Set(nomi).size, nomi.length);
+  eq("e mai due file uguali", new Set(ids.map((i) => i.slug)).size, ids.length);
+}
+
 // ---------------------------------------------------------------------------
 // 2. Aggancio e rosa dei candidati
 // ---------------------------------------------------------------------------
