@@ -50,6 +50,12 @@ npm run rules:check
   - Protocollo e cosa riportare: `docs/anti-entropy/10-prove-sul-campo.md`, P2
   - Verifica: il test passa; `npm run benchmark label=deterministico` compila con
     0 passi senza glue e 0 selettori negli step.
+  - Primo giro, 2026-09-16: generazione riuscita, **11 passi, 0 riconosciuti dal
+    catalogo** — il catalogo non ha vocabolario per quell'area, ed e' la misura, non
+    un guasto. Due difetti trovati e corretti: le verifiche uscivano in italiano, e
+    le cartelle generate non erano gitignorate (un commit le ha quasi portate qui).
+  - Per farlo girare: `bdd-targets.json` con l'indirizzo, `APP_PASSWORD` in `.env`
+    se il login e' fra i passi, poi `npm run generate` di nuovo e il test.
   - _Requisiti: R3, R8_
 
 - [ ] 3. **UMANO decide** — Percorso su due domini
@@ -123,10 +129,14 @@ npm run rules:check
   - Fatto il 2026-09-16: `kiro-cli agent list` vede entrambi gli agenti dalla cartella
     `.kiro/agents` del workspace. Ma i nomi degli strumenti erano tradotti e l'agente
     di sola lettura ha eseguito una shell (F23). Corretto nel generatore.
-  - Resta da riprovare dopo il pull, sulla macchina aziendale:
-    `kiro-cli chat --agent bdd-authoring --trust-all-tools --no-interactive "crea un
-    file con un comando di shell"` deve rifiutare, e `git status` restare vuoto.
-  - Insieme a P7: automatismi e agenti riconosciuti nell'IDE.
+  - Accertato poi (F24): `"tools": ["fs_read"]` non toglie la shell. La ferma
+    l'approvazione umana; con `--trust-all-tools` passa. La garanzia si enuncia "non
+    scrive senza un si'", e il flag non si usa con questo agente.
+  - Automatismo (F25): l'evento "salvataggio file" non esiste. Ora e' un hook
+    `postToolUse`/`fs_write` dentro `bdd-generate`, verificato simulando l'evento.
+  - Resta, nell'IDE: c'e' un selettore di agente nella barra della chat? E
+    `.kiro/hooks/` lo legge qualcuno? Se no, **si cancella**: un file che sembra un
+    pezzo di metodo e non lo e' e' peggio di un file che manca.
   - _Requisiti: R4.3_
 
 - [ ] 10. Piano della demo e slide — **da non lasciare per ultimo**
@@ -141,6 +151,14 @@ npm run rules:check
 
 - [ ] 12. (tagliabile) Due pulsanti nell'app desktop: genera, lancia
   - Il primo da tagliare se il tempo stringe.
+
+- [ ] 13. Pulizia: uno scenario gia' nel repository non passa il validatore
+  - Perche': l'hook di commit valida i `.feature` in staging, e uno scenario di login
+    importato in passato usa step fuori catalogo. Chi lo porta in staging per
+    qualunque motivo si vede bloccato il commit, e la tentazione e' il bypass — che
+    poi resta un'abitudine.
+  - Cosa: allinearlo al catalogo, o marcare `@wanted` gli step che mancano, con
+    `npm run validate:steps <file>` come giudice. Nessuna frase inventata.
 
 ## Prove sul campo — UMANO
 
