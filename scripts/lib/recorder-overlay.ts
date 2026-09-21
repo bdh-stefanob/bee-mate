@@ -143,6 +143,20 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
 
   const $ = (id) => shadow.getElementById(id);
 
+  const SUGGERIMENTO = 'Clicca cio che dimostra che e andata bene: un titolo, un messaggio, un totale';
+  const NIENTE_QUI = 'Qui non c e un testo da verificare. Prova sull etichetta, sul titolo o sul valore accanto';
+
+  /**
+   * Il suggerimento nella barra e' anche l'unico canale per dire perche' un
+   * click non ha prodotto niente. Senza, la modalita' resta accesa in silenzio e
+   * sembra che lo strumento sia rotto: e' il primo difetto segnalato da chi
+   * l'ha usato davvero.
+   */
+  function suggerisci(testo) {
+    const h = $('hint');
+    if (h) h.textContent = testo;
+  }
+
   function refresh() {
     $('count').textContent =
       state.actions + ' azioni · ' + state.intents + ' intenti · ' + state.assertions + ' verifiche';
@@ -198,6 +212,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
 
   $('assert').addEventListener('click', () => {
     state.picking = !state.picking;
+    suggerisci(SUGGERIMENTO);
     refresh();
   });
 
@@ -309,6 +324,53 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
    */
   const CLICKABLE = ['button', 'link', 'tab', 'menuitem'];
 
+  /** Il click successivo a una scelta gia' fatta va inghiottito, non registrato. */
+  let inghiottiClick = false;
+
+  /**
+   * Sceglie l'elemento da verificare.
+   *
+   * SI FA SU 'pointerdown', NON SU 'click', e non e' un dettaglio: molte
+   * applicazioni reagiscono gia' al pointerdown — una riga che apre un
+   * dettaglio, una scheda che cambia — e quando il click arriva la pagina e'
+   * un'altra. Il tester vedeva "il pulsante Verifica non funziona su questo
+   * elemento", e invece l'elemento era sparito prima che potessimo guardarlo.
+   *
+   * Se non c'e' niente da indicare non si resta in silenzio: la barra dice
+   * perche', e la modalita' resta accesa per riprovare senza ripremere.
+   */
+  function scegli(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    inghiottiClick = true;
+
+    const raw = ev.composedPath ? ev.composedPath()[0] : ev.target;
+    const d = window.__bddProbe.describeAny(raw);
+    if (!d || !d.name) {
+      suggerisci(NIENTE_QUI);
+      return;
+    }
+
+    state.picking = false;
+    suggerisci(SUGGERIMENTO);
+    refresh();
+    emit({ type: 'assert', role: d.role, name: d.name, text: d.name, at: Date.now() });
+  }
+
+  document.addEventListener('pointerdown', (ev) => {
+    if (fromBar(ev) || !state.picking) return;
+    scegli(ev);
+  }, true);
+
+  // Uscire dalla modalita' senza dover ricentrare la barra.
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape' || !state.picking) return;
+    state.picking = false;
+    suggerisci(SUGGERIMENTO);
+    refresh();
+  }, true);
+
   document.addEventListener('click', (ev) => {
     if (fromBar(ev)) return;
 
@@ -317,17 +379,19 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     // controlli: un titolo o un messaggio di conferma non erano indicabili, il
     // click cadeva nel vuoto e la modalita' restava accesa senza spiegazioni.
     // Cioe' la verifica piu' naturale che esista non si poteva registrare.
-    if (state.picking) {
+    // Il click che segue il pointerdown con cui si e' gia' scelto non e' un
+    // gesto del tester: non arriva all'applicazione e non si registra.
+    if (inghiottiClick) {
+      inghiottiClick = false;
       ev.preventDefault();
       ev.stopPropagation();
-      const raw = ev.composedPath ? ev.composedPath()[0] : ev.target;
-      const d = window.__bddProbe.describeAny(raw);
-      // Niente da indicare: si resta in modalita' verifica, cosi' si riprova
-      // senza dover ripremere il pulsante.
-      if (!d || !d.name) return;
-      state.picking = false;
-      refresh();
-      emit({ type: 'assert', role: d.role, name: d.name, text: d.name, at: Date.now() });
+      if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+      return;
+    }
+
+    // Rete per i browser senza pointer events: li' la scelta avviene qui.
+    if (state.picking) {
+      scegli(ev);
       return;
     }
 
