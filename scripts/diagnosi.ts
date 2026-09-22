@@ -28,6 +28,7 @@ import * as path from "path";
 import { chromium } from "@playwright/test";
 import { loadEnv } from "./lib/atlassian";
 import { loadTargets, requiredVars, hasSession, sessionAgeHours } from "./lib/targets";
+import { hasFlag } from "./lib/args";
 
 loadEnv();
 
@@ -260,6 +261,37 @@ function sulPath(comando: string): boolean {
       ],
     });
   }
+}
+
+// ---------------------------------------------------------------------------
+// L'uscita per una macchina, accanto a quella per le persone.
+// ---------------------------------------------------------------------------
+
+/**
+ * L'uscita per una macchina, accanto a quella per le persone.
+ *
+ * Chi legge un risultato lo legge da qui: un numero preso dalla prosa di uno
+ * strumento e' gia' costato un 92 al posto di uno 0. Nessun valore di
+ * credenziale e nessun indirizzo completo: solo nomi di requisito ed esito.
+ */
+interface VoceJson {
+  nome: string;
+  esito: "ok" | "manca" | "attenzione";
+  dettaglio: string;
+  rimedio?: string;
+}
+
+const ESITO_JSON: Record<Esito, VoceJson["esito"]> = { ok: "ok", manca: "manca", avviso: "attenzione" };
+
+if (hasFlag(process.argv.slice(2), "--json")) {
+  const vociJson: VoceJson[] = voci.map((v) => ({
+    nome: v.titolo,
+    esito: ESITO_JSON[v.esito],
+    dettaglio: v.dettaglio[0] ?? "",
+    ...(v.rimedio ? { rimedio: v.rimedio } : {}),
+  }));
+  console.log(JSON.stringify({ voci: vociJson }, null, 2));
+  process.exit(0);
 }
 
 // ---------------------------------------------------------------------------
