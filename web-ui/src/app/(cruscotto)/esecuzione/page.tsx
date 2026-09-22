@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { PlayCircle, Loader2 } from 'lucide-react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { PlayCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,64 @@ function formattaRiepilogo(passi: Passo[]): string {
       return `${n} ${n === 1 ? singolare : plurale}`;
     })
     .join(', ');
+}
+
+/**
+ * Il bersaglio scelto in "Registra" viaggia verso questa schermata nella
+ * query string: e' un dato che arriva dall'esterno (chiunque puo' costruire
+ * un link con un valore qualsiasi), quindi si accetta solo se corrisponde a
+ * uno dei bersagli configurati davvero. Altrimenti si ricade sul valore gia'
+ * scelto, o sul primo dell'elenco.
+ */
+function scegliBersaglioIniziale(
+  daQuery: string | null,
+  corrente: string,
+  elenco: string[]
+): string {
+  if (daQuery && elenco.includes(daQuery)) return daQuery;
+  return corrente || elenco[0] || '';
+}
+
+/**
+ * Sotto il minuto un numero di secondi con un decimale basta e si legge a
+ * colpo d'occhio; sopra il minuto, minuti e secondi separati sono piu'
+ * leggibili di "127,3 s".
+ */
+function formattaDurata(ms: number): string {
+  const secondiTotali = ms / 1000;
+  if (secondiTotali < 60) {
+    return `${secondiTotali.toFixed(1).replace('.', ',')} s`;
+  }
+  const minuti = Math.floor(secondiTotali / 60);
+  const secondi = Math.floor(secondiTotali % 60);
+  return `${minuti} min ${String(secondi).padStart(2, '0')} s`;
+}
+
+/**
+ * La riga d'esito in fondo: conteggio dei passi e, quando nota, la durata.
+ * La durata si calcola qui, dal momento in cui la finestra ha lanciato il
+ * test: il registro delle esecuzioni conosce avvio e fine, ma questa
+ * schermata non lo consulta per quello, quindi ricaricando la scheda a test
+ * concluso il tempo impiegato si perde (resta il conteggio dei passi, che
+ * arriva sempre dal file).
+ */
+function rigaEsito(passi: Passo[], durataMs: number | null): string {
+  const riepilogo = formattaRiepilogo(passi);
+  return durataMs === null ? riepilogo : `${riepilogo} · ${formattaDurata(durataMs)}`;
+}
+
+/**
+ * Quando l'esecuzione finisce male prima di produrre un solo passo
+ * (bersaglio non risolto, sessione assente, Cucumber non installato...) la
+ * sezione dei passi non si disegna affatto: e' lo scenario piu' probabile
+ * alla prima esecuzione, e l'unico in cui la schermata non si puo' permettere
+ * di restare muta.
+ */
+function deveMostrareErroreSenzaPassi(
+  stato: StatoEsecuzione | null,
+  passi: Passo[]
+): boolean {
+  return (stato === 'fallita' || stato === 'interrotta') && passi.length === 0;
 }
 
 /** Un interruttore accessibile: mai un checkbox nascosto senza etichetta visibile. */
@@ -71,7 +130,8 @@ function Interruttore({
   );
 }
 
-export default function EsecuzionePage() {
+function EsecuzioneContenuto() {
+  const searchParams = useSearchParams();
   const [bersagli, setBersagli] = useState<string[]>([]);
   const [bersaglio, setBersaglio] = useState('');
   const [guardaIlBrowser, setGuardaIlBrowser] = useState(false);
@@ -81,24 +141,35 @@ export default function EsecuzionePage() {
   const [passi, setPassi] = useState<Passo[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
   const [inLancio, setInLancio] = useState(false);
+  // Le ultime righe grezze del processo: servono solo per lo scenario in cui
+  // il test muore prima di produrre un passo, l'unico in cui la finestra non
+  // ha nient'altro da mostrare. Non e' l'output di una registrazione (dove le
+  // righe grezze possono contenere i nomi che il tester sta dando ai passi, e
+  // si e' scelto di non mostrarle): qui e' l'output di un test gia' scritto,
+  // che non ha quel problema.
+  const [righeOutput, setRigheOutput] = useState<string[]>([]);
+  const [codiceUscita, setCodiceUscita] = useState<number | null>(null);
+  const [avviatoAlle, setAvviatoAlle] = useState<number | null>(null);
+  const [durataMs, setDurataMs] = useState<number | null>(null);
 
   const inCorso = statoCorrente === 'in corso';
 
   useEffect(() => {
     let attivo = true;
+    const daQuery = searchParams.get('bersaglio');
     fetch('/api/configurazione')
       .then((r) => r.json())
       .then((d: { bersagli?: string[] }) => {
         if (!attivo) return;
         const elenco = d.bersagli ?? [];
         setBersagli(elenco);
-        setBersaglio((corrente) => corrente || elenco[0] || '');
+        setBersaglio((corrente) => scegliBersaglioIniziale(daQuery, corrente, elenco));
       })
       .catch(() => {});
     return () => {
       attivo = false;
     };
-  }, []);
+  }, [searchParams]);
 
   // I passi si aggiornano da soli mentre l'esecuzione gira: una richiesta al
   // secondo basta, e si ferma da sola quando l'esecuzione non e' piu' in corso.
@@ -126,15 +197,29 @@ export default function EsecuzionePage() {
   useEffect(() => {
     if (!id || !inCorso) return;
     const fonte = new EventSource(`/api/esegui/${encodeURIComponent(id)}/flusso`);
+    // Le righe arrivano gia' sul flusso: se ne tengono da parte solo le
+    // ultime, per il caso (raro, si spera) in cui servano perche' non c'e'
+    // nessun passo da mostrare.
+    const suRiga = (evento: MessageEvent<string>) => {
+      try {
+        const nuove = JSON.parse(evento.data) as string[];
+        setRigheOutput((precedenti) => [...precedenti, ...nuove].slice(-20));
+      } catch {
+        // Una riga malformata non e' un guasto da segnalare: si ignora.
+      }
+    };
     const suFine = (evento: MessageEvent<string>) => {
       try {
-        const dati = JSON.parse(evento.data) as { stato?: StatoEsecuzione };
+        const dati = JSON.parse(evento.data) as { stato?: StatoEsecuzione; codice?: number | null };
         setStatoCorrente(dati.stato ?? 'conclusa');
+        setCodiceUscita(dati.codice ?? null);
       } catch {
         setStatoCorrente('conclusa');
       }
+      setDurataMs(avviatoAlle !== null ? Date.now() - avviatoAlle : null);
       fonte.close();
     };
+    fonte.addEventListener('riga', suRiga);
     fonte.addEventListener('fine', suFine);
     // Nessun `close` sull'errore, ed e' deliberato.
     //
@@ -147,10 +232,11 @@ export default function EsecuzionePage() {
     // Lasciando riconnettere, alla prima riconnessione la rotta rilegge lo
     // stato e manda subito la fine se nel frattempo e' arrivata.
     return () => {
+      fonte.removeEventListener('riga', suRiga);
       fonte.removeEventListener('fine', suFine);
       fonte.close();
     };
-  }, [id, inCorso]);
+  }, [id, inCorso, avviatoAlle]);
 
   // Un ultimo giro sui passi quando l'esecuzione si conclude: il file dei
   // messaggi puo' aver ricevuto le ultime righe dopo l'ultima lettura al secondo.
@@ -165,6 +251,9 @@ export default function EsecuzionePage() {
   const lancia = useCallback(async () => {
     setErrore(null);
     setPassi([]);
+    setRigheOutput([]);
+    setCodiceUscita(null);
+    setDurataMs(null);
     setInLancio(true);
     try {
       const risposta = await fetch('/api/esegui', {
@@ -181,6 +270,7 @@ export default function EsecuzionePage() {
         return;
       }
       setId(dati.id);
+      setAvviatoAlle(Date.now());
       setStatoCorrente('in corso');
     } catch {
       setErrore('Non e stato possibile contattare il cruscotto.');
@@ -275,10 +365,59 @@ export default function EsecuzionePage() {
             className="text-sm font-semibold border-t pt-3"
             style={{ color: 'var(--testo-tenue)', borderColor: 'var(--bordo)' }}
           >
-            {formattaRiepilogo(passi)}
+            {rigaEsito(passi, durataMs)}
           </p>
         </section>
       )}
+
+      {deveMostrareErroreSenzaPassi(statoCorrente, passi) && (
+        <section
+          role="alert"
+          aria-label="Esito del test"
+          className="flex flex-col gap-2 rounded-lg border p-4 text-sm"
+          style={{
+            borderColor: statoCorrente === 'interrotta' ? 'var(--testo-tenue)' : 'var(--rosso)',
+            background: 'var(--superficie-tenue)',
+          }}
+        >
+          <p
+            className="flex items-center gap-2 font-semibold"
+            style={{ color: statoCorrente === 'interrotta' ? 'var(--testo-tenue)' : 'var(--rosso)' }}
+          >
+            <AlertTriangle size={18} aria-hidden="true" />
+            {statoCorrente === 'interrotta'
+              ? 'Test interrotto: nessun passo prodotto.'
+              : 'Test fallito: nessun passo prodotto.'}
+          </p>
+          <p style={{ color: 'var(--testo-tenue)' }}>
+            {codiceUscita !== null
+              ? `Codice di uscita del processo: ${codiceUscita}.`
+              : 'Nessun codice di uscita ricevuto.'}
+          </p>
+          {righeOutput.length > 0 && (
+            <pre
+              className="text-xs whitespace-pre-wrap break-words rounded-md p-2 m-0 font-mono"
+              style={{ background: 'var(--superficie)', color: 'var(--testo)' }}
+            >
+              {righeOutput.join('\n')}
+            </pre>
+          )}
+        </section>
+      )}
     </div>
+  );
+}
+
+export default function EsecuzionePage() {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          Caricamento…
+        </p>
+      }
+    >
+      <EsecuzioneContenuto />
+    </Suspense>
   );
 }
