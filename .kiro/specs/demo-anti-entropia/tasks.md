@@ -152,6 +152,23 @@ npm run rules:check
 - [ ] 12. (tagliabile) Due pulsanti nell'app desktop: genera, lancia
   - Il primo da tagliare se il tempo stringe.
 
+- [ ] 14. Ancoraggio per riga, nelle liste
+  - Perche': e' il punto in cui si ferma il test generato oggi. Un pulsante d'azione
+    dentro a una lista esiste in tante copie quante sono le righe — nel caso vero,
+    **cento** — e nessun filtro le distingue. Playwright si rifiuta di indovinare, e
+    ha ragione: cliccare la prima riga sarebbe un test che passa facendo un'altra cosa.
+  - Era previsto in P6 ("lista → servono filtri per riga"), ed e' arrivato prima.
+  - Cosa: quando il gesto avviene dentro a un contenitore ripetuto, il recorder
+    registra **cosa distingueva quella riga** (il testo della prima cella, un
+    identificativo, la posizione come ultima risorsa) e il generatore emette un
+    locator a due livelli: la riga, poi il controllo dentro la riga.
+  - Attenzione al dato: il testo di una riga e' contenuto dell'applicazione. Nel
+    codice generato ci finisce comunque — e infatti il codice generato non si
+    committa qui (vedi `.gitignore`).
+  - Verifica: caso di controllo con una lista finta di tre righe uguali; il locator
+    generato ne raggiunge una sola, e il test fallisce se la riga non c'e'.
+  - _Requisiti: R3_
+
 - [ ] 13. Pulizia: uno scenario gia' nel repository non passa il validatore
   - Perche': l'hook di commit valida i `.feature` in staging, e uno scenario di login
     importato in passato usa step fuori catalogo. Chi lo porta in staging per
