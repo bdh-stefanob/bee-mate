@@ -21,4 +21,26 @@ describe('lettura degli artefatti', () => {
   it('un file che non c\'e\' non fa cadere la finestra', () => {
     expect(leggiTraccia(path.join(FIXTURES, 'non-esiste.json')).passi).toEqual([]);
   });
+
+  describe('schermata del passo fallito', () => {
+    it('un passo fallito con un allegato immagine porta la schermata come data URI', () => {
+      const passi = leggiPassiTest(path.join(FIXTURES, 'messaggi-con-schermata.ndjson'));
+      const fallito = passi.find((p) => p.esito === 'fallito');
+      expect(fallito?.schermata).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it('un passo fallito senza allegato non ha il campo schermata (non una stringa vuota)', () => {
+      const passi = leggiPassiTest(path.join(FIXTURES, 'messaggi.ndjson'));
+      const fallito = passi.find((p) => p.esito === 'fallito');
+      expect(fallito).toBeDefined();
+      expect(fallito?.schermata).toBeUndefined();
+      expect('schermata' in (fallito ?? {})).toBe(false);
+    });
+
+    it('un allegato che non e\' un\'immagine viene ignorato', () => {
+      const passi = leggiPassiTest(path.join(FIXTURES, 'messaggi-allegato-non-immagine.ndjson'));
+      const fallito = passi.find((p) => p.esito === 'fallito');
+      expect(fallito?.schermata).toBeUndefined();
+    });
+  });
 });
