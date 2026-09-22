@@ -28,6 +28,7 @@ import * as path from "path";
 import {
   looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates,
 } from "./generate-core";
+import { toComponent } from "./component-naming";
 import type {
   CatalogStep, Gap, Intent, Recording, ResolvedStep, ScoutResult,
 } from "./generation-contract";
@@ -90,6 +91,19 @@ for (const [segment, expected, why] of [
 {
   const id = pageIdentity("non-un-url");
   eq("un URL illeggibile non fa cadere niente", id.className, "HomePage");
+}
+
+{
+  // `text` e' il ripiego della sonda per un pezzo di testo senza ruolo — un
+  // totale, un numero, un messaggio: esattamente cio' che si indica quando si
+  // verifica. Non e' un ruolo ARIA, e `getByRole('text', ...)` non compila. La
+  // prima registrazione vera con una verifica su un numero l'ha dimostrato.
+  const testo = toComponent({ role: "text", name: "1801" }, 1);
+  eq("un testo senza ruolo si cerca per testo", testo.locator.startsWith("getByText("), true);
+  eq("e non per ruolo", testo.locator.includes("getByRole("), false);
+
+  const pulsante = toComponent({ role: "button", name: "Annulla" }, 1);
+  eq("un ruolo ARIA resta getByRole", pulsante.locator.startsWith("getByRole('button'"), true);
 }
 
 {

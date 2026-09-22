@@ -87,11 +87,37 @@ export function escapeForLocator(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
+/**
+ * I ruoli che `getByRole` accetta (la lista AriaRole di Playwright).
+ *
+ * Serve perche' la sonda del DOM produce anche `text`, che ruolo ARIA non e':
+ * e' il ripiego per un pezzo di testo senza ruolo — un totale, un numero, un
+ * messaggio — ed e' proprio cio' che un tester indica quando verifica. Con
+ * `getByRole('text', ...)` il codice generato **non compila**, e lo si scopre
+ * solo quando una registrazione vera contiene una verifica su un testo: e'
+ * successo il 2026-09-22. Un ruolo fuori da questa lista si cerca per testo.
+ */
+const ARIA_ROLES = new Set([
+  "alert", "alertdialog", "application", "article", "banner", "blockquote", "button",
+  "caption", "cell", "checkbox", "code", "columnheader", "combobox", "complementary",
+  "contentinfo", "definition", "deletion", "dialog", "directory", "document", "emphasis",
+  "feed", "figure", "form", "generic", "grid", "gridcell", "group", "heading", "img",
+  "insertion", "link", "list", "listbox", "listitem", "log", "main", "marquee", "math",
+  "menu", "menubar", "menuitem", "menuitemcheckbox", "menuitemradio", "meter", "navigation",
+  "none", "note", "option", "paragraph", "presentation", "progressbar", "radio",
+  "radiogroup", "region", "row", "rowgroup", "rowheader", "scrollbar", "search",
+  "searchbox", "separator", "slider", "spinbutton", "status", "strong", "subscript",
+  "superscript", "switch", "tab", "table", "tablist", "tabpanel", "term", "textbox",
+  "time", "timer", "toolbar", "tooltip", "tree", "treegrid", "treeitem",
+]);
+
 export function toComponent(raw: RawElement, occurrences: number): Component {
   const kind = kindOf(raw.role, raw.href ?? "");
   const { stability, notes } = judge(raw.name, occurrences);
 
-  const base = `getByRole('${raw.role}', { name: '${escapeForLocator(raw.name)}' })`;
+  const base = ARIA_ROLES.has(raw.role)
+    ? `getByRole('${raw.role}', { name: '${escapeForLocator(raw.name)}' })`
+    : `getByText('${escapeForLocator(raw.name)}', { exact: true })`;
   const locator = occurrences > 1 ? `${base}.first()` : base;
 
   return {
