@@ -1,0 +1,32 @@
+{
+  "startUrl": "https://example.test/login",
+  "recordedAt": "2026-09-22T10:00:00.000Z",
+  "durationSeconds": 42,
+  "pagesVisited": ["https://example.test/login", "https://example.test/list"],
+  "summary": { "intents": 2, "steps": 4, "assertions": 2, "unlabelled": 0 },
+  "intents": [
+    {
+      "label": "the user logs in",
+      "steps": [
+        { "action": "fill", "role": "textbox", "name": "Username", "value": "guest" },
+        { "action": "fill", "role": "textbox", "name": "Password", "value": "<password>", "secret": true },
+        { "action": "click", "role": "button", "name": "Sign in" }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://example.test/login"
+    },
+    {
+      "label": "the user opens the list",
+      "steps": [
+        { "action": "click", "role": "link", "name": "Items" }
+      ],
+      "assertions": [
+        { "role": "heading", "name": "Items" },
+        { "role": "row", "name": "First item" }
+      ],
+      "notes": [],
+      "pageUrl": "https://example.test/list"
+    }
+  ]
+}

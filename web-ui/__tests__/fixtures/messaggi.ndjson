@@ -1,0 +1,6 @@
+{"pickle":{"id":"pickle-1","uri":"features/example.feature","astNodeIds":["1"],"steps":[{"id":"pstep-1","text":"the user logs in"},{"id":"pstep-2","text":"the user opens the list"},{"id":"pstep-3","text":"the user sees the total"}]}}
+{"testCase":{"id":"tc-1","pickleId":"pickle-1","testSteps":[{"id":"tstep-1","pickleStepId":"pstep-1"},{"id":"tstep-2","pickleStepId":"pstep-2"},{"id":"tstep-3","pickleStepId":"pstep-3"}]}}
+{"testCaseStarted":{"id":"tcs-1","testCaseId":"tc-1","timestamp":{"seconds":0,"nanos":0}}}
+{"testStepFinished":{"testCaseStartedId":"tcs-1","testStepId":"tstep-1","testStepResult":{"status":"PASSED","duration":{"seconds":0,"nanos":0}},"timestamp":{"seconds":0,"nanos":0}}}
+{"testStepFinished":{"testCaseStartedId":"tcs-1","testStepId":"tstep-2","testStepResult":{"status":"FAILED","message":"expected list to contain \"First item\"","duration":{"seconds":0,"nanos":0}},"timestamp":{"seconds":0,"nanos":0}}}
+{"testStepFinished":{"testCaseStartedId":"tcs-1","testStepId":"tstep-3","testStepResult":{"status":"SKIPPED","duration":{"seconds":0,"nanos":0}},"timestamp":{"seconds":0,"nanos":0}}}
