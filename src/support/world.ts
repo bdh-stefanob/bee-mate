@@ -42,6 +42,16 @@ interface Ambiente {
   descrizione: string;
 }
 
+/**
+ * Partire da un browser pulito, come se nessuno avesse mai fatto il login.
+ *
+ * Serve quando la registrazione **contiene** il login: con la sessione salvata
+ * si e' gia' dentro, il pulsante di accesso non esiste piu', e il passo
+ * registrato fallisce cercando una cosa che l'applicazione non mostra. Non e'
+ * un difetto del test: sono due modi diversi di cominciare, e vanno scelti.
+ */
+const SENZA_SESSIONE = process.env["BDD_NO_SESSION"] === "1";
+
 function ambiente(): Ambiente {
   const nome = process.env["BDD_TARGET"];
 
@@ -53,8 +63,10 @@ function ambiente(): Ambiente {
     const eta = sessionAgeHours(target);
     return {
       baseURL: target.url,
-      ...(hasSession(target) ? { storageState: target.session } : {}),
-      descrizione: hasSession(target)
+      ...(hasSession(target) && !SENZA_SESSIONE ? { storageState: target.session } : {}),
+      descrizione: SENZA_SESSIONE
+        ? `bersaglio "${nome}", sessione ignorata: si parte da un browser pulito`
+        : hasSession(target)
         ? `bersaglio "${nome}", sessione di ${eta} ore fa`
         : `bersaglio "${nome}", nessuna sessione salvata (npm run session -- ${nome})`,
     };
@@ -62,7 +74,9 @@ function ambiente(): Ambiente {
 
   return {
     baseURL: process.env["BASE_URL"] ?? "",
-    ...(process.env["STORAGE_STATE"] ? { storageState: process.env["STORAGE_STATE"] } : {}),
+    ...(process.env["STORAGE_STATE"] && !SENZA_SESSIONE
+      ? { storageState: process.env["STORAGE_STATE"] }
+      : {}),
     descrizione: process.env["BASE_URL"] ? "BASE_URL" : "nessun indirizzo configurato",
   };
 }
