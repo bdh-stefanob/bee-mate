@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { interpreta } from '@/app/api/controllo/route';
+import { interpreta } from '@/lib/controllo';
 
 describe('controllo della macchina', () => {
   it('una voce che manca porta con se\' il rimedio', () => {

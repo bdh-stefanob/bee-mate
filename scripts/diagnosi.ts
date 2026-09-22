@@ -34,12 +34,21 @@ loadEnv();
 
 type Esito = "ok" | "avviso" | "manca";
 
+/**
+ * Il nome chiuso del rimedio, quando corrisponde a uno dei comandi che la
+ * schermata di controllo puo' avviare da sola (vedi web-ui/src/lib/esecuzione.ts).
+ * Senza corrispondenza il rimedio resta solo testo per l'uscita a persone.
+ */
+type RimedioChiuso = 'installa-browser' | 'sincronizza-regole' | 'sessione' | 'scansione' | 'registrazione';
+
 interface Voce {
   esito: Esito;
   titolo: string;
   dettaglio: string[];
   /** Il comando che risolve. Vuoto se non c'e' niente da risolvere. */
   rimedio?: string;
+  /** Lo stesso rimedio, come nome chiuso, se la macchina puo' avviarlo da sola. */
+  rimedioChiuso?: RimedioChiuso;
 }
 
 const voci: Voce[] = [];
@@ -83,6 +92,7 @@ function sulPath(comando: string): boolean {
             "si ripiega da solo su Chrome o Edge di sistema, se ci sono",
           ],
           rimedio: "npx playwright install chromium",
+          rimedioChiuso: "installa-browser",
         }
   );
 }
@@ -135,6 +145,7 @@ function sulPath(comando: string): boolean {
           titolo: "Agenti e automatismi",
           dettaglio: ["non generati"],
           rimedio: "npm run rules:sync",
+          rimedioChiuso: "sincronizza-regole",
         }
   );
 }
@@ -189,6 +200,7 @@ function sulPath(comando: string): boolean {
           titolo: "Dizionari dei componenti",
           dettaglio: ["nessuno: senza, i locator vengono sintetizzati alla cieca"],
           rimedio: "npm run scout:pausa -- <url>",
+          rimedioChiuso: "scansione",
         }
   );
 }
@@ -218,6 +230,7 @@ function sulPath(comando: string): boolean {
           titolo: "Registrazioni",
           dettaglio: ["nessuna: e' da qui che parte tutto"],
           rimedio: "npm run record -- <url>",
+          rimedioChiuso: "registrazione",
         }
       : conUrl.length === 0
         ? {
@@ -228,6 +241,7 @@ function sulPath(comando: string): boolean {
               "fatte con un recorder precedente: tutto finirebbe sulla prima pagina",
             ],
             rimedio: "npm run record -- <url>",
+            rimedioChiuso: "registrazione",
           }
         : {
             esito: "ok",
@@ -288,7 +302,7 @@ if (hasFlag(process.argv.slice(2), "--json")) {
     nome: v.titolo,
     esito: ESITO_JSON[v.esito],
     dettaglio: v.dettaglio[0] ?? "",
-    ...(v.rimedio ? { rimedio: v.rimedio } : {}),
+    ...(v.rimedioChiuso ? { rimedio: v.rimedioChiuso } : {}),
   }));
   console.log(JSON.stringify({ voci: vociJson }, null, 2));
   process.exit(0);

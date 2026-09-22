@@ -8,7 +8,8 @@
  * forma che arriva intatta in ogni shell — vedi metodo-di-lavoro.md.
  */
 export type NomeComando =
-  | 'diagnosi' | 'sessione' | 'registrazione' | 'generazione' | 'test' | 'scansione';
+  | 'diagnosi' | 'sessione' | 'registrazione' | 'generazione' | 'test' | 'scansione'
+  | 'installa-browser' | 'sincronizza-regole';
 
 export interface Parametri {
   bersaglio?: string;
@@ -45,6 +46,10 @@ export function rigaDiComando(
   switch (nome) {
     case 'diagnosi':
       return { eseguibile: npx, argomenti: ['ts-node', 'scripts/diagnosi.ts', 'json'] };
+    case 'installa-browser':
+      return { eseguibile: npx, argomenti: ['playwright', 'install', 'chromium'] };
+    case 'sincronizza-regole':
+      return { eseguibile: npx, argomenti: ['ts-node', 'scripts/sync-rules.ts'] };
     case 'sessione':
       return { eseguibile: npx, argomenti: ['ts-node', 'scripts/session.ts', bersaglioDi(p)] };
     case 'registrazione':
