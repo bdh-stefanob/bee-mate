@@ -170,7 +170,33 @@ function main(): void {
   // non e' nemmeno detto che finisca mai in un commit. Serve anche per provare
   // il validatore su un file a mano, senza dover fare git add.
   const explicit = process.argv.slice(2).filter((a) => a.endsWith(".feature"));
-  const featureFiles = explicit.length > 0 ? explicit : getStagedFeatureFiles();
+  const candidati = explicit.length > 0 ? explicit : getStagedFeatureFiles();
+
+  /**
+   * Gli scenari dichiarati non automatizzati non si validano contro il catalogo.
+   *
+   * Sono i casi scritti dal team e mai automatizzati: nel repository stanno come
+   * **documento** — sono la prova del fatto F1 — non come test. Validarli
+   * significa bloccare ogni commit che li sfiori anche solo per aggiungere un
+   * tag, e la sola via d'uscita diventa il bypass. Un controllo che costringe ad
+   * aggirarlo insegna ad aggirarlo, e allora smette di proteggere anche dove
+   * servirebbe.
+   *
+   * Portarli nel vocabolario e' un lavoro suo (task 13), non il prezzo di un
+   * commit che tocca altro.
+   */
+  const featureFiles = candidati.filter((f) => {
+    try {
+      return !fs.readFileSync(f, "utf-8").includes("@non-automatizzato");
+    } catch {
+      return true;
+    }
+  });
+  const saltati = candidati.length - featureFiles.length;
+  if (saltati > 0) {
+    console.log(`  ${saltati} file marcati @non-automatizzato: non si validano (sono documenti).`);
+  }
+
   if (featureFiles.length === 0) {
     // Nothing to validate.
     process.exit(0);

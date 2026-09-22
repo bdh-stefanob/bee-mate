@@ -1,4 +1,4 @@
-@brochure-clinic @login
+@brochure-clinic @login @non-automatizzato
 
 Feature: Brochure Clinic Login
 
