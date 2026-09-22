@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, CheckCircle2, Copy, Loader2, Play, Square, XCircle } from 'lucide-react';
-import type { NomeComando } from '@/lib/esecuzione';
+import { comeComandoEseguibile } from '@/lib/rimedi';
 
 export interface RimedioDiagnosi {
+  /** La frase da mostrare e da copiare: c'e' sempre. */
   comando: string;
+  /** Il nome chiuso, quando la finestra puo' avviare il rimedio da sola. */
+  chiuso?: string;
 }
 
 export interface VoceDiagnosi {
@@ -15,29 +18,6 @@ export interface VoceDiagnosi {
   rimedio?: RimedioDiagnosi;
 }
 
-/**
- * L'elenco chiuso vale anche qui: un rimedio si avvia da solo solo se il suo
- * nome e' uno di quelli che /api/esegui accetta. La diagnosi manda gia' il
- * nome chiuso quando esiste una corrispondenza; i pochi rimedi senza
- * corrispondenza (per esempio "cp bdd-targets.example.json ...") restano
- * testo da copiare — mai un comando arbitrario dalla finestra.
- */
-const COMANDI_ESEGUIBILI: readonly NomeComando[] = [
-  'diagnosi',
-  'sessione',
-  'registrazione',
-  'generazione',
-  'test',
-  'scansione',
-  'installa-browser',
-  'sincronizza-regole',
-];
-
-function comeComandoEseguibile(testo: string): NomeComando | undefined {
-  return (COMANDI_ESEGUIBILI as readonly string[]).includes(testo)
-    ? (testo as NomeComando)
-    : undefined;
-}
 
 const ASPETTO: Record<VoceDiagnosi['esito'], { Icona: typeof CheckCircle2; colore: string; parola: string }> = {
   ok: { Icona: CheckCircle2, colore: 'var(--verde)', parola: 'A posto' },
@@ -60,7 +40,7 @@ interface EventoRiga extends MessageEvent {
 /** Una riga di stato della diagnosi, con l'eventuale rimedio nella stessa riga. */
 export function VoceControllo({ voce, onRimediato }: Props) {
   const { Icona, colore, parola } = ASPETTO[voce.esito];
-  const comando = voce.rimedio ? comeComandoEseguibile(voce.rimedio.comando) : undefined;
+  const comando = comeComandoEseguibile(voce.rimedio?.chiuso);
 
   const [statoRimedio, setStatoRimedio] = useState<StatoRimedio>('inattivo');
   const [idEsecuzione, setIdEsecuzione] = useState<string | undefined>();
