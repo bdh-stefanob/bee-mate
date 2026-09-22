@@ -174,7 +174,7 @@ export function VoceControllo({ voce, onRimediato }: Props) {
                 disabled={statoRimedio === 'avvio'}
                 aria-label={`Rimedia: ${voce.nome}`}
                 className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ background: 'var(--blu)', outlineColor: 'var(--blu)' }}
+                style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
               >
                 {statoRimedio === 'avvio' ? (
                   <Loader2 size={16} className="animate-spin" aria-hidden="true" />

@@ -3,23 +3,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import { leggiTraccia } from '@/lib/artefatti';
+import { dentroLaCartellaSuDisco } from '@/lib/percorsi-disco';
 
 const RECORDINGS_DIR = path.resolve(REPO_ROOT, 'reports', 'recordings');
 const SCOUT_DIR = path.resolve(REPO_ROOT, 'reports', 'scout');
 
 /**
- * Stessa guardia di `safeFeaturePath` (vedi `src/lib/repo.ts`), applicata a
- * `reports/recordings/`: il path risolto deve restare STRETTAMENTE dentro la
- * cartella e finire per `.json`. Un percorso assoluto o con `..` non supera
- * il confronto con il prefisso e viene rifiutato.
+ * La stessa guardia delle feature, applicata a `reports/recordings/`: dentro la
+ * cartella, estensione giusta, e i collegamenti simbolici sciolti prima di
+ * fidarsi — un file dentro la cartella puo' puntare fuori.
  */
 function percorsoSicuro(rel: string): string | null {
-  const resolved = path.resolve(RECORDINGS_DIR, rel);
-  const prefix = (RECORDINGS_DIR + path.sep).toLowerCase();
-  const normalizzato = resolved.toLowerCase();
-  if (!normalizzato.startsWith(prefix)) return null;
-  if (!resolved.endsWith('.json')) return null;
-  return resolved;
+  return dentroLaCartellaSuDisco(RECORDINGS_DIR, rel, '.json');
 }
 
 /**
@@ -156,6 +151,14 @@ export async function GET(request: Request) {
   const assoluto = percorsoSicuro(percorso);
   if (!assoluto) {
     return NextResponse.json({ errore: 'percorso non valido' }, { status: 400 });
+  }
+
+  // Senza questo controllo un file sparito darebbe 200 con zero passi, cioe'
+  // esattamente cio' che si vede dopo una registrazione in cui non si e'
+  // nominato niente: due cause diverse, la stessa schermata, e il tester va a
+  // cercare l'errore dalla parte sbagliata.
+  if (!fs.existsSync(assoluto)) {
+    return NextResponse.json({ errore: "la traccia non c'e' piu'" }, { status: 404 });
   }
 
   const { passi, durata } = leggiTraccia(assoluto);

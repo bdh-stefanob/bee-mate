@@ -49,7 +49,7 @@
 }
 
 :root {
-  /* Boots Teal palette — light */
+  /* Tavolozza di base — chiara */
   --background: oklch(0.985 0 0);
   --foreground: oklch(0.13 0.025 264);
   --card: oklch(1 0 0);
@@ -85,6 +85,13 @@
 
   /* Cruscotto tester — tavolozza dedicata */
   --blu: #1A56DB;
+  /*
+   * Il blu pieno dei pulsanti, che portano sempre testo bianco: resta lo
+   * stesso al buio. Schiarirlo come `--blu` manderebbe il bianco sopra a
+   * 1,4:1, cioe' illeggibile — il contrasto di uno sfondo si legge contro
+   * cio' che ci sta sopra, non contro la pagina.
+   */
+  --blu-fondo: #1A56DB;
   --verde: #067647;
   --rosso: #B42318;
   --testo: #101828;
@@ -95,7 +102,7 @@
 }
 
 .dark {
-  /* Boots Teal palette — dark */
+  /* Tavolozza di base — scura */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -128,6 +135,26 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.704 0.14 182.503);
 }
+/*
+ * La tavolozza del cruscotto, al buio.
+ *
+ * L'app segue il tema del sistema operativo: senza queste righe il contenuto
+ * diventava scuro e la barra restava bianca, con una cucitura netta in mezzo.
+ * I colori non sono gli stessi schiariti a caso — blu e verde su fondo scuro
+ * vanno alzati di luminosita' o il contrasto scende sotto la soglia.
+ */
+.dark {
+  --blu: #84ADFF;
+  --blu-fondo: #1A56DB;
+  --verde: #47CD89;
+  --rosso: #FDA29B;
+  --testo: #F5F5F5;
+  --testo-tenue: #D0D5DD;
+  --superficie: #18181B;
+  --superficie-tenue: #212124;
+  --bordo: #3F3F46;
+}
+
 
 /* CodeMirror syntax highlight tokens — WCAG AA compliant */
 :root {

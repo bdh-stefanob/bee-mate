@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { safeFeaturePath } from '@/lib/repo';
+import { FEATURES_DIR } from '@/lib/repo';
+import { dentroLaCartellaSuDisco } from '@/lib/percorsi-disco';
 
 /**
  * GET /api/download?file=<rel>
@@ -15,7 +16,9 @@ export async function GET(request: Request): Promise<Response> {
   const file = new URL(request.url).searchParams.get('file') ?? '';
 
   // Guard centralizzato: path traversal + estensione .feature (T-04-10)
-  const resolved = safeFeaturePath(file);
+  // Qui il controllo scioglie anche i collegamenti simbolici: e' la rotta
+  // che restituisce il contenuto di un file, cioe' quella che rischia di piu'.
+  const resolved = dentroLaCartellaSuDisco(FEATURES_DIR, file, '.feature');
   if (!resolved) {
     return new Response('Forbidden', { status: 403 });
   }
