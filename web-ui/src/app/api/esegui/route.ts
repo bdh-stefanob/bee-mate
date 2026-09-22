@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { avvia } from '@/lib/registro';
 import type { NomeComando, Parametri } from '@/lib/esecuzione';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ errore: 'richiesta non ammessa' }, { status: 403 });
+  }
+
   let corpo: { nome?: string; parametri?: Parametri };
   try {
     corpo = await request.json();
