@@ -14,6 +14,7 @@
  *
  * Uso:
  *   npm run test:bersaglio clinic             tutti gli scenari su "clinic"
+ *   npm run test:bersaglio clinic generati    solo quelli usciti dalla registrazione
  *   npm run test:bersaglio clinic vedi        con il browser visibile
  *   npm run test:bersaglio clinic src/features/generated/x.feature
  *   npm run test:bersaglio https://...        un indirizzo, senza bersaglio nominato
@@ -62,7 +63,18 @@ function main(): void {
   const target = risolvi(nome);
   const indirizzoDiretto = /^https?:\/\//i.test(nome);
   const vedi = args.includes("vedi");
-  const percorsi = args.slice(1).filter((a) => a !== "vedi");
+
+  // "generati": esegue SOLO gli scenari usciti dalla registrazione.
+  //
+  // Nel repository vivono anche gli scenari scritti a mano, che glue non ne
+  // hanno: ogni esecuzione ne stampava ventinove "undefined" e quattrocento
+  // righe di suggerimenti, e l'unico scenario che interessava finiva in fondo,
+  // illeggibile. Un risultato che non si riesce a leggere e' un risultato che
+  // non si guarda.
+  const soloGenerati = args.includes("generati");
+  const percorsi = soloGenerati
+    ? [path.join("src", "features", "generated")]
+    : args.slice(1).filter((a) => a !== "vedi");
 
   const eta = sessionAgeHours(target);
   console.log(`\nTEST — ${indirizzoDiretto ? "indirizzo diretto" : `bersaglio "${target.name}"`}\n`);
