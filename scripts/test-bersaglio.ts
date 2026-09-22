@@ -16,6 +16,7 @@
  *   npm run test:bersaglio clinic             tutti gli scenari su "clinic"
  *   npm run test:bersaglio clinic generati    solo quelli usciti dalla registrazione
  *   npm run test:bersaglio clinic vedi        con il browser visibile
+ *   npm run test:bersaglio clinic pulito      senza la sessione salvata
  *   npm run test:bersaglio clinic src/features/generated/x.feature
  *   npm run test:bersaglio https://...        un indirizzo, senza bersaglio nominato
  */
@@ -72,16 +73,30 @@ function main(): void {
   // illeggibile. Un risultato che non si riesce a leggere e' un risultato che
   // non si guarda.
   const soloGenerati = args.includes("generati");
+
+  // "pulito": browser senza la sessione salvata.
+  //
+  // Se la registrazione contiene il login, con la sessione si e' gia' dentro e
+  // quel passo cerca un pulsante che l'applicazione non mostra piu'. Sono due
+  // modi diversi di cominciare, e qui si sceglie quale provare.
+  const pulito = args.includes("pulito");
+
   const percorsi = soloGenerati
     ? [path.join("src", "features", "generated")]
-    : args.slice(1).filter((a) => a !== "vedi");
+    : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito");
 
   const eta = sessionAgeHours(target);
   console.log(`\nTEST — ${indirizzoDiretto ? "indirizzo diretto" : `bersaglio "${target.name}"`}\n`);
   console.log(`  Indirizzo : ${target.url}`);
   if (!indirizzoDiretto) {
     console.log(
-      `  Sessione  : ${hasSession(target) ? `di ${eta} ore fa` : `nessuna — npm run session ${target.name}`}`
+      `  Sessione  : ${
+        pulito
+          ? "ignorata (pulito): si parte da un browser senza login"
+          : hasSession(target)
+            ? `di ${eta} ore fa`
+            : `nessuna — npm run session ${target.name}`
+      }`
     );
   }
   console.log(`  Browser   : ${vedi ? "visibile" : "nascosto (aggiungi: vedi)"}\n`);
@@ -99,7 +114,12 @@ function main(): void {
   try {
     execFileSync(process.execPath, [cucumber, ...percorsi], {
       stdio: "inherit",
-      env: { ...process.env, ...ambiente, ...(vedi ? { HEADED: "1" } : {}) },
+      env: {
+        ...process.env,
+        ...ambiente,
+        ...(vedi ? { HEADED: "1" } : {}),
+        ...(pulito ? { BDD_NO_SESSION: "1" } : {}),
+      },
     });
   } catch (err) {
     // Cucumber ha gia' stampato cosa e' fallito: qui si propaga solo l'esito,
