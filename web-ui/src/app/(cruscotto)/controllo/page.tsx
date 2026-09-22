@@ -116,7 +116,7 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
           type="submit"
           disabled={!chiave || !valore || inCorso}
           className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: 'var(--blu)', outlineColor: 'var(--blu)' }}
+          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           {inCorso ? 'Salvo…' : 'Salva'}
         </button>
@@ -196,7 +196,7 @@ export default function ControlloPage() {
             type="button"
             onClick={carica}
             className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: 'var(--blu)', outlineColor: 'var(--blu)' }}
+            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             <RefreshCw size={16} aria-hidden="true" />
             Riprova

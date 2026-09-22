@@ -48,6 +48,11 @@ export default function RegistraPage() {
   const [ambiente, setAmbiente] = useState('');
   const [fase, setFase] = useState<Fase>({ tipo: 'scelta' });
   const [righeRicevute, setRigheRicevute] = useState(0);
+  // Il pulsante si spegne appena parte la richiesta, non quando torna: fra i
+  // due momenti ci stanno comodi due click, cioe' due processi che scrivono
+  // sullo stesso manifesto, e il secondo che arriva vince su quello che il
+  // tester sta guardando.
+  const [inviando, setInviando] = useState(false);
   const sorgenteRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -125,6 +130,8 @@ export default function RegistraPage() {
   }, []);
 
   const avviaRegistrazione = useCallback(async () => {
+    if (inviando) return;
+    setInviando(true);
     try {
       const risposta = await fetch('/api/esegui', {
         method: 'POST',
@@ -145,10 +152,14 @@ export default function RegistraPage() {
       });
     } catch {
       setFase({ tipo: 'errore', messaggio: 'non sono riuscito a parlare con il cruscotto' });
+    } finally {
+      setInviando(false);
     }
-  }, [ambiente, osserva, caricaRiepilogo]);
+  }, [ambiente, osserva, caricaRiepilogo, inviando]);
 
   const generaTest = useCallback(async () => {
+    if (inviando) return;
+    setInviando(true);
     try {
       const risposta = await fetch('/api/esegui', {
         method: 'POST',
@@ -167,8 +178,10 @@ export default function RegistraPage() {
       osserva(corpo.id, 'generazione', () => router.push('/esecuzione'));
     } catch {
       setFase({ tipo: 'errore', messaggio: 'non sono riuscito a parlare con il cruscotto' });
+    } finally {
+      setInviando(false);
     }
-  }, [osserva, router]);
+  }, [osserva, router, inviando]);
 
   const interrompi = useCallback(async () => {
     if (fase.tipo !== 'in-corso') return;
@@ -205,9 +218,9 @@ export default function RegistraPage() {
           <button
             type="button"
             onClick={() => void avviaRegistrazione()}
-            disabled={!ambiente}
+            disabled={!ambiente || inviando}
             className="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ background: 'var(--blu)', outlineColor: 'var(--blu)' }}
+            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             <CircleDot size={18} aria-hidden="true" />
             Registra una sessione
@@ -260,8 +273,9 @@ export default function RegistraPage() {
           <button
             type="button"
             onClick={() => void generaTest()}
-            className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: 'var(--blu)', outlineColor: 'var(--blu)' }}
+            disabled={inviando}
+            className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             Genera il test
           </button>

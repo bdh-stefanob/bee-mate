@@ -1,4 +1,5 @@
 import * as path from 'path';
+import { dentroLaCartella } from './percorsi';
 
 /**
  * REPO_ROOT: root directory del repository.
@@ -35,21 +36,7 @@ export function slugify(s: string): string {
  * @returns path assoluto sicuro, oppure null se non valido
  */
 export function safeFeaturePath(rel: string): string | null {
-  const resolved = path.resolve(FEATURES_DIR, rel);
-
-  // Guard path traversal: il path risolto deve essere STRETTAMENTE dentro FEATURES_DIR.
-  // WR-04: normalise to lower-case before comparison to handle case-insensitive
-  // filesystems (Windows/macOS) where mixed-case paths would bypass startsWith.
-  const prefix = (FEATURES_DIR + path.sep).toLowerCase();
-  const normalised = resolved.toLowerCase();
-  if (!normalised.startsWith(prefix)) {
-    return null;
-  }
-
-  // Guard estensione: solo file .feature
-  if (!resolved.endsWith('.feature')) {
-    return null;
-  }
-
-  return resolved;
+  // La guardia vera sta in `dentroLaCartella`: stesso controllo per tutte le
+  // cartelle che la finestra puo' leggere, collegamenti simbolici compresi.
+  return dentroLaCartella(FEATURES_DIR, rel, '.feature');
 }

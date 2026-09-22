@@ -111,7 +111,7 @@ export const gherkinLanguage = StreamLanguage.define(gherkinParser);
 // ---------------------------------------------------------------------------
 
 /**
- * Maps highlight tags to CSS custom properties from the Boots teal design system.
+ * Maps highlight tags to CSS custom properties from the base design system.
  * Colours:
  *   keyword (Feature/Scenario…)  → teal (primary)
  *   definitionKeyword (Given…)   → green (#22c55e)

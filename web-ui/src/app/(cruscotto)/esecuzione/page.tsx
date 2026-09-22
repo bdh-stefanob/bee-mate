@@ -136,7 +136,16 @@ export default function EsecuzionePage() {
       fonte.close();
     };
     fonte.addEventListener('fine', suFine);
-    fonte.onerror = () => fonte.close();
+    // Nessun `close` sull'errore, ed e' deliberato.
+    //
+    // Chiudere qui spegne per sempre la riconnessione che il browser fa da
+    // solo: basta un portatile che va in sospensione o un ricarico in
+    // sviluppo perche' l'evento di fine non arrivi mai piu'. La schermata
+    // resterebbe a girare con lo spinner mentre il test e' gia' finito — cioe'
+    // direbbe una cosa falsa, che e' l'unica cosa che non deve fare.
+    //
+    // Lasciando riconnettere, alla prima riconnessione la rotta rilegge lo
+    // stato e manda subito la fine se nel frattempo e' arrivata.
     return () => {
       fonte.removeEventListener('fine', suFine);
       fonte.close();
@@ -237,7 +246,7 @@ export default function EsecuzionePage() {
             'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
-          style={{ background: 'var(--blu)', outlineColor: 'var(--blu)' }}
+          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           {inCorso ? (
             <Loader2 size={18} aria-hidden="true" className="animate-spin" />
