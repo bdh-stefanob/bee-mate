@@ -86,7 +86,22 @@ function deveMostrareErroreSenzaPassi(
   stato: StatoEsecuzione | null,
   passi: Passo[]
 ): boolean {
-  return (stato === 'fallita' || stato === 'interrotta') && passi.length === 0;
+  // Qualunque esito, non solo quelli rossi.
+  //
+  // Con nessuno scenario da eseguire Cucumber esce con codice ZERO, quindi
+  // l'esecuzione risulta conclusa: e' lo stato di una macchina appena accesa,
+  // e anche di una generazione che non ha prodotto niente. Guardando solo
+  // "fallita" e "interrotta", il tester premeva Lancia, aspettava, e la
+  // finestra tornava com'era senza dire una parola. Zero passi e' sempre una
+  // notizia.
+  return stato !== null && stato !== 'in corso' && passi.length === 0;
+}
+
+/** Cosa dire, quando non e' uscito nemmeno un passo. */
+function fraseSenzaPassi(stato: StatoEsecuzione | null): string {
+  if (stato === 'interrotta') return 'Test interrotto: nessun passo prodotto.';
+  if (stato === 'fallita') return 'Test fallito: nessun passo prodotto.';
+  return "Il test e' partito, ma non c'era nessuno scenario da eseguire: prima bisogna registrare una sessione e generare il test.";
 }
 
 /** Un interruttore accessibile: mai un checkbox nascosto senza etichetta visibile. */
@@ -376,18 +391,17 @@ function EsecuzioneContenuto() {
           aria-label="Esito del test"
           className="flex flex-col gap-2 rounded-lg border p-4 text-sm"
           style={{
-            borderColor: statoCorrente === 'interrotta' ? 'var(--testo-tenue)' : 'var(--rosso)',
+            borderColor:
+              statoCorrente === 'fallita' ? 'var(--rosso)' : 'var(--testo-tenue)',
             background: 'var(--superficie-tenue)',
           }}
         >
           <p
             className="flex items-center gap-2 font-semibold"
-            style={{ color: statoCorrente === 'interrotta' ? 'var(--testo-tenue)' : 'var(--rosso)' }}
+            style={{ color: statoCorrente === 'fallita' ? 'var(--rosso)' : 'var(--testo-tenue)' }}
           >
             <AlertTriangle size={18} aria-hidden="true" />
-            {statoCorrente === 'interrotta'
-              ? 'Test interrotto: nessun passo prodotto.'
-              : 'Test fallito: nessun passo prodotto.'}
+            {fraseSenzaPassi(statoCorrente)}
           </p>
           <p style={{ color: 'var(--testo-tenue)' }}>
             {codiceUscita !== null

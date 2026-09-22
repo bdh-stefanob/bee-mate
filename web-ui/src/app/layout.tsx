@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'BDD Automation — Authoring Portal',
+  title: 'Cruscotto del tester',
   description: 'Gherkin authoring tool for QA automation',
 };
 

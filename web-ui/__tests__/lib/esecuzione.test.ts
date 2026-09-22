@@ -21,7 +21,7 @@ describe('elenco chiuso dei comandi', () => {
       ['diagnosi', 'sessione', 'registrazione', 'generazione', 'test', 'scansione',
         'installa-browser', 'sincronizza-regole'];
     for (const nome of tutti) {
-      const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'm.json', messaggi: 'g.ndjson' });
+      const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'reports/m.json', messaggi: 'reports/g.ndjson' });
       expect(r.argomenti.some((a) => a.startsWith('-'))).toBe(false);
     }
   });
@@ -69,7 +69,7 @@ describe('niente shell, e niente che una shell potrebbe interpretare', () => {
       'installa-browser', 'sincronizza-regole',
     ] as const;
     for (const nome of tutti) {
-      const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'm.json', messaggi: 'g.ndjson' });
+      const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'reports/m.json', messaggi: 'reports/g.ndjson' });
       expect(r.eseguibile).not.toMatch(/npx/);
       expect(r.argomenti).not.toContain('ts-node');
     }
@@ -95,9 +95,21 @@ describe('niente shell, e niente che una shell potrebbe interpretare', () => {
   });
 
   it('e lo stesso vale per il manifesto', () => {
-    expect(() => rigaDiComando('generazione', { manifesto: 'm.json & echo entrato' })).toThrow(
-      /non valido/
-    );
+    expect(() =>
+      rigaDiComando('generazione', { manifesto: 'reports/m.json & echo entrato' })
+    ).toThrow(/non valido/);
+  });
+
+  it('un percorso deve stare dentro reports/, non solo evitare i ..', () => {
+    // Il charset da solo ammetteva la barra iniziale, quindi un percorso
+    // assoluto passava e Cucumber ci avrebbe scritto davvero. Il commento
+    // prometteva "resta dentro reports/" e non era vero.
+    for (const fuori of ['/Windows/x.ndjson', '.env', 'src/x.ndjson', 'reportsfinti/x.ndjson']) {
+      expect(
+        () => rigaDiComando('test', { bersaglio: 'x', messaggi: fuori }),
+        `${fuori} e' passato`
+      ).toThrow(/non valido/);
+    }
   });
 
   it('un percorso normale passa ancora', () => {

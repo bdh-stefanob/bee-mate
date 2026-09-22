@@ -79,3 +79,21 @@ describe('la riga di comando che il registro costruisce davvero', () => {
     expect(opzione).toMatch(/^messaggi=reports\/cruscotto\/test-[a-z0-9]+\.ndjson$/);
   });
 });
+
+describe('come viene avviato il processo figlio', () => {
+  it('senza shell, e con l\'ambiente che serve nell\'eseguibile impacchettato', () => {
+    // Nessun caso guardava le opzioni del lancio, e infatti una rotta aveva
+    // ancora la shell accesa mentre tutti i 113 erano verdi. Il difetto non si
+    // vedeva in sviluppo: `process.execPath` e' Node solo li'. Dentro
+    // l'eseguibile e' l'applicazione stessa, e ogni comando avrebbe aperto una
+    // seconda copia della finestra invece di eseguire uno script.
+    let opzioni: Record<string, unknown> = {};
+    const finto = processoFinto();
+    avvia('diagnosi', {}, (_e, _a, o) => {
+      opzioni = o as unknown as Record<string, unknown>;
+      return finto;
+    });
+    expect(opzioni).not.toHaveProperty('shell');
+    expect((opzioni.env as NodeJS.ProcessEnv).ELECTRON_RUN_AS_NODE).toBe('1');
+  });
+});
