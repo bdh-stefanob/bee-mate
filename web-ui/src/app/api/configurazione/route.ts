@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import { scriviVariabile, bersagliDaFile } from '@/lib/configurazione';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 const ENV_PATH = path.join(REPO_ROOT, '.env');
 const TARGETS_PATH = path.join(REPO_ROOT, 'bdd-targets.json');
@@ -16,6 +17,12 @@ const TARGETS_PATH = path.join(REPO_ROOT, 'bdd-targets.json');
  * quel caso il messaggio d'errore non contiene il valore ricevuto.
  */
 export async function POST(request: Request) {
+  // Questa rotta scrive le variabili d'ambiente: senza guardia, una scheda
+  // qualunque aperta nello stesso browser potrebbe sovrascriverle.
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ errore: 'richiesta non ammessa' }, { status: 403 });
+  }
+
   try {
     const body = await request.json() as { chiave?: unknown; valore?: unknown };
     const { chiave, valore } = body;

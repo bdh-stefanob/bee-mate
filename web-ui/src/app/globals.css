@@ -94,6 +94,9 @@
   --blu-fondo: #1A56DB;
   --verde: #067647;
   --rosso: #B42318;
+  /* L'ambra degli avvisi: era scritta a mano nel componente, quindi non
+     esisteva al buio e scendeva a 3,5:1. Qui e' 4,8:1 sul fondo chiaro. */
+  --ambra: #B45309;
   --testo: #101828;
   --testo-tenue: #475467;
   --superficie: #FFFFFF;
@@ -148,6 +151,7 @@
   --blu-fondo: #1A56DB;
   --verde: #47CD89;
   --rosso: #FDA29B;
+  --ambra: #FDB022;
   --testo: #F5F5F5;
   --testo-tenue: #D0D5DD;
   --superficie: #18181B;

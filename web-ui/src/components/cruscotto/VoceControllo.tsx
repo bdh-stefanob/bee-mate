@@ -23,7 +23,7 @@ export interface VoceDiagnosi {
 
 const ASPETTO: Record<VoceDiagnosi['esito'], { Icona: typeof CheckCircle2; colore: string; parola: string }> = {
   ok: { Icona: CheckCircle2, colore: 'var(--verde)', parola: 'A posto' },
-  attenzione: { Icona: AlertTriangle, colore: '#B45309', parola: 'Attenzione' },
+  attenzione: { Icona: AlertTriangle, colore: 'var(--ambra)', parola: 'Attenzione' },
   manca: { Icona: XCircle, colore: 'var(--rosso)', parola: 'Manca' },
 };
 

@@ -23,10 +23,34 @@ describe('POST /api/esegui', () => {
 });
 
 describe('da dove arriva la richiesta', () => {
+  // L'indirizzo della richiesta e' di proposito diverso da quello dell'origine:
+  // e' la situazione vera. Il framework normalizza `request.url` a `localhost`,
+  // mentre la finestra vive su `127.0.0.1`. Il caso di prima li faceva
+  // coincidere per costruzione, e cosi' verificava la propria finzione: era
+  // verde mentre nel prodotto ogni pulsante rispondeva di no.
+  const comeLoVedeIlFramework = 'http://localhost:3000/api/esegui';
+
+  it('lascia passare la finestra servita da 127.0.0.1', async () => {
+    const res = await POST(new Request(comeLoVedeIlFramework, {
+      method: 'POST',
+      headers: { origin: 'http://127.0.0.1:3000' },
+      body: JSON.stringify({ nome: 'qualunque-cosa' }),
+    }));
+    // 400 e non 403: la richiesta e' entrata, e si e' fermata dopo, sul nome.
+    expect(res.status).toBe(400);
+  });
+
+  it("lascia passare quando il browser dichiara che viene da se' stesso", async () => {
+    const res = await POST(new Request(comeLoVedeIlFramework, {
+      method: 'POST',
+      headers: { 'sec-fetch-site': 'same-origin', origin: 'http://127.0.0.1:3000' },
+      body: JSON.stringify({ nome: 'qualunque-cosa' }),
+    }));
+    expect(res.status).toBe(400);
+  });
+
   it("rifiuta una richiesta che viene da un'altra origine", async () => {
-    // Il cruscotto ascolta su un indirizzo locale, e un indirizzo locale e'
-    // raggiungibile da qualunque scheda aperta nello stesso browser.
-    const res = await POST(new Request('http://127.0.0.1:3000/api/esegui', {
+    const res = await POST(new Request(comeLoVedeIlFramework, {
       method: 'POST',
       headers: { origin: 'https://sito-qualunque.example' },
       body: JSON.stringify({ nome: 'diagnosi' }),
@@ -34,16 +58,12 @@ describe('da dove arriva la richiesta', () => {
     expect(res.status).toBe(403);
   });
 
-  it('lascia passare quella della finestra', async () => {
-    // Si usa un comando inesistente apposta: se la guardia lasciasse passare
-    // un comando vero, questo caso avvierebbe un processo a ogni esecuzione
-    // della suite. Il 400 arriva da dopo la guardia, ed e' quello che si vuole
-    // dimostrare: la richiesta e' entrata.
-    const res = await POST(new Request('http://127.0.0.1:3000/api/esegui', {
+  it('rifiuta anche quando il browser la dichiara di un altro sito', async () => {
+    const res = await POST(new Request(comeLoVedeIlFramework, {
       method: 'POST',
-      headers: { origin: 'http://127.0.0.1:3000' },
-      body: JSON.stringify({ nome: 'qualunque-cosa' }),
+      headers: { 'sec-fetch-site': 'cross-site' },
+      body: JSON.stringify({ nome: 'diagnosi' }),
     }));
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(403);
   });
 });

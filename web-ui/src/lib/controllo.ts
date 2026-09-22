@@ -25,9 +25,12 @@ export function interpreta(grezzo: { voci: VoceDiagnosi[] }) {
     // come testo da copiare. Fonderli faceva sparire la seconda meta'.
     rimedio: v.rimedio ? { comando: v.rimedio, chiuso: v.rimedioChiuso } : undefined,
   }));
-  // "Pronto" guarda solo cio' che impedisce davvero di lavorare. Le voci
-  // avanzate restano visibili (sezione a parte, nella finestra) ma non
-  // possono tenere la macchina "non pronta" per sempre.
+  // "Pronto" guarda solo cio' che impedisce davvero di lavorare: le voci
+  // avanzate restano visibili in una sezione a parte, e un avviso resta un
+  // avviso. Contare anche gli avvisi rendeva la riga falsa e per giunta
+  // circolare: "Registrazioni" non puo' essere a posto finche' il tester non
+  // ha registrato, cioe' finche' non ha fatto la cosa che quella schermata
+  // dovrebbe invitarlo a fare.
   const essenziali = voci.filter((v) => !v.avanzata);
-  return { pronto: essenziali.every((v) => v.esito === 'ok'), voci };
+  return { pronto: essenziali.every((v) => v.esito !== 'manca'), voci };
 }

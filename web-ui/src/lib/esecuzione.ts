@@ -42,7 +42,17 @@ function bersaglioDi(p?: Parametri): string {
 const PERCORSO_VALIDO = /^[A-Za-z0-9._\/-]{1,120}$/;
 
 function percorsoDi(valore: string | undefined, etichetta: string): string {
-  if (!valore || valore.includes('..') || !PERCORSO_VALIDO.test(valore)) {
+  // `startsWith('reports/')` non e' un di piu': il commento qui sopra
+  // prometteva "resta dentro reports/" e il charset da solo non lo garantiva —
+  // ammetteva la barra iniziale, quindi `/Windows/x.ndjson` passava. Cucumber
+  // avrebbe scritto li'. Un commento che dichiara una difesa inesistente e'
+  // peggio di nessun commento.
+  if (
+    !valore ||
+    valore.includes('..') ||
+    !valore.startsWith('reports/') ||
+    !PERCORSO_VALIDO.test(valore)
+  ) {
     throw new Error(`percorso ${etichetta} non valido: ${JSON.stringify(valore)}`);
   }
   return valore;

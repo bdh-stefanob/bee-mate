@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
+import { ambienteFiglio } from './ambiente-figlio';
 import { rigaDiComando, type NomeComando, type Parametri } from '@/lib/esecuzione';
 
 export interface ProcessoMinimo {
@@ -9,7 +10,22 @@ export interface ProcessoMinimo {
   onFine(f: (codice: number) => void): void;
   termina(): void;
 }
-export type Lanciatore = (eseguibile: string, argomenti: string[], cwd: string) => ProcessoMinimo;
+/**
+ * Le opzioni viaggiano fino al lanciatore invece di essere costruite dentro,
+ * cosi' un caso puo' verificarle: che `shell` non ci sia e che l'ambiente del
+ * figlio porti cio' che serve. Prima erano invisibili, e infatti nessun caso
+ * si e' accorto che una rotta aveva ancora la shell accesa.
+ */
+export interface OpzioniLancio {
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+}
+
+export type Lanciatore = (
+  eseguibile: string,
+  argomenti: string[],
+  opzioni: OpzioniLancio
+) => ProcessoMinimo;
 
 export interface Esecuzione {
   id: string;
@@ -36,7 +52,7 @@ export function azzeraPerTest(): void {
   processi.clear();
 }
 
-const lanciatoreVero: Lanciatore = (eseguibile, argomenti, cwd) => {
+const lanciatoreVero: Lanciatore = (eseguibile, argomenti, opzioni) => {
   // Niente `shell`, ed e' il punto.
   //
   // Serviva perche' su Windows `npx` e' uno script e senza shell non parte. Ma
@@ -45,7 +61,7 @@ const lanciatoreVero: Lanciatore = (eseguibile, argomenti, cwd) => {
   // chiama Node direttamente sul file di avvio del programma (vedi
   // `esecuzione.ts`), quindi la shell non serve piu' e gli argomenti arrivano
   // come lista: non c'e' piu' niente da interpretare.
-  const figlio = spawn(eseguibile, argomenti, { cwd });
+  const figlio = spawn(eseguibile, argomenti, opzioni);
   let resto = '';
   return {
     onRiga(f) {
@@ -101,7 +117,7 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
   const e: Esecuzione = { id, nome, stato: 'in corso', righe: [], avvio: new Date().toISOString() };
   esecuzioni.set(id, e);
 
-  const processo = lancia(eseguibile, argomenti, REPO_ROOT);
+  const processo = lancia(eseguibile, argomenti, { cwd: REPO_ROOT, env: ambienteFiglio() });
   processi.set(id, processo);
 
   processo.onRiga((r) => {
