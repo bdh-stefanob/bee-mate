@@ -26,6 +26,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { loadEnv } from "./lib/atlassian";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
+import { argValue } from "./lib/args";
 
 loadEnv();
 
@@ -81,9 +82,14 @@ function main(): void {
   // modi diversi di cominciare, e qui si sceglie quale provare.
   const pulito = args.includes("pulito");
 
+  // "messaggi=<file>": Cucumber scrive l'esito di ogni passo in quel file, in
+  // formato messages — una riga JSON per messaggio. E' quello che legge il
+  // cruscotto: mai la prosa che Cucumber stampa a schermo.
+  const messaggi = argValue(args, "--messaggi");
+
   const percorsi = soloGenerati
     ? [path.join("src", "features", "generated")]
-    : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito");
+    : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito" && !a.startsWith("messaggi="));
 
   const eta = sessionAgeHours(target);
   console.log(`\nTEST — ${indirizzoDiretto ? "indirizzo diretto" : `bersaglio "${target.name}"`}\n`);
@@ -111,8 +117,11 @@ function main(): void {
   // il bersaglio per nome, e "(url diretto)" non e' il nome di niente.
   const ambiente = indirizzoDiretto ? { BASE_URL: nome } : { BDD_TARGET: target.name };
 
+  // I trattini qui vanno bene: non passano da npm, li mette lo script.
+  const formato = messaggi ? ["--format", `message:${messaggi}`] : [];
+
   try {
-    execFileSync(process.execPath, [cucumber, ...percorsi], {
+    execFileSync(process.execPath, [cucumber, ...percorsi, ...formato], {
       stdio: "inherit",
       env: {
         ...process.env,
