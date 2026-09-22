@@ -175,13 +175,18 @@ export default function RegistraPage() {
         return;
       }
       setFase({ tipo: 'in-corso', id: corpo.id, azione: 'generazione' });
-      osserva(corpo.id, 'generazione', () => router.push('/esecuzione'));
+      osserva(corpo.id, 'generazione', () =>
+        // Il bersaglio su cui si e' appena registrato viaggia nella query
+        // string: senza, la schermata di esecuzione ricadrebbe sul primo
+        // dell'elenco, che puo' non essere quello appena usato.
+        router.push(`/esecuzione?bersaglio=${encodeURIComponent(ambiente)}`)
+      );
     } catch {
       setFase({ tipo: 'errore', messaggio: 'non sono riuscito a parlare con il cruscotto' });
     } finally {
       setInviando(false);
     }
-  }, [osserva, router, inviando]);
+  }, [osserva, router, inviando, ambiente]);
 
   const interrompi = useCallback(async () => {
     if (fase.tipo !== 'in-corso') return;

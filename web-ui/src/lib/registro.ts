@@ -89,7 +89,12 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
   const id = `${nome}-${Date.now().toString(36)}`;
   const parametri: Parametri | undefined =
     nome === 'test' && !p?.messaggi
-      ? { ...p, messaggi: path.join('reports', 'cruscotto', `${id}.ndjson`) }
+      // Barre in avanti, non `path.join`: questo non e' un percorso da aprire,
+      // e' un'opzione che viaggia sulla riga di comando. Su Windows `path.join`
+      // dava barre rovesciate e la validazione della riga le rifiutava, quindi
+      // ogni lancio moriva prima di cominciare. Node apre benissimo un percorso
+      // con le barre in avanti anche su Windows.
+      ? { ...p, messaggi: `reports/cruscotto/${id}.ndjson` }
       : p;
 
   const { eseguibile, argomenti } = rigaDiComando(nome, parametri);

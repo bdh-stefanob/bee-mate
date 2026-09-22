@@ -57,3 +57,25 @@ describe('registro delle esecuzioni', () => {
     expect(righe[righe.length - 1]).toBe('riga 599');
   });
 });
+
+describe('la riga di comando che il registro costruisce davvero', () => {
+  it('un test parte, e il percorso dei messaggi supera la sua validazione', () => {
+    // Il difetto che questo caso ferma: il percorso veniva composto con
+    // `path.join`, che su Windows da' barre rovesciate, mentre la validazione
+    // della riga accetta solo barre in avanti. Ogni lancio moriva prima di
+    // cominciare — e nessun caso se n'era accorto, perche' provavano la riga
+    // di comando da sola, con percorsi scritti a mano.
+    let argomenti: string[] = [];
+    const finto = processoFinto();
+    expect(() =>
+      avvia('test', { bersaglio: 'demo' }, (_e, a) => {
+        argomenti = a;
+        return finto;
+      })
+    ).not.toThrow();
+    const opzione = argomenti.find((a) => a.startsWith('messaggi='));
+    expect(opzione).toBeDefined();
+    expect(opzione).not.toContain('\\');
+    expect(opzione).toMatch(/^messaggi=reports\/cruscotto\/test-[a-z0-9]+\.ndjson$/);
+  });
+});
