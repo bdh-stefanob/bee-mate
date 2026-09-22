@@ -172,7 +172,13 @@ export default function ControlloPage() {
     };
   }, []);
 
-  const mancanti = dati ? dati.voci.filter((v) => v.esito !== 'ok').length : 0;
+  // Le voci "avanzate" riguardano chi ha costruito lo strumento (l'assistente
+  // da riga di comando, gli agenti che sincronizzano le regole): un tester non
+  // ne ha bisogno per lavorare, quindi non contano per "pronto" e stanno in
+  // una sezione a parte, richiudibile.
+  const essenziali = dati ? dati.voci.filter((v) => !v.avanzata) : [];
+  const avanzate = dati ? dati.voci.filter((v) => v.avanzata) : [];
+  const mancanti = essenziali.filter((v) => v.esito !== 'ok').length;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -220,14 +226,30 @@ export default function ControlloPage() {
             ) : (
               <AlertTriangle size={22} aria-hidden="true" />
             )}
-            {dati.pronto ? 'Pronto' : `Mancano ${mancanti} cose`}
+            {dati.pronto ? 'Pronto' : mancanti === 1 ? 'Manca 1 cosa' : `Mancano ${mancanti} cose`}
           </div>
 
           <ul className="flex flex-col gap-2">
-            {dati.voci.map((voce) => (
+            {essenziali.map((voce) => (
               <VoceControllo key={voce.nome} voce={voce} onRimediato={carica} />
             ))}
           </ul>
+
+          {avanzate.length > 0 && (
+            <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+              <summary
+                className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+              >
+                Avanzate ({avanzate.length})
+              </summary>
+              <ul className="flex flex-col gap-2 p-3 pt-0">
+                {avanzate.map((voce) => (
+                  <VoceControllo key={voce.nome} voce={voce} onRimediato={carica} />
+                ))}
+              </ul>
+            </details>
+          )}
 
           <ConfiguraCredenziale bersagli={bersagli} />
         </>

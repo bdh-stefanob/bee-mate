@@ -16,6 +16,8 @@ export interface VoceDiagnosi {
   esito: 'ok' | 'manca' | 'attenzione';
   dettaglio: string;
   rimedio?: RimedioDiagnosi;
+  /** Riguarda chi ha costruito lo strumento: la pagina la mostra a parte. */
+  avanzata?: boolean;
 }
 
 
