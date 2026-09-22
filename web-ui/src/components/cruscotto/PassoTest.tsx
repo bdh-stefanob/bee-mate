@@ -4,6 +4,7 @@ export interface Passo {
   testo: string;
   esito: 'passato' | 'fallito' | 'saltato';
   messaggio?: string;
+  schermata?: string;
 }
 
 interface Aspetto {
@@ -53,6 +54,16 @@ export function PassoTest({ passo }: { passo: Passo }) {
         >
           {passo.messaggio}
         </pre>
+      )}
+
+      {passo.esito === 'fallito' && passo.schermata && (
+        // eslint-disable-next-line @next/next/no-img-element -- data URI locale, non un asset da ottimizzare
+        <img
+          src={passo.schermata}
+          alt={`Schermata catturata al momento del fallimento del passo "${passo.testo}"`}
+          className="max-w-full h-auto rounded-md border"
+          style={{ borderColor: 'var(--bordo)' }}
+        />
       )}
     </li>
   );

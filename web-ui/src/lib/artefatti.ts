@@ -48,8 +48,16 @@ interface MessaggioCucumber {
   pickle?: { steps?: Array<{ id: string; text?: string }> };
   testCase?: { testSteps?: Array<{ id: string; pickleStepId?: string }> };
   testStepFinished?: {
+    testCaseStartedId: string;
     testStepId: string;
     testStepResult?: { status?: string; message?: unknown };
+  };
+  attachment?: {
+    testCaseStartedId?: string;
+    testStepId?: string;
+    mediaType?: string;
+    contentEncoding?: string;
+    body?: string;
   };
 }
 
@@ -57,6 +65,7 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
   testo: string;
   esito: Esito;
   messaggio?: string;
+  schermata?: string;
 }> {
   let righe: string[];
   try {
@@ -67,7 +76,23 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
 
   // Il testo del passo sta nel pickle; l'esito arriva dopo, con l'id del passo.
   const testoPerId = new Map<string, string>();
-  const passi: Array<{ testo: string; esito: Esito; messaggio?: string }> = [];
+  const passi: Array<{
+    testo: string;
+    esito: Esito;
+    messaggio?: string;
+    schermata?: string;
+    testCaseStartedId: string;
+  }> = [];
+
+  // Gli allegati (screenshot) nascono nell'hook `After`, non nel passo fallito:
+  // l'envelope `attachment` porta il `testStepId` del passo dell'hook, non
+  // quello del passo che e' fallito (verificato su un'esecuzione vera contro
+  // il bersaglio pubblico "demo": l'hook e il passo fallito hanno id diversi).
+  // L'unico identificativo che lega davvero l'allegato al caso di prova e'
+  // `testCaseStartedId`, condiviso da tutti gli step (compresi gli hook) dello
+  // stesso scenario. Si raccolgono qui, per caso di prova, e si assegnano poi
+  // al passo fallito di quello stesso caso.
+  const schermatePerCaso = new Map<string, string>();
 
   for (const riga of righe) {
     let m: MessaggioCucumber;
@@ -84,8 +109,22 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
         if (s.pickleStepId) testoPerId.set(s.id, testoPerId.get(s.pickleStepId) ?? '');
       }
     }
+    if (m.attachment) {
+      const { testCaseStartedId, mediaType, body } = m.attachment;
+      // Al massimo una schermata per caso di prova: se il passo fallito ne ha
+      // gia' una, un secondo allegato non la sostituisce.
+      if (
+        testCaseStartedId &&
+        mediaType?.startsWith('image/') &&
+        body &&
+        !schermatePerCaso.has(testCaseStartedId)
+      ) {
+        schermatePerCaso.set(testCaseStartedId, `data:${mediaType};base64,${body}`);
+      }
+    }
     if (m.testStepFinished) {
-      const id = m.testStepFinished.testStepId as string;
+      const id = m.testStepFinished.testStepId;
+      const testCaseStartedId = m.testStepFinished.testCaseStartedId;
       const risultato = m.testStepFinished.testStepResult ?? {};
       const testo = testoPerId.get(id);
       // Gli hook non hanno un testo: non sono passi dello scenario.
@@ -94,8 +133,14 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
         testo,
         esito: ESITI[risultato.status as string] ?? 'saltato',
         ...(risultato.message ? { messaggio: String(risultato.message) } : {}),
+        testCaseStartedId,
       });
     }
   }
-  return passi;
+
+  return passi.map(({ testCaseStartedId, ...passo }) => {
+    if (passo.esito !== 'fallito') return passo;
+    const schermata = schermatePerCaso.get(testCaseStartedId);
+    return schermata ? { ...passo, schermata } : passo;
+  });
 }
