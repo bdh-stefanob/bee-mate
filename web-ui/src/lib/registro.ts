@@ -78,8 +78,17 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
     if (occupato) throw new Error("c'e' gia' in corso un'operazione che occupa il browser");
   }
 
-  const { eseguibile, argomenti } = rigaDiComando(nome, p);
+  // L'id nasce prima della riga di comando: un 'test' senza messaggi esplicito
+  // scrive i suoi esiti in reports/cruscotto/<id>.ndjson, cosi' chi conosce
+  // solo l'id (la schermata di Esecuzione) puo' ritrovare il file da solo,
+  // senza che la finestra debba mai indicare un percorso.
   const id = `${nome}-${Date.now().toString(36)}`;
+  const parametri: Parametri | undefined =
+    nome === 'test' && !p?.messaggi
+      ? { ...p, messaggi: path.join('reports', 'cruscotto', `${id}.ndjson`) }
+      : p;
+
+  const { eseguibile, argomenti } = rigaDiComando(nome, parametri);
   const e: Esecuzione = { id, nome, stato: 'in corso', righe: [], avvio: new Date().toISOString() };
   esecuzioni.set(id, e);
 
