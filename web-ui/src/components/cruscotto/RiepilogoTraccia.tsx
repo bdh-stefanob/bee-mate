@@ -98,8 +98,9 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
                 <strong>attenzione</strong> — {buco.messaggio}.
                 <br />
                 <span style={{ color: 'var(--testo-tenue)' }}>
-                  Rimedio: scansiona quella pagina dalla schermata Controllo prima di generare il
-                  test.
+                  Rimedio: non da qui — lo strumento di scansione apre un browser e resta in
+                  attesa che tu prema Invio, quindi va lanciato da un terminale, non da questa
+                  finestra. Vai sulla pagina «{buco.pagina}», poi da terminale scansionala.
                 </span>
               </span>
             </div>

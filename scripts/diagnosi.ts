@@ -49,6 +49,12 @@ interface Voce {
   rimedio?: string;
   /** Lo stesso rimedio, come nome chiuso, se la macchina puo' avviarlo da sola. */
   rimedioChiuso?: RimedioChiuso;
+  /**
+   * Riguarda chi ha costruito la catena, non chi la usa per testare a mano:
+   * non deve mai decidere se la macchina e' "pronta" per un tester, e nella
+   * schermata di controllo va in una sezione a parte, richiudibile.
+   */
+  avanzata?: boolean;
 }
 
 const voci: Voce[] = [];
@@ -102,6 +108,11 @@ function sulPath(comando: string): boolean {
 // ---------------------------------------------------------------------------
 
 {
+  // Le due voci che seguono riguardano chi costruisce la catena (l'IDE con cui
+  // si scrivono script e regole), non chi la usa per registrare ed eseguire un
+  // test a mano. Un tester senza l'assistente sul PATH non ha nessun problema:
+  // marcarle "avanzata" le tiene fuori dal calcolo di "pronto" e dalla vista
+  // principale della schermata di controllo.
   const trovati = ["kiro-cli", "kiro", "q"].filter(sulPath);
   aggiungi(
     trovati.length > 0
@@ -112,6 +123,7 @@ function sulPath(comando: string): boolean {
             `sul PATH: ${trovati.join(", ")}`,
             "serve solo a rendere il confronto ripetibile da script: l'IDE basta",
           ],
+          avanzata: true,
         }
       : {
           esito: "avviso",
@@ -121,6 +133,7 @@ function sulPath(comando: string): boolean {
             "la misura legge file e li giudica con tsc e il dry-run: gli stessi",
             "file danno gli stessi numeri, che ci arrivi uno script o una persona",
           ],
+          avanzata: true,
         }
   );
 
@@ -139,6 +152,7 @@ function sulPath(comando: string): boolean {
             `${agenti.length} agenti, ${hook.length} file di hook`,
             "che l'IDE li riconosca va guardato nei suoi pannelli: da qui non si vede",
           ],
+          avanzata: true,
         }
       : {
           esito: "manca",
@@ -146,6 +160,7 @@ function sulPath(comando: string): boolean {
           dettaglio: ["non generati"],
           rimedio: "npm run rules:sync",
           rimedioChiuso: "sincronizza-regole",
+          avanzata: true,
         }
   );
 }
@@ -199,7 +214,7 @@ function sulPath(comando: string): boolean {
           esito: "manca",
           titolo: "Dizionari dei componenti",
           dettaglio: ["nessuno: senza, i locator vengono sintetizzati alla cieca"],
-          rimedio: "npm run scout:pausa -- <url>",
+          rimedio: "npm run scout:pausa <url>",
           rimedioChiuso: "scansione",
         }
   );
@@ -229,7 +244,7 @@ function sulPath(comando: string): boolean {
           esito: "manca",
           titolo: "Registrazioni",
           dettaglio: ["nessuna: e' da qui che parte tutto"],
-          rimedio: "npm run record -- <url>",
+          rimedio: "npm run record <url>",
           rimedioChiuso: "registrazione",
         }
       : conUrl.length === 0
@@ -240,7 +255,7 @@ function sulPath(comando: string): boolean {
               `${file.length}, ma nessuna riporta la pagina di ogni gesto`,
               "fatte con un recorder precedente: tutto finirebbe sulla prima pagina",
             ],
-            rimedio: "npm run record -- <url>",
+            rimedio: "npm run record <url>",
             rimedioChiuso: "registrazione",
           }
         : {
@@ -300,6 +315,12 @@ interface VoceJson {
    * il rimedio dalle voci senza corrispondenza — restavano rosse e mute.
    */
   rimedioChiuso?: RimedioChiuso;
+  /**
+   * Riguarda chi ha costruito la catena, non chi la usa per testare a mano.
+   * La finestra di controllo la tiene fuori dal calcolo di "pronto" e la mette
+   * in una sezione a parte. Assente (non `false`) quando non si applica.
+   */
+  avanzata?: true;
 }
 
 const ESITO_JSON: Record<Esito, VoceJson["esito"]> = { ok: "ok", manca: "manca", avviso: "attenzione" };
@@ -311,6 +332,7 @@ if (hasFlag(process.argv.slice(2), "--json")) {
     dettaglio: v.dettaglio[0] ?? "",
     ...(v.rimedio ? { rimedio: v.rimedio } : {}),
     ...(v.rimedioChiuso ? { rimedioChiuso: v.rimedioChiuso } : {}),
+    ...(v.avanzata ? { avanzata: true as const } : {}),
   }));
   console.log(JSON.stringify({ voci: vociJson }, null, 2));
   process.exit(0);
@@ -345,8 +367,8 @@ if (primo) {
   }
 } else {
   console.log(`    Niente da sistemare. Il giro completo:`);
-  console.log(`      npm run scout:pausa -- <url>     inventaria una pagina di lavoro vera`);
-  console.log(`      npm run record     -- <url>      esegui il test a mano`);
+  console.log(`      npm run scout:pausa <url>        inventaria una pagina di lavoro vera`);
+  console.log(`      npm run record      <url>        esegui il test a mano`);
   console.log(`      npm run generate                 feature + Page Object + step`);
   console.log(`      npm run benchmark label=deterministico referto=referto.json`);
 }
