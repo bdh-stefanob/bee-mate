@@ -73,6 +73,15 @@ export function judge(name: string, occurrences: number): { stability: Stability
       notes: ["nessun nome accessibile: non raggiungibile per ruolo+nome, e probabilmente invisibile a uno screen reader"],
     };
   }
+  // Un segnaposto mascherato non e' un nome: e' il valore nascosto. Succede sui
+  // campi password, dove il segnaposto e' una fila di pallini — e cercare un
+  // campo per il suo mascheramento vuol dire non trovarlo mai.
+  if (/^[•●·*.\s]+$/.test(name)) {
+    return {
+      stability: "unnamed",
+      notes: ["il nome e' un segnaposto mascherato (pallini o asterischi): non e' un'identita'"],
+    };
+  }
   if (name.length > 80) {
     notes.push("nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo");
   }

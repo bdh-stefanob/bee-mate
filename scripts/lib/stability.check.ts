@@ -35,6 +35,12 @@ const CASES: Case[] = [
   { name: "1", stable: false, why: "solo cifre: e' un conteggio" },
   { name: "  12 ", stable: false, why: "solo cifre con spazi" },
 
+  // Il segnaposto di un campo password: il browser espone i pallini come nome
+  // accessibile. Cercare un campo per il suo mascheramento vuol dire non
+  // trovarlo mai — trenta secondi di attesa, sulla prima esecuzione vera.
+  { name: "••••••••", stable: false, why: "segnaposto mascherato, non un nome" },
+  { name: "****", stable: false, why: "segnaposto mascherato con asterischi" },
+
   { name: "Ordine 1830941 del 12/06/26", stable: false, why: "identificativo + data" },
   { name: "mario.rossi@example.com", stable: false, why: "indirizzo email" },
   { name: "£29.99", stable: false, why: "importo" },

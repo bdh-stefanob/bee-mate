@@ -107,6 +107,17 @@ for (const [segment, expected, why] of [
 }
 
 {
+  // Il campo password, sulla prima esecuzione vera, e' stato cercato come
+  // `getByRole('textbox', { name: '••••••••' })`: il nome era il segnaposto
+  // mascherato, e `input[type=password]` non ha nemmeno ruolo ARIA implicito.
+  // Trenta secondi di attesa, poi il fallimento.
+  const pwd = toComponent({ role: "textbox", name: "••••••••", secret: true }, 1);
+  eq("il campo password si cerca per tipo", pwd.locator, `locator('input[type="password"]')`);
+  eq("e non per il suo mascheramento", pwd.locator.includes("•"), false);
+  eq("e si chiama Password, non 'unnamed'", pwd.method, "fillPassword");
+}
+
+{
   // Due pagine diverse che finiscono uguale: senza disambiguazione la seconda
   // sovrascriverebbe la prima in silenzio.
   const ids = uniqueNames([
