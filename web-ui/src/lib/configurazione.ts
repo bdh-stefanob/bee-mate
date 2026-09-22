@@ -12,20 +12,49 @@ export function scriviVariabile(contenutoEnv: string, chiave: string, valore: st
   if (!CHIAVE_VALIDA.test(chiave)) throw new Error(`chiave non valida: ${JSON.stringify(chiave)}`);
   if (/[\r\n]/.test(valore)) throw new Error('il valore non puo\' contenere un a capo');
 
-  const righe = contenutoEnv.split('\n');
-  const i = righe.findIndex((r) => r.startsWith(`${chiave}=`));
-  if (i >= 0) {
-    righe[i] = `${chiave}=${valore}`;
-    return righe.join('\n');
+  // Il fine riga si conserva: un .env in CRLF resta in CRLF (rilievo 2).
+  const eol = contenutoEnv.includes('\r\n') ? '\r\n' : '\n';
+  const righe = contenutoEnv.split(/\r\n|\n/);
+
+  const indiciEsistenti: number[] = [];
+  righe.forEach((r, idx) => {
+    if (r.startsWith(`${chiave}=`)) indiciEsistenti.push(idx);
+  });
+
+  let risultato: string[];
+  if (indiciEsistenti.length > 0) {
+    // Si sostituisce solo la prima occorrenza; le altre si rimuovono, non
+    // restano a fianco con un valore vecchio (rilievo 1).
+    const [primo, ...duplicati] = indiciEsistenti;
+    righe[primo] = `${chiave}=${valore}`;
+    risultato = righe.filter((_, idx) => !duplicati.includes(idx));
+  } else {
+    const senzaCodaVuota = righe[righe.length - 1] === '' ? righe.slice(0, -1) : righe;
+    risultato = [...senzaCodaVuota, `${chiave}=${valore}`];
   }
-  const senzaCodaVuota = contenutoEnv.endsWith('\n') || contenutoEnv === ''
-    ? contenutoEnv
-    : `${contenutoEnv}\n`;
-  return `${senzaCodaVuota}${chiave}=${valore}\n`;
+
+  // Il file termina sempre con un a capo (rilievo 3).
+  if (risultato[risultato.length - 1] !== '') {
+    risultato = [...risultato, ''];
+  }
+
+  return risultato.join(eol);
 }
 
-/** I nomi dei bersagli, senza gli indirizzi: quelli non servono alla finestra. */
+/**
+ * I nomi dei bersagli, senza gli indirizzi: quelli non servono alla finestra.
+ * Un file malformato o di forma inattesa (es. un array) non è un guasto del
+ * server: si comporta come un file assente, elenco vuoto (rilievo 4).
+ */
 export function bersagliDaFile(json: string): string[] {
-  const dati = JSON.parse(json) as Record<string, unknown>;
-  return Object.keys(dati).filter((k) => !k.startsWith('_'));
+  let dati: unknown;
+  try {
+    dati = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  if (typeof dati !== 'object' || dati === null || Array.isArray(dati)) {
+    return [];
+  }
+  return Object.keys(dati as Record<string, unknown>).filter((k) => !k.startsWith('_'));
 }

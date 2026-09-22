@@ -43,6 +43,16 @@ const ESITI: Record<string, Esito> = {
   AMBIGUOUS: 'fallito',
 };
 
+/** Forma minima di un messaggio del formato Cucumber (`.ndjson`) che ci interessa. */
+interface MessaggioCucumber {
+  pickle?: { steps?: Array<{ id: string; text?: string }> };
+  testCase?: { testSteps?: Array<{ id: string; pickleStepId?: string }> };
+  testStepFinished?: {
+    testStepId: string;
+    testStepResult?: { status?: string; message?: unknown };
+  };
+}
+
 export function leggiPassiTest(percorsoMessaggi: string): Array<{
   testo: string;
   esito: Esito;
@@ -60,9 +70,9 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
   const passi: Array<{ testo: string; esito: Esito; messaggio?: string }> = [];
 
   for (const riga of righe) {
-    let m: Record<string, any>;
+    let m: MessaggioCucumber;
     try {
-      m = JSON.parse(riga);
+      m = JSON.parse(riga) as MessaggioCucumber;
     } catch {
       continue;
     }

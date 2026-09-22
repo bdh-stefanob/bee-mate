@@ -21,4 +21,29 @@ describe('scrittura della configurazione', () => {
     const json = '{"_commento":["x"],"lavoro":{"url":"${PIMS_URL}"},"altro":{"url":"${B}"}}';
     expect(bersagliDaFile(json)).toEqual(['lavoro', 'altro']);
   });
+
+  it('se la chiave compare due volte, dopo la scrittura compare una sola volta (rilievo 1)', () => {
+    const dopo = scriviVariabile('A=1\nPIMS_URL=x\nPIMS_URL=y\nB=2\n', 'PIMS_URL', 'nuovo');
+    expect(dopo.match(/PIMS_URL/g)).toHaveLength(1);
+    expect(dopo).toBe('A=1\nPIMS_URL=nuovo\nB=2\n');
+  });
+
+  it('conserva il fine riga CRLF del file originale (rilievo 2)', () => {
+    const dopo = scriviVariabile('A=1\r\nPIMS_URL=old\r\nB=2\r\n', 'PIMS_URL', 'nuovo');
+    expect(dopo).toBe('A=1\r\nPIMS_URL=nuovo\r\nB=2\r\n');
+    expect(dopo).not.toMatch(/[^\r]\n/); // nessun \n non preceduto da \r: niente fine riga misti
+  });
+
+  it('il file termina sempre con un a capo, anche sostituendo una chiave esistente senza a capo finale (rilievo 3)', () => {
+    const dopo = scriviVariabile('A=1\nPIMS_URL=old', 'PIMS_URL', 'nuovo');
+    expect(dopo).toBe('A=1\nPIMS_URL=nuovo\n');
+  });
+
+  it('elenco vuoto se il json dei bersagli e\' malformato (rilievo 4)', () => {
+    expect(bersagliDaFile('{questo non e\' json')).toEqual([]);
+  });
+
+  it('elenco vuoto se il json dei bersagli e\' un array (rilievo 4)', () => {
+    expect(bersagliDaFile('["a","b","c"]')).toEqual([]);
+  });
 });
