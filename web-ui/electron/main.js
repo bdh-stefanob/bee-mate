@@ -126,7 +126,7 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 600,
-    title: 'BDD Catalog',
+    title: 'Cruscotto del tester',
     autoHideMenuBar: true,
     show: false,
     icon: path.join(__dirname, '../public/icon.ico'),
@@ -137,7 +137,10 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadURL(`http://127.0.0.1:${PORT}`);
+  // Si punta direttamente a /controllo (non alla radice) per evitare il giro a
+  // vuoto sul vecchio portale: la radice comunque reindirizza qui, ma partire
+  // gia' dalla schermata giusta evita un lampo del portale prima del redirect.
+  mainWindow.loadURL(`http://127.0.0.1:${PORT}/controllo`);
   mainWindow.once('ready-to-show', () => { log('Window ready to show'); mainWindow.show(); });
 }
 
