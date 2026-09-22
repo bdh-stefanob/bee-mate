@@ -17,9 +17,10 @@ export interface VoceDiagnosi {
 
 /**
  * L'elenco chiuso vale anche qui: un rimedio si avvia da solo solo se il suo
- * nome e' uno di quelli che /api/esegui accetta. Gli altri (oggi la maggior
- * parte: sono righe di shell come "cp ..." o "npx playwright install ...")
- * restano testo da copiare — mai un comando arbitrario dalla finestra.
+ * nome e' uno di quelli che /api/esegui accetta. La diagnosi manda gia' il
+ * nome chiuso quando esiste una corrispondenza; i pochi rimedi senza
+ * corrispondenza (per esempio "cp bdd-targets.example.json ...") restano
+ * testo da copiare — mai un comando arbitrario dalla finestra.
  */
 const COMANDI_ESEGUIBILI: readonly NomeComando[] = [
   'diagnosi',
@@ -28,6 +29,8 @@ const COMANDI_ESEGUIBILI: readonly NomeComando[] = [
   'generazione',
   'test',
   'scansione',
+  'installa-browser',
+  'sincronizza-regole',
 ];
 
 function comeComandoEseguibile(testo: string): NomeComando | undefined {

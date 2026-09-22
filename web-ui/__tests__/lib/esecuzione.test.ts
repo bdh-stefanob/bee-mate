@@ -16,11 +16,22 @@ describe('elenco chiuso dei comandi', () => {
 
   it('nessuna opzione con i trattini, mai', () => {
     const tutti: Array<Parameters<typeof rigaDiComando>[0]> =
-      ['diagnosi', 'sessione', 'registrazione', 'generazione', 'test', 'scansione'];
+      ['diagnosi', 'sessione', 'registrazione', 'generazione', 'test', 'scansione',
+        'installa-browser', 'sincronizza-regole'];
     for (const nome of tutti) {
       const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'm.json', messaggi: 'g.ndjson' });
       expect(r.argomenti.some((a) => a.startsWith('-'))).toBe(false);
     }
+  });
+
+  it('installa-browser lancia playwright install chromium', () => {
+    const r = rigaDiComando('installa-browser');
+    expect(r.argomenti).toEqual(['playwright', 'install', 'chromium']);
+  });
+
+  it('sincronizza-regole lancia lo script di sync', () => {
+    const r = rigaDiComando('sincronizza-regole');
+    expect(r.argomenti).toEqual(['ts-node', 'scripts/sync-rules.ts']);
   });
 
   it('il bersaglio non puo\' iniettare argomenti', () => {
