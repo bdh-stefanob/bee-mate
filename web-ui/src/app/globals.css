@@ -82,6 +82,16 @@
   --sidebar-accent-foreground: oklch(0.437 0.079 188);
   --sidebar-border: oklch(0.88 0.03 184);
   --sidebar-ring: oklch(0.6 0.118 184.704);
+
+  /* Cruscotto tester — tavolozza dedicata */
+  --blu: #1A56DB;
+  --verde: #067647;
+  --rosso: #B42318;
+  --testo: #101828;
+  --testo-tenue: #475467;
+  --superficie: #FFFFFF;
+  --superficie-tenue: #F9FAFB;
+  --bordo: #EAECF0;
 }
 
 .dark {
