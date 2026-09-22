@@ -37,11 +37,15 @@ export function azzeraPerTest(): void {
 }
 
 const lanciatoreVero: Lanciatore = (eseguibile, argomenti, cwd) => {
-  const figlio = spawn(eseguibile, argomenti, {
-    cwd,
-    // Su Windows npx e' uno script: senza shell non parte.
-    shell: process.platform === 'win32',
-  });
+  // Niente `shell`, ed e' il punto.
+  //
+  // Serviva perche' su Windows `npx` e' uno script e senza shell non parte. Ma
+  // una shell non riceve una lista di argomenti: riceve una riga di testo, e
+  // qualunque `&` dentro un parametro diventa un secondo comando. Ora la riga
+  // chiama Node direttamente sul file di avvio del programma (vedi
+  // `esecuzione.ts`), quindi la shell non serve piu' e gli argomenti arrivano
+  // come lista: non c'e' piu' niente da interpretare.
+  const figlio = spawn(eseguibile, argomenti, { cwd });
   let resto = '';
   return {
     onRiga(f) {

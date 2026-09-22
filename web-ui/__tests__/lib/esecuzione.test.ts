@@ -11,7 +11,8 @@ describe('elenco chiuso dei comandi', () => {
   it('un test si lancia con le opzioni in forma nuda', () => {
     const r = rigaDiComando('test', { bersaglio: 'lavoro', vedi: true, pulito: true });
     expect(r.argomenti).toEqual([
-      'ts-node', 'scripts/test-bersaglio.ts', 'lavoro', 'generati', 'vedi', 'pulito',
+      'node_modules/ts-node/dist/bin.js',
+      'scripts/test-bersaglio.ts', 'lavoro', 'generati', 'vedi', 'pulito',
     ]);
   });
 
@@ -27,12 +28,12 @@ describe('elenco chiuso dei comandi', () => {
 
   it('installa-browser lancia playwright install chromium', () => {
     const r = rigaDiComando('installa-browser');
-    expect(r.argomenti).toEqual(['playwright', 'install', 'chromium']);
+    expect(r.argomenti).toEqual(['node_modules/playwright/cli.js', 'install', 'chromium']);
   });
 
   it('sincronizza-regole lancia lo script di sync', () => {
     const r = rigaDiComando('sincronizza-regole');
-    expect(r.argomenti).toEqual(['ts-node', 'scripts/sync-rules.ts']);
+    expect(r.argomenti).toEqual(['node_modules/ts-node/dist/bin.js', 'scripts/sync-rules.ts']);
   });
 
   it('il bersaglio non puo\' iniettare argomenti', () => {
@@ -56,5 +57,51 @@ describe('i rimedi che la finestra avvia da sola', () => {
       expect(() => rigaDiComando(nome)).toThrow();
       expect(COMANDI_ESEGUIBILI).not.toContain(nome);
     }
+  });
+});
+
+describe('niente shell, e niente che una shell potrebbe interpretare', () => {
+  it('non chiama mai un programma attraverso npx', () => {
+    // `npx` su Windows e' uno script, e farlo partire richiedeva una shell.
+    // Una shell non riceve una lista di argomenti: riceve una riga di testo.
+    const tutti = [
+      'diagnosi', 'sessione', 'registrazione', 'generazione', 'test', 'scansione',
+      'installa-browser', 'sincronizza-regole',
+    ] as const;
+    for (const nome of tutti) {
+      const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'm.json', messaggi: 'g.ndjson' });
+      expect(r.eseguibile).not.toMatch(/npx/);
+      expect(r.argomenti).not.toContain('ts-node');
+    }
+  });
+
+  it('rifiuta un percorso che porta dentro un secondo comando', () => {
+    // Il caso riprodotto dalla revisione: con la shell accesa, questo argomento
+    // arrivava concatenato e la parte dopo la `&` diventava un comando a se'.
+    for (const veleno of [
+      'a.ndjson & echo entrato',
+      'a.ndjson | tee fuori.txt',
+      'a.ndjson; rm -rf .',
+      'a nd.json',
+      'a.ndjson"',
+      '$(comando).ndjson',
+      '`comando`.ndjson',
+    ]) {
+      expect(
+        () => rigaDiComando('test', { bersaglio: 'x', messaggi: veleno }),
+        `${veleno} e' passato`
+      ).toThrow(/non valido/);
+    }
+  });
+
+  it('e lo stesso vale per il manifesto', () => {
+    expect(() => rigaDiComando('generazione', { manifesto: 'm.json & echo entrato' })).toThrow(
+      /non valido/
+    );
+  });
+
+  it('un percorso normale passa ancora', () => {
+    const r = rigaDiComando('test', { bersaglio: 'x', messaggi: 'reports/cruscotto/test-a1.ndjson' });
+    expect(r.argomenti).toContain('messaggi=reports/cruscotto/test-a1.ndjson');
   });
 });
