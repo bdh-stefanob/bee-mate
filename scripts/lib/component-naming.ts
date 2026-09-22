@@ -26,6 +26,8 @@ export interface RawElement {
   name: string;
   href?: string;
   disabled?: boolean;
+  /** Campo password: il valore non e' mai stato registrato, e il nome nemmeno. */
+  secret?: boolean;
 }
 
 export function kindOf(role: string, href = ""): Kind {
@@ -113,6 +115,32 @@ const ARIA_ROLES = new Set([
 
 export function toComponent(raw: RawElement, occurrences: number): Component {
   const kind = kindOf(raw.role, raw.href ?? "");
+
+  /**
+   * IL CAMPO PASSWORD NON SI CERCA PER NOME.
+   *
+   * Due ragioni, scoperte insieme sulla prima esecuzione vera. Il nome
+   * accessibile che il browser espone e' il segnaposto — una fila di pallini —
+   * e cercare un campo per il suo mascheramento significa non trovarlo mai. E
+   * `input[type=password]` non ha ruolo ARIA implicito: `getByRole('textbox')`
+   * non lo vede comunque.
+   *
+   * Il tipo, invece, e' esattamente cio' che quel campo e': un'identita', non
+   * un'etichetta che qualcuno puo' cambiare.
+   */
+  if (raw.secret) {
+    return {
+      role: raw.role,
+      name: "Password",
+      kind,
+      locator: `locator('input[type="password"]')`,
+      method: methodName(kind, "Password"),
+      occurrences,
+      stability: "stable",
+      notes: ["cercato per tipo, non per nome: il segnaposto di un campo password non e' un'identita'"],
+    };
+  }
+
   const { stability, notes } = judge(raw.name, occurrences);
 
   const base = ARIA_ROLES.has(raw.role)

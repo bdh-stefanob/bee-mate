@@ -212,7 +212,10 @@ function lookup(index: DictionaryIndex, url: string, role: string, name: string)
  * batte fermarsi, e batte anche tacere.
  */
 function synthesise(step: Step): Component {
-  return toComponent({ role: step.role, name: step.name }, 1);
+  return toComponent(
+    { role: step.role, name: step.name, ...(step.secret ? { secret: true } : {}) },
+    1
+  );
 }
 
 export interface ResolveOptions {
@@ -327,9 +330,12 @@ export function resolveRecording(
     const steps: ResolvedStep[] = intent.steps.map((step) => {
       const url = step.url ?? fallbackUrl;
       const id = nameByKey.get(pageIdentity(url).key) ?? pageIdentity(url);
-      const found = lookup(index, url, step.role, step.name);
+      // Un campo password si cerca per tipo, sempre: anche quando il dizionario
+      // ne ha uno, il nome che porta e' il segnaposto mascherato — pallini —
+      // che non identifica niente. Il dizionario qui non aiuta, confonde.
+      const found = step.secret ? null : lookup(index, url, step.role, step.name);
 
-      if (!found) {
+      if (!found && !step.secret) {
         gaps.push({
           kind: "componente-non-nel-dizionario",
           where: intent.label,
