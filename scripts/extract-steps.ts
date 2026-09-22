@@ -19,6 +19,7 @@
  */
 
 import * as fs from "fs";
+import { conservaRichieste } from "./lib/catalog-merge";
 
 interface StepDoc {
   intent?: string;
@@ -184,14 +185,31 @@ steps.sort((a, b) =>
     : a.domain.localeCompare(b.domain)
 );
 
-const undocumented = steps.filter((s) => !s.documented);
+/**
+ * Le voci richieste dal team non si perdono nella rigenerazione: la regola, e
+ * l'incidente che l'ha scritta, stanno in lib/catalog-merge.ts.
+ */
+function precedenti(): CatalogStep[] {
+  try {
+    const vecchio = JSON.parse(fs.readFileSync("step-catalog.json", "utf-8")) as {
+      steps?: CatalogStep[];
+    };
+    return vecchio.steps ?? [];
+  } catch {
+    return [];
+  }
+}
+
+const conservate = precedenti();
+const tutti = conservaRichieste(steps, conservate);
+const undocumented = tutti.filter((s) => !s.documented);
 
 const catalog = {
   generatedAt: new Date().toISOString(),
-  totalSteps: steps.length,
-  documentedSteps: steps.length - undocumented.length,
+  totalSteps: tutti.length,
+  documentedSteps: tutti.length - undocumented.length,
   undocumentedSteps: undocumented.length,
-  steps,
+  steps: tutti,
 };
 
 fs.writeFileSync("step-catalog.json", JSON.stringify(catalog, null, 2));

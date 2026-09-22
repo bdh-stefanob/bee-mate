@@ -1,4 +1,4 @@
-@brochure-clinic @register-new-user
+@brochure-clinic @register-new-user @non-automatizzato
 
 Feature: Brochure Clinic Register New User
 

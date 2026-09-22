@@ -562,5 +562,9 @@ export function componentsForPage(
     }
   }
 
-  return [...byKey.values()].sort((a, b) => a.method.localeCompare(b.method));
+  // NELL'ORDINE DELLA REGISTRAZIONE, non alfabetico: il primo componente e' il
+  // primo che il tester ha toccato su quella pagina, ed e' l'unico di cui si sa
+  // con certezza che esisteva quando la pagina si e' aperta. Ordinarli per nome
+  // faceva scegliere l'ancoraggio a caso (vedi assertLoadedBody).
+  return [...byKey.values()];
 }

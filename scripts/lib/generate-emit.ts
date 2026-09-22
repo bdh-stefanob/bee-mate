@@ -113,20 +113,45 @@ function methodBody(kind: Component["kind"], field: string): { signature: string
 /**
  * Come la pagina si riconosce.
  *
- * Si preferisce un'asserzione dichiarata dal tester: e' lui ad aver detto "se
- * vedo questo, sono dove volevo essere", ed e' un giudizio che non sapremmo
- * ricostruire. Solo se non ce ne sono di affidabili si ripiega su un componente
- * qualunque, che e' un riconoscimento piu' debole e va detto.
+ * IL PRIMO ELEMENTO TOCCATO, NON LA VERIFICA DEL TESTER.
+ *
+ * Prima si preferiva un'asserzione dichiarata dal tester — "se vedo questo sono
+ * dove volevo essere" — e sembrava la scelta migliore, perche' e' un giudizio
+ * umano. Contro l'applicazione vera non ha retto: una verifica dimostra un
+ * **momento**, non l'identita' di una pagina. Il tester aveva verificato un link
+ * che compare solo dopo aver aperto una riga; il test, arrivando sulla pagina,
+ * lo aspettava dieci secondi e si fermava li'.
+ *
+ * Cio' che invece esisteva di sicuro quando la pagina si e' aperta e' il primo
+ * elemento che il tester ha **toccato**: ci ha cliccato sopra, quindi c'era. Le
+ * verifiche restano un ripiego, e un componente qualunque l'ultimo.
  */
-function assertLoadedBody(
+export function assertLoadedBody(
   assertions: readonly Assertion[],
   components: readonly Component[],
   fields: Map<Component, string>
 ): string {
-  const stable = assertions.find((a) => judge(a.name, 1).stability === "stable");
-  if (stable) {
-    const match = components.find((c) => c.role === stable.role && c.name === stable.name);
-    if (match) return `await this.expectVisible(this.${fields.get(match)!});`;
+  const chiave = (role: string, name: string): string => `${role}\u0000${name}`;
+  const daVerifica = new Set(assertions.map((a) => chiave(a.role, a.name)));
+  const toccati = components.filter((c) => !daVerifica.has(chiave(c.role, c.name)));
+
+  // I componenti arrivano nell'ordine della registrazione: il primo toccato e'
+  // il primo della lista.
+  const primoToccato = toccati.find((c) => c.stability === "stable");
+  if (primoToccato) return `await this.expectVisible(this.${fields.get(primoToccato)!});`;
+
+  const verificaStabile = assertions.find((a) => judge(a.name, 1).stability === "stable");
+  if (verificaStabile) {
+    const match = components.find(
+      (c) => c.role === verificaStabile.role && c.name === verificaStabile.name
+    );
+    if (match) {
+      return (
+        `// Nessun elemento stabile fra quelli toccati: si ripiega sulla verifica del\n` +
+        `// tester, che pero' dimostra un momento, non l'identita' della pagina.\n` +
+        `await this.expectVisible(this.${fields.get(match)!});`
+      );
+    }
   }
 
   const fallback = components.find((c) => c.stability === "stable") ?? components[0];

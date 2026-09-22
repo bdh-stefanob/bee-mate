@@ -29,6 +29,7 @@ import {
   looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates,
 } from "./generate-core";
 import { toComponent } from "./component-naming";
+import { assertLoadedBody } from "./generate-emit";
 import type {
   CatalogStep, Gap, Intent, Recording, ResolvedStep, ScoutResult,
 } from "./generation-contract";
@@ -115,6 +116,30 @@ for (const [segment, expected, why] of [
   eq("il campo password si cerca per tipo", pwd.locator, `locator('input[type="password"]')`);
   eq("e non per il suo mascheramento", pwd.locator.includes("•"), false);
   eq("e si chiama Password, non 'unnamed'", pwd.method, "fillPassword");
+}
+
+{
+  // Come la pagina si riconosce. Sull'applicazione vera il test si fermava qui:
+  // l'ancoraggio era la verifica del tester — un link che compare solo dopo aver
+  // aperto una riga — e all'arrivo sulla pagina non esisteva ancora.
+  const toccato = toComponent({ role: "link", name: "Batching" }, 1);
+  const verificato = toComponent({ role: "link", name: "Missing" }, 1);
+  const componenti = [toccato, verificato]; // nell'ordine della registrazione
+  const campi = new Map([
+    [toccato, "batchingLink"],
+    [verificato, "missingLink"],
+  ]);
+  const verifiche = [{ role: "link", name: "Missing" }];
+
+  const corpo = assertLoadedBody(verifiche, componenti, campi);
+  eq("la pagina si riconosce da cio' che il tester ha toccato", corpo.includes("batchingLink"), true);
+  eq("non dalla verifica, che dimostra un momento", corpo.includes("missingLink"), false);
+
+  // Se non c'e' niente di toccato e stabile, la verifica resta un ripiego
+  // dichiarato: meglio di niente, ma va detto che e' piu' debole.
+  const soloVerifica = assertLoadedBody(verifiche, [verificato], new Map([[verificato, "missingLink"]]));
+  eq("senza elementi toccati si ripiega sulla verifica", soloVerifica.includes("missingLink"), true);
+  eq("e lo dichiara", soloVerifica.includes("dimostra un momento"), true);
 }
 
 {
