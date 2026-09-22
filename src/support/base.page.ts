@@ -81,7 +81,26 @@ export abstract class BasePage {
    * che aspetta, a differenza di una lettura di stato.
    */
   protected async expectVisible(locator: Locator, ms = 10_000): Promise<void> {
-    await expect(locator).toBeVisible({ timeout: ms });
+    try {
+      await expect(locator).toBeVisible({ timeout: ms });
+    } catch (err) {
+      // DOVE SI E' FINITI, NON SOLO COSA MANCAVA.
+      //
+      // "element(s) not found" e' vero e inutile: manda a cercare il locator,
+      // che spesso e' giusto. Sull'applicazione vera il motivo era un altro —
+      // dopo il login si finiva su una pagina diversa da quella attesa — e
+      // l'indirizzo lo diceva in un colpo d'occhio. Un fallimento che nomina il
+      // posto sbagliato fa perdere piu' tempo di uno che tace.
+      const dove = this.page.url();
+      const atteso = this.path ? `${this.constructor.name} (${this.path})` : this.constructor.name;
+      throw new Error(
+        `${(err as Error).message}\n\n` +
+          `  Pagina attesa : ${atteso}\n` +
+          `  Indirizzo ora : ${dove}\n` +
+          `  Se l'indirizzo non e' quello atteso, il locator non c'entra: il\n` +
+          `  percorso e' cambiato prima di arrivare qui.`
+      );
+    }
   }
 
   /**
