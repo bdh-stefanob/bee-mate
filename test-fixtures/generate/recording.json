@@ -2,20 +2,51 @@
   "startUrl": "https://esempio.invalid/accesso",
   "recordedAt": "2026-09-08T09:00:00.000Z",
   "durationSeconds": 61,
-  "pagesVisited": ["https://esempio.invalid/accesso", "https://esempio.invalid/ordini/4821"],
-  "summary": { "intents": 2, "steps": 4, "assertions": 2, "unlabelled": 0 },
+  "pagesVisited": [
+    "https://esempio.invalid/accesso",
+    "https://esempio.invalid/ordini/4821"
+  ],
+  "summary": {
+    "intents": 2,
+    "steps": 4,
+    "assertions": 2,
+    "unlabelled": 0
+  },
   "intents": [
     {
       "label": "il cliente accede all'area ordini",
       "pageUrl": "https://esempio.invalid/accesso",
       "endUrl": "https://esempio.invalid/ordini/4821",
       "steps": [
-        { "action": "fill", "role": "textbox", "name": "Email", "value": "mario@esempio.invalid", "url": "https://esempio.invalid/accesso" },
-        { "action": "fill", "role": "textbox", "name": "Password", "value": "<password>", "secret": true, "url": "https://esempio.invalid/accesso" },
-        { "action": "click", "role": "button", "name": "Entra", "url": "https://esempio.invalid/accesso" }
+        {
+          "action": "fill",
+          "role": "textbox",
+          "name": "Email",
+          "value": "mario@esempio.invalid",
+          "url": "https://esempio.invalid/accesso"
+        },
+        {
+          "action": "fill",
+          "role": "textbox",
+          "name": "Password",
+          "value": "<password>",
+          "secret": true,
+          "url": "https://esempio.invalid/accesso"
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Entra",
+          "url": "https://esempio.invalid/accesso"
+        }
       ],
       "assertions": [
-        { "role": "heading", "name": "I tuoi ordini", "text": "I tuoi ordini", "url": "https://esempio.invalid/ordini/4821" }
+        {
+          "role": "heading",
+          "name": "I tuoi ordini",
+          "text": "I tuoi ordini",
+          "url": "https://esempio.invalid/ordini/4821"
+        }
       ],
       "notes": []
     },
@@ -23,12 +54,30 @@
       "label": "il cliente annulla un ordine",
       "pageUrl": "https://esempio.invalid/ordini/4821",
       "steps": [
-        { "action": "click", "role": "button", "name": "Annulla ordine", "url": "https://esempio.invalid/ordini/4821" }
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Annulla ordine",
+          "url": "https://esempio.invalid/ordini/4821"
+        }
       ],
       "assertions": [
-        { "role": "status", "name": "3", "text": "3", "url": "https://esempio.invalid/ordini/4821" }
+        {
+          "role": "status",
+          "name": "3",
+          "text": "3",
+          "url": "https://esempio.invalid/ordini/4821"
+        },
+        {
+          "role": "text",
+          "name": "1801",
+          "text": "1801",
+          "url": "https://esempio.invalid/ordini/4821"
+        }
       ],
-      "notes": ["il pulsante resta attivo per qualche secondo"]
+      "notes": [
+        "il pulsante resta attivo per qualche secondo"
+      ]
     }
   ]
 }
