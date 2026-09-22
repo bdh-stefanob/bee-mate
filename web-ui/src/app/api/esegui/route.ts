@@ -10,6 +10,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ errore: 'richiesta non leggibile' }, { status: 400 });
   }
 
+  // `null` e' JSON valido, quindi il parse sopra lo lascia passare: senza
+  // questo controllo `corpo.nome` lancerebbe, e al tester arriverebbe il
+  // messaggio interno del motore JavaScript al posto di una frase.
+  if (typeof corpo !== 'object' || corpo === null) {
+    return NextResponse.json({ errore: 'richiesta non leggibile' }, { status: 400 });
+  }
+
   try {
     const e = avvia(corpo.nome as NomeComando, corpo.parametri);
     return NextResponse.json({ id: e.id });

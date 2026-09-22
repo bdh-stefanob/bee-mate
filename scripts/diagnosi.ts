@@ -292,7 +292,14 @@ interface VoceJson {
   nome: string;
   esito: "ok" | "manca" | "attenzione";
   dettaglio: string;
+  /** Il rimedio come lo leggerebbe una persona: c'e' sempre, se un rimedio esiste. */
   rimedio?: string;
+  /**
+   * Lo stesso rimedio come nome chiuso, solo quando la finestra puo' avviarlo.
+   * I due campi sono separati apposta: schiacciarli in uno solo faceva sparire
+   * il rimedio dalle voci senza corrispondenza — restavano rosse e mute.
+   */
+  rimedioChiuso?: RimedioChiuso;
 }
 
 const ESITO_JSON: Record<Esito, VoceJson["esito"]> = { ok: "ok", manca: "manca", avviso: "attenzione" };
@@ -302,7 +309,8 @@ if (hasFlag(process.argv.slice(2), "--json")) {
     nome: v.titolo,
     esito: ESITO_JSON[v.esito],
     dettaglio: v.dettaglio[0] ?? "",
-    ...(v.rimedioChiuso ? { rimedio: v.rimedioChiuso } : {}),
+    ...(v.rimedio ? { rimedio: v.rimedio } : {}),
+    ...(v.rimedioChiuso ? { rimedioChiuso: v.rimedioChiuso } : {}),
   }));
   console.log(JSON.stringify({ voci: vociJson }, null, 2));
   process.exit(0);
