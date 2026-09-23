@@ -12,7 +12,7 @@ Feature: Brochure Clinic Register New User
     #LOGIN
     And the user lands on Clinic login page
     #REGISTER NEW USER
-    When the user clicks on "Register for a Boots Online Doctor Services account" button
+    When the user clicks on "Register for an Online Doctor account" button
     #REGISTER YOUR ACCOUNT
     And the user insert the email address
     #REGISTER YOUR ACCOUNT
@@ -76,7 +76,7 @@ Feature: Brochure Clinic Register New User
     #LOGIN
     And the user lands on Clinic login page
     #REGISTER NEW USER
-    When the user clicks on "Register for a Boots Online Doctor Services account" button
+    When the user clicks on "Register for an Online Doctor account" button
     #REGISTER YOUR ACCOUNT
     And the user insert the email address
     #REGISTER YOUR ACCOUNT
@@ -133,7 +133,7 @@ Feature: Brochure Clinic Register New User
     #LOGIN
     And the user lands on Clinic login page
     #REGISTER NEW USER
-    When the user clicks on "Register for a Boots Online Doctor Services account" button
+    When the user clicks on "Register for an Online Doctor account" button
     #REGISTER YOUR ACCOUNT
     And the user insert the email address
     #REGISTER YOUR ACCOUNT
@@ -263,7 +263,7 @@ Feature: Brochure Clinic Register New User
     #LOGIN
     And the user lands on Clinic login page
     #REGISTER NEW USER
-    When the user clicks on "Register for a Boots Online Doctor Services account" button
+    When the user clicks on "Register for an Online Doctor account" button
     #REGISTER YOUR ACCOUNT
     And the user insert the email address
     #REGISTER YOUR ACCOUNT
@@ -293,7 +293,7 @@ Feature: Brochure Clinic Register New User
     #LOGIN
     And the user lands on Clinic login page
     #REGISTER NEW USER
-    When the user clicks on "Register for a Boots Online Doctor Services account" button
+    When the user clicks on "Register for an Online Doctor account" button
     #REGISTER YOUR ACCOUNT
     And the user insert the email address
     #REGISTER YOUR ACCOUNT
@@ -338,7 +338,7 @@ Feature: Brochure Clinic Register New User
     #LOGIN
     And the user lands on Clinic login page
     #REGISTER NEW USER
-    When the user clicks on "Register for a Boots Online Doctor Services account" button
+    When the user clicks on "Register for an Online Doctor account" button
     #REGISTER YOUR ACCOUNT
     And the user insert the email address already registred
     #REGISTER YOUR ACCOUNT

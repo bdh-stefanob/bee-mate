@@ -110,7 +110,7 @@ Feature: Brochure Clinic Login
     #BROCHURE HOMEPAGE
     Given a registered user landed on the Brochure home page
     #REGISTER NEW USER
-    And the user landed on 'Register for a Boots Online Doctor Services account'
+    And the user landed on 'Register for an Online Doctor account'
     #LOGIN
     When the user clicks on the Login link at the bottom of the screen
     #LOGIN
