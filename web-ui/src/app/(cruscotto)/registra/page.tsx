@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, CircleDot, Loader2, Square } from 'lucide-react';
 import {
   RiepilogoTraccia,
@@ -43,6 +44,7 @@ interface RispostaTracciaUltima {
  * generare qualunque file.
  */
 export default function RegistraPage() {
+  const t = useTranslations('Registra');
   const router = useRouter();
   const [ambienti, setAmbienti] = useState<string[]>([]);
   const [ambiente, setAmbiente] = useState('');
@@ -99,13 +101,13 @@ export default function RegistraPage() {
             tipo: 'errore',
             messaggio:
               azione === 'registrazione'
-                ? "la registrazione non e' andata a buon fine"
-                : "la generazione del test non e' andata a buon fine",
+                ? t('erroreRegistrazione')
+                : t('erroreGenerazione'),
           });
         }
       });
     },
-    []
+    [t]
   );
 
   const caricaRiepilogo = useCallback(async () => {
@@ -116,7 +118,7 @@ export default function RegistraPage() {
       if (!ultima.percorso) {
         setFase({
           tipo: 'errore',
-          messaggio: "la registrazione e' finita ma non trovo la traccia scritta",
+          messaggio: t('tracciaNonTrovata'),
         });
         return;
       }
@@ -125,9 +127,9 @@ export default function RegistraPage() {
       ).then((r) => r.json())) as DatiRiepilogo;
       setFase({ tipo: 'riepilogo', dati });
     } catch {
-      setFase({ tipo: 'errore', messaggio: 'non sono riuscito a leggere la traccia registrata' });
+      setFase({ tipo: 'errore', messaggio: t('erroreLetturaTraccia') });
     }
-  }, []);
+  }, [t]);
 
   const avviaRegistrazione = useCallback(async () => {
     if (inviando) return;
@@ -142,7 +144,7 @@ export default function RegistraPage() {
       if (!risposta.ok || !corpo.id) {
         setFase({
           tipo: 'errore',
-          messaggio: corpo.errore ?? 'non sono riuscito ad avviare la registrazione',
+          messaggio: corpo.errore ?? t('erroreAvvioRegistrazione'),
         });
         return;
       }
@@ -151,11 +153,11 @@ export default function RegistraPage() {
         void caricaRiepilogo();
       });
     } catch {
-      setFase({ tipo: 'errore', messaggio: 'non sono riuscito a parlare con il cruscotto' });
+      setFase({ tipo: 'errore', messaggio: t('erroreParlareCruscotto') });
     } finally {
       setInviando(false);
     }
-  }, [ambiente, osserva, caricaRiepilogo, inviando]);
+  }, [ambiente, osserva, caricaRiepilogo, inviando, t]);
 
   const generaTest = useCallback(async () => {
     if (inviando) return;
@@ -170,7 +172,7 @@ export default function RegistraPage() {
       if (!risposta.ok || !corpo.id) {
         setFase({
           tipo: 'errore',
-          messaggio: corpo.errore ?? 'non sono riuscito ad avviare la generazione',
+          messaggio: corpo.errore ?? t('erroreAvvioGenerazione'),
         });
         return;
       }
@@ -182,11 +184,11 @@ export default function RegistraPage() {
         router.push(`/esecuzione?bersaglio=${encodeURIComponent(ambiente)}`)
       );
     } catch {
-      setFase({ tipo: 'errore', messaggio: 'non sono riuscito a parlare con il cruscotto' });
+      setFase({ tipo: 'errore', messaggio: t('erroreParlareCruscotto') });
     } finally {
       setInviando(false);
     }
-  }, [osserva, router, inviando, ambiente]);
+  }, [osserva, router, inviando, ambiente, t]);
 
   const interrompi = useCallback(async () => {
     if (fase.tipo !== 'in-corso') return;
@@ -199,20 +201,20 @@ export default function RegistraPage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
-        Registra
+        {t('titolo')}
       </h1>
 
       {fase.tipo === 'scelta' && (
         <div className="flex flex-col items-start gap-4">
           <label className="flex flex-col gap-1 text-sm" style={{ color: 'var(--testo)' }}>
-            Ambiente
+            {t('ambiente')}
             <select
               value={ambiente}
               onChange={(e) => setAmbiente(e.target.value)}
               className="min-h-10 rounded-md border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
             >
-              {ambienti.length === 0 && <option value="">nessun ambiente configurato</option>}
+              {ambienti.length === 0 && <option value="">{t('nessunAmbiente')}</option>}
               {ambienti.map((a) => (
                 <option key={a} value={a}>
                   {a}
@@ -228,7 +230,7 @@ export default function RegistraPage() {
             style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             <CircleDot size={18} aria-hidden="true" />
-            Registra una sessione
+            {t('registraSessione')}
           </button>
         </div>
       )}
@@ -244,17 +246,16 @@ export default function RegistraPage() {
           >
             <Loader2 size={18} className="animate-spin" aria-hidden="true" />
             {fase.azione === 'registrazione'
-              ? "Registrazione in corso: segui il browser che si e' aperto."
-              : 'Generazione del test in corso.'}
+              ? t('registrazioneInCorso')
+              : t('generazioneInCorso')}
           </p>
           {fase.azione === 'registrazione' && (
             <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-              Nella barra in alto a destra, chiudi ogni passo con «Fine intento» e usa «Verifica»
-              per registrare un controllo. Quando hai finito, chiudi la finestra del browser.
+              {t('istruzioniRegistrazione')}
             </p>
           )}
           <p className="text-xs" style={{ color: 'var(--testo-tenue)' }} aria-live="polite">
-            {righeRicevute > 0 ? `${righeRicevute} eventi ricevuti` : 'in attesa del primo evento'}
+            {t('eventiRicevuti', { n: righeRicevute })}
           </p>
           <button
             type="button"
@@ -263,7 +264,7 @@ export default function RegistraPage() {
             style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--rosso)' }}
           >
             <Square size={16} aria-hidden="true" />
-            Interrompi
+            {t('interrompi')}
           </button>
         </div>
       )}
@@ -282,7 +283,7 @@ export default function RegistraPage() {
             className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
             style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
-            Genera il test
+            {t('generaTest')}
           </button>
         </div>
       )}
@@ -300,7 +301,7 @@ export default function RegistraPage() {
             className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           >
-            riprova
+            {t('riprova')}
           </button>
         </div>
       )}

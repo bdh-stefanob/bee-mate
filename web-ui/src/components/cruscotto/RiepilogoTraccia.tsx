@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, ListChecks, AlertTriangle, Clock } from 'lucide-react';
 
 export interface PassoRiepilogo {
@@ -17,6 +18,11 @@ interface Props {
   buchi: BucoRiepilogo[];
 }
 
+/**
+ * La durata: come "{m} min {s} s"/"{s} s" del namespace Esecuzione, ma qui
+ * arriva gia' in secondi interi (non ms) e senza decimali, quindi resta il
+ * suo formato invariato fra le due lingue.
+ */
 function formattaDurata(secondi: number): string {
   const m = Math.floor(secondi / 60);
   const s = secondi % 60;
@@ -30,6 +36,7 @@ function formattaDurata(secondi: number): string {
  * valore digitato dal tester (la traccia lo conserva, ma non arriva fin qui).
  */
 export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
+  const t = useTranslations('Riepilogo');
   const totaleVerifiche = passi.reduce((n, p) => n + p.verifiche, 0);
 
   return (
@@ -40,12 +47,11 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
       >
         <span className="flex items-center gap-2" style={{ color: 'var(--testo)' }}>
           <Clock size={18} aria-hidden="true" />
-          Durata: {formattaDurata(durata)}
+          {t('durataLabel', { durata: formattaDurata(durata) })}
         </span>
         <span className="flex items-center gap-2" style={{ color: 'var(--testo)' }}>
           <ListChecks size={18} aria-hidden="true" />
-          {passi.length} pass{passi.length === 1 ? 'o' : 'i'}, {totaleVerifiche} verific
-          {totaleVerifiche === 1 ? 'a' : 'he'} in totale
+          {t('passiVerifiche', { passi: passi.length, verifiche: totaleVerifiche })}
         </span>
       </div>
 
@@ -64,11 +70,9 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
               style={{ color: 'var(--testo-tenue)' }}
             >
               <CheckCircle2 size={16} aria-hidden="true" />
-              {passo.verifiche === 0
-                ? 'nessuna verifica'
-                : `${passo.verifiche} verific${passo.verifiche === 1 ? 'a' : 'he'}`}
+              {passo.verifiche === 0 ? t('passoNessunaVerifica') : t('passoVerifiche', { n: passo.verifiche })}
               {' · '}
-              {passo.gesti} azion{passo.gesti === 1 ? 'e' : 'i'}
+              {t('passoAzioni', { n: passo.gesti })}
             </p>
           </li>
         ))}
@@ -77,7 +81,7 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
       {buchi.length > 0 && (
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold" style={{ color: 'var(--testo)' }}>
-            Da sapere prima di generare
+            {t('daSapere')}
           </h2>
           {buchi.map((buco, i) => (
             <div
@@ -95,12 +99,10 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
                 style={{ color: 'var(--rosso)', flexShrink: 0, marginTop: 2 }}
               />
               <span>
-                <strong>attenzione</strong> — {buco.messaggio}.
+                <strong>{t('attenzioneLabel')}</strong> — {buco.messaggio}.
                 <br />
                 <span style={{ color: 'var(--testo-tenue)' }}>
-                  Rimedio: non da qui — lo strumento di scansione apre un browser e resta in
-                  attesa che tu prema Invio, quindi va lanciato da un terminale, non da questa
-                  finestra. Vai sulla pagina «{buco.pagina}», poi da terminale scansionala.
+                  {t('rimedioScansione', { pagina: buco.pagina })}
                 </span>
               </span>
             </div>

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import { Providers } from '@/providers/Providers';
 import './globals.css';
 
@@ -21,13 +23,19 @@ export const metadata: Metadata = {
 // Layout radice: solo html/body/providers. La navigazione vive nei layout dei
 // singoli gruppi (portale) e (cruscotto), altrimenti ogni schermata del
 // cruscotto si ritroverebbe con due barre di navigazione sovrapposte.
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Il cruscotto (non il vecchio portale) legge la lingua da qui: nessun
+  // instradamento per lingua, solo il cookie che src/i18n/request.ts legge.
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

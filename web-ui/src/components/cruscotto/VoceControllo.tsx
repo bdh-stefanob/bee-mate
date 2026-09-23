@@ -1,37 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, Check, CheckCircle2, Copy, Loader2, Play, Square, XCircle } from 'lucide-react';
 import { comeComandoEseguibile } from '@/lib/rimedi';
-
-export interface RimedioDiagnosi {
-  /** La frase da mostrare e da copiare: c'e' sempre. */
-  comando: string;
-  /** Il nome chiuso, quando la finestra puo' avviare il rimedio da sola. */
-  chiuso?: string;
-}
-
-export interface VoceDiagnosi {
-  nome: string;
-  esito: 'ok' | 'manca' | 'attenzione';
-  dettaglio: string;
-  rimedio?: RimedioDiagnosi;
-  /**
-   * Dove si risolve dentro la finestra. Quando c'e', prende il posto del
-   * comando da copiare: mandare a un terminale per una cosa che l'app sa fare
-   * e' il modo piu' sicuro di far sembrare inutile l'app.
-   */
-  dallaFinestra?: string;
-  /** Riguarda chi ha costruito lo strumento: la pagina la mostra a parte. */
-  avanzata?: boolean;
-}
-
-
-const ASPETTO: Record<VoceDiagnosi['esito'], { Icona: typeof CheckCircle2; colore: string; parola: string }> = {
-  ok: { Icona: CheckCircle2, colore: 'var(--verde)', parola: 'A posto' },
-  attenzione: { Icona: AlertTriangle, colore: 'var(--ambra)', parola: 'Attenzione' },
-  manca: { Icona: XCircle, colore: 'var(--rosso)', parola: 'Manca' },
-};
+import type { VoceDiagnosi } from '@/lib/controllo';
 
 type StatoRimedio = 'inattivo' | 'avvio' | 'in corso' | 'conclusa' | 'fallita' | 'interrotta' | 'errore';
 
@@ -45,9 +18,26 @@ interface EventoRiga extends MessageEvent {
   data: string;
 }
 
+const CHIAVE_PAROLA: Record<VoceDiagnosi['esito'], 'esitoOk' | 'esitoAttenzione' | 'esitoManca'> = {
+  ok: 'esitoOk',
+  attenzione: 'esitoAttenzione',
+  manca: 'esitoManca',
+};
+
+const ASPETTO: Record<VoceDiagnosi['esito'], { Icona: typeof CheckCircle2; colore: string }> = {
+  ok: { Icona: CheckCircle2, colore: 'var(--verde)' },
+  attenzione: { Icona: AlertTriangle, colore: 'var(--ambra)' },
+  manca: { Icona: XCircle, colore: 'var(--rosso)' },
+};
+
 /** Una riga di stato della diagnosi, con l'eventuale rimedio nella stessa riga. */
 export function VoceControllo({ voce, onRimediato }: Props) {
-  const { Icona, colore, parola } = ASPETTO[voce.esito];
+  const t = useTranslations();
+  const tv = useTranslations('VoceControllo');
+  const { Icona, colore } = ASPETTO[voce.esito];
+  const nome = t(voce.chiaveNome);
+  const dettaglio = t(voce.chiaveDettaglio, voce.dati);
+  const dallaFinestra = voce.chiaveDallaFinestra ? t(voce.chiaveDallaFinestra) : undefined;
   const comando = comeComandoEseguibile(voce.rimedio?.chiuso);
 
   const [statoRimedio, setStatoRimedio] = useState<StatoRimedio>('inattivo');
@@ -77,7 +67,7 @@ export function VoceControllo({ voce, onRimediato }: Props) {
       const corpo = (await risposta.json()) as { id?: string; errore?: string };
       if (!risposta.ok || !corpo.id) {
         setStatoRimedio('errore');
-        setMessaggioErrore(corpo.errore ?? 'non e\' partito');
+        setMessaggioErrore(corpo.errore ?? tv('erroreNonPartito'));
         return;
       }
       setIdEsecuzione(corpo.id);
@@ -106,7 +96,7 @@ export function VoceControllo({ voce, onRimediato }: Props) {
       };
     } catch {
       setStatoRimedio('errore');
-      setMessaggioErrore('non sono riuscito a partire');
+      setMessaggioErrore(tv('erroreNonRiuscitoPartire'));
     }
   }
 
@@ -132,27 +122,27 @@ export function VoceControllo({ voce, onRimediato }: Props) {
 
   return (
     <li
-      className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-start sm:justify-between"
+      className="flex max-w-2xl flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-start sm:justify-between"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <div className="flex min-w-0 items-start gap-3">
         <Icona size={22} aria-hidden="true" style={{ color: colore }} className="mt-0.5 shrink-0" />
         <div className="min-w-0">
           <p className="font-medium break-words" style={{ color: 'var(--testo)' }}>
-            {voce.nome} <span style={{ color: colore }}>— {parola}</span>
+            {nome} <span style={{ color: colore }}>— {tv(CHIAVE_PAROLA[voce.esito])}</span>
           </p>
-          <p className="text-sm break-words" style={{ color: 'var(--testo-tenue)' }}>{voce.dettaglio}</p>
+          <p className="text-sm break-words" style={{ color: 'var(--testo-tenue)' }}>{dettaglio}</p>
 
           <p className="mt-1 text-xs break-words" aria-live="polite">
-            {statoRimedio === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>avvio in corso…</span>}
+            {statoRimedio === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{tv('avvioInCorso')}</span>}
             {statoRimedio === 'in corso' && (
-              <span style={{ color: 'var(--testo-tenue)' }}>{ultimaRiga || 'in corso…'}</span>
+              <span style={{ color: 'var(--testo-tenue)' }}>{ultimaRiga || tv('inCorso')}</span>
             )}
             {statoRimedio === 'conclusa' && (
-              <span style={{ color: 'var(--verde)' }}>fatto — ricontrolla in alto</span>
+              <span style={{ color: 'var(--verde)' }}>{tv('conclusa')}</span>
             )}
             {(statoRimedio === 'fallita' || statoRimedio === 'interrotta') && (
-              <span style={{ color: 'var(--rosso)' }}>non e&apos; andato a buon fine</span>
+              <span style={{ color: 'var(--rosso)' }}>{tv('nonAndata')}</span>
             )}
             {statoRimedio === 'errore' && messaggioErrore && (
               <span style={{ color: 'var(--rosso)' }}>{messaggioErrore}</span>
@@ -161,9 +151,9 @@ export function VoceControllo({ voce, onRimediato }: Props) {
         </div>
       </div>
 
-      {voce.dallaFinestra && (
+      {dallaFinestra && (
         <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-          {voce.dallaFinestra}
+          {dallaFinestra}
         </span>
       )}
 
@@ -174,19 +164,19 @@ export function VoceControllo({ voce, onRimediato }: Props) {
               <button
                 type="button"
                 onClick={ferma}
-                aria-label={`Ferma il rimedio per ${voce.nome}`}
+                aria-label={tv('fermaAria', { nome })}
                 className="inline-flex min-h-10 items-center gap-1.5 rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
               >
                 <Square size={16} aria-hidden="true" />
-                Ferma
+                {tv('ferma')}
               </button>
             ) : (
               <button
                 type="button"
                 onClick={avvia}
                 disabled={statoRimedio === 'avvio'}
-                aria-label={`Rimedia: ${voce.nome}`}
+                aria-label={tv('rimediaAria', { nome })}
                 className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
               >
@@ -195,7 +185,7 @@ export function VoceControllo({ voce, onRimediato }: Props) {
                 ) : (
                   <Play size={16} aria-hidden="true" />
                 )}
-                Rimedia
+                {tv('rimedia')}
               </button>
             )
           ) : (
@@ -210,12 +200,12 @@ export function VoceControllo({ voce, onRimediato }: Props) {
               <button
                 type="button"
                 onClick={copiaComando}
-                aria-label={`Copia il comando per ${voce.nome}: ${voce.rimedio.comando}`}
+                aria-label={tv('copiaComandoAria', { nome, comando: voce.rimedio.comando })}
                 className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
               >
                 {copiato ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
-                {copiato ? 'Copiato' : 'Copia comando'}
+                {copiato ? tv('copiato') : tv('copiaComando')}
               </button>
             </div>
           )}
