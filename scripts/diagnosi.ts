@@ -50,6 +50,16 @@ interface Voce {
   /** Lo stesso rimedio, come nome chiuso, se la macchina puo' avviarlo da sola. */
   rimedioChiuso?: RimedioChiuso;
   /**
+   * Dove si risolve DENTRO la finestra, quando si risolve dentro la finestra.
+   *
+   * Serve perche' il cruscotto ha imparato a fare cose che prima si facevano
+   * solo da terminale: mostrare ancora il comando da copiare, con la sezione
+   * che lo fa due centimetri piu' sotto, manda il tester nel posto sbagliato.
+   * L'uscita testuale continua a mostrare il comando: li' il lettore ha un
+   * terminale davvero.
+   */
+  dallaFinestra?: string;
+  /**
    * Riguarda chi ha costruito la catena, non chi la usa per testare a mano:
    * non deve mai decidere se la macchina e' "pronta" per un tester, e nella
    * schermata di controllo va in una sezione a parte, richiudibile.
@@ -175,8 +185,9 @@ function sulPath(comando: string): boolean {
     aggiungi({
       esito: "manca",
       titolo: "Ambienti",
-      dettaglio: ["nessun bdd-targets.json — si puo' anche passare un URL diretto"],
+      dettaglio: ["nessun ambiente configurato — e' da qui che parte tutto"],
       rimedio: "cp bdd-targets.example.json bdd-targets.json",
+      dallaFinestra: "Aggiungine uno qui sotto, nella sezione Ambienti.",
     });
   } else {
     const attese = requiredVars();
@@ -194,7 +205,13 @@ function sulPath(comando: string): boolean {
         `${conSessione.length} con sessione salvata` +
           (vecchie.length > 0 ? `, di cui ${vecchie.length} piu' vecchie di 12 ore` : ""),
       ],
-      ...(pronti.length < targets.length ? { rimedio: "npm run targets" } : {}),
+      ...(pronti.length < targets.length
+        ? {
+            rimedio: "npm run targets",
+            dallaFinestra:
+              "Controlla gli indirizzi qui sotto, e le credenziali mancanti nel riquadro sotto ancora.",
+          }
+        : {}),
     });
   }
 }
@@ -246,6 +263,7 @@ function sulPath(comando: string): boolean {
           dettaglio: ["nessuna: e' da qui che parte tutto"],
           rimedio: "npm run record <url>",
           rimedioChiuso: "registrazione",
+          dallaFinestra: "Vai su Registra e registra una sessione.",
         }
       : conUrl.length === 0
         ? {
@@ -257,6 +275,7 @@ function sulPath(comando: string): boolean {
             ],
             rimedio: "npm run record <url>",
             rimedioChiuso: "registrazione",
+            dallaFinestra: "Vai su Registra e rifai la registrazione.",
           }
         : {
             esito: "ok",
@@ -309,6 +328,8 @@ interface VoceJson {
   dettaglio: string;
   /** Il rimedio come lo leggerebbe una persona: c'e' sempre, se un rimedio esiste. */
   rimedio?: string;
+  /** Dove si risolve dentro la finestra, se si risolve dentro la finestra. */
+  dallaFinestra?: string;
   /**
    * Lo stesso rimedio come nome chiuso, solo quando la finestra puo' avviarlo.
    * I due campi sono separati apposta: schiacciarli in uno solo faceva sparire
@@ -331,6 +352,7 @@ if (hasFlag(process.argv.slice(2), "--json")) {
     esito: ESITO_JSON[v.esito],
     dettaglio: v.dettaglio[0] ?? "",
     ...(v.rimedio ? { rimedio: v.rimedio } : {}),
+    ...(v.dallaFinestra ? { dallaFinestra: v.dallaFinestra } : {}),
     ...(v.rimedioChiuso ? { rimedioChiuso: v.rimedioChiuso } : {}),
     ...(v.avanzata ? { avanzata: true as const } : {}),
   }));

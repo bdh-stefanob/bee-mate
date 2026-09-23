@@ -6,6 +6,8 @@ export interface VoceDiagnosi {
   rimedio?: string;
   /** Lo stesso rimedio come nome chiuso, quando la finestra puo' avviarlo da sola. */
   rimedioChiuso?: string;
+  /** Dove si risolve dentro la finestra, quando si risolve dentro la finestra. */
+  dallaFinestra?: string;
   /**
    * Riguarda chi ha costruito la catena (l'IDE con cui si scrivono script e
    * regole), non chi la usa per registrare ed eseguire un test a mano. Una
@@ -23,7 +25,13 @@ export function interpreta(grezzo: { voci: VoceDiagnosi[] }) {
     // I due campi restano distinti fino alla riga che li mostra: un rimedio che
     // la macchina non sa avviare deve comunque arrivare all'occhio del tester,
     // come testo da copiare. Fonderli faceva sparire la seconda meta'.
-    rimedio: v.rimedio ? { comando: v.rimedio, chiuso: v.rimedioChiuso } : undefined,
+    // Se la cosa si fa dentro la finestra, il comando da copiare non serve
+    // piu' e anzi confonde: si indica il posto, e basta.
+    rimedio: v.dallaFinestra
+      ? undefined
+      : v.rimedio
+        ? { comando: v.rimedio, chiuso: v.rimedioChiuso }
+        : undefined,
   }));
   // "Pronto" guarda solo cio' che impedisce davvero di lavorare: le voci
   // avanzate restano visibili in una sezione a parte, e un avviso resta un

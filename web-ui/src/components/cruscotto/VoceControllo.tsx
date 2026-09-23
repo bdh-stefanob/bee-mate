@@ -16,6 +16,12 @@ export interface VoceDiagnosi {
   esito: 'ok' | 'manca' | 'attenzione';
   dettaglio: string;
   rimedio?: RimedioDiagnosi;
+  /**
+   * Dove si risolve dentro la finestra. Quando c'e', prende il posto del
+   * comando da copiare: mandare a un terminale per una cosa che l'app sa fare
+   * e' il modo piu' sicuro di far sembrare inutile l'app.
+   */
+  dallaFinestra?: string;
   /** Riguarda chi ha costruito lo strumento: la pagina la mostra a parte. */
   avanzata?: boolean;
 }
@@ -154,6 +160,12 @@ export function VoceControllo({ voce, onRimediato }: Props) {
           </p>
         </div>
       </div>
+
+      {voce.dallaFinestra && (
+        <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          {voce.dallaFinestra}
+        </span>
+      )}
 
       {voce.rimedio && (
         <div className="flex shrink-0 items-center gap-2 sm:pl-3">
