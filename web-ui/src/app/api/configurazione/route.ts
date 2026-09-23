@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
-import { scriviVariabile, bersagliDaFile } from '@/lib/configurazione';
+import { scriviVariabile, bersagliDaFile, ambientiDaFile } from '@/lib/configurazione';
 import { daAltraOrigine } from '@/lib/stessa-origine';
 
 const ENV_PATH = path.join(REPO_ROOT, '.env');
@@ -55,18 +55,21 @@ export async function POST(request: Request) {
 /**
  * GET /api/configurazione
  *
- * Restituisce solo i nomi dei bersagli (mai gli indirizzi): la schermata di
- * controllo deve poterli elencare senza mostrarne il contenuto. Se
- * bdd-targets.json non esiste, elenco vuoto — non un errore.
+ * Restituisce i nomi dei bersagli (`bersagli`, invariato: lo usano già Registra
+ * ed Esecuzione) e, per la sezione Ambienti della schermata di controllo, anche
+ * il loro indirizzo (`ambienti`) — mai le credenziali: quelle non stanno in
+ * questo file, ci stanno come `${VARIABILE}` risolte da .env. Se
+ * bdd-targets.json non esiste, elenchi vuoti — non un errore.
  */
 export async function GET() {
   try {
     if (!fs.existsSync(TARGETS_PATH)) {
-      return NextResponse.json({ bersagli: [] });
+      return NextResponse.json({ bersagli: [], ambienti: [] });
     }
     const json = fs.readFileSync(TARGETS_PATH, 'utf-8');
     const bersagli = bersagliDaFile(json);
-    return NextResponse.json({ bersagli });
+    const ambienti = ambientiDaFile(json);
+    return NextResponse.json({ bersagli, ambienti });
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

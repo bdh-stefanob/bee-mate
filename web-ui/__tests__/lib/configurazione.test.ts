@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scriviVariabile, bersagliDaFile } from '@/lib/configurazione';
+import { scriviVariabile, bersagliDaFile, ambientiDaFile, scriviBersaglio } from '@/lib/configurazione';
 
 describe('scrittura della configurazione', () => {
   it('aggiunge una variabile che non c\'era', () => {
@@ -45,5 +45,99 @@ describe('scrittura della configurazione', () => {
 
   it('elenco vuoto se il json dei bersagli e\' un array (rilievo 4)', () => {
     expect(bersagliDaFile('["a","b","c"]')).toEqual([]);
+  });
+});
+
+describe('ambienti con indirizzo, per la sezione Ambienti', () => {
+  it('elenca nome e indirizzo, senza il blocco _commento', () => {
+    const json = '{"_commento":["x"],"demo":{"url":"https://a.invalid"},"altro":{"url":"${B}"}}';
+    expect(ambientiDaFile(json)).toEqual([
+      { nome: 'demo', url: 'https://a.invalid' },
+      { nome: 'altro', url: '${B}' },
+    ]);
+  });
+
+  it('elenco vuoto se il file e\' assente o malformato, come bersagliDaFile', () => {
+    expect(ambientiDaFile('non e\' json')).toEqual([]);
+    expect(ambientiDaFile('["a"]')).toEqual([]);
+  });
+});
+
+describe('scrittura di un ambiente in bdd-targets.json', () => {
+  const conCommento =
+    '{"_commento":["nota"],"demo":{"url":"https://demo.invalid","readyWhen":"/x"}}';
+
+  it('aggiunge un ambiente nuovo conservando gli altri e il _commento', () => {
+    const dopo = scriviBersaglio(conCommento, 'nuovo', 'https://nuovo.invalid');
+    const dati = JSON.parse(dopo);
+    expect(dati._commento).toEqual(['nota']);
+    expect(dati.demo).toEqual({ url: 'https://demo.invalid', readyWhen: '/x' });
+    expect(dati.nuovo).toEqual({ url: 'https://nuovo.invalid' });
+  });
+
+  it('aggiornando un ambiente esistente cambia solo url, il resto (login compreso) resta intatto', () => {
+    const conLogin = JSON.stringify({
+      demo: {
+        url: 'https://vecchio.invalid',
+        readyWhen: '/x',
+        login: { steps: [{ click: { role: 'button', name: 'Login' } }] },
+      },
+    });
+    const dopo = scriviBersaglio(conLogin, 'demo', 'https://nuovo.invalid');
+    const dati = JSON.parse(dopo);
+    expect(dati.demo.url).toBe('https://nuovo.invalid');
+    expect(dati.demo.readyWhen).toBe('/x');
+    expect(dati.demo.login).toEqual({ steps: [{ click: { role: 'button', name: 'Login' } }] });
+  });
+
+  it('un file assente (contenuto vuoto) si comporta come un oggetto vuoto', () => {
+    const dopo = scriviBersaglio('', 'primo', 'https://a.invalid');
+    expect(JSON.parse(dopo)).toEqual({ primo: { url: 'https://a.invalid' } });
+  });
+
+  it('rifiuta un nome di ambiente non valido', () => {
+    expect(() => scriviBersaglio('{}', 'con spazi qui', 'https://a.invalid')).toThrow(/nome di ambiente/);
+  });
+
+  it('rifiuta il nome riservato _commento anche se rispetta il charset', () => {
+    expect(() => scriviBersaglio('{}', '_commento', 'https://a.invalid')).toThrow(/nome di ambiente/);
+  });
+
+  it('rifiuta uno schema javascript:', () => {
+    expect(() => scriviBersaglio('{}', 'x', 'javascript:alert(1)')).toThrow(/http/);
+  });
+
+  it('rifiuta uno schema file:', () => {
+    expect(() => scriviBersaglio('{}', 'x', 'file:///etc/passwd')).toThrow(/http/);
+  });
+
+  it('rifiuta uno schema data:', () => {
+    expect(() => scriviBersaglio('{}', 'x', 'data:text/html,<script>1</script>')).toThrow(/http/);
+  });
+
+  it('rifiuta un indirizzo con credenziali, senza ripeterle nel messaggio', () => {
+    expect(() => scriviBersaglio('{}', 'x', 'https://utente:segreto@host.invalid'))
+      .toThrow(/credenziali/);
+    try {
+      scriviBersaglio('{}', 'x', 'https://utente:segreto@host.invalid');
+    } catch (err) {
+      expect((err as Error).message).not.toMatch(/segreto/);
+    }
+  });
+
+  it('rifiuta un file esistente ma illeggibile, invece di sovrascriverlo alla cieca', () => {
+    expect(() => scriviBersaglio('{questo non e\' json', 'x', 'https://a.invalid'))
+      .toThrow(/non e\'.*json leggibile|json leggibile/);
+  });
+
+  it('rifiuta un file che non e\' un oggetto (es. un array)', () => {
+    expect(() => scriviBersaglio('["a","b"]', 'x', 'https://a.invalid'))
+      .toThrow(/forma attesa/);
+  });
+
+  it('conserva il fine riga CRLF del file originale', () => {
+    const dopo = scriviBersaglio('{"a":{"url":"https://a.invalid"}}\r\n', 'b', 'https://b.invalid');
+    expect(dopo.includes('\r\n')).toBe(true);
+    expect(dopo).not.toMatch(/[^\r]\n/);
   });
 });

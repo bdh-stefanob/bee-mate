@@ -19,8 +19,14 @@ export interface Parametri {
   messaggi?: string;
 }
 
-/** Un bersaglio e' un nome, non una riga di comando. */
-const BERSAGLIO_VALIDO = /^[A-Za-z0-9._-]{1,40}$/;
+/**
+ * Un bersaglio e' un nome, non una riga di comando.
+ *
+ * Esportata: e' la stessa regola che la scrittura di un ambiente nuovo deve
+ * rispettare (`scriviBersaglio` in `configurazione.ts`) — un nome scritto a
+ * mano nel file e uno scritto dalla finestra non possono avere regole diverse.
+ */
+export const BERSAGLIO_VALIDO = /^[A-Za-z0-9._-]{1,40}$/;
 
 function bersaglioDi(p?: Parametri): string {
   const b = p?.bersaglio ?? '';
