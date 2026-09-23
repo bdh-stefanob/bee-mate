@@ -1,8 +1,29 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { POST } from '@/app/api/esegui/route';
-import { azzeraPerTest } from '@/lib/registro';
+import { GET, POST } from '@/app/api/esegui/route';
+import { avvia, azzeraPerTest } from '@/lib/registro';
+import type { ProcessoMinimo } from '@/lib/registro';
 
 beforeEach(() => azzeraPerTest());
+
+function processoFinto(): ProcessoMinimo {
+  return { onRiga() {}, onFine() {}, termina() {} };
+}
+
+describe('GET /api/esegui', () => {
+  it('nessuna operazione in corso: risponde con null, non con un errore', async () => {
+    const res = await GET();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ operazione: null });
+  });
+
+  it('un\'operazione in corso si vede, ma senza le sue righe', async () => {
+    const e = avvia('registrazione', { bersaglio: 'demo' }, () => processoFinto());
+    const res = await GET();
+    const corpo = (await res.json()) as { operazione: unknown };
+    expect(corpo.operazione).toEqual({ id: e.id, nome: 'registrazione', avvio: e.avvio });
+    expect(corpo.operazione).not.toHaveProperty('righe');
+  });
+});
 
 describe('POST /api/esegui', () => {
   it("rifiuta un comando che non e' nell'elenco", async () => {

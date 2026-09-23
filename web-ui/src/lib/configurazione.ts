@@ -7,6 +7,13 @@
  * (credenziali che "a volte" non funzionano) non assomiglia alla causa.
  */
 import { BERSAGLIO_VALIDO } from './esecuzione';
+// Riusate cosi' come sono: e' la stessa regola che gia' legge `diagnosi.ts`
+// per decidere se un ambiente e' pronto. Riscriverla qui — anche solo il
+// filtro di `missingVars` — avrebbe creato due copie della stessa domanda
+// ("quali variabili servono, quali mancano"): due copie divergono sempre, e
+// la seconda e' sempre quella sbagliata.
+import { requiredVars, missingVars } from '../../../scripts/lib/targets';
+import { loadEnv } from '../../../scripts/lib/atlassian';
 
 const CHIAVE_VALIDA = /^[A-Z][A-Z0-9_]{0,60}$/;
 
@@ -92,6 +99,47 @@ export function ambientiDaFile(json: string): AmbienteVisibile[] {
         ? (valore as { url: string }).url
         : '',
     }));
+}
+
+/**
+ * Un ambiente con, in piu', le variabili che gli servono e quelle che
+ * mancano ancora — mai i valori, solo i nomi. E' quello che la sezione
+ * Ambienti mostra: le credenziali appartengono a un ambiente, non stanno in
+ * un mucchio a parte che il tester deve abbinare a mano.
+ */
+export interface AmbienteConCredenziali extends AmbienteVisibile {
+  /** I nomi ${VAR} che questo ambiente referenzia (url compreso), in ordine di prima comparsa. */
+  variabiliRichieste: string[];
+  /** Il sottoinsieme di sopra che non e' ancora impostato in .env. */
+  variabiliMancanti: string[];
+}
+
+/**
+ * Gli ambienti (nome, indirizzo) insieme a cio' che serve loro e cio' che
+ * manca, per la sezione Ambienti della schermata di controllo.
+ *
+ * `targetsPath` e `envPath` sono percorsi assoluti sul disco: `requiredVars`
+ * e `missingVars` li leggono da soli (non dalla stringa `jsonAmbienti` gia'
+ * in mano, che serve solo a `ambientiDaFile` per nome+indirizzo). `missingVars`
+ * guarda `process.env`: nel processo della finestra `.env` non e' mai stato
+ * letto di suo — a differenza degli script, lanciati come comando a se' che
+ * lo caricano all'avvio — quindi lo si carica qui. `loadEnv` non sovrascrive
+ * le chiavi gia' presenti: appena il tester scrive una credenziale nuova
+ * dalla finestra, la lettura successiva la trova comunque.
+ */
+export function ambientiConCredenziali(
+  jsonAmbienti: string,
+  targetsPath: string,
+  envPath: string
+): AmbienteConCredenziali[] {
+  const ambienti = ambientiDaFile(jsonAmbienti);
+  loadEnv(envPath);
+  const richiesteTutte = requiredVars(targetsPath);
+  return ambienti.map((a) => ({
+    ...a,
+    variabiliRichieste: richiesteTutte.get(a.nome) ?? [],
+    variabiliMancanti: missingVars(a.nome, targetsPath),
+  }));
 }
 
 /**

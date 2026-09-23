@@ -16,9 +16,9 @@
     "erroreTitolo": "Couldn't check the machine",
     "riprova": "Retry",
     "avanzate": "Advanced ({n})",
-    "credenzialeTitolo": "Configure a credential",
-    "credenzialeAmbientiNoti": "Known environments: {elenco}.",
-    "credenzialeNessunAmbiente": "No environment configured yet: the Environments entry above explains how to start.",
+    "credenzialeApri": "Other variables (advanced)",
+    "credenzialeTitolo": "Other variables",
+    "credenzialeDescrizione": "For variables that don't belong to any environment — for instance tokens for other integrations (Jira, Confluence). An environment's own credentials are configured in the Environments section above, in that environment's row.",
     "nomeVariabile": "Variable name",
     "valore": "Value",
     "salva": "Save",
@@ -35,7 +35,16 @@
     "descrizione": "The environments you can record and run tests on. \"Sign in now\" opens a browser window: sign in as usual, then close it — the session saves itself.",
     "indirizzoNonImpostato": "address not set",
     "indirizzoNonRisolto": "Address not resolved yet — the {variabile} variable is missing.",
-    "vaiAConfigura": "Set it up below",
+    "credenzialiMancanti": "{n, plural, one {Missing # variable:} other {Missing # variables:}} {elenco}",
+    "credenzialiConfigurate": "Credentials configured",
+    "compilaCredenziali": "Fill in",
+    "compilaCredenzialiAria": "Fill in the missing credentials for {nome}",
+    "annullaCompilazione": "Cancel",
+    "salvaCredenziali": "Save",
+    "salvandoCredenziali": "Saving…",
+    "credenzialiSalvate": "credentials saved",
+    "credenzialiParzialmenteSalvate": "only some were saved — check which",
+    "credenzialiNonSalvate": "couldn't save them",
     "accediAdesso": "Sign in now",
     "accediAria": "Sign in now on {nome}",
     "avvioInCorso": "starting…",
@@ -73,7 +82,13 @@
     "erroreAvvioRegistrazione": "couldn't start the recording",
     "erroreAvvioGenerazione": "couldn't start the generation",
     "erroreParlareCruscotto": "couldn't reach the dashboard",
-    "riprova": "retry"
+    "riprova": "retry",
+    "altroInCorso": "Another operation ({comando}) is running elsewhere: its progress isn't visible from here.",
+    "comandoTest": "a test",
+    "comandoSessione": "a session",
+    "comandoScansione": "a scan",
+    "vaiAEsecuzione": "Go to Run",
+    "vaiAControllo": "Go to Check-up"
   },
   "Esecuzione": {
     "titolo": "Run",
@@ -97,7 +112,13 @@
     "nessunCodiceUscita": "No exit code received.",
     "caricamento": "Loading…",
     "passiAriaLabel": "Test steps",
-    "esitoAriaLabel": "Test result"
+    "esitoAriaLabel": "Test result",
+    "altroInCorso": "Another operation ({comando}) is running elsewhere: its progress isn't visible from here.",
+    "comandoRegistrazione": "a recording",
+    "comandoSessione": "a session",
+    "comandoScansione": "a scan",
+    "vaiARegistra": "Go to Record",
+    "vaiAControllo": "Go to Check-up"
   },
   "Riepilogo": {
     "durataLabel": "Duration: {durata}",
@@ -160,7 +181,7 @@
       "conSessione": "{conSessione} with a saved session",
       "conSessioneVecchie": "{conSessione} with a saved session, of which {vecchie} older than 12 hours",
       "aggiungiQui": "Add one below, in the Environments section.",
-      "controllaIndirizzi": "Check the addresses below, and the missing credentials further down."
+      "controllaIndirizzi": "Check the addresses and missing credentials in the Environments section below, row by row."
     },
     "dizionari": {
       "nome": "Component dictionaries",

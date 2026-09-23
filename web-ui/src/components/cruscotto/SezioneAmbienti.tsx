@@ -2,11 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, Loader2, LogIn, Plus, XCircle } from 'lucide-react';
+import { CheckCircle2, KeyRound, Loader2, LogIn, Plus, XCircle } from 'lucide-react';
 
 export interface AmbienteVisibile {
   nome: string;
   url: string;
+  /** I nomi ${VAR} che questo ambiente referenzia (url compreso). Mai i valori. */
+  variabiliRichieste?: string[];
+  /** Il sottoinsieme di sopra che non e' ancora in .env. Mai i valori. */
+  variabiliMancanti?: string[];
 }
 
 interface RispostaAmbienti {
@@ -32,6 +36,139 @@ function variabileNonRisolta(url: string): string | null {
   return corrispondenza ? corrispondenza[1] : null;
 }
 
+type StatoCredenziali = 'inattivo' | 'salvo' | 'ok' | 'parziale' | 'errore';
+
+/**
+ * Le credenziali mancanti di un ambiente, compilabili sul posto: un campo
+ * mascherato per ciascuna variabile che manca ancora, e un solo invio che le
+ * scrive tutte (quelle che il tester ha riempito — le altre restano da fare).
+ * Riusa /api/configurazione, la stessa rotta del riquadro "Altre variabili":
+ * una scrive in .env, l'altra ci arriva da un posto diverso della finestra.
+ * Nessun valore torna mai indietro: i campi si svuotano dopo l'invio, riuscito
+ * o no, e la risposta della rotta non contiene mai il valore scritto.
+ */
+function CredenzialiMancanti({
+  nomeAmbiente,
+  variabiliMancanti,
+  onSalvate,
+}: {
+  nomeAmbiente: string;
+  variabiliMancanti: string[];
+  onSalvate: () => void;
+}) {
+  const t = useTranslations('Ambienti');
+  const [aperto, setAperto] = useState(false);
+  const [valori, setValori] = useState<Record<string, string>>({});
+  const [stato, setStato] = useState<StatoCredenziali>('inattivo');
+
+  async function salva(evento: React.FormEvent) {
+    evento.preventDefault();
+    setStato('salvo');
+    const daScrivere = variabiliMancanti.filter((v) => valori[v]);
+    setValori({});
+    if (daScrivere.length === 0) {
+      setStato('inattivo');
+      return;
+    }
+    let riuscite = 0;
+    for (const chiave of daScrivere) {
+      try {
+        const risposta = await fetch('/api/configurazione', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chiave, valore: valori[chiave] }),
+        });
+        const corpo = (await risposta.json()) as { scritta?: boolean };
+        if (risposta.ok && corpo.scritta) riuscite += 1;
+      } catch {
+        // Si continua con le altre: il conteggio finale dice cosa e' successo.
+      }
+    }
+    if (riuscite === daScrivere.length) {
+      setStato('ok');
+      setAperto(false);
+      onSalvate();
+    } else if (riuscite > 0) {
+      setStato('parziale');
+      onSalvate();
+    } else {
+      setStato('errore');
+    }
+  }
+
+  if (!aperto) {
+    return (
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+        <span className="inline-flex items-center gap-1.5 break-words" style={{ color: 'var(--ambra)' }}>
+          <KeyRound size={13} aria-hidden="true" />
+          {t('credenzialiMancanti', { n: variabiliMancanti.length, elenco: variabiliMancanti.join(', ') })}
+        </span>
+        <button
+          type="button"
+          onClick={() => setAperto(true)}
+          aria-label={t('compilaCredenzialiAria', { nome: nomeAmbiente })}
+          className="inline-flex min-h-10 items-center rounded-md border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        >
+          {t('compilaCredenziali')}
+        </button>
+        {stato === 'parziale' && (
+          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--ambra)' }}>
+            <XCircle size={13} aria-hidden="true" />
+            {t('credenzialiParzialmenteSalvate')}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={(e) => void salva(e)} className="mt-2 flex flex-col gap-2 rounded-md border p-2" style={{ borderColor: 'var(--bordo)' }}>
+      {variabiliMancanti.map((chiave) => (
+        <div key={chiave} className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+          <label htmlFor={`cred-${nomeAmbiente}-${chiave}`} className="min-w-0 shrink-0 text-xs font-mono break-all" style={{ color: 'var(--testo)' }}>
+            {chiave}
+          </label>
+          <input
+            id={`cred-${nomeAmbiente}-${chiave}`}
+            type="password"
+            autoComplete="off"
+            value={valori[chiave] ?? ''}
+            onChange={(e) => setValori((v) => ({ ...v, [chiave]: e.target.value }))}
+            className="min-h-10 min-w-0 flex-1 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+          />
+        </div>
+      ))}
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={stato === 'salvo'}
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+        >
+          {stato === 'salvo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : null}
+          {stato === 'salvo' ? t('salvandoCredenziali') : t('salvaCredenziali')}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setAperto(false); setValori({}); setStato('inattivo'); }}
+          className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        >
+          {t('annullaCompilazione')}
+        </button>
+        {stato === 'errore' && (
+          <span className="inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--rosso)' }}>
+            <XCircle size={14} aria-hidden="true" />
+            {t('credenzialiNonSalvate')}
+          </span>
+        )}
+      </div>
+    </form>
+  );
+}
+
 /**
  * Una riga dell'elenco Ambienti, con il pulsante che avvia una sessione di
  * accesso manuale per quell'ambiente e ne segue l'esito.
@@ -48,6 +185,12 @@ function RigaAmbiente({
   const [messaggioErrore, setMessaggioErrore] = useState('');
   const sorgenteRef = useRef<EventSource | null>(null);
   const variabile = variabileNonRisolta(ambiente.url);
+  const variabiliMancanti = ambiente.variabiliMancanti ?? [];
+  const variabiliRichieste = ambiente.variabiliRichieste ?? [];
+  // Non basta un indirizzo risolto: se manca anche solo una delle variabili
+  // che l'ambiente usa (credenziale o indirizzo), "Accedi adesso" fallirebbe
+  // di sicuro. Meglio non promettere una strada che non c'e' ancora.
+  const pronto = variabiliMancanti.length === 0;
 
   useEffect(() => () => sorgenteRef.current?.close(), []);
 
@@ -102,6 +245,22 @@ function RigaAmbiente({
         >
           {variabile ? t('indirizzoNonRisolto', { variabile }) : ambiente.url || t('indirizzoNonImpostato')}
         </p>
+
+        {variabiliRichieste.length > 0 && (
+          pronto ? (
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--verde)' }}>
+              <CheckCircle2 size={13} aria-hidden="true" />
+              {t('credenzialiConfigurate')}
+            </p>
+          ) : (
+            <CredenzialiMancanti
+              nomeAmbiente={ambiente.nome}
+              variabiliMancanti={variabiliMancanti}
+              onSalvate={onSessioneConclusa}
+            />
+          )
+        )}
+
         <p className="mt-1 text-xs break-words" aria-live="polite">
           {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
           {stato === 'in corso' && (
@@ -130,19 +289,10 @@ function RigaAmbiente({
           )}
         </p>
       </div>
-      {variabile ? (
-        // Nessun pulsante che promette una strada inesistente: l'indirizzo
-        // dietro questa riga non risolve a niente finche' la variabile non e'
-        // impostata. Il link porta davvero da qualche parte, invece: al
-        // riquadro "Configura una credenziale" piu' sotto nella stessa pagina.
-        <a
-          href="#configura-credenziale-titolo"
-          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
-        >
-          {t('vaiAConfigura')}
-        </a>
-      ) : (
+      {pronto && (
+        // Nessun pulsante finche' manca anche una sola variabile (credenziale
+        // o indirizzo): prometterebbe una strada che fallirebbe di sicuro. Il
+        // modo per risolvere e' proprio sopra, nella stessa riga.
         <button
           type="button"
           onClick={() => void accediAdesso()}

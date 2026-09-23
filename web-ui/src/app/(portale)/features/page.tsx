@@ -156,34 +156,36 @@ export default function FeaturesPage() {
           e.dataTransfer.setData('text/plain', f.file);
           e.dataTransfer.effectAllowed = 'move';
         }}
-        className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs transition-colors ${
-          active ? 'bg-teal-600 text-white' : 'hover:bg-muted text-foreground'
-        }`}
-        style={{ paddingLeft: indent }}
+        className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        style={{
+          paddingLeft: indent,
+          background: active ? 'var(--blu-fondo)' : undefined,
+          color: active ? '#fff' : 'var(--testo)',
+        }}
         onClick={() => setSelected(f.file)}
       >
         <span className="flex-1 truncate font-medium" title={f.name}>{f.name}</span>
-        <span className={`shrink-0 ${active ? 'text-teal-200' : 'text-muted-foreground'}`}>
+        <span className="shrink-0" style={{ color: active ? '#fff' : 'var(--testo-tenue)' }}>
           {f.scenarioCount} sc.
         </span>
         <button
           onClick={e => { e.stopPropagation(); openInEditor(f.file); }}
-          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
-            active
-              ? 'border-teal-300 text-teal-100 hover:bg-teal-700'
-              : 'border-border text-muted-foreground hover:border-teal-500 hover:text-teal-600'
-          }`}
+          className="shrink-0 text-[10px] px-1.5 py-0.5 rounded border transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          style={{
+            borderColor: active ? 'rgba(255,255,255,0.5)' : 'var(--bordo)',
+            color: active ? '#fff' : 'var(--testo-tenue)',
+          }}
           title="Apri nell'editor"
         >
           Edit
         </button>
         <button
           onClick={e => { e.stopPropagation(); setMoveTarget({ file: f.file, app: f.app ?? '', flow: f.flow ?? '' }); setMoveOpen(true); }}
-          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
-            active
-              ? 'border-teal-300 text-teal-100 hover:bg-teal-700'
-              : 'border-border text-muted-foreground hover:border-orange-400 hover:text-orange-500'
-          }`}
+          className="shrink-0 text-[10px] px-1.5 py-0.5 rounded border transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+          style={{
+            borderColor: active ? 'rgba(255,255,255,0.5)' : 'var(--bordo)',
+            color: active ? '#fff' : 'var(--testo-tenue)',
+          }}
           title="Sposta feature"
         >
           Sposta
@@ -299,7 +301,7 @@ export default function FeaturesPage() {
         />
       )}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t.features.title}</h1>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>{t.features.title}</h1>
         <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -311,7 +313,8 @@ export default function FeaturesPage() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors disabled:opacity-50"
+            className="min-h-10 inline-flex items-center rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             {uploading ? 'Caricamento…' : '+ Carica .feature'}
           </button>
@@ -361,11 +364,14 @@ export default function FeaturesPage() {
                           if (file) onDropFeature(file, app, flow);
                         }}
                         className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-semibold transition-colors ${
-                          dragOverFlow === flowKey
-                            ? 'bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 ring-1 ring-teal-500'
-                            : 'text-muted-foreground hover:bg-muted'
+                          dragOverFlow === flowKey ? 'ring-1' : 'hover:bg-black/5 dark:hover:bg-white/10'
                         }`}
-                        style={{ paddingLeft: '1.25rem' }}
+                        style={{
+                          paddingLeft: '1.25rem',
+                          background: dragOverFlow === flowKey ? 'var(--superficie-tenue)' : undefined,
+                          color: dragOverFlow === flowKey ? 'var(--blu)' : 'var(--testo-tenue)',
+                          ...(dragOverFlow === flowKey ? ({ '--tw-ring-color': 'var(--blu)' } as React.CSSProperties) : {}),
+                        }}
                       >
                         <span>{flowCollapsed ? '▶' : '▼'}</span>
                         <span className="truncate">{flow}</span>

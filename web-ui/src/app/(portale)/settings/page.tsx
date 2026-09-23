@@ -63,7 +63,7 @@ export default function SettingsPage() {
       <label className="text-sm font-medium text-foreground flex items-center gap-2">
         {label}
         {savedKey === key && (
-          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-normal">
+          <span className="text-xs font-normal" style={{ color: 'var(--verde)' }}>
             {t.settings.saved}
           </span>
         )}
@@ -85,8 +85,8 @@ export default function SettingsPage() {
   return (
     <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-8">
       <div className="flex items-center gap-3">
-        <SettingsIcon className="w-6 h-6 text-muted-foreground" />
-        <h1 className="text-2xl font-bold text-foreground">{t.settings.title}</h1>
+        <SettingsIcon className="w-5 h-5" style={{ color: 'var(--testo-tenue)' }} aria-hidden="true" />
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>{t.settings.title}</h1>
       </div>
 
       {/* GitHub Section */}
@@ -114,7 +114,8 @@ export default function SettingsPage() {
             href="https://github.com/settings/tokens"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-teal-600 dark:text-teal-400 hover:underline"
+            className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--blu)', outlineColor: 'var(--blu)' }}
           >
             Generate a token
           </a>
@@ -140,6 +141,8 @@ export default function SettingsPage() {
             <Button
               onClick={handleJiraSync}
               disabled={isSyncing}
+              className="min-h-10 text-white hover:opacity-90"
+              style={{ background: 'var(--blu-fondo)' }}
             >
               {isSyncing ? t.settings.jiraSyncLoading : t.settings.jiraSyncButton}
             </Button>

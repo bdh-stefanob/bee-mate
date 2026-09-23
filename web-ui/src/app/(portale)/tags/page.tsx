@@ -74,7 +74,7 @@ export default function TagsPage() {
   return (
     <div className="p-6 max-w-screen-xl mx-auto flex flex-col gap-4">
       {/* Header */}
-      <h1 className="text-2xl font-bold">{t.tags.title}</h1>
+      <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>{t.tags.title}</h1>
 
       {/* Loading skeleton */}
       {loading && (
@@ -101,14 +101,18 @@ export default function TagsPage() {
           {pages.map(({ page, display, stepCount, files, steps }) => (
             <div
               key={page}
-              className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2"
+              className="rounded-lg border p-4 flex flex-col gap-2"
+              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
             >
               {/* Page header row */}
               <div className="flex items-center gap-3">
-                <span className="font-semibold text-sm text-foreground tracking-wide">
+                <span className="font-semibold text-sm tracking-wide" style={{ color: 'var(--testo)' }}>
                   {display}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 font-medium shrink-0">
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full border font-medium shrink-0"
+                  style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--blu)' }}
+                >
                   {stepCount} {t.tags.stepCount}
                 </span>
               </div>
@@ -124,7 +128,8 @@ export default function TagsPage() {
                       <button
                         key={file}
                         onClick={() => openInEditor(file)}
-                        className="text-xs px-2 py-1 rounded border border-border text-muted-foreground hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors truncate max-w-xs"
+                        className="min-h-10 text-xs px-2 py-1 rounded border transition-colors truncate max-w-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style={{ borderColor: 'var(--bordo)', color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
                         title={file}
                       >
                         {file}
@@ -139,20 +144,22 @@ export default function TagsPage() {
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => toggleSteps(page)}
-                    className="self-start text-xs text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
+                    className="min-h-10 self-start text-xs hover:underline flex items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ color: 'var(--blu)', outlineColor: 'var(--blu)' }}
                   >
                     {expandedPages.has(page) ? t.tags.hideSteps : t.tags.showSteps}
-                    <span>{expandedPages.has(page) ? '▲' : '▼'}</span>
+                    <span aria-hidden="true">{expandedPages.has(page) ? '▲' : '▼'}</span>
                   </button>
                   {expandedPages.has(page) && (
                     <div className="flex flex-col gap-0.5 mt-1">
-                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                      <span className="text-[10px] uppercase tracking-wide mb-1" style={{ color: 'var(--testo-tenue)' }}>
                         {t.tags.stepsLabel}
                       </span>
                       {steps.map((step, i) => (
                         <span
                           key={i}
-                          className="font-mono text-xs text-foreground/80 hover:text-foreground px-2 py-0.5 rounded hover:bg-muted transition-colors"
+                          className="font-mono text-xs px-2 py-0.5 rounded transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                          style={{ color: 'var(--testo-tenue)' }}
                         >
                           {step}
                         </span>

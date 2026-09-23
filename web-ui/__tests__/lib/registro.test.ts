@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { avvia, stato, ferma, azzeraPerTest } from '@/lib/registro';
+import { avvia, stato, ferma, operazioneInCorso, azzeraPerTest } from '@/lib/registro';
 import type { ProcessoMinimo } from '@/lib/registro';
 
 function processoFinto(): ProcessoMinimo & { emettiRiga(r: string): void; concludi(c: number): void } {
@@ -77,6 +77,38 @@ describe('la riga di comando che il registro costruisce davvero', () => {
     expect(opzione).toBeDefined();
     expect(opzione).not.toContain('\\');
     expect(opzione).toMatch(/^messaggi=reports\/cruscotto\/test-[a-z0-9]+\.ndjson$/);
+  });
+});
+
+describe("cosa sta girando adesso, per chi torna e vuole riagganciarsi", () => {
+  it('niente in corso: niente da riagganciare', () => {
+    expect(operazioneInCorso()).toBeUndefined();
+  });
+
+  it("un'operazione lunga in corso si fa trovare, con id, nome e avvio", () => {
+    const e = avvia('registrazione', { bersaglio: 'x' }, () => processoFinto());
+    expect(operazioneInCorso()).toEqual({ id: e.id, nome: 'registrazione', avvio: e.avvio });
+  });
+
+  it("le righe non ci sono: chi chiede da fuori non deve vedere cosa il tester sta registrando", () => {
+    const finto = processoFinto();
+    avvia('registrazione', { bersaglio: 'x' }, () => finto);
+    finto.emettiRiga('il tester chiama questo passo "segreto-aziendale"');
+    const op = operazioneInCorso();
+    expect(op).not.toHaveProperty('righe');
+    expect(JSON.stringify(op)).not.toContain('segreto-aziendale');
+  });
+
+  it('conclusa, non risulta piu\' in corso', () => {
+    const finto = processoFinto();
+    avvia('registrazione', { bersaglio: 'x' }, () => finto);
+    finto.concludi(0);
+    expect(operazioneInCorso()).toBeUndefined();
+  });
+
+  it('la generazione non tiene occupato il browser: non e\' fra le operazioni da riagganciare', () => {
+    avvia('generazione', { manifesto: 'reports/cruscotto/m.json' }, () => processoFinto());
+    expect(operazioneInCorso()).toBeUndefined();
   });
 });
 

@@ -1,5 +1,14 @@
-import { describe, it, expect } from 'vitest';
-import { scriviVariabile, bersagliDaFile, ambientiDaFile, scriviBersaglio } from '@/lib/configurazione';
+import { describe, it, expect, afterEach } from 'vitest';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import {
+  scriviVariabile,
+  bersagliDaFile,
+  ambientiDaFile,
+  scriviBersaglio,
+  ambientiConCredenziali,
+} from '@/lib/configurazione';
 
 describe('scrittura della configurazione', () => {
   it('aggiunge una variabile che non c\'era', () => {
@@ -60,6 +69,65 @@ describe('ambienti con indirizzo, per la sezione Ambienti', () => {
   it('elenco vuoto se il file e\' assente o malformato, come bersagliDaFile', () => {
     expect(ambientiDaFile('non e\' json')).toEqual([]);
     expect(ambientiDaFile('["a"]')).toEqual([]);
+  });
+});
+
+describe('ambientiConCredenziali: quali variabili servono, quali mancano', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cruscotto-credenziali-'));
+  const targetsPath = path.join(dir, 'bdd-targets.json');
+  const envPath = path.join(dir, '.env');
+  const puliti: string[] = [];
+
+  afterEach(() => {
+    // loadEnv scrive su process.env: senza pulizia, un test lascerebbe una
+    // variabile impostata e il successivo la troverebbe "gia' li'".
+    for (const chiave of puliti) delete process.env[chiave];
+    puliti.length = 0;
+  });
+
+  it('elenca le variabili richieste (url compreso) e quelle mancanti, per nome soltanto', () => {
+    fs.writeFileSync(
+      targetsPath,
+      JSON.stringify({
+        'app-a': { url: '${T1_URL}', login: { steps: [{ fill: { role: 'textbox' }, value: '${T1_USER}' }] } },
+      })
+    );
+    fs.writeFileSync(envPath, 'T1_URL=https://a.invalid\n');
+    puliti.push('T1_URL', 'T1_USER');
+    process.env.T1_URL = 'https://a.invalid';
+
+    const json = fs.readFileSync(targetsPath, 'utf-8');
+    const risultato = ambientiConCredenziali(json, targetsPath, envPath);
+
+    expect(risultato).toHaveLength(1);
+    expect(risultato[0].nome).toBe('app-a');
+    expect(risultato[0].variabiliRichieste).toEqual(['T1_URL', 'T1_USER']);
+    expect(risultato[0].variabiliMancanti).toEqual(['T1_USER']);
+    // Nessun valore nell'output: solo nomi.
+    expect(JSON.stringify(risultato)).not.toMatch(/https:\/\/a\.invalid/);
+  });
+
+  it('nessuna variabile mancante una volta che .env le ha tutte', () => {
+    fs.writeFileSync(targetsPath, JSON.stringify({ 'app-b': { url: '${T2_URL}' } }));
+    fs.writeFileSync(envPath, 'T2_URL=https://b.invalid\n');
+    puliti.push('T2_URL');
+
+    const json = fs.readFileSync(targetsPath, 'utf-8');
+    const risultato = ambientiConCredenziali(json, targetsPath, envPath);
+
+    expect(risultato[0].variabiliRichieste).toEqual(['T2_URL']);
+    expect(risultato[0].variabiliMancanti).toEqual([]);
+  });
+
+  it('un ambiente senza ${VAR} non richiede e non manca niente', () => {
+    fs.writeFileSync(targetsPath, JSON.stringify({ demo: { url: 'https://demo.invalid' } }));
+    fs.writeFileSync(envPath, '');
+
+    const json = fs.readFileSync(targetsPath, 'utf-8');
+    const risultato = ambientiConCredenziali(json, targetsPath, envPath);
+
+    expect(risultato[0].variabiliRichieste).toEqual([]);
+    expect(risultato[0].variabiliMancanti).toEqual([]);
   });
 });
 

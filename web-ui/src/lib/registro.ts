@@ -140,6 +140,31 @@ export function stato(id: string): Esecuzione | undefined {
   return esecuzioni.get(id);
 }
 
+/**
+ * Quel che una finestra riaperta deve sapere per riagganciarsi a un'operazione
+ * che tiene occupato il browser — non un'esecuzione qualunque, solo quelle
+ * esclusive elencate in `LUNGHI`. Niente `righe`: chi chiede da fuori (una
+ * rotta di sola lettura) non deve vedere cosa il tester sta ancora
+ * registrando.
+ */
+export interface OperazioneLunga {
+  id: string;
+  nome: NomeComando;
+  avvio: string;
+}
+
+/**
+ * Cosa sta girando adesso, se c'e' qualcosa. Le operazioni lunghe sono
+ * esclusive (vedi `avvia`): ce n'e' al piu' una, quindi il primo risultato
+ * trovato e' l'unico possibile.
+ */
+export function operazioneInCorso(): OperazioneLunga | undefined {
+  const e = [...esecuzioni.values()].find(
+    (x) => x.stato === 'in corso' && LUNGHI.includes(x.nome)
+  );
+  return e ? { id: e.id, nome: e.nome, avvio: e.avvio } : undefined;
+}
+
 export function ferma(id: string): boolean {
   const e = esecuzioni.get(id);
   const processo = processi.get(id);

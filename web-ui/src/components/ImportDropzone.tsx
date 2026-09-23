@@ -131,7 +131,8 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
           onClick={() => inputRef.current?.click()}
           disabled={state.status === 'loading'}
           title="Importa un file .feature o .txt"
-          className="px-3 py-1.5 text-sm rounded-md border border-purple-600 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-h-10 px-3 text-sm rounded-md border transition-colors hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}
         >
           {state.status === 'loading' ? t.editor.importLoading : 'Import'}
         </button>
@@ -158,11 +159,12 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-md cursor-pointer transition-colors text-sm ${
+        className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-md cursor-pointer transition-colors text-sm"
+        style={
           isDragging
-            ? 'border-teal-500 bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300'
-            : 'border-border text-muted-foreground hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-400'
-        }`}
+            ? { borderColor: 'var(--blu)', background: 'var(--superficie-tenue)', color: 'var(--blu)' }
+            : { borderColor: 'var(--bordo)', color: 'var(--testo-tenue)' }
+        }
       >
         <svg
           className="w-4 h-4 shrink-0"
@@ -196,9 +198,12 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
 
       {/* Feedback */}
       {state.status === 'success' && (
-        <div className="flex items-start gap-2 p-2 rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-sm">
+        <div
+          className="flex items-start gap-2 p-2 rounded-md border text-sm"
+          style={{ borderColor: 'var(--verde)', background: 'var(--superficie)', color: 'var(--verde)' }}
+        >
           <svg
-            className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0 mt-0.5"
+            className="w-4 h-4 shrink-0 mt-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -206,12 +211,12 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-green-700 dark:text-green-300">
+          <span>
             Import completato —{' '}
             <strong>{state.newCount} step nuovi</strong>,{' '}
             <strong>{state.skipCount} skippati</strong>
             {state.featurePath && (
-              <span className="block text-xs text-green-600 dark:text-green-400 mt-0.5 font-mono truncate">
+              <span className="block text-xs mt-0.5 font-mono truncate">
                 {state.featurePath}
               </span>
             )}
@@ -220,23 +225,26 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
       )}
 
       {state.status === 'extended' && (
-        <div className="p-2 rounded-md bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-xs">
-          <p className="font-semibold text-blue-700 dark:text-blue-300 mb-1">
+        <div
+          className="p-2 rounded-md border text-xs"
+          style={{ borderColor: 'var(--blu)', background: 'var(--superficie)', color: 'var(--blu)' }}
+        >
+          <p className="font-semibold mb-1">
             Formato esteso convertito in Gherkin
           </p>
           {state.extractedEnums.length > 0 && (
             <>
-              <p className="text-blue-600 dark:text-blue-400 mb-1">
+              <p className="mb-1">
                 {state.extractedEnums.length} step con parametri estratti:
               </p>
               <ul className="space-y-2">
                 {state.extractedEnums.map((e, i) => (
-                  <li key={i} className="text-[10px] text-blue-600 dark:text-blue-400">
+                  <li key={i} className="text-[10px]">
                     <p className="font-mono font-semibold truncate">{e.stepExpression}</p>
                     <ul className="pl-2 mt-0.5 space-y-0.5">
                       {e.paramEnums.map((p, pi) => (
                         <li key={pi}>
-                          <span className="text-blue-500">{p.label}:</span>{' '}
+                          <span>{p.label}:</span>{' '}
                           {p.values.join(', ')}
                         </li>
                       ))}
@@ -250,9 +258,12 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
       )}
 
       {state.status === 'error' && (
-        <div className="flex items-start gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-sm">
+        <div
+          className="flex items-start gap-2 p-2 rounded-md border text-sm"
+          style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)', color: 'var(--rosso)' }}
+        >
           <svg
-            className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5"
+            className="w-4 h-4 shrink-0 mt-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -260,7 +271,7 @@ export function ImportDropzone({ onImported, onLoadFeature, variant = 'dropzone'
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span className="text-red-700 dark:text-red-300">{state.error}</span>
+          <span>{state.error}</span>
         </div>
       )}
     </div>
