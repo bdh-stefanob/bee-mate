@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, XCircle, MinusCircle, type LucideIcon } from 'lucide-react';
 
 export interface Passo {
@@ -9,7 +10,7 @@ export interface Passo {
 
 interface Aspetto {
   Icona: LucideIcon;
-  parola: string;
+  chiaveParola: 'esitoPassato' | 'esitoFallito' | 'esitoSaltato';
   colore: string;
 }
 
@@ -18,14 +19,15 @@ interface Aspetto {
  * non distingue rosso da verde non lo legge.
  */
 const ASPETTO: Record<Passo['esito'], Aspetto> = {
-  passato: { Icona: CheckCircle2, parola: 'superato', colore: 'var(--verde)' },
-  fallito: { Icona: XCircle, parola: 'fallito', colore: 'var(--rosso)' },
-  saltato: { Icona: MinusCircle, parola: 'saltato', colore: 'var(--testo-tenue)' },
+  passato: { Icona: CheckCircle2, chiaveParola: 'esitoPassato', colore: 'var(--verde)' },
+  fallito: { Icona: XCircle, chiaveParola: 'esitoFallito', colore: 'var(--rosso)' },
+  saltato: { Icona: MinusCircle, chiaveParola: 'esitoSaltato', colore: 'var(--testo-tenue)' },
 };
 
 /** Una riga per un passo dello scenario, con l'esito ben leggibile. */
 export function PassoTest({ passo }: { passo: Passo }) {
-  const { Icona, parola, colore } = ASPETTO[passo.esito];
+  const t = useTranslations('PassoTest');
+  const { Icona, chiaveParola, colore } = ASPETTO[passo.esito];
 
   return (
     <li
@@ -42,7 +44,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
             className="text-xs font-semibold uppercase tracking-wide"
             style={{ color: colore }}
           >
-            {parola}
+            {t(chiaveParola)}
           </span>
         </div>
       </div>
@@ -60,7 +62,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
         // eslint-disable-next-line @next/next/no-img-element -- data URI locale, non un asset da ottimizzare
         <img
           src={passo.schermata}
-          alt={`Schermata catturata al momento del fallimento del passo "${passo.testo}"`}
+          alt={t('altSchermata', { testo: passo.testo })}
           className="max-w-full h-auto rounded-md border"
           style={{ borderColor: 'var(--bordo)' }}
         />

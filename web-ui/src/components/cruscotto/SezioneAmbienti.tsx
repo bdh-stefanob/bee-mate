@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, Loader2, LogIn, Plus, XCircle } from 'lucide-react';
 
 export interface AmbienteVisibile {
@@ -20,6 +21,18 @@ interface RispostaEsegui {
 type StatoAccesso = 'inattivo' | 'avvio' | 'in corso' | 'conclusa' | 'fallita' | 'errore';
 
 /**
+ * Un indirizzo scritto come `${NOME_VARIABILE}` e' il nome di una variabile
+ * d'ambiente che non e' stata risolta, non un indirizzo vero: mostrarlo cosi'
+ * com'e' non dice niente a un tester, e un pulsante "Accedi adesso" su quella
+ * riga prometterebbe una strada che non esiste (la richiesta fallirebbe
+ * sempre, perche' la variabile dietro non e' impostata).
+ */
+function variabileNonRisolta(url: string): string | null {
+  const corrispondenza = /^\$\{([A-Za-z0-9_]+)\}$/.exec(url.trim());
+  return corrispondenza ? corrispondenza[1] : null;
+}
+
+/**
  * Una riga dell'elenco Ambienti, con il pulsante che avvia una sessione di
  * accesso manuale per quell'ambiente e ne segue l'esito.
  */
@@ -30,9 +43,11 @@ function RigaAmbiente({
   ambiente: AmbienteVisibile;
   onSessioneConclusa: () => void;
 }) {
+  const t = useTranslations('Ambienti');
   const [stato, setStato] = useState<StatoAccesso>('inattivo');
   const [messaggioErrore, setMessaggioErrore] = useState('');
   const sorgenteRef = useRef<EventSource | null>(null);
+  const variabile = variabileNonRisolta(ambiente.url);
 
   useEffect(() => () => sorgenteRef.current?.close(), []);
 
@@ -51,7 +66,7 @@ function RigaAmbiente({
         // e' gia' in corso (una sola alla volta occupa il browser): si mostra
         // quel messaggio cosi' com'e', non se ne inventa un altro.
         setStato('errore');
-        setMessaggioErrore(corpo.errore ?? "non sono riuscito ad avviare l'accesso");
+        setMessaggioErrore(corpo.errore ?? t('erroreAvvioAccesso'));
         return;
       }
       setStato('in corso');
@@ -70,36 +85,41 @@ function RigaAmbiente({
       sorgente.onerror = () => sorgente.close();
     } catch {
       setStato('errore');
-      setMessaggioErrore("non sono riuscito a parlare con il cruscotto");
+      setMessaggioErrore(t('erroreParlareCruscotto'));
     }
-  }, [ambiente.nome, onSessioneConclusa]);
+  }, [ambiente.nome, onSessioneConclusa, t]);
 
   return (
     <li
-      className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+      className="flex max-w-2xl flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <div className="min-w-0">
         <p className="font-medium break-words" style={{ color: 'var(--testo)' }}>{ambiente.nome}</p>
-        <p className="text-sm break-words" style={{ color: 'var(--testo-tenue)' }}>{ambiente.url || 'indirizzo non impostato'}</p>
+        <p
+          className="text-sm break-words"
+          style={{ color: variabile ? 'var(--ambra)' : 'var(--testo-tenue)' }}
+        >
+          {variabile ? t('indirizzoNonRisolto', { variabile }) : ambiente.url || t('indirizzoNonImpostato')}
+        </p>
         <p className="mt-1 text-xs break-words" aria-live="polite">
-          {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>avvio in corso…</span>}
+          {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
           {stato === 'in corso' && (
             <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--testo-tenue)' }}>
               <Loader2 size={14} className="animate-spin" aria-hidden="true" />
-              browser aperto: entra come faresti di solito, poi chiudilo
+              {t('browserAperto')}
             </span>
           )}
           {stato === 'conclusa' && (
             <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--verde)' }}>
               <CheckCircle2 size={14} aria-hidden="true" />
-              sessione salvata — ricontrolla in alto
+              {t('sessioneSalvata')}
             </span>
           )}
           {stato === 'fallita' && (
             <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
               <XCircle size={14} aria-hidden="true" />
-              non e&apos; andata a buon fine
+              {t('nonAndata')}
             </span>
           )}
           {stato === 'errore' && messaggioErrore && (
@@ -110,21 +130,35 @@ function RigaAmbiente({
           )}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={() => void accediAdesso()}
-        disabled={stato === 'avvio' || stato === 'in corso'}
-        aria-label={`Accedi adesso su ${ambiente.nome}`}
-        className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
-      >
-        {stato === 'avvio' || stato === 'in corso' ? (
-          <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-        ) : (
-          <LogIn size={16} aria-hidden="true" />
-        )}
-        Accedi adesso
-      </button>
+      {variabile ? (
+        // Nessun pulsante che promette una strada inesistente: l'indirizzo
+        // dietro questa riga non risolve a niente finche' la variabile non e'
+        // impostata. Il link porta davvero da qualche parte, invece: al
+        // riquadro "Configura una credenziale" piu' sotto nella stessa pagina.
+        <a
+          href="#configura-credenziale-titolo"
+          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        >
+          {t('vaiAConfigura')}
+        </a>
+      ) : (
+        <button
+          type="button"
+          onClick={() => void accediAdesso()}
+          disabled={stato === 'avvio' || stato === 'in corso'}
+          aria-label={t('accediAria', { nome: ambiente.nome })}
+          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+        >
+          {stato === 'avvio' || stato === 'in corso' ? (
+            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+          ) : (
+            <LogIn size={16} aria-hidden="true" />
+          )}
+          {t('accediAdesso')}
+        </button>
+      )}
     </li>
   );
 }
@@ -138,6 +172,7 @@ function RigaAmbiente({
  * mano nel file degli ambienti.
  */
 export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
+  const t = useTranslations('Ambienti');
   const [ambienti, setAmbienti] = useState<AmbienteVisibile[]>([]);
   const [nome, setNome] = useState('');
   const [url, setUrl] = useState('');
@@ -170,16 +205,16 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
       });
       const corpo = (await risposta.json()) as { scritto?: boolean; errore?: string };
       if (risposta.ok && corpo.scritto) {
-        setMessaggio({ ok: true, testo: 'ambiente salvato' });
+        setMessaggio({ ok: true, testo: t('ambienteSalvato') });
         setNome('');
         setUrl('');
         await carica();
         onCambiato?.();
       } else {
-        setMessaggio({ ok: false, testo: corpo.errore ?? 'non salvato' });
+        setMessaggio({ ok: false, testo: corpo.errore ?? t('nonSalvato') });
       }
     } catch {
-      setMessaggio({ ok: false, testo: 'non sono riuscito a salvarlo' });
+      setMessaggio({ ok: false, testo: t('erroreSalvarlo') });
     } finally {
       setInCorso(false);
     }
@@ -198,11 +233,10 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
     >
       <div>
         <h2 id="ambienti-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
-          Ambienti
+          {t('titolo')}
         </h2>
         <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
-          Gli ambienti su cui puoi registrare e lanciare i test. «Accedi adesso» apre una finestra
-          del browser: entra come faresti di solito e poi chiudila — la sessione si salva da sola.
+          {t('descrizione')}
         </p>
       </div>
 
@@ -214,33 +248,33 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
         </ul>
       ) : (
         <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-          Nessun ambiente configurato ancora: aggiungine uno qui sotto.
+          {t('nessunoConfigurato')}
         </p>
       )}
 
       <form onSubmit={aggiungi} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="ambiente-nome" className="text-sm" style={{ color: 'var(--testo)' }}>
-            Nome ambiente
+            {t('nomeAmbiente')}
           </label>
           <input
             id="ambiente-nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="es. collaudo"
+            placeholder={t('placeholderNome')}
             className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="ambiente-url" className="text-sm" style={{ color: 'var(--testo)' }}>
-            Indirizzo
+            {t('indirizzo')}
           </label>
           <input
             id="ambiente-url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://…"
+            placeholder={t('placeholderIndirizzo')}
             className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
@@ -252,7 +286,7 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           <Plus size={16} aria-hidden="true" />
-          {inCorso ? 'Salvo…' : 'Aggiungi'}
+          {inCorso ? t('salvando') : t('aggiungi')}
         </button>
       </form>
 

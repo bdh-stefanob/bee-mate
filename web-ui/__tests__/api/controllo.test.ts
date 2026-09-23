@@ -4,14 +4,23 @@ import { interpreta } from '@/lib/controllo';
 describe('controllo della macchina', () => {
   it('una voce che manca porta con se\' il rimedio', () => {
     const r = interpreta({
-      voci: [{ nome: 'Browser', esito: 'manca', dettaglio: 'nessun browser trovato', rimedio: 'installa-browser' }],
+      voci: [
+        {
+          chiaveNome: 'diagnosi.browser.nome',
+          esito: 'manca',
+          chiaveDettaglio: 'diagnosi.browser.assente',
+          rimedio: 'installa-browser',
+        },
+      ],
     });
     expect(r.pronto).toBe(false);
     expect(r.voci[0].rimedio).toBeDefined();
   });
 
   it('tutto a posto significa pronto', () => {
-    const r = interpreta({ voci: [{ nome: 'Browser', esito: 'ok', dettaglio: 'Chrome' }] });
+    const r = interpreta({
+      voci: [{ chiaveNome: 'diagnosi.browser.nome', esito: 'ok', chiaveDettaglio: 'diagnosi.browser.scaricato' }],
+    });
     expect(r.pronto).toBe(true);
   });
 });
@@ -24,9 +33,9 @@ describe('il rimedio arriva sempre fino alla riga', () => {
     const r = interpreta({
       voci: [
         {
-          nome: 'Ambienti',
+          chiaveNome: 'diagnosi.ambienti.nome',
           esito: 'manca',
-          dettaglio: 'nessun file degli ambienti',
+          chiaveDettaglio: 'diagnosi.ambienti.nessuno',
           rimedio: 'cp bdd-targets.example.json bdd-targets.json',
         },
       ],
@@ -41,9 +50,9 @@ describe('il rimedio arriva sempre fino alla riga', () => {
     const r = interpreta({
       voci: [
         {
-          nome: 'Browser',
+          chiaveNome: 'diagnosi.browser.nome',
           esito: 'manca',
-          dettaglio: 'nessun browser',
+          chiaveDettaglio: 'diagnosi.browser.assente',
           rimedio: 'npx playwright install chromium',
           rimedioChiuso: 'installa-browser',
         },
@@ -56,6 +65,22 @@ describe('il rimedio arriva sempre fino alla riga', () => {
   });
 });
 
+describe('i dati numerici della diagnosi arrivano fino alla voce', () => {
+  it('una voce con dati porta con se\' i valori da interpolare nel testo tradotto', () => {
+    const r = interpreta({
+      voci: [
+        {
+          chiaveNome: 'diagnosi.ambienti.nome',
+          esito: 'attenzione',
+          chiaveDettaglio: 'diagnosi.ambienti.parziali',
+          dati: { pronti: 1, totale: 3 },
+        },
+      ],
+    });
+    expect(r.voci[0].dati).toEqual({ pronti: 1, totale: 3 });
+  });
+});
+
 describe('le voci avanzate non decidono se la macchina e\' pronta', () => {
   // Il difetto che questo caso ferma: "Assistente da riga di comando" e
   // "Agenti e automatismi" riguardano chi ha costruito la catena, non chi la
@@ -65,8 +90,14 @@ describe('le voci avanzate non decidono se la macchina e\' pronta', () => {
   it('una voce avanzata che manca non rompe "pronto"', () => {
     const r = interpreta({
       voci: [
-        { nome: 'Browser', esito: 'ok', dettaglio: 'Chrome' },
-        { nome: 'Agenti e automatismi', esito: 'manca', dettaglio: 'non generati', rimedio: 'npm run rules:sync', avanzata: true },
+        { chiaveNome: 'diagnosi.browser.nome', esito: 'ok', chiaveDettaglio: 'diagnosi.browser.scaricato' },
+        {
+          chiaveNome: 'diagnosi.agenti.nome',
+          esito: 'manca',
+          chiaveDettaglio: 'diagnosi.agenti.assenti',
+          rimedio: 'npm run rules:sync',
+          avanzata: true,
+        },
       ],
     });
     expect(r.pronto).toBe(true);
@@ -75,8 +106,13 @@ describe('le voci avanzate non decidono se la macchina e\' pronta', () => {
   it('una voce essenziale che manca continua a bloccare "pronto", anche con voci avanzate a posto', () => {
     const r = interpreta({
       voci: [
-        { nome: 'Browser', esito: 'manca', dettaglio: 'nessun browser' },
-        { nome: 'Assistente da riga di comando', esito: 'ok', dettaglio: 'sul PATH', avanzata: true },
+        { chiaveNome: 'diagnosi.browser.nome', esito: 'manca', chiaveDettaglio: 'diagnosi.browser.assente' },
+        {
+          chiaveNome: 'diagnosi.assistente.nome',
+          esito: 'ok',
+          chiaveDettaglio: 'diagnosi.assistente.trovato',
+          avanzata: true,
+        },
       ],
     });
     expect(r.pronto).toBe(false);
@@ -84,7 +120,15 @@ describe('le voci avanzate non decidono se la macchina e\' pronta', () => {
 
   it('il segnale "avanzata" arriva fino alla voce, per la sezione a parte nella finestra', () => {
     const r = interpreta({
-      voci: [{ nome: 'Agenti e automatismi', esito: 'ok', dettaglio: '2 agenti', avanzata: true }],
+      voci: [
+        {
+          chiaveNome: 'diagnosi.agenti.nome',
+          esito: 'ok',
+          chiaveDettaglio: 'diagnosi.agenti.trovati',
+          dati: { agenti: 2, hook: 0 },
+          avanzata: true,
+        },
+      ],
     });
     expect(r.voci[0].avanzata).toBe(true);
   });

@@ -2,16 +2,17 @@
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { PlayCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { cn } from '@/lib/utils';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
-const PAROLE_ESITO: Record<Passo['esito'], [string, string]> = {
-  passato: ['superato', 'superati'],
-  fallito: ['fallito', 'falliti'],
-  saltato: ['saltato', 'saltati'],
+const CHIAVE_ESITO: Record<Passo['esito'], 'esitoPassato' | 'esitoFallito' | 'esitoSaltato'> = {
+  passato: 'esitoPassato',
+  fallito: 'esitoFallito',
+  saltato: 'esitoSaltato',
 };
 
 function conta(passi: Passo[]): Record<Passo['esito'], number> {
@@ -20,14 +21,12 @@ function conta(passi: Passo[]): Record<Passo['esito'], number> {
   return conteggio;
 }
 
-function formattaRiepilogo(passi: Passo[]): string {
+type Traduttore = (chiave: string, valori?: Record<string, number | string>) => string;
+
+function formattaRiepilogo(passi: Passo[], t: Traduttore): string {
   const conteggio = conta(passi);
   return (['passato', 'fallito', 'saltato'] as const)
-    .map((esito) => {
-      const n = conteggio[esito];
-      const [singolare, plurale] = PAROLE_ESITO[esito];
-      return `${n} ${n === 1 ? singolare : plurale}`;
-    })
+    .map((esito) => t(CHIAVE_ESITO[esito], { n: conteggio[esito] }))
     .join(', ');
 }
 
@@ -50,16 +49,20 @@ function scegliBersaglioIniziale(
 /**
  * Sotto il minuto un numero di secondi con un decimale basta e si legge a
  * colpo d'occhio; sopra il minuto, minuti e secondi separati sono piu'
- * leggibili di "127,3 s".
+ * leggibili di "127.3 s". Il separatore decimale segue la lingua scelta
+ * (virgola in italiano, punto in inglese): un numero scritto alla rovescia
+ * per chi legge si nota subito, anche in mezzo a una frase che per il resto
+ * e' tradotta bene.
  */
-function formattaDurata(ms: number): string {
+function formattaDurata(ms: number, locale: string, t: Traduttore): string {
   const secondiTotali = ms / 1000;
   if (secondiTotali < 60) {
-    return `${secondiTotali.toFixed(1).replace('.', ',')} s`;
+    const s = secondiTotali.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    return t('durataSecondi', { s });
   }
   const minuti = Math.floor(secondiTotali / 60);
   const secondi = Math.floor(secondiTotali % 60);
-  return `${minuti} min ${String(secondi).padStart(2, '0')} s`;
+  return t('durataMinutiSecondi', { m: minuti, s: String(secondi).padStart(2, '0') });
 }
 
 /**
@@ -70,9 +73,9 @@ function formattaDurata(ms: number): string {
  * concluso il tempo impiegato si perde (resta il conteggio dei passi, che
  * arriva sempre dal file).
  */
-function rigaEsito(passi: Passo[], durataMs: number | null): string {
-  const riepilogo = formattaRiepilogo(passi);
-  return durataMs === null ? riepilogo : `${riepilogo} · ${formattaDurata(durataMs)}`;
+function rigaEsito(passi: Passo[], durataMs: number | null, locale: string, t: Traduttore): string {
+  const riepilogo = formattaRiepilogo(passi, t);
+  return durataMs === null ? riepilogo : `${riepilogo} · ${formattaDurata(durataMs, locale, t)}`;
 }
 
 /**
@@ -98,10 +101,10 @@ function deveMostrareErroreSenzaPassi(
 }
 
 /** Cosa dire, quando non e' uscito nemmeno un passo. */
-function fraseSenzaPassi(stato: StatoEsecuzione | null): string {
-  if (stato === 'interrotta') return 'Test interrotto: nessun passo prodotto.';
-  if (stato === 'fallita') return 'Test fallito: nessun passo prodotto.';
-  return "Il test e' partito, ma non c'era nessuno scenario da eseguire: prima bisogna registrare una sessione e generare il test.";
+function fraseSenzaPassi(stato: StatoEsecuzione | null, t: Traduttore): string {
+  if (stato === 'interrotta') return t('senzaPassiInterrotto');
+  if (stato === 'fallita') return t('senzaPassiFallito');
+  return t('senzaPassiVuoto');
 }
 
 /** Un interruttore accessibile: mai un checkbox nascosto senza etichetta visibile. */
@@ -146,6 +149,8 @@ function Interruttore({
 }
 
 function EsecuzioneContenuto() {
+  const t = useTranslations('Esecuzione');
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const [bersagli, setBersagli] = useState<string[]>([]);
   const [bersaglio, setBersaglio] = useState('');
@@ -281,23 +286,23 @@ function EsecuzioneContenuto() {
       });
       const dati = (await risposta.json()) as { id?: string; errore?: string };
       if (!risposta.ok || !dati.id) {
-        setErrore(dati.errore ?? 'Non e stato possibile lanciare il test.');
+        setErrore(dati.errore ?? t('erroreLancio'));
         return;
       }
       setId(dati.id);
       setAvviatoAlle(Date.now());
       setStatoCorrente('in corso');
     } catch {
-      setErrore('Non e stato possibile contattare il cruscotto.');
+      setErrore(t('erroreContattoCruscotto'));
     } finally {
       setInLancio(false);
     }
-  }, [bersaglio, guardaIlBrowser, senzaSessione]);
+  }, [bersaglio, guardaIlBrowser, senzaSessione, t]);
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl min-w-0">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
-        Esecuzione
+        {t('titolo')}
       </h1>
 
       <section
@@ -306,7 +311,7 @@ function EsecuzioneContenuto() {
       >
         <div className="flex flex-col gap-1">
           <label htmlFor="bersaglio" className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
-            Bersaglio
+            {t('bersaglio')}
           </label>
           <select
             id="bersaglio"
@@ -320,7 +325,7 @@ function EsecuzioneContenuto() {
             )}
             style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           >
-            {bersagli.length === 0 && <option value="">Nessun bersaglio configurato</option>}
+            {bersagli.length === 0 && <option value="">{t('nessunBersaglio')}</option>}
             {bersagli.map((b) => (
               <option key={b} value={b}>
                 {b}
@@ -330,13 +335,13 @@ function EsecuzioneContenuto() {
         </div>
 
         <Interruttore
-          etichetta="Guarda il browser"
+          etichetta={t('guardaIlBrowser')}
           attivo={guardaIlBrowser}
           onChange={setGuardaIlBrowser}
           disabilitato={inCorso}
         />
         <Interruttore
-          etichetta="Parti senza sessione"
+          etichetta={t('partiSenzaSessione')}
           attivo={senzaSessione}
           onChange={setSenzaSessione}
           disabilitato={inCorso}
@@ -358,7 +363,7 @@ function EsecuzioneContenuto() {
           ) : (
             <PlayCircle size={18} aria-hidden="true" />
           )}
-          {inCorso ? 'Test in corso' : 'Lancia il test'}
+          {inCorso ? t('testInCorso') : t('lanciaIlTest')}
         </button>
 
         {errore && (
@@ -369,7 +374,7 @@ function EsecuzioneContenuto() {
       </section>
 
       {passi.length > 0 && (
-        <section aria-label="Passi del test" className="flex flex-col gap-4 min-w-0">
+        <section aria-label={t('passiAriaLabel')} className="flex flex-col gap-4 min-w-0">
           <ul className="flex flex-col gap-2" role="list">
             {passi.map((p, i) => (
               <PassoTest key={i} passo={p} />
@@ -380,7 +385,7 @@ function EsecuzioneContenuto() {
             className="text-sm font-semibold border-t pt-3"
             style={{ color: 'var(--testo-tenue)', borderColor: 'var(--bordo)' }}
           >
-            {rigaEsito(passi, durataMs)}
+            {rigaEsito(passi, durataMs, locale, t)}
           </p>
         </section>
       )}
@@ -388,7 +393,7 @@ function EsecuzioneContenuto() {
       {deveMostrareErroreSenzaPassi(statoCorrente, passi) && (
         <section
           role="alert"
-          aria-label="Esito del test"
+          aria-label={t('esitoAriaLabel')}
           className="flex flex-col gap-2 rounded-lg border p-4 text-sm"
           style={{
             borderColor:
@@ -401,12 +406,12 @@ function EsecuzioneContenuto() {
             style={{ color: statoCorrente === 'fallita' ? 'var(--rosso)' : 'var(--testo-tenue)' }}
           >
             <AlertTriangle size={18} aria-hidden="true" />
-            {fraseSenzaPassi(statoCorrente)}
+            {fraseSenzaPassi(statoCorrente, t)}
           </p>
           <p style={{ color: 'var(--testo-tenue)' }}>
             {codiceUscita !== null
-              ? `Codice di uscita del processo: ${codiceUscita}.`
-              : 'Nessun codice di uscita ricevuto.'}
+              ? t('codiceUscita', { codice: codiceUscita })
+              : t('nessunCodiceUscita')}
           </p>
           {righeOutput.length > 0 && (
             <pre
@@ -422,15 +427,18 @@ function EsecuzioneContenuto() {
   );
 }
 
+function ScheletroCaricamento() {
+  const t = useTranslations('Esecuzione');
+  return (
+    <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      {t('caricamento')}
+    </p>
+  );
+}
+
 export default function EsecuzionePage() {
   return (
-    <Suspense
-      fallback={
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-          Caricamento…
-        </p>
-      }
-    >
+    <Suspense fallback={<ScheletroCaricamento />}>
       <EsecuzioneContenuto />
     </Suspense>
   );

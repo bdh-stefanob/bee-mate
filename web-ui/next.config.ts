@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -8,4 +9,10 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@cucumber/gherkin', '@cucumber/messages'],
 };
 
-export default nextConfig;
+// Il cruscotto non mette la lingua nell'indirizzo (niente /en/controllo): la
+// lingua viaggia in un cookie, letta da src/i18n/request.ts. Cambiare la
+// forma degli indirizzi avrebbe rotto il redirect dalla radice e il portale
+// del catalogo, che restano com'erano.
+const withNextIntl = createNextIntlPlugin();
+
+export default withNextIntl(nextConfig);

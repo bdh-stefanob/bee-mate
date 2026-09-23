@@ -1,8 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
-import { VoceControllo, type VoceDiagnosi } from '@/components/cruscotto/VoceControllo';
+import { VoceControllo } from '@/components/cruscotto/VoceControllo';
+import type { VoceDiagnosi } from '@/lib/controllo';
 import { SezioneAmbienti } from '@/components/cruscotto/SezioneAmbienti';
 
 interface RispostaControllo {
@@ -14,9 +16,10 @@ type StatoPagina = 'caricamento' | 'errore' | 'pronto';
 
 /** Righe che pulsano al posto del contenuto: uno scheletro, non una rotella sola. */
 function ScheletroControllo() {
+  const t = useTranslations('Controllo');
   return (
     <div role="status" aria-live="polite" className="flex flex-col gap-2">
-      <span className="sr-only">Sto controllando la macchina…</span>
+      <span className="sr-only">{t('controllando')}</span>
       <div
         className="h-12 animate-pulse rounded-lg"
         style={{ background: 'var(--superficie-tenue)' }}
@@ -39,6 +42,7 @@ function ScheletroControllo() {
  * indietro dalla rotta: dopo l'invio il campo si svuota comunque, riuscito o no.
  */
 function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
+  const t = useTranslations('Controllo');
   const [chiave, setChiave] = useState('');
   const [valore, setValore] = useState('');
   const [inCorso, setInCorso] = useState(false);
@@ -57,14 +61,14 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
       const corpo = (await risposta.json()) as { scritta?: boolean; error?: string };
       setValore('');
       if (risposta.ok && corpo.scritta) {
-        setMessaggio({ ok: true, testo: 'salvata' });
+        setMessaggio({ ok: true, testo: t('salvataOk') });
         setChiave('');
       } else {
-        setMessaggio({ ok: false, testo: corpo.error ?? 'non salvata' });
+        setMessaggio({ ok: false, testo: corpo.error ?? t('salvataErrore') });
       }
     } catch {
       setValore('');
-      setMessaggio({ ok: false, testo: 'non sono riuscito a salvarla' });
+      setMessaggio({ ok: false, testo: t('salvataEccezione') });
     } finally {
       setInCorso(false);
     }
@@ -77,18 +81,18 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
       aria-labelledby="configura-credenziale-titolo"
     >
       <h2 id="configura-credenziale-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
-        Configura una credenziale
+        {t('credenzialeTitolo')}
       </h2>
       <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
         {bersagli.length > 0
-          ? `Ambienti noti: ${bersagli.join(', ')}.`
-          : 'Nessun ambiente configurato ancora: la voce Ambienti qui sopra dice come iniziare.'}
+          ? t('credenzialeAmbientiNoti', { elenco: bersagli.join(', ') })
+          : t('credenzialeNessunAmbiente')}
       </p>
 
       <form onSubmit={salva} className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="credenziale-chiave" className="text-sm" style={{ color: 'var(--testo)' }}>
-            Nome variabile
+            {t('nomeVariabile')}
           </label>
           <input
             id="credenziale-chiave"
@@ -101,7 +105,7 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="credenziale-valore" className="text-sm" style={{ color: 'var(--testo)' }}>
-            Valore
+            {t('valore')}
           </label>
           <input
             id="credenziale-valore"
@@ -119,7 +123,7 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
           className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
-          {inCorso ? 'Salvo…' : 'Salva'}
+          {inCorso ? t('salvando') : t('salva')}
         </button>
       </form>
 
@@ -134,6 +138,7 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
 }
 
 export default function ControlloPage() {
+  const t = useTranslations('Controllo');
   const [stato, setStato] = useState<StatoPagina>('caricamento');
   const [dati, setDati] = useState<RispostaControllo | null>(null);
   const [bersagli, setBersagli] = useState<string[]>([]);
@@ -179,12 +184,17 @@ export default function ControlloPage() {
   // una sezione a parte, richiudibile.
   const essenziali = dati ? dati.voci.filter((v) => !v.avanzata) : [];
   const avanzate = dati ? dati.voci.filter((v) => v.avanzata) : [];
-  const mancanti = essenziali.filter((v) => v.esito !== 'ok').length;
+  // Due conteggi separati, e non e' pignoleria: prima ce n'era uno solo che
+  // sommava le mancanze agli avvisi, mentre il verdetto "pronto" guardava solo
+  // le mancanze. Cosi' la riga in cima mostrava una spunta verde accanto alla
+  // scritta "mancano 2 cose" — l'icona diceva una cosa e le parole un'altra.
+  const mancanti = essenziali.filter((v) => v.esito === 'manca').length;
+  const daGuardare = essenziali.filter((v) => v.esito === 'attenzione').length;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+    <div className="flex max-w-3xl flex-col gap-4">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
-        Controllo
+        {t('titolo')}
       </h1>
 
       {stato === 'caricamento' && <ScheletroControllo />}
@@ -197,7 +207,7 @@ export default function ControlloPage() {
         >
           <p className="flex items-center gap-2 font-medium" style={{ color: 'var(--rosso)' }}>
             <XCircle size={20} aria-hidden="true" />
-            Non sono riuscito a controllare la macchina
+            {t('erroreTitolo')}
           </p>
           <button
             type="button"
@@ -206,7 +216,7 @@ export default function ControlloPage() {
             style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             <RefreshCw size={16} aria-hidden="true" />
-            Riprova
+            {t('riprova')}
           </button>
         </div>
       )}
@@ -227,12 +237,16 @@ export default function ControlloPage() {
             ) : (
               <AlertTriangle size={22} aria-hidden="true" />
             )}
-            {dati.pronto ? 'Pronto' : mancanti === 1 ? 'Manca 1 cosa' : `Mancano ${mancanti} cose`}
+            {mancanti > 0
+              ? t('statoMancante', { mancanti })
+              : daGuardare > 0
+                ? t('statoDaGuardare', { daGuardare })
+                : t('statoPronto')}
           </div>
 
           <ul className="flex flex-col gap-2">
             {essenziali.map((voce) => (
-              <VoceControllo key={voce.nome} voce={voce} onRimediato={carica} />
+              <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={carica} />
             ))}
           </ul>
 
@@ -242,11 +256,11 @@ export default function ControlloPage() {
                 className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
               >
-                Avanzate ({avanzate.length})
+                {t('avanzate', { n: avanzate.length })}
               </summary>
               <ul className="flex flex-col gap-2 p-3 pt-0">
                 {avanzate.map((voce) => (
-                  <VoceControllo key={voce.nome} voce={voce} onRimediato={carica} />
+                  <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={carica} />
                 ))}
               </ul>
             </details>

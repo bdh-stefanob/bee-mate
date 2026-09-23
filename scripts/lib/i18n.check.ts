@@ -151,50 +151,65 @@ function chiaviFoglia(oggetto: unknown, prefisso = ""): string[] {
   return risultato;
 }
 
-const fileFinestra = path.join(radiceScripts, "..", "web-ui", "src", "lib", "i18n.ts");
+/**
+ * I dizionari della finestra: due file JSON, uno per lingua.
+ *
+ * Questa parte cercava un modulo TypeScript che non e' mai esistito, e quindi
+ * stampava "salto" e passava — sempre. Un giudice che passa sempre e' peggio
+ * di nessun giudice: da' fiducia senza averla guadagnata. Ora guarda i file
+ * veri, e se non li trova FALLISCE invece di scusarsi: i dizionari ci sono, e
+ * se sparissero vorremmo saperlo.
+ */
+const cartellaMessaggi = path.join(radiceScripts, "..", "web-ui", "messages");
+const fileEn = path.join(cartellaMessaggi, "en.json");
+const fileIt = path.join(cartellaMessaggi, "it.json");
 
-try {
-  if (!fs.existsSync(fileFinestra)) {
-    ok("dizionario della finestra non ancora presente — salto");
-  } else {
-    const sorgente = fs.readFileSync(fileFinestra, "utf-8");
-    const bloccoEn = estraiOggetto(sorgente, "en:");
-    const bloccoIt = estraiOggetto(sorgente, "it:");
+if (!fs.existsSync(fileEn) || !fs.existsSync(fileIt)) {
+  fail(
+    "dizionari della finestra non trovati",
+    `attesi ${path.relative(process.cwd(), fileEn)} e ${path.relative(process.cwd(), fileIt)}`
+  );
+} else {
+  const en = JSON.parse(fs.readFileSync(fileEn, "utf-8")) as Record<string, unknown>;
+  const it = JSON.parse(fs.readFileSync(fileIt, "utf-8")) as Record<string, unknown>;
 
-    if (!bloccoEn || !bloccoIt) {
-      ok("dizionario della finestra: struttura non riconosciuta — salto");
-    } else {
-      // Valutato come letteratura d'oggetto, non importato: nessuna dipendenza
-      // dal modo in cui web-ui costruisce o esporta il modulo.
-      /* eslint-disable no-new-func */
-      const en = new Function(`"use strict"; return (${bloccoEn});`)() as Record<string, unknown>;
-      const it = new Function(`"use strict"; return (${bloccoIt});`)() as Record<string, unknown>;
-      /* eslint-enable no-new-func */
+  const chiaviEn = new Set(chiaviFoglia(en));
+  const chiaviIt = new Set(chiaviFoglia(it));
 
-      if (!("diagnosi" in en) && !("diagnosi" in it)) {
-        ok("dizionario della finestra: sezione 'diagnosi' non ancora presente — salto");
-      } else {
-        const chiaviEn = new Set(chiaviFoglia((en as { diagnosi?: unknown }).diagnosi ?? {}));
-        const chiaviIt = new Set(chiaviFoglia((it as { diagnosi?: unknown }).diagnosi ?? {}));
+  const soloEn = [...chiaviEn].filter((k) => !chiaviIt.has(k));
+  const soloIt = [...chiaviIt].filter((k) => !chiaviEn.has(k));
 
-        const soloEn = [...chiaviEn].filter((k) => !chiaviIt.has(k));
-        const soloIt = [...chiaviIt].filter((k) => !chiaviEn.has(k));
-
-        if (soloEn.length === 0 && soloIt.length === 0 && chiaviEn.size > 0) {
-          ok(`finestra: ${chiaviEn.size} chiavi 'diagnosi', presenti in entrambe le lingue`);
-        } else if (chiaviEn.size === 0 && chiaviIt.size === 0) {
-          ok("dizionario della finestra: sezione 'diagnosi' vuota — salto");
-        } else {
-          if (soloEn.length > 0) fail("finestra: chiavi 'diagnosi' solo in inglese", soloEn.join(", "));
-          if (soloIt.length > 0) fail("finestra: chiavi 'diagnosi' solo in italiano", soloIt.join(", "));
-        }
-      }
-    }
+  if (soloEn.length > 0) fail("finestra: chiavi solo in inglese", soloEn.join(", "));
+  if (soloIt.length > 0) fail("finestra: chiavi solo in italiano", soloIt.join(", "));
+  if (soloEn.length === 0 && soloIt.length === 0) {
+    ok(`finestra: ${chiaviEn.size} chiavi, presenti in tutt'e due le lingue`);
   }
-} catch (e) {
-  // Un parsing che fallisce sul lavoro in corso di un altro agente non deve
-  // bloccare questo giudice: e' un controllo migliorativo, non il suo scopo.
-  ok(`dizionario della finestra: non valutabile per ora (${(e as Error).message}) — salto`);
+
+  // Le chiavi che la diagnosi manda devono esistere nei dizionari della
+  // finestra: e' il confine fra i due mondi, ed e' il punto in cui un buco
+  // non si vedrebbe fino a quando il tester non apre quella schermata.
+  // Quali chiavi ATTRAVERSANO il confine.
+  //
+  // Non quelle che questa macchina emette oggi: quelle dipendono dallo stato
+  // in cui si trova, e un ramo che qui non si accende accenderebbe altrove.
+  // Si prendono TUTTE le chiavi del dizionario della diagnosi, meno quelle che
+  // vivono solo nel terminale — l'intestazione e la chiusura del referto, che
+  // la finestra non mostra e pretenderle sarebbe un allarme falso. Un giudice
+  // che grida al lupo viene spento.
+  const SOLO_TERMINALE = ["diagnosi.intestazione", "diagnosi.prossimaCosa.", "diagnosi.tuttoApposto.", "diagnosi.nota"];
+  const cheAttraversano = Object.keys(dizionariScript["diagnosi"]?.it ?? {}).filter(
+    (k) => !SOLO_TERMINALE.some((p) => k === p || k.startsWith(p))
+  );
+
+  const mancantiNellaFinestra = cheAttraversano.filter((k) => !chiaviEn.has(k));
+  if (mancantiNellaFinestra.length > 0) {
+    fail(
+      "la diagnosi manda chiavi che la finestra non sa tradurre",
+      mancantiNellaFinestra.join(", ")
+    );
+  } else {
+    ok(`le ${cheAttraversano.length} chiavi che la diagnosi manda alla finestra hanno tutte la loro traduzione`);
+  }
 }
 
 console.log(failures === 0 ? "\nTutti i controlli passano.\n" : `\n${failures} controlli falliti.\n`);
