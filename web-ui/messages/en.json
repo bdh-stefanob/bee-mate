@@ -62,7 +62,17 @@
     "salvando": "Saving…",
     "ambienteSalvato": "environment saved",
     "nonSalvato": "not saved",
-    "erroreSalvarlo": "couldn't save it"
+    "erroreSalvarlo": "couldn't save it",
+    "registraAccesso": "Record the sign-in",
+    "registraDiNuovoAccesso": "Record the sign-in again",
+    "registraAccessoAria": "Record the sign-in for {nome}",
+    "confermaSostituzioneAccesso": "This environment already has a recorded sign-in: recording it again replaces it entirely. Continue?",
+    "browserApertoRegistrazione": "browser window open: sign in as you normally would, then close it",
+    "derivandoAccesso": "reading the recording…",
+    "accessoRegistrato": "sign-in recorded",
+    "accessoRegistratoConVariabili": "{n, plural, one {sign-in recorded — fill in the variable above} other {sign-in recorded — fill in the # variables above}}",
+    "erroreAvvioRegistrazioneAccesso": "couldn't start recording the sign-in",
+    "erroreDerivazioneAccesso": "couldn't derive the sign-in from the recording"
   },
   "Registra": {
     "titolo": "Record",

@@ -62,7 +62,17 @@
     "salvando": "Salvo…",
     "ambienteSalvato": "ambiente salvato",
     "nonSalvato": "non salvato",
-    "erroreSalvarlo": "non sono riuscito a salvarlo"
+    "erroreSalvarlo": "non sono riuscito a salvarlo",
+    "registraAccesso": "Registra l'accesso",
+    "registraDiNuovoAccesso": "Registra di nuovo l'accesso",
+    "registraAccessoAria": "Registra l'accesso per {nome}",
+    "confermaSostituzioneAccesso": "Questo ambiente ha gia' un accesso registrato: registrarlo di nuovo lo sostituisce per intero. Continuare?",
+    "browserApertoRegistrazione": "browser aperto: entra come faresti di solito, poi chiudilo",
+    "derivandoAccesso": "leggo la registrazione…",
+    "accessoRegistrato": "accesso registrato",
+    "accessoRegistratoConVariabili": "{n, plural, one {accesso registrato — compila la variabile qui sopra} other {accesso registrato — compila le # variabili qui sopra}}",
+    "erroreAvvioRegistrazioneAccesso": "non sono riuscito ad avviare la registrazione dell'accesso",
+    "erroreDerivazioneAccesso": "non sono riuscito a ricavare l'accesso dalla registrazione"
   },
   "Registra": {
     "titolo": "Registra",

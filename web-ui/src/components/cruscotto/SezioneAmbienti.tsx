@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, KeyRound, Loader2, LogIn, Plus, XCircle } from 'lucide-react';
+import { CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Plus, XCircle } from 'lucide-react';
 
 export interface AmbienteVisibile {
   nome: string;
   url: string;
+  /** Ha gia' un blocco di accesso (scritto a mano o derivato da una registrazione)? */
+  haLogin?: boolean;
   /** I nomi ${VAR} che questo ambiente referenzia (url compreso). Mai i valori. */
   variabiliRichieste?: string[];
   /** Il sottoinsieme di sopra che non e' ancora in .env. Mai i valori. */
@@ -169,6 +171,164 @@ function CredenzialiMancanti({
   );
 }
 
+type StatoRegistrazioneAccesso =
+  | 'inattivo'
+  | 'avvio'
+  | 'in corso'
+  | 'derivando'
+  | 'fatto'
+  | 'fallita'
+  | 'errore';
+
+interface RispostaLogin {
+  scritto?: boolean;
+  variabili?: string[];
+  errore?: string;
+}
+
+/**
+ * Il pulsante «Registra l'accesso»: riusa il registratore che gia' esiste
+ * (lo stesso di `npm run record`, dietro il comando 'registrazione') invece
+ * di aprirne un secondo. Il tester entra come farebbe di solito e chiude il
+ * browser; la registrazione appena prodotta viene letta e trasformata nel
+ * blocco di accesso di questo ambiente — mai un valore digitato, solo
+ * segnaposto (vedi `lib/derivazione-login.ts`).
+ *
+ * Se l'ambiente ha gia' un accesso registrato, si chiede conferma prima:
+ * registrare di nuovo lo sostituisce per intero.
+ */
+function RegistraAccesso({
+  ambiente,
+  onRegistrato,
+}: {
+  ambiente: AmbienteVisibile;
+  onRegistrato: () => void;
+}) {
+  const t = useTranslations('Ambienti');
+  const [stato, setStato] = useState<StatoRegistrazioneAccesso>('inattivo');
+  const [messaggioErrore, setMessaggioErrore] = useState('');
+  const [variabili, setVariabili] = useState<string[]>([]);
+  const sorgenteRef = useRef<EventSource | null>(null);
+
+  useEffect(() => () => sorgenteRef.current?.close(), []);
+
+  const deriva = useCallback(async () => {
+    setStato('derivando');
+    try {
+      const risposta = await fetch('/api/configurazione/ambienti/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: ambiente.nome }),
+      });
+      const corpo = (await risposta.json()) as RispostaLogin;
+      if (risposta.ok && corpo.scritto) {
+        setStato('fatto');
+        setVariabili(corpo.variabili ?? []);
+        onRegistrato();
+      } else {
+        setStato('errore');
+        setMessaggioErrore(corpo.errore ?? t('erroreDerivazioneAccesso'));
+      }
+    } catch {
+      setStato('errore');
+      setMessaggioErrore(t('erroreParlareCruscotto'));
+    }
+  }, [ambiente.nome, onRegistrato, t]);
+
+  const avvia = useCallback(async () => {
+    if (ambiente.haLogin && !window.confirm(t('confermaSostituzioneAccesso'))) return;
+
+    setStato('avvio');
+    setMessaggioErrore('');
+    try {
+      const risposta = await fetch('/api/esegui', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: 'registrazione', parametri: { bersaglio: ambiente.nome } }),
+      });
+      const corpo = (await risposta.json()) as { id?: string; errore?: string };
+      if (!risposta.ok || !corpo.id) {
+        setStato('errore');
+        setMessaggioErrore(corpo.errore ?? t('erroreAvvioRegistrazioneAccesso'));
+        return;
+      }
+      setStato('in corso');
+      const sorgente = new EventSource(`/api/esegui/${corpo.id}/flusso`);
+      sorgenteRef.current = sorgente;
+      sorgente.addEventListener('fine', (evento) => {
+        const dettagli = JSON.parse((evento as MessageEvent).data) as { stato: string };
+        sorgente.close();
+        if (dettagli.stato === 'conclusa') {
+          void deriva();
+        } else {
+          setStato('fallita');
+        }
+      });
+      sorgente.onerror = () => sorgente.close();
+    } catch {
+      setStato('errore');
+      setMessaggioErrore(t('erroreParlareCruscotto'));
+    }
+  }, [ambiente.haLogin, ambiente.nome, deriva, t]);
+
+  const inCorso = stato === 'avvio' || stato === 'in corso' || stato === 'derivando';
+
+  return (
+    <div className="mt-1 flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={() => void avvia()}
+        disabled={inCorso}
+        aria-label={t('registraAccessoAria', { nome: ambiente.nome })}
+        className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+      >
+        {inCorso ? (
+          <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+        ) : (
+          <CircleDot size={16} aria-hidden="true" />
+        )}
+        {ambiente.haLogin ? t('registraDiNuovoAccesso') : t('registraAccesso')}
+      </button>
+      <p className="text-xs break-words" aria-live="polite">
+        {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
+        {stato === 'in corso' && (
+          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--testo-tenue)' }}>
+            <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+            {t('browserApertoRegistrazione')}
+          </span>
+        )}
+        {stato === 'derivando' && (
+          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--testo-tenue)' }}>
+            <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+            {t('derivandoAccesso')}
+          </span>
+        )}
+        {stato === 'fatto' && (
+          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--verde)' }}>
+            <CheckCircle2 size={14} aria-hidden="true" />
+            {variabili.length > 0
+              ? t('accessoRegistratoConVariabili', { n: variabili.length, elenco: variabili.join(', ') })
+              : t('accessoRegistrato')}
+          </span>
+        )}
+        {stato === 'fallita' && (
+          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
+            <XCircle size={14} aria-hidden="true" />
+            {t('nonAndata')}
+          </span>
+        )}
+        {stato === 'errore' && messaggioErrore && (
+          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
+            <XCircle size={14} aria-hidden="true" />
+            {messaggioErrore}
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
+
 /**
  * Una riga dell'elenco Ambienti, con il pulsante che avvia una sessione di
  * accesso manuale per quell'ambiente e ne segue l'esito.
@@ -260,6 +420,8 @@ function RigaAmbiente({
             />
           )
         )}
+
+        <RegistraAccesso ambiente={ambiente} onRegistrato={onSessioneConclusa} />
 
         <p className="mt-1 text-xs break-words" aria-live="polite">
           {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
