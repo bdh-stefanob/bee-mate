@@ -26,7 +26,7 @@
     "check:stability": "ts-node scripts/lib/stability.check.ts",
     "check:gold": "ts-node scripts/lib/gold.check.ts",
     "check:storage": "ts-node scripts/lib/markdown-storage.check.ts",
-    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling && npm run check:inventory && npm run check:args && npm run check:eol && npm run check:kiro-tools && npm run check:hooks && npm run check:browser && npm run check:catalog-merge",
+    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling && npm run check:inventory && npm run check:args && npm run check:eol && npm run check:kiro-tools && npm run check:hooks && npm run check:browser && npm run check:catalog-merge && npm run check:i18n",
     "analyze:corpus": "ts-node scripts/analyze-corpus.ts",
     "catalog:sync": "ts-node scripts/catalog-sync.ts",
     "confluence:publish": "ts-node scripts/confluence-publish.ts",
@@ -49,7 +49,8 @@
     "check:kiro-tools": "ts-node scripts/lib/kiro-tools.check.ts",
     "check:hooks": "ts-node scripts/lib/hooks.check.ts",
     "check:browser": "ts-node scripts/lib/browser-sources.check.ts",
-    "check:catalog-merge": "ts-node scripts/lib/catalog-merge.check.ts"
+    "check:catalog-merge": "ts-node scripts/lib/catalog-merge.check.ts",
+    "check:i18n": "ts-node scripts/lib/i18n.check.ts"
   },
   "keywords": [
     "playwright",

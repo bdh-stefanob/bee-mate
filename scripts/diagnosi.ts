@@ -19,7 +19,15 @@
  * NON STAMPA MAI UN VALORE. Nomi di variabile, si' o no. Un comando diagnostico
  * che stampa segreti finisce prima o poi incollato in un ticket.
  *
+ * DUE LINGUE
+ * L'uscita per una macchina (`json`) manda chiavi e dati, mai frasi: le
+ * parole vivono nei dizionari (della finestra o di questo script), non qui
+ * dentro. L'uscita per le persone (senza `json`) risolve le stesse chiavi con
+ * `scripts/lib/i18n-diagnosi.ts`, nella lingua di BDD_LANG — l'inglese e' il
+ * ripiego quando non e' impostata, come la finestra che apre in inglese.
+ *
  * Uso:  npm run diagnosi
+ *       BDD_LANG=it npm run diagnosi
  */
 
 import { execFileSync } from "child_process";
@@ -29,6 +37,8 @@ import { chromium } from "@playwright/test";
 import { loadEnv } from "./lib/atlassian";
 import { loadTargets, requiredVars, hasSession, sessionAgeHours } from "./lib/targets";
 import { hasFlag } from "./lib/args";
+import { linguaCorrente, traduci } from "./lib/i18n";
+import { dizionarioDiagnosi } from "./lib/i18n-diagnosi";
 
 loadEnv();
 
@@ -41,16 +51,26 @@ type Esito = "ok" | "avviso" | "manca";
  */
 type RimedioChiuso = 'installa-browser' | 'sincronizza-regole' | 'sessione' | 'scansione' | 'registrazione';
 
+/** Una riga di dettaglio: una chiave del dizionario, con i dati che porta. */
+interface DettaglioVoce {
+  chiave: string;
+  dati?: Record<string, string | number>;
+}
+
 interface Voce {
   esito: Esito;
-  titolo: string;
-  dettaglio: string[];
+  /** La chiave del nome della voce, es. `diagnosi.browser.nome`. */
+  chiaveNome: string;
+  /** Una o piu' righe di dettaglio. La prima e' quella che va nell'uscita JSON. */
+  dettaglio: DettaglioVoce[];
   /** Il comando che risolve. Vuoto se non c'e' niente da risolvere. */
   rimedio?: string;
   /** Lo stesso rimedio, come nome chiuso, se la macchina puo' avviarlo da sola. */
   rimedioChiuso?: RimedioChiuso;
   /**
-   * Dove si risolve DENTRO la finestra, quando si risolve dentro la finestra.
+   * La chiave della frase che dice dove si risolve DENTRO la finestra, quando
+   * si risolve dentro la finestra. Vive nel dizionario della finestra, non in
+   * quello di questo script: da qui passa solo la chiave.
    *
    * Serve perche' il cruscotto ha imparato a fare cose che prima si facevano
    * solo da terminale: mostrare ancora il comando da copiare, con la sezione
@@ -58,7 +78,7 @@ interface Voce {
    * L'uscita testuale continua a mostrare il comando: li' il lettore ha un
    * terminale davvero.
    */
-  dallaFinestra?: string;
+  chiaveDallaFinestra?: string;
   /**
    * Riguarda chi ha costruito la catena, non chi la usa per testare a mano:
    * non deve mai decidere se la macchina e' "pronta" per un tester, e nella
@@ -69,6 +89,10 @@ interface Voce {
 
 const voci: Voce[] = [];
 const SEGNO: Record<Esito, string> = { ok: "OK ", avviso: "~~ ", manca: "!! " };
+
+const lingua = linguaCorrente();
+const t = (chiave: string, dati?: Record<string, string | number>): string =>
+  traduci(dizionarioDiagnosi, lingua, chiave, dati);
 
 function aggiungi(v: Voce): void {
   voci.push(v);
@@ -99,14 +123,11 @@ function sulPath(comando: string): boolean {
 
   aggiungi(
     scaricato
-      ? { esito: "ok", titolo: "Browser di Playwright", dettaglio: ["scaricato"] }
+      ? { esito: "ok", chiaveNome: "diagnosi.browser.nome", dettaglio: [{ chiave: "diagnosi.browser.scaricato" }] }
       : {
           esito: "avviso",
-          titolo: "Browser di Playwright",
-          dettaglio: [
-            "non scaricato — `npm install` installa il pacchetto, non i binari",
-            "si ripiega da solo su Chrome o Edge di sistema, se ci sono",
-          ],
+          chiaveNome: "diagnosi.browser.nome",
+          dettaglio: [{ chiave: "diagnosi.browser.assente" }, { chiave: "diagnosi.browser.ripiego" }],
           rimedio: "npx playwright install chromium",
           rimedioChiuso: "installa-browser",
         }
@@ -128,21 +149,17 @@ function sulPath(comando: string): boolean {
     trovati.length > 0
       ? {
           esito: "ok",
-          titolo: "Assistente da riga di comando",
+          chiaveNome: "diagnosi.assistente.nome",
           dettaglio: [
-            `sul PATH: ${trovati.join(", ")}`,
-            "serve solo a rendere il confronto ripetibile da script: l'IDE basta",
+            { chiave: "diagnosi.assistente.trovato", dati: { strumenti: trovati.join(", ") } },
+            { chiave: "diagnosi.assistente.spiegazione" },
           ],
           avanzata: true,
         }
       : {
           esito: "avviso",
-          titolo: "Assistente da riga di comando",
-          dettaglio: [
-            "nessuno sul PATH — non e' un problema",
-            "la misura legge file e li giudica con tsc e il dry-run: gli stessi",
-            "file danno gli stessi numeri, che ci arrivi uno script o una persona",
-          ],
+          chiaveNome: "diagnosi.assistente.nome",
+          dettaglio: [{ chiave: "diagnosi.assistente.assente" }, { chiave: "diagnosi.assistente.misura" }],
           avanzata: true,
         }
   );
@@ -157,17 +174,17 @@ function sulPath(comando: string): boolean {
     agenti.length > 0
       ? {
           esito: "ok",
-          titolo: "Agenti e automatismi",
+          chiaveNome: "diagnosi.agenti.nome",
           dettaglio: [
-            `${agenti.length} agenti, ${hook.length} file di hook`,
-            "che l'IDE li riconosca va guardato nei suoi pannelli: da qui non si vede",
+            { chiave: "diagnosi.agenti.trovati", dati: { agenti: agenti.length, hook: hook.length } },
+            { chiave: "diagnosi.agenti.spiegazione" },
           ],
           avanzata: true,
         }
       : {
           esito: "manca",
-          titolo: "Agenti e automatismi",
-          dettaglio: ["non generati"],
+          chiaveNome: "diagnosi.agenti.nome",
+          dettaglio: [{ chiave: "diagnosi.agenti.assenti" }],
           rimedio: "npm run rules:sync",
           rimedioChiuso: "sincronizza-regole",
           avanzata: true,
@@ -184,33 +201,33 @@ function sulPath(comando: string): boolean {
   if (targets.length === 0) {
     aggiungi({
       esito: "manca",
-      titolo: "Ambienti",
-      dettaglio: ["nessun ambiente configurato — e' da qui che parte tutto"],
+      chiaveNome: "diagnosi.ambienti.nome",
+      dettaglio: [{ chiave: "diagnosi.ambienti.nessuno" }],
       rimedio: "cp bdd-targets.example.json bdd-targets.json",
-      dallaFinestra: "Aggiungine uno qui sotto, nella sezione Ambienti.",
+      chiaveDallaFinestra: "diagnosi.ambienti.aggiungiQui",
     });
   } else {
     const attese = requiredVars();
     const pronti = targets.filter(
-      (t) => t.url && (attese.get(t.name) ?? []).every((v) => process.env[v])
+      (tg) => tg.url && (attese.get(tg.name) ?? []).every((v) => process.env[v])
     );
     const conSessione = targets.filter(hasSession);
-    const vecchie = conSessione.filter((t) => (sessionAgeHours(t) ?? 0) > 12);
+    const vecchie = conSessione.filter((tg) => (sessionAgeHours(tg) ?? 0) > 12);
 
     aggiungi({
       esito: pronti.length === targets.length ? "ok" : "avviso",
-      titolo: "Ambienti",
+      chiaveNome: "diagnosi.ambienti.nome",
       dettaglio: [
-        `${pronti.length} su ${targets.length} configurati per intero`,
-        `${conSessione.length} con sessione salvata` +
-          (vecchie.length > 0 ? `, di cui ${vecchie.length} piu' vecchie di 12 ore` : ""),
+        { chiave: "diagnosi.ambienti.parziali", dati: { pronti: pronti.length, totale: targets.length } },
+        vecchie.length > 0
+          ? {
+              chiave: "diagnosi.ambienti.conSessioneVecchie",
+              dati: { conSessione: conSessione.length, vecchie: vecchie.length },
+            }
+          : { chiave: "diagnosi.ambienti.conSessione", dati: { conSessione: conSessione.length } },
       ],
       ...(pronti.length < targets.length
-        ? {
-            rimedio: "npm run targets",
-            dallaFinestra:
-              "Controlla gli indirizzi qui sotto, e le credenziali mancanti nel riquadro sotto ancora.",
-          }
+        ? { rimedio: "npm run targets", chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi" }
         : {}),
     });
   }
@@ -226,11 +243,15 @@ function sulPath(comando: string): boolean {
     : [];
   aggiungi(
     dizionari.length > 0
-      ? { esito: "ok", titolo: "Dizionari dei componenti", dettaglio: [`${dizionari.length} pagine inventariate`] }
+      ? {
+          esito: "ok",
+          chiaveNome: "diagnosi.dizionari.nome",
+          dettaglio: [{ chiave: "diagnosi.dizionari.inventariate", dati: { pagine: dizionari.length } }],
+        }
       : {
           esito: "manca",
-          titolo: "Dizionari dei componenti",
-          dettaglio: ["nessuno: senza, i locator vengono sintetizzati alla cieca"],
+          chiaveNome: "diagnosi.dizionari.nome",
+          dettaglio: [{ chiave: "diagnosi.dizionari.nessuno" }],
           rimedio: "npm run scout:pausa <url>",
           rimedioChiuso: "scansione",
         }
@@ -259,28 +280,27 @@ function sulPath(comando: string): boolean {
     file.length === 0
       ? {
           esito: "manca",
-          titolo: "Registrazioni",
-          dettaglio: ["nessuna: e' da qui che parte tutto"],
+          chiaveNome: "diagnosi.registrazioni.nome",
+          dettaglio: [{ chiave: "diagnosi.registrazioni.nessuna" }],
           rimedio: "npm run record <url>",
           rimedioChiuso: "registrazione",
-          dallaFinestra: "Vai su Registra e registra una sessione.",
+          chiaveDallaFinestra: "diagnosi.registrazioni.vaiSuRegistra",
         }
       : conUrl.length === 0
         ? {
             esito: "avviso",
-            titolo: "Registrazioni",
-            dettaglio: [
-              `${file.length}, ma nessuna riporta la pagina di ogni gesto`,
-              "fatte con un recorder precedente: tutto finirebbe sulla prima pagina",
-            ],
+            chiaveNome: "diagnosi.registrazioni.nome",
+            dettaglio: [{ chiave: "diagnosi.registrazioni.senzaPagina", dati: { totale: file.length } }],
             rimedio: "npm run record <url>",
             rimedioChiuso: "registrazione",
-            dallaFinestra: "Vai su Registra e rifai la registrazione.",
+            chiaveDallaFinestra: "diagnosi.registrazioni.rifai",
           }
         : {
             esito: "ok",
-            titolo: "Registrazioni",
-            dettaglio: [`${file.length}, di cui ${conUrl.length} con l'attribuzione per pagina`],
+            chiaveNome: "diagnosi.registrazioni.nome",
+            dettaglio: [
+              { chiave: "diagnosi.registrazioni.conPagina", dati: { totale: file.length, conUrl: conUrl.length } },
+            ],
           }
   );
 }
@@ -288,7 +308,15 @@ function sulPath(comando: string): boolean {
 {
   const f = "step-catalog.json";
   if (!fs.existsSync(f)) {
-    aggiungi({ esito: "manca", titolo: "Catalogo", dettaglio: ["assente"], rimedio: "npm run catalog" });
+    aggiungi({
+      esito: "manca",
+      chiaveNome: "diagnosi.catalogo.nome",
+      dettaglio: [{ chiave: "diagnosi.catalogo.assente" }],
+      rimedio: "npm run catalog",
+      // Gergo di chi ha costruito lo strumento: il tester non puo' farci
+      // niente, quindi va nella sezione avanzata come Assistente e Agenti.
+      avanzata: true,
+    });
   } else {
     const steps = (JSON.parse(fs.readFileSync(f, "utf-8")) as {
       steps?: Array<{ components?: unknown[] }>;
@@ -300,13 +328,12 @@ function sulPath(comando: string): boolean {
     // regge sulla sola somiglianza fra frasi, che e' una stima.
     aggiungi({
       esito: ancorati === 0 ? "avviso" : "ok",
-      titolo: "Catalogo",
+      chiaveNome: "diagnosi.catalogo.nome",
       dettaglio: [
-        `${steps.length} step, ${ancorati} ancorati a componenti di frontend`,
-        ...(ancorati === 0
-          ? ["nessun ancoraggio: la rosa dei candidati si reggera' solo sul lessico"]
-          : []),
+        { chiave: "diagnosi.catalogo.riepilogo", dati: { steps: steps.length, ancorati } },
+        ...(ancorati === 0 ? [{ chiave: "diagnosi.catalogo.nessunAncoraggio" }] : []),
       ],
+      avanzata: true,
     });
   }
 }
@@ -320,16 +347,22 @@ function sulPath(comando: string): boolean {
  *
  * Chi legge un risultato lo legge da qui: un numero preso dalla prosa di uno
  * strumento e' gia' costato un 92 al posto di uno 0. Nessun valore di
- * credenziale e nessun indirizzo completo: solo nomi di requisito ed esito.
+ * credenziale e nessun indirizzo completo: solo chiavi, dati numerici o nomi
+ * di strumento, ed esito.
+ *
+ * Manda chiavi, non frasi: le frasi le scrive chi legge (la finestra o questo
+ * stesso script, in `stampaPerPersone`), ciascuno nella propria lingua.
  */
 interface VoceJson {
-  nome: string;
+  chiaveNome: string;
   esito: "ok" | "manca" | "attenzione";
-  dettaglio: string;
-  /** Il rimedio come lo leggerebbe una persona: c'e' sempre, se un rimedio esiste. */
+  chiaveDettaglio: string;
+  /** Solo quando il messaggio ha dei numeri o dei nomi dentro. */
+  dati?: Record<string, string | number>;
+  /** Il rimedio come lo leggerebbe una persona: c'e' sempre, se un rimedio esiste. NON si traduce: e' un comando. */
   rimedio?: string;
-  /** Dove si risolve dentro la finestra, se si risolve dentro la finestra. */
-  dallaFinestra?: string;
+  /** La chiave di dove si risolve dentro la finestra, se si risolve dentro la finestra. Vive nel dizionario della finestra. */
+  chiaveDallaFinestra?: string;
   /**
    * Lo stesso rimedio come nome chiuso, solo quando la finestra puo' avviarlo.
    * I due campi sono separati apposta: schiacciarli in uno solo faceva sparire
@@ -348,11 +381,12 @@ const ESITO_JSON: Record<Esito, VoceJson["esito"]> = { ok: "ok", manca: "manca",
 
 if (hasFlag(process.argv.slice(2), "--json")) {
   const vociJson: VoceJson[] = voci.map((v) => ({
-    nome: v.titolo,
+    chiaveNome: v.chiaveNome,
     esito: ESITO_JSON[v.esito],
-    dettaglio: v.dettaglio[0] ?? "",
+    chiaveDettaglio: v.dettaglio[0].chiave,
+    ...(v.dettaglio[0].dati ? { dati: v.dettaglio[0].dati } : {}),
     ...(v.rimedio ? { rimedio: v.rimedio } : {}),
-    ...(v.dallaFinestra ? { dallaFinestra: v.dallaFinestra } : {}),
+    ...(v.chiaveDallaFinestra ? { chiaveDallaFinestra: v.chiaveDallaFinestra } : {}),
     ...(v.rimedioChiuso ? { rimedioChiuso: v.rimedioChiuso } : {}),
     ...(v.avanzata ? { avanzata: true as const } : {}),
   }));
@@ -361,13 +395,13 @@ if (hasFlag(process.argv.slice(2), "--json")) {
 }
 
 // ---------------------------------------------------------------------------
-// Il referto
+// Il referto, per le persone — in italiano o in inglese secondo BDD_LANG.
 // ---------------------------------------------------------------------------
 
-console.log(`\nDIAGNOSI — questa macchina\n`);
+console.log(`\n${t("diagnosi.intestazione")}\n`);
 for (const v of voci) {
-  console.log(`  ${SEGNO[v.esito]} ${v.titolo}`);
-  for (const d of v.dettaglio) console.log(`       ${d}`);
+  console.log(`  ${SEGNO[v.esito]} ${t(v.chiaveNome)}`);
+  for (const d of v.dettaglio) console.log(`       ${t(d.chiave, d.dati)}`);
   if (v.rimedio) console.log(`       → ${v.rimedio}`);
   console.log("");
 }
@@ -379,22 +413,24 @@ for (const v of voci) {
 const daFare = voci.filter((v) => v.rimedio);
 const primo = daFare[0];
 
-console.log(`  LA PROSSIMA COSA DA FARE\n`);
+console.log(`  ${t("diagnosi.prossimaCosa.titolo")}\n`);
 if (primo) {
   console.log(`    ${primo.rimedio}`);
-  console.log(`\n    perche': ${primo.titolo} — ${primo.dettaglio[0]}`);
+  console.log(
+    `\n    ${t("diagnosi.prossimaCosa.motivo", {
+      titolo: t(primo.chiaveNome),
+      dettaglio: t(primo.dettaglio[0].chiave, primo.dettaglio[0].dati),
+    })}`
+  );
   if (daFare.length > 1) {
-    console.log(`\n    poi restano ${daFare.length - 1}:`);
+    console.log(`\n    ${t("diagnosi.prossimaCosa.restano", { n: daFare.length - 1 })}`);
     for (const v of daFare.slice(1)) console.log(`      ${v.rimedio}`);
   }
 } else {
-  console.log(`    Niente da sistemare. Il giro completo:`);
-  console.log(`      npm run scout:pausa <url>        inventaria una pagina di lavoro vera`);
-  console.log(`      npm run record      <url>        esegui il test a mano`);
-  console.log(`      npm run generate                 feature + Page Object + step`);
-  console.log(`      npm run benchmark label=deterministico referto=referto.json`);
+  console.log(`    ${t("diagnosi.tuttoApposto.titolo")}`);
+  console.log(`      ${t("diagnosi.tuttoApposto.scout")}`);
+  console.log(`      ${t("diagnosi.tuttoApposto.record")}`);
+  console.log(`      ${t("diagnosi.tuttoApposto.generate")}`);
+  console.log(`      ${t("diagnosi.tuttoApposto.benchmark")}`);
 }
-console.log(
-  `\n  Il referto e la diagnosi non contengono dati aziendali. Il resto di\n` +
-    `  reports/ si', e resta su questa macchina.\n`
-);
+console.log(`\n  ${t("diagnosi.nota")}\n`);
