@@ -6,6 +6,8 @@
  * due volte ha un comportamento che dipende da chi lo legge, e il sintomo
  * (credenziali che "a volte" non funzionano) non assomiglia alla causa.
  */
+import { BERSAGLIO_VALIDO } from './esecuzione';
+
 const CHIAVE_VALIDA = /^[A-Z][A-Z0-9_]{0,60}$/;
 
 export function scriviVariabile(contenutoEnv: string, chiave: string, valore: string): string {
@@ -57,4 +59,123 @@ export function bersagliDaFile(json: string): string[] {
     return [];
   }
   return Object.keys(dati as Record<string, unknown>).filter((k) => !k.startsWith('_'));
+}
+
+/** Un ambiente cosi' come lo vede la schermata Ambienti: nome e indirizzo, mai le credenziali. */
+export interface AmbienteVisibile {
+  nome: string;
+  url: string;
+}
+
+/**
+ * Gli ambienti con il loro indirizzo, per la sezione Ambienti della schermata
+ * di controllo. Un indirizzo scritto come `${VARIABILE}` (non risolto) viene
+ * restituito cosi' com'e': non e' una credenziale, e' un segnaposto che vive
+ * in .env — mostrarlo non rivela nulla che il file stesso non dica gia'.
+ * Stessa tolleranza di `bersagliDaFile` per un file assente o malformato.
+ */
+export function ambientiDaFile(json: string): AmbienteVisibile[] {
+  let dati: unknown;
+  try {
+    dati = JSON.parse(json);
+  } catch {
+    return [];
+  }
+  if (typeof dati !== 'object' || dati === null || Array.isArray(dati)) {
+    return [];
+  }
+  return Object.entries(dati as Record<string, unknown>)
+    .filter(([nome]) => !nome.startsWith('_'))
+    .map(([nome, valore]) => ({
+      nome,
+      url: valore && typeof valore === 'object' && typeof (valore as { url?: unknown }).url === 'string'
+        ? (valore as { url: string }).url
+        : '',
+    }));
+}
+
+/**
+ * Gli schemi che un tester puo' digitare in un indirizzo web. Tutto il resto
+ * — `javascript:`, `file:`, `data:` — o non è un indirizzo che il browser di
+ * sessione possa aprire come pagina, o è un modo di far eseguire codice a chi
+ * lo apre: nessuno dei due è cio' che questo campo deve accettare.
+ */
+function validaUrlBersaglio(url: string): void {
+  let analizzato: URL;
+  try {
+    analizzato = new URL(url);
+  } catch {
+    throw new Error('l\'indirizzo non e\' valido');
+  }
+  if (analizzato.protocol !== 'http:' && analizzato.protocol !== 'https:') {
+    throw new Error('l\'indirizzo deve iniziare con http:// o https://');
+  }
+  // Un indirizzo con `utente:segreto@host` porta la credenziale in chiaro
+  // dentro un file JSON che si versiona: esattamente cio' che il progetto
+  // evita scrivendole come ${VARIABILE} in .env. Il messaggio non ripete
+  // l'indirizzo ricevuto: potrebbe contenere proprio quella credenziale.
+  if (analizzato.username || analizzato.password) {
+    throw new Error('l\'indirizzo non puo\' contenere credenziali');
+  }
+}
+
+/**
+ * Scrive (o aggiorna) un ambiente in bdd-targets.json, conservando tutto il
+ * resto — funzione pura sullo stesso modello di `scriviVariabile`.
+ *
+ * - Il nome segue la stessa regola dei bersagli usata per lanciare i comandi
+ *   (`BERSAGLIO_VALIDO`): un nome che la finestra scrive e uno che qualcuno
+ *   scrive a mano nel file devono poter convivere senza sorprese. I nomi che
+ *   iniziano con `_` sono riservati (il blocco `_commento` in testa al file):
+ *   la regola dei bersagli da sola non li esclude, quindi si esclude qui.
+ * - Aggiungere un ambiente nuovo lascia intatti tutti gli altri e il blocco
+ *   `_commento`, perche' si riscrive solo la chiave che serve dentro
+ *   l'oggetto già esistente, mai l'oggetto per intero.
+ * - Aggiornare un ambiente esistente cambia solo `url`: ogni altro campo
+ *   (`login`, `readyWhen`, `hint`, ...) viaggia intatto. E' il requisito che
+ *   conta di piu' qui — un `login` preparato a mano non si perde perche'
+ *   qualcuno ha corretto un indirizzo dalla finestra.
+ * - Un file assente o vuoto si comporta come un oggetto vuoto: si crea un
+ *   file nuovo con dentro il solo ambiente appena scritto, invece di esplodere.
+ * - Un file presente ma illeggibile (JSON rotto, o non un oggetto) non si
+ *   riscrive alla cieca: si rifiuta con un errore chiaro, perche' sovrascrivere
+ *   un file che non si e' capito rischia di cancellare ambienti preparati a
+ *   mano che non si sono nemmeno letti.
+ */
+export function scriviBersaglio(contenutoJson: string, nome: string, url: string): string {
+  if (!BERSAGLIO_VALIDO.test(nome) || nome.startsWith('_')) {
+    throw new Error(`nome di ambiente non valido: ${JSON.stringify(nome)}`);
+  }
+  validaUrlBersaglio(url);
+
+  const testo = contenutoJson.trim();
+  let dati: Record<string, unknown>;
+  if (testo === '') {
+    dati = {};
+  } else {
+    let analizzato: unknown;
+    try {
+      analizzato = JSON.parse(contenutoJson);
+    } catch {
+      throw new Error('il file degli ambienti non e\' un json leggibile');
+    }
+    if (typeof analizzato !== 'object' || analizzato === null || Array.isArray(analizzato)) {
+      throw new Error('il file degli ambienti non ha la forma attesa');
+    }
+    dati = { ...(analizzato as Record<string, unknown>) };
+  }
+
+  const esistente = dati[nome];
+  if (esistente && typeof esistente === 'object' && !Array.isArray(esistente)) {
+    // Aggiornamento: si sostituisce solo `url` dentro l'oggetto esistente,
+    // cosi' `login` (e ogni altro campo) resta quello che era.
+    dati[nome] = { ...(esistente as Record<string, unknown>), url };
+  } else {
+    dati[nome] = { url };
+  }
+
+  // Il fine riga si conserva, come in scriviVariabile.
+  const eol = contenutoJson.includes('\r\n') ? '\r\n' : '\n';
+  const corpo = JSON.stringify(dati, null, 2).replace(/\n/g, eol);
+  return corpo + eol;
 }

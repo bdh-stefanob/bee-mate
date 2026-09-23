@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { VoceControllo, type VoceDiagnosi } from '@/components/cruscotto/VoceControllo';
+import { SezioneAmbienti } from '@/components/cruscotto/SezioneAmbienti';
 
 interface RispostaControllo {
   pronto: boolean;
@@ -250,6 +251,8 @@ export default function ControlloPage() {
               </ul>
             </details>
           )}
+
+          <SezioneAmbienti onCambiato={carica} />
 
           <ConfiguraCredenziale bersagli={bersagli} />
         </>
