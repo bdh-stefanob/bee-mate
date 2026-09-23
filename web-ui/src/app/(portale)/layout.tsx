@@ -11,24 +11,49 @@ export default function PortaleLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      <nav className="bg-teal-700 dark:bg-slate-900 border-b border-teal-600 dark:border-slate-700">
-        <div className="max-w-screen-xl mx-auto px-6 py-3 flex items-center gap-6">
-          <span className="font-bold text-sm text-white mr-2">BDD Portal</span>
-          <Link href="/portale" className="text-sm text-teal-100 hover:text-white transition-colors">
+      <nav className="border-b" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 flex flex-wrap items-center gap-x-1 gap-y-1 py-1.5">
+          <span
+            className="min-h-10 inline-flex items-center px-2 mr-1 text-sm font-semibold"
+            style={{ color: 'var(--testo)' }}
+          >
+            BDD Portal
+          </span>
+          <Link
+            href="/portale"
+            className="min-h-10 inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
+          >
             Catalog
           </Link>
-          <Link href="/editor" className="text-sm text-teal-100 hover:text-white transition-colors">
+          <Link
+            href="/editor"
+            className="min-h-10 inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
+          >
             Editor
           </Link>
-          <Link href="/features" className="text-sm text-teal-100 hover:text-white transition-colors">
+          <Link
+            href="/features"
+            className="min-h-10 inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
+          >
             Features
           </Link>
-          <Link href="/tags" className="text-sm text-teal-100 hover:text-white transition-colors">
+          <Link
+            href="/tags"
+            className="min-h-10 inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
+          >
             Tags
           </Link>
           <NavSettingsLink />
           {/* Punto di ritorno verso il cruscotto: chi arriva qui dal cruscotto deve poterci tornare. */}
-          <Link href="/controllo" className="text-sm text-teal-100 hover:text-white transition-colors">
+          <Link
+            href="/controllo"
+            className="min-h-10 inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
+          >
             Cruscotto
           </Link>
           <div className="ml-auto flex items-center gap-1">

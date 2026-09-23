@@ -56,7 +56,8 @@ export default function FeaturePreview({ file }: FeaturePreviewProps) {
         <a
           href={'/api/download?file=' + encodeURIComponent(file)}
           download
-          className="text-xs text-primary underline hover:no-underline ml-auto"
+          className="text-xs underline hover:no-underline ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: 'var(--blu)', outlineColor: 'var(--blu)' }}
         >
           Download
         </a>

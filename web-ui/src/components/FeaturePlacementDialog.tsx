@@ -175,7 +175,8 @@ export function FeaturePlacementDialog({
               value={app}
               onChange={e => { setApp(e.target.value); setOverwriteConfirmed(false); }}
               placeholder="es. brochure-clinic"
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ outlineColor: 'var(--blu)' }}
             />
             <datalist id="placement-app-list">
               {existingApps.map(a => <option key={a} value={a} />)}
@@ -193,7 +194,8 @@ export function FeaturePlacementDialog({
               value={flow}
               onChange={e => { setFlow(e.target.value); setOverwriteConfirmed(false); }}
               placeholder="es. login"
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ outlineColor: 'var(--blu)' }}
             />
             <datalist id="placement-flow-list">
               {existingFlows.map(f => <option key={f} value={f} />)}
@@ -212,7 +214,7 @@ export function FeaturePlacementDialog({
           <div className="text-xs">
             <span className="font-medium text-foreground">Percorso di destinazione: </span>
             {targetRel ? (
-              <span className="font-mono text-teal-600 dark:text-teal-400">
+              <span className="font-mono" style={{ color: 'var(--blu)' }}>
                 src/features/{targetRel}
               </span>
             ) : (
@@ -224,14 +226,17 @@ export function FeaturePlacementDialog({
 
           {/* Anti-overwrite warning */}
           {wouldOverwrite && (
-            <div className="rounded-md border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 px-3 py-2 text-xs text-yellow-800 dark:text-yellow-300 flex flex-col gap-2">
+            <div
+              className="rounded-md border px-3 py-2 text-xs flex flex-col gap-2"
+              style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--ambra)' }}
+            >
               <p className="font-semibold">Esiste gia un file in questo percorso — sovrascrivere?</p>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer" style={{ color: 'var(--testo)' }}>
                 <input
                   type="checkbox"
                   checked={overwriteConfirmed}
                   onChange={e => setOverwriteConfirmed(e.target.checked)}
-                  className="accent-yellow-600"
+                  style={{ accentColor: 'var(--ambra)' }}
                 />
                 <span>Confermo la sovrascrittura</span>
               </label>
@@ -255,7 +260,8 @@ export function FeaturePlacementDialog({
             size="sm"
             disabled={!canConfirm}
             onClick={handleConfirm}
-            className="min-h-[44px] bg-teal-600 hover:bg-teal-700 text-white"
+            className="min-h-[44px] text-white hover:opacity-90"
+            style={{ background: 'var(--blu-fondo)' }}
           >
             {confirming ? 'In corso…' : confirmLabel}
           </Button>

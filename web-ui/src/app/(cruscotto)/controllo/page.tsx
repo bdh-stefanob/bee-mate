@@ -40,8 +40,14 @@ function ScheletroControllo() {
 /**
  * Scrive una credenziale in .env senza aprire il file. Il valore non torna mai
  * indietro dalla rotta: dopo l'invio il campo si svuota comunque, riuscito o no.
+ *
+ * E' il riquadro "avanzato": la credenziale di un ambiente si compila ormai
+ * nella sua riga, dentro la sezione Ambienti (guarda i dati: `requiredVars`
+ * dice quali variabili appartengono a un ambiente). Questo riquadro resta per
+ * il resto — variabili che non appartengono a nessun ambiente, come i token
+ * di Jira o Confluence usati dagli script di sincronizzazione.
  */
-function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
+function ConfiguraCredenziale() {
   const t = useTranslations('Controllo');
   const [chiave, setChiave] = useState('');
   const [valore, setValore] = useState('');
@@ -75,18 +81,12 @@ function ConfiguraCredenziale({ bersagli }: { bersagli: string[] }) {
   }
 
   return (
-    <section
-      className="rounded-lg border p-4"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
-      aria-labelledby="configura-credenziale-titolo"
-    >
+    <section aria-labelledby="configura-credenziale-titolo">
       <h2 id="configura-credenziale-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
         {t('credenzialeTitolo')}
       </h2>
       <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
-        {bersagli.length > 0
-          ? t('credenzialeAmbientiNoti', { elenco: bersagli.join(', ') })
-          : t('credenzialeNessunAmbiente')}
+        {t('credenzialeDescrizione')}
       </p>
 
       <form onSubmit={salva} className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
@@ -141,7 +141,6 @@ export default function ControlloPage() {
   const t = useTranslations('Controllo');
   const [stato, setStato] = useState<StatoPagina>('caricamento');
   const [dati, setDati] = useState<RispostaControllo | null>(null);
-  const [bersagli, setBersagli] = useState<string[]>([]);
 
   const carica = useCallback(async () => {
     setStato('caricamento');
@@ -162,21 +161,6 @@ export default function ControlloPage() {
   useEffect(() => {
     carica();
   }, [carica]);
-
-  useEffect(() => {
-    let attivo = true;
-    fetch('/api/configurazione')
-      .then((r) => r.json())
-      .then((corpo: { bersagli?: string[] }) => {
-        if (attivo) setBersagli(corpo.bersagli ?? []);
-      })
-      .catch(() => {
-        if (attivo) setBersagli([]);
-      });
-    return () => {
-      attivo = false;
-    };
-  }, []);
 
   // Le voci "avanzate" riguardano chi ha costruito lo strumento (l'assistente
   // da riga di comando, gli agenti che sincronizzano le regole): un tester non
@@ -268,7 +252,17 @@ export default function ControlloPage() {
 
           <SezioneAmbienti onCambiato={carica} />
 
-          <ConfiguraCredenziale bersagli={bersagli} />
+          <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+            <summary
+              className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            >
+              {t('credenzialeApri')}
+            </summary>
+            <div className="p-3 pt-0">
+              <ConfiguraCredenziale />
+            </div>
+          </details>
         </>
       )}
     </div>

@@ -25,11 +25,15 @@ import {
 import { useLanguage } from '@/providers/Providers';
 import { StepDetailModal } from '@/components/StepDetailModal';
 
-const STATUS_STYLES: Record<string, string> = {
-  wanted:      'bg-[#FF6B2C] text-white border-transparent',
-  implemented: 'bg-[#2ECC71] text-white border-transparent',
-  deprecated:  'bg-[#9CA3AF] text-white border-transparent',
-  proposed:    'bg-[#F97316] text-white border-transparent',
+// Colore del testo del badge di stato: sullo stesso schema di superficie chiara
+// + bordo neutro usato in tutto il cruscotto, mai un colore pieno con testo
+// bianco sopra (quei colori non hanno una coppia chiaro/scuro pensata per
+// reggere il bianco sopra — solo --blu-fondo ce l'ha).
+const STATUS_COLOR: Record<string, string> = {
+  wanted: 'var(--ambra)',
+  implemented: 'var(--verde)',
+  deprecated: 'var(--testo-tenue)',
+  proposed: 'var(--blu)',
 };
 
 export default function StepCatalog() {
@@ -92,7 +96,10 @@ export default function StepCatalog() {
     <StepDetailModal step={selectedStep} onClose={() => setSelectedStep(null)} />
     <div className="space-y-4">
       {/* Filtri */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div
+        className="flex flex-wrap items-center gap-3 rounded-lg border p-3"
+        style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      >
         <Input
           type="search"
           placeholder={t.catalog.search}
@@ -125,13 +132,16 @@ export default function StepCatalog() {
           </SelectContent>
         </Select>
 
-        <span className="ml-auto text-sm text-muted-foreground">
+        <span className="ml-auto text-sm" style={{ color: 'var(--testo-tenue)' }}>
           {filtered.length} {t.catalog.step}
         </span>
       </div>
 
       {/* Tabella */}
-      <div className="overflow-x-auto rounded-lg border">
+      <div
+        className="overflow-x-auto rounded-lg border"
+        style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      >
         <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
@@ -164,7 +174,12 @@ export default function StepCatalog() {
                   <TableCell>{step.area}</TableCell>
                   <TableCell>
                     <Badge
-                      className={STATUS_STYLES[step.status] ?? 'bg-muted text-muted-foreground border-transparent'}
+                      variant="outline"
+                      style={{
+                        borderColor: 'var(--bordo)',
+                        background: 'var(--superficie-tenue)',
+                        color: STATUS_COLOR[step.status] ?? 'var(--testo-tenue)',
+                      }}
                     >
                       {step.status}
                     </Badge>

@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
-import { avvia } from '@/lib/registro';
+import { avvia, operazioneInCorso } from '@/lib/registro';
 import type { NomeComando, Parametri } from '@/lib/esecuzione';
 import { daAltraOrigine } from '@/lib/stessa-origine';
+
+/**
+ * Di sola lettura: dice se c'e' un'operazione che tiene occupato il browser,
+ * cosi' una schermata appena aperta puo' riagganciarsi invece di far finta di
+ * niente. Nessuna guardia sull'origine (non cambia nulla, non fa nulla), e
+ * niente righe nella risposta: possono contenere i nomi che il tester sta
+ * dando ai passi.
+ */
+export async function GET() {
+  return NextResponse.json({ operazione: operazioneInCorso() ?? null });
+}
 
 export async function POST(request: Request) {
   if (daAltraOrigine(request)) {

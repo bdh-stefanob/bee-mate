@@ -662,7 +662,8 @@ function EditorInner() {
               />
               {settings.githubToken && (
                 <button onClick={() => setPreview({ kind: 'feature' })} disabled={isCommitting || !content.trim()}
-                  className="px-3 py-1.5 text-sm rounded-md border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="min-h-10 px-3 text-sm rounded-md border transition-colors hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ borderColor: 'var(--blu)', color: 'var(--blu)' }}>
                   {isCommitting ? t.editor.commitGitHubLoading : t.editor.commitGitHub}
                 </button>
               )}
@@ -674,16 +675,19 @@ function EditorInner() {
                 }}
                 disabled={!content.trim()}
                 title="Imposta cartella / tag di placement"
-                className="px-3 py-1.5 text-sm rounded-md border border-violet-600 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="min-h-10 px-3 text-sm rounded-md border transition-colors hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}
               >
                 Cartella
               </button>
               <button onClick={handleSave} disabled={isSaving || !content.trim()} title="Ctrl+S"
-                className="px-3 py-1.5 text-sm rounded-md border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                className="min-h-10 px-3 text-sm rounded-md border transition-colors hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ borderColor: 'var(--verde)', color: 'var(--verde)' }}>
                 {isSaving ? 'Saving…' : 'Save'}
               </button>
               <button onClick={handleDownload}
-                className="px-3 py-1.5 text-sm rounded-md border border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors">
+                className="min-h-10 px-3 text-sm rounded-md border transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}>
                 {t.editor.download}
               </button>
             </div>
@@ -704,7 +708,7 @@ function EditorInner() {
                   }`}
                 >
                   <span className="max-w-[140px] truncate font-medium">{tab.label}</span>
-                  {tab.dirty && <span className="text-amber-500 text-[10px]" title="Modifiche non salvate">●</span>}
+                  {tab.dirty && <span className="text-[10px]" style={{ color: 'var(--ambra)' }} title="Modifiche non salvate">●</span>}
                   <button
                     onClick={e => { e.stopPropagation(); closeTab(tab.id); }}
                     className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity leading-none"
@@ -755,34 +759,42 @@ function EditorInner() {
 
               {/* Unknown steps panel */}
               {unknownSteps.length > 0 && (
-                <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-2 text-xs text-orange-700 dark:text-orange-300">
+                <div
+                  className="rounded-md border px-3 py-2 text-xs"
+                  style={{ borderColor: 'var(--ambra)', background: 'var(--superficie)', color: 'var(--ambra)' }}
+                >
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold">⚠ {unknownSteps.length} step non nel catalogo</p>
                     <button
                       onClick={() => { setProposalSelected(new Set(unknownSteps.map(s => s.expression))); setProposalOpen(o => !o); }}
-                      className="shrink-0 text-[10px] px-2 py-0.5 rounded border border-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors"
+                      className="min-h-10 shrink-0 text-[10px] px-2 rounded border transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                      style={{ borderColor: 'var(--ambra)' }}
                     >
                       {proposalOpen ? 'Chiudi ▲' : 'Proponi al catalogo ▼'}
                     </button>
                   </div>
                   {proposalOpen && (
-                    <div className="mt-2 pt-2 border-t border-orange-200 dark:border-orange-800 flex flex-col gap-2">
+                    <div className="mt-2 pt-2 border-t flex flex-col gap-2" style={{ borderColor: 'var(--bordo)' }}>
                       <div className="space-y-1">
                         {unknownSteps.map(({ expression: s, keyword: kw, page }) => (
-                          <label key={s} className="flex items-start gap-2 cursor-pointer">
+                          <label key={s} className="flex items-start gap-2 cursor-pointer" style={{ color: 'var(--testo)' }}>
                             <input type="checkbox" checked={proposalSelected.has(s)}
                               onChange={() => setProposalSelected(prev => {
                                 const next = new Set(prev);
                                 if (next.has(s)) { next.delete(s); } else { next.add(s); }
                                 return next;
                               })}
-                              className="mt-0.5 shrink-0 accent-orange-600"
+                              className="mt-0.5 shrink-0"
+                              style={{ accentColor: 'var(--ambra)' }}
                             />
                             <span className="font-mono flex-1 min-w-0">
-                              <span className="text-muted-foreground mr-1">{kw}</span>{s}
+                              <span className="mr-1" style={{ color: 'var(--testo-tenue)' }}>{kw}</span>{s}
                             </span>
                             {page && (
-                              <span className="shrink-0 text-[9px] px-1 py-0.5 rounded bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-200 font-medium">
+                              <span
+                                className="shrink-0 text-[9px] px-1 py-0.5 rounded border font-medium"
+                                style={{ borderColor: 'var(--ambra)', color: 'var(--ambra)' }}
+                              >
                                 {page}
                               </span>
                             )}
@@ -791,11 +803,13 @@ function EditorInner() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => setPreview({ kind: 'proposal' })} disabled={isProposing || proposalSelected.size === 0}
-                          className="text-[10px] px-2 py-0.5 rounded bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:opacity-50">
+                          className="min-h-10 text-[10px] px-2 rounded text-white transition-colors disabled:opacity-50"
+                          style={{ background: 'var(--ambra)' }}>
                           {isProposing ? 'Aggiunta…' : `Proponi ${proposalSelected.size} step al catalogo`}
                         </button>
                         <button onClick={() => setProposalOpen(false)}
-                          className="text-[10px] px-2 py-0.5 rounded border border-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors">
+                          className="min-h-10 text-[10px] px-2 rounded border transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                          style={{ borderColor: 'var(--ambra)' }}>
                           Ignora
                         </button>
                       </div>

@@ -9,9 +9,14 @@ import {
   type BucoRiepilogo,
   type PassoRiepilogo,
 } from '@/components/cruscotto/RiepilogoTraccia';
+import type { NomeComando } from '@/lib/esecuzione';
+import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
 
 /** Percorso fisso, dentro reports/: la generazione ci scrive l'elenco di cosa ha prodotto. */
 const MANIFESTO = 'reports/cruscotto/generazione-manifesto.json';
+
+/** Dove questa schermata ricorda, dentro la sessione, quale operazione sta aspettando. */
+const CHIAVE_RIAGGANCIO = 'cruscotto.riaggancio.registra';
 
 interface DatiRiepilogo {
   passi: PassoRiepilogo[];
@@ -19,11 +24,20 @@ interface DatiRiepilogo {
   buchi: BucoRiepilogo[];
 }
 
+type Azione = 'registrazione' | 'generazione';
+
+interface DatiRiaggancio {
+  id: string;
+  azione: Azione;
+  ambiente: string;
+}
+
 type Fase =
   | { tipo: 'scelta' }
-  | { tipo: 'in-corso'; id: string; azione: 'registrazione' | 'generazione' }
+  | { tipo: 'in-corso'; id: string; azione: Azione }
   | { tipo: 'riepilogo'; dati: DatiRiepilogo }
-  | { tipo: 'errore'; messaggio: string };
+  | { tipo: 'errore'; messaggio: string }
+  | { tipo: 'altrove'; comando: NomeComando };
 
 interface RispostaEsegui {
   id?: string;
@@ -37,6 +51,17 @@ interface RispostaConfigurazione {
 interface RispostaTracciaUltima {
   percorso: string | null;
 }
+
+interface RispostaOperazioneInCorso {
+  operazione: { id: string; nome: NomeComando; avvio: string } | null;
+}
+
+/** Cosa dire di un'operazione lunga che gira altrove, e dove mandare a guardarla. */
+const ALTROVE: Partial<Record<NomeComando, { chiaveComando: string; percorso: string; chiaveVai: string }>> = {
+  test: { chiaveComando: 'comandoTest', percorso: '/esecuzione', chiaveVai: 'vaiAEsecuzione' },
+  sessione: { chiaveComando: 'comandoSessione', percorso: '/controllo', chiaveVai: 'vaiAControllo' },
+  scansione: { chiaveComando: 'comandoScansione', percorso: '/controllo', chiaveVai: 'vaiAControllo' },
+};
 
 /**
  * Registra: il tester sceglie l'ambiente, registra una sessione nel browser
@@ -92,6 +117,9 @@ export default function RegistraPage() {
       sorgente.addEventListener('fine', (evento) => {
         const dati = JSON.parse((evento as MessageEvent).data) as { stato: string };
         sorgente.close();
+        // Comunque vada a finire, l'operazione non c'e' piu': niente da
+        // riagganciare la prossima volta che si apre questa schermata.
+        cancellaRiaggancio(CHIAVE_RIAGGANCIO);
         if (dati.stato === 'conclusa') {
           quandoConclusa();
         } else if (dati.stato === 'interrotta') {
@@ -149,6 +177,11 @@ export default function RegistraPage() {
         return;
       }
       setFase({ tipo: 'in-corso', id: corpo.id, azione: 'registrazione' });
+      scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
+        id: corpo.id,
+        azione: 'registrazione',
+        ambiente,
+      });
       osserva(corpo.id, 'registrazione', () => {
         void caricaRiepilogo();
       });
@@ -177,11 +210,16 @@ export default function RegistraPage() {
         return;
       }
       setFase({ tipo: 'in-corso', id: corpo.id, azione: 'generazione' });
+      scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
+        id: corpo.id,
+        azione: 'generazione',
+        ambiente,
+      });
       osserva(corpo.id, 'generazione', () =>
         // Il bersaglio su cui si e' appena registrato viaggia nella query
         // string: senza, la schermata di esecuzione ricadrebbe sul primo
         // dell'elenco, che puo' non essere quello appena usato.
-        router.push(`/esecuzione?bersaglio=${encodeURIComponent(ambiente)}`)
+        router.push(ambiente ? `/esecuzione?bersaglio=${encodeURIComponent(ambiente)}` : '/esecuzione')
       );
     } catch {
       setFase({ tipo: 'errore', messaggio: t('erroreParlareCruscotto') });
@@ -197,6 +235,59 @@ export default function RegistraPage() {
       // comunque: il tester vede l'attesa continuare e puo' riprovare.
     });
   }, [fase]);
+
+  // Riaggancio: appena la schermata si apre, prima di tutto chiede se c'era
+  // gia' qualcosa in corso — nella sessione di lavoro (l'ha avviata questa
+  // stessa schermata) o nel registro del server (avviata da un'altra). Un
+  // solo controllo, non un intervallo: se non c'e' niente, la schermata resta
+  // ferma finche' il tester non preme un pulsante.
+  useEffect(() => {
+    let attivo = true;
+
+    const riagganciati = (id: string, azione: Azione, ambienteRicordato: string) => {
+      if (ambienteRicordato) setAmbiente(ambienteRicordato);
+      setFase({ tipo: 'in-corso', id, azione });
+      osserva(id, azione, () => {
+        if (azione === 'registrazione') {
+          void caricaRiepilogo();
+        } else {
+          router.push(
+            ambienteRicordato
+              ? `/esecuzione?bersaglio=${encodeURIComponent(ambienteRicordato)}`
+              : '/esecuzione'
+          );
+        }
+      });
+    };
+
+    const salvato = leggiRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO);
+    if (salvato) {
+      riagganciati(salvato.id, salvato.azione, salvato.ambiente);
+      return;
+    }
+
+    fetch('/api/esegui')
+      .then((r) => r.json())
+      .then((d: RispostaOperazioneInCorso) => {
+        if (!attivo || !d.operazione) return;
+        const { id, nome } = d.operazione;
+        if (nome === 'registrazione' || nome === 'generazione') {
+          riagganciati(id, nome, '');
+        } else {
+          setFase({ tipo: 'altrove', comando: nome });
+        }
+      })
+      .catch(() => {
+        // Nessuna notizia non e' una brutta notizia: si resta sulla scelta.
+      });
+
+    return () => {
+      attivo = false;
+    };
+    // Solo all'apertura della schermata: `osserva` e `caricaRiepilogo`
+    // dipendono solo da `t`, che non cambia a meta' sessione.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -302,6 +393,26 @@ export default function RegistraPage() {
             style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           >
             {t('riprova')}
+          </button>
+        </div>
+      )}
+
+      {fase.tipo === 'altrove' && (
+        <div
+          className="flex items-center gap-3 rounded-lg border p-4 text-sm"
+          style={{ borderColor: 'var(--ambra)', color: 'var(--testo)', background: 'var(--superficie-tenue)' }}
+        >
+          <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+          <span className="flex-1">
+            {t('altroInCorso', { comando: t(ALTROVE[fase.comando]?.chiaveComando ?? 'comandoTest') })}
+          </span>
+          <button
+            type="button"
+            onClick={() => router.push(ALTROVE[fase.comando]?.percorso ?? '/controllo')}
+            className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          >
+            {t(ALTROVE[fase.comando]?.chiaveVai ?? 'vaiAControllo')}
           </button>
         </div>
       )}

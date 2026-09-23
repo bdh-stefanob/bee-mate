@@ -1,13 +1,35 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { PlayCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { cn } from '@/lib/utils';
+import type { NomeComando } from '@/lib/esecuzione';
+import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
+
+/** Dove questa schermata ricorda, dentro la sessione, quale esecuzione sta aspettando. */
+const CHIAVE_RIAGGANCIO = 'cruscotto.riaggancio.esecuzione';
+
+interface DatiRiaggancio {
+  id: string;
+  bersaglio: string;
+  avviatoAlle: number;
+}
+
+interface RispostaOperazioneInCorso {
+  operazione: { id: string; nome: NomeComando; avvio: string } | null;
+}
+
+/** Cosa dire di un'operazione lunga che gira altrove, e dove mandare a guardarla. */
+const ALTROVE: Partial<Record<NomeComando, { chiaveComando: string; percorso: string; chiaveVai: string }>> = {
+  registrazione: { chiaveComando: 'comandoRegistrazione', percorso: '/registra', chiaveVai: 'vaiARegistra' },
+  sessione: { chiaveComando: 'comandoSessione', percorso: '/controllo', chiaveVai: 'vaiAControllo' },
+  scansione: { chiaveComando: 'comandoScansione', percorso: '/controllo', chiaveVai: 'vaiAControllo' },
+};
 
 const CHIAVE_ESITO: Record<Passo['esito'], 'esitoPassato' | 'esitoFallito' | 'esitoSaltato'> = {
   passato: 'esitoPassato',
@@ -151,7 +173,9 @@ function Interruttore({
 function EsecuzioneContenuto() {
   const t = useTranslations('Esecuzione');
   const locale = useLocale();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const [altrove, setAltrove] = useState<NomeComando | null>(null);
   const [bersagli, setBersagli] = useState<string[]>([]);
   const [bersaglio, setBersaglio] = useState('');
   const [guardaIlBrowser, setGuardaIlBrowser] = useState(false);
@@ -173,6 +197,57 @@ function EsecuzioneContenuto() {
   const [durataMs, setDurataMs] = useState<number | null>(null);
 
   const inCorso = statoCorrente === 'in corso';
+
+  // Riaggancio: appena la schermata si apre, prima di tutto chiede se c'era
+  // gia' un test in corso — nella sessione di lavoro (l'ha avviato questa
+  // stessa schermata) o nel registro del server (avviato da un'altra, per
+  // esempio Registra). Un solo controllo, non un intervallo: gli effetti che
+  // seguono (passi e flusso) si agganciano da soli non appena `id` e
+  // `statoCorrente` cambiano.
+  useEffect(() => {
+    let attivo = true;
+
+    const riagganciati = (idOp: string, bersaglioOp: string, avviatoAlleOp: number | null) => {
+      if (bersaglioOp) setBersaglio((corrente) => corrente || bersaglioOp);
+      setErrore(null);
+      setPassi([]);
+      setRigheOutput([]);
+      setCodiceUscita(null);
+      setDurataMs(null);
+      setAvviatoAlle(avviatoAlleOp);
+      setId(idOp);
+      setStatoCorrente('in corso');
+    };
+
+    const salvato = leggiRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO);
+    if (salvato) {
+      riagganciati(salvato.id, salvato.bersaglio, salvato.avviatoAlle);
+      return;
+    }
+
+    fetch('/api/esegui')
+      .then((r) => r.json())
+      .then((d: RispostaOperazioneInCorso) => {
+        if (!attivo || !d.operazione) return;
+        const { id: idOp, nome, avvio } = d.operazione;
+        if (nome === 'test') {
+          const avviatoAlleOp = Number.isNaN(Date.parse(avvio)) ? null : Date.parse(avvio);
+          riagganciati(idOp, '', avviatoAlleOp);
+        } else {
+          setAltrove(nome);
+        }
+      })
+      .catch(() => {
+        // Nessuna notizia non e' una brutta notizia: si resta sulla scelta.
+      });
+
+    return () => {
+      attivo = false;
+    };
+    // Solo all'apertura della schermata: `riagganciati` non dipende da niente
+    // che possa cambiare (solo funzioni di stato, stabili fra un render e
+    // l'altro).
+  }, []);
 
   useEffect(() => {
     let attivo = true;
@@ -229,6 +304,9 @@ function EsecuzioneContenuto() {
       }
     };
     const suFine = (evento: MessageEvent<string>) => {
+      // Comunque vada a finire, l'esecuzione non c'e' piu': niente da
+      // riagganciare la prossima volta che si apre questa schermata.
+      cancellaRiaggancio(CHIAVE_RIAGGANCIO);
       try {
         const dati = JSON.parse(evento.data) as { stato?: StatoEsecuzione; codice?: number | null };
         setStatoCorrente(dati.stato ?? 'conclusa');
@@ -289,9 +367,15 @@ function EsecuzioneContenuto() {
         setErrore(dati.errore ?? t('erroreLancio'));
         return;
       }
+      const avviatoAlleOra = Date.now();
       setId(dati.id);
-      setAvviatoAlle(Date.now());
+      setAvviatoAlle(avviatoAlleOra);
       setStatoCorrente('in corso');
+      scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
+        id: dati.id,
+        bersaglio,
+        avviatoAlle: avviatoAlleOra,
+      });
     } catch {
       setErrore(t('erroreContattoCruscotto'));
     } finally {
@@ -304,6 +388,26 @@ function EsecuzioneContenuto() {
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
         {t('titolo')}
       </h1>
+
+      {altrove && (
+        <div
+          className="flex items-center gap-3 rounded-lg border p-4 text-sm"
+          style={{ borderColor: 'var(--ambra)', color: 'var(--testo)', background: 'var(--superficie-tenue)' }}
+        >
+          <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+          <span className="flex-1">
+            {t('altroInCorso', { comando: t(ALTROVE[altrove]?.chiaveComando ?? 'comandoSessione') })}
+          </span>
+          <button
+            type="button"
+            onClick={() => router.push(ALTROVE[altrove]?.percorso ?? '/controllo')}
+            className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          >
+            {t(ALTROVE[altrove]?.chiaveVai ?? 'vaiAControllo')}
+          </button>
+        </div>
+      )}
 
       <section
         className="flex flex-col gap-4 rounded-lg border p-4"

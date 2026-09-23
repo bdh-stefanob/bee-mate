@@ -16,9 +16,9 @@
     "erroreTitolo": "Non sono riuscito a controllare la macchina",
     "riprova": "Riprova",
     "avanzate": "Avanzate ({n})",
-    "credenzialeTitolo": "Configura una credenziale",
-    "credenzialeAmbientiNoti": "Ambienti noti: {elenco}.",
-    "credenzialeNessunAmbiente": "Nessun ambiente configurato ancora: la voce Ambienti qui sopra dice come iniziare.",
+    "credenzialeApri": "Altre variabili (avanzato)",
+    "credenzialeTitolo": "Altre variabili",
+    "credenzialeDescrizione": "Per le variabili che non appartengono a nessun ambiente — per esempio i token di altre integrazioni (Jira, Confluence). Le credenziali di un ambiente si configurano nella sezione Ambienti qui sopra, nella riga di quell'ambiente.",
     "nomeVariabile": "Nome variabile",
     "valore": "Valore",
     "salva": "Salva",
@@ -35,7 +35,16 @@
     "descrizione": "Gli ambienti su cui puoi registrare e lanciare i test. «Accedi adesso» apre una finestra del browser: entra come faresti di solito e poi chiudila — la sessione si salva da sola.",
     "indirizzoNonImpostato": "indirizzo non impostato",
     "indirizzoNonRisolto": "Indirizzo non ancora risolto — manca la variabile {variabile}.",
-    "vaiAConfigura": "Impostala qui sotto",
+    "credenzialiMancanti": "{n, plural, one {Manca # variabile:} other {Mancano # variabili:}} {elenco}",
+    "credenzialiConfigurate": "Credenziali configurate",
+    "compilaCredenziali": "Compila",
+    "compilaCredenzialiAria": "Compila le credenziali mancanti per {nome}",
+    "annullaCompilazione": "Annulla",
+    "salvaCredenziali": "Salva",
+    "salvandoCredenziali": "Salvo…",
+    "credenzialiSalvate": "credenziali salvate",
+    "credenzialiParzialmenteSalvate": "salvata una parte soltanto — controlla quali",
+    "credenzialiNonSalvate": "non sono riuscito a salvarle",
     "accediAdesso": "Accedi adesso",
     "accediAria": "Accedi adesso su {nome}",
     "avvioInCorso": "avvio in corso…",
@@ -73,7 +82,13 @@
     "erroreAvvioRegistrazione": "non sono riuscito ad avviare la registrazione",
     "erroreAvvioGenerazione": "non sono riuscito ad avviare la generazione",
     "erroreParlareCruscotto": "non sono riuscito a parlare con il cruscotto",
-    "riprova": "riprova"
+    "riprova": "riprova",
+    "altroInCorso": "C'è un'altra operazione in corso altrove ({comando}): da qui non si vede il suo avanzamento.",
+    "comandoTest": "un test",
+    "comandoSessione": "una sessione",
+    "comandoScansione": "una scansione",
+    "vaiAEsecuzione": "Vai a Esecuzione",
+    "vaiAControllo": "Vai a Controllo"
   },
   "Esecuzione": {
     "titolo": "Esecuzione",
@@ -97,7 +112,13 @@
     "nessunCodiceUscita": "Nessun codice di uscita ricevuto.",
     "caricamento": "Caricamento…",
     "passiAriaLabel": "Passi del test",
-    "esitoAriaLabel": "Esito del test"
+    "esitoAriaLabel": "Esito del test",
+    "altroInCorso": "C'è un'altra operazione in corso altrove ({comando}): da qui non si vede il suo avanzamento.",
+    "comandoRegistrazione": "una registrazione",
+    "comandoSessione": "una sessione",
+    "comandoScansione": "una scansione",
+    "vaiARegistra": "Vai a Registra",
+    "vaiAControllo": "Vai a Controllo"
   },
   "Riepilogo": {
     "durataLabel": "Durata: {durata}",
@@ -160,7 +181,7 @@
       "conSessione": "{conSessione} con sessione salvata",
       "conSessioneVecchie": "{conSessione} con sessione salvata, di cui {vecchie} più vecchie di 12 ore",
       "aggiungiQui": "Aggiungine uno qui sotto, nella sezione Ambienti.",
-      "controllaIndirizzi": "Controlla gli indirizzi qui sotto, e le credenziali mancanti nel riquadro sotto ancora."
+      "controllaIndirizzi": "Controlla gli indirizzi e le credenziali mancanti nella sezione Ambienti qui sotto, riga per riga."
     },
     "dizionari": {
       "nome": "Dizionari dei componenti",

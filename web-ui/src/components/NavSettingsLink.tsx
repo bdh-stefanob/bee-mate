@@ -8,9 +8,10 @@ export function NavSettingsLink() {
   return (
     <Link
       href="/settings"
-      className="flex items-center gap-1 text-sm text-teal-100 hover:text-white transition-colors"
+      className="min-h-10 inline-flex items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
     >
-      <SettingsIcon className="w-4 h-4" />
+      <SettingsIcon className="w-4 h-4" aria-hidden="true" />
       {t.settings.nav}
     </Link>
   );
