@@ -10,7 +10,7 @@ import { Given, When, Then } from "@cucumber/cucumber";
 import { CustomWorld } from "../../support/world";
 
 /**
- * @intent  Selects a Boots service from the popular services navigation menu.
+ * @intent  Selects a service from the popular services navigation menu.
  * @param   service  The service label (e.g. "Weight loss", "Hair loss", "Acne").
  * @page    BrochureHomePage
  * @area    weight-loss
@@ -40,7 +40,7 @@ When(
 /**
  * @intent  Selects the user's returning-patient status at the start of the flow.
  * @param   status  One of: "I'm New" | "I haven't been here for over 3 months" |
- *                  "I'm using Boots weight loss medicine".
+ *                  "I'm using the weight loss medicine".
  * @page    ServiceBeforePage
  * @area    weight-loss
  * @wanted
@@ -54,7 +54,7 @@ When(
 
 /**
  * @intent  Selects a weight loss medicine with dosage tier and coaching option.
- * @param   medicine  Medicine name: "Wegovy" | "Mounjaro" | "Nevolat" | "Orlistat" |
+ * @param   medicine  Medicine name: "Medicina A" | "Medicina B" | "Medicina C" | "Medicina D" |
  *                    "Xenical" | "Coaching Only".
  * @param   quantity  Dose string (e.g. "0.25mg", "5mg", "3 Pens"). Empty string when
  *                    the medicine has no dosing tiers.

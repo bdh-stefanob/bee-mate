@@ -1,5 +1,6 @@
 // src/steps/app-a/imported/checkout.steps.ts
-// Step skeleton importati da: C:\Users\sbert\OneDrive\Documenti\Claude\Projects\Make me Automation leader of Boots\bdd-automation-scaffold\.claude\worktrees\agent-ae637c55beadcabe4\test-fixtures\sample-import.txt
+// Step skeleton importati da un file di esempio (percorso rimosso: conteneva
+// il nome della cartella di lavoro, e questo repository e' pubblico).
 // Generati il: 2026-06-10T07:27:36.716Z
 // ATTENZIONE: implementazioni da completare manualmente.
 

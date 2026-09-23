@@ -1,5 +1,5 @@
 // src/steps/brochure-clinic/auth.steps.ts
-// Cross-domain login journey: user starts on Boots Brochure and authenticates
+// Cross-domain login journey: user starts on the public site and authenticates
 // into Clinic. Steps are intentionally abstract — SMS detail is hidden inside
 // "completes SMS verification" so UI changes don't break every login scenario.
 
@@ -7,7 +7,7 @@ import { Given, When, Then } from "@cucumber/cucumber";
 import { CustomWorld } from "../../support/world";
 
 /**
- * @intent  Navigates to the Boots Brochure home page as the test entry point.
+ * @intent  Navigates to the the public site home page as the test entry point.
  * @post    Browser is on the Brochure home page.
  * @page    BrochureHomePage
  * @area    brochure-clinic
