@@ -7,6 +7,7 @@ import {
   bersagliDaFile,
   ambientiDaFile,
   scriviBersaglio,
+  scriviLoginBersaglio,
   ambientiConCredenziali,
 } from '@/lib/configurazione';
 
@@ -61,9 +62,19 @@ describe('ambienti con indirizzo, per la sezione Ambienti', () => {
   it('elenca nome e indirizzo, senza il blocco _commento', () => {
     const json = '{"_commento":["x"],"demo":{"url":"https://a.invalid"},"altro":{"url":"${B}"}}';
     expect(ambientiDaFile(json)).toEqual([
-      { nome: 'demo', url: 'https://a.invalid' },
-      { nome: 'altro', url: '${B}' },
+      { nome: 'demo', url: 'https://a.invalid', haLogin: false },
+      { nome: 'altro', url: '${B}', haLogin: false },
     ]);
+  });
+
+  it('dice se un ambiente ha gia\' un blocco login', () => {
+    const json = JSON.stringify({
+      conLogin: { url: 'https://a.invalid', login: { steps: [] } },
+      senzaLogin: { url: 'https://b.invalid' },
+    });
+    const risultato = ambientiDaFile(json);
+    expect(risultato.find((a) => a.nome === 'conLogin')?.haLogin).toBe(true);
+    expect(risultato.find((a) => a.nome === 'senzaLogin')?.haLogin).toBe(false);
   });
 
   it('elenco vuoto se il file e\' assente o malformato, come bersagliDaFile', () => {
@@ -207,5 +218,52 @@ describe('scrittura di un ambiente in bdd-targets.json', () => {
     const dopo = scriviBersaglio('{"a":{"url":"https://a.invalid"}}\r\n', 'b', 'https://b.invalid');
     expect(dopo.includes('\r\n')).toBe(true);
     expect(dopo).not.toMatch(/[^\r]\n/);
+  });
+});
+
+describe('scrittura del blocco login in bdd-targets.json', () => {
+  const login = { steps: [{ fill: { role: 'textbox', name: 'Email' }, value: '${DEMO_USER}' }] };
+
+  it('scrive il login su un ambiente esistente, conservando url e il resto', () => {
+    const prima = JSON.stringify({
+      _commento: ['nota'],
+      demo: { url: 'https://demo.invalid', hint: 'una nota' },
+      altro: { url: 'https://altro.invalid' },
+    });
+    const dopo = scriviLoginBersaglio(prima, 'demo', login);
+    const dati = JSON.parse(dopo);
+    expect(dati._commento).toEqual(['nota']);
+    expect(dati.demo.url).toBe('https://demo.invalid');
+    expect(dati.demo.hint).toBe('una nota');
+    expect(dati.demo.login).toEqual(login);
+    expect(dati.altro).toEqual({ url: 'https://altro.invalid' });
+  });
+
+  it('sostituisce per intero un login gia\' presente (seconda registrazione)', () => {
+    const prima = JSON.stringify({
+      demo: { url: 'https://demo.invalid', login: { steps: [{ click: { role: 'button', name: 'Vecchio' } }] } },
+    });
+    const dopo = scriviLoginBersaglio(prima, 'demo', login);
+    expect(JSON.parse(dopo).demo.login).toEqual(login);
+  });
+
+  it('scrive anche readyWhen quando fornito', () => {
+    const prima = JSON.stringify({ demo: { url: 'https://demo.invalid' } });
+    const dopo = scriviLoginBersaglio(prima, 'demo', login, '/account');
+    expect(JSON.parse(dopo).demo.readyWhen).toBe('/account');
+  });
+
+  it('non tocca readyWhen se non fornito', () => {
+    const prima = JSON.stringify({ demo: { url: 'https://demo.invalid', readyWhen: '/gia-cera' } });
+    const dopo = scriviLoginBersaglio(prima, 'demo', login);
+    expect(JSON.parse(dopo).demo.readyWhen).toBe('/gia-cera');
+  });
+
+  it('rifiuta un ambiente che non esiste ancora', () => {
+    expect(() => scriviLoginBersaglio('{}', 'fantasma', login)).toThrow(/ambiente sconosciuto/);
+  });
+
+  it('rifiuta un nome non valido', () => {
+    expect(() => scriviLoginBersaglio('{}', '_commento', login)).toThrow(/nome di ambiente/);
   });
 });

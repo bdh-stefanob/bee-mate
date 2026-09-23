@@ -12,7 +12,7 @@ import { BERSAGLIO_VALIDO } from './esecuzione';
 // filtro di `missingVars` — avrebbe creato due copie della stessa domanda
 // ("quali variabili servono, quali mancano"): due copie divergono sempre, e
 // la seconda e' sempre quella sbagliata.
-import { requiredVars, missingVars } from '../../../scripts/lib/targets';
+import { requiredVars, missingVars, type LoginRecipe } from '../../../scripts/lib/targets';
 import { loadEnv } from '../../../scripts/lib/atlassian';
 
 const CHIAVE_VALIDA = /^[A-Z][A-Z0-9_]{0,60}$/;
@@ -72,6 +72,8 @@ export function bersagliDaFile(json: string): string[] {
 export interface AmbienteVisibile {
   nome: string;
   url: string;
+  /** Ha gia' un blocco `login` (scritto a mano o derivato da una registrazione)? */
+  haLogin: boolean;
 }
 
 /**
@@ -98,6 +100,9 @@ export function ambientiDaFile(json: string): AmbienteVisibile[] {
       url: valore && typeof valore === 'object' && typeof (valore as { url?: unknown }).url === 'string'
         ? (valore as { url: string }).url
         : '',
+      haLogin: Boolean(
+        valore && typeof valore === 'object' && (valore as { login?: unknown }).login
+      ),
     }));
 }
 
@@ -190,12 +195,13 @@ function validaUrlBersaglio(url: string): void {
  *   un file che non si e' capito rischia di cancellare ambienti preparati a
  *   mano che non si sono nemmeno letti.
  */
-export function scriviBersaglio(contenutoJson: string, nome: string, url: string): string {
-  if (!BERSAGLIO_VALIDO.test(nome) || nome.startsWith('_')) {
-    throw new Error(`nome di ambiente non valido: ${JSON.stringify(nome)}`);
-  }
-  validaUrlBersaglio(url);
-
+/**
+ * Legge `bdd-targets.json` in una forma su cui si puo' scrivere sopra: gli
+ * stessi controlli per entrambe le funzioni che modificano il file, cosi' un
+ * file assente, vuoto, malformato o non-oggetto si comporta allo stesso modo
+ * per chiunque scriva li' dentro.
+ */
+function analizzaBersagli(contenutoJson: string): { dati: Record<string, unknown>; eol: string } {
   const testo = contenutoJson.trim();
   let dati: Record<string, unknown>;
   if (testo === '') {
@@ -212,6 +218,22 @@ export function scriviBersaglio(contenutoJson: string, nome: string, url: string
     }
     dati = { ...(analizzato as Record<string, unknown>) };
   }
+  const eol = contenutoJson.includes('\r\n') ? '\r\n' : '\n';
+  return { dati, eol };
+}
+
+function scriviBersagli(dati: Record<string, unknown>, eol: string): string {
+  const corpo = JSON.stringify(dati, null, 2).replace(/\n/g, eol);
+  return corpo + eol;
+}
+
+export function scriviBersaglio(contenutoJson: string, nome: string, url: string): string {
+  if (!BERSAGLIO_VALIDO.test(nome) || nome.startsWith('_')) {
+    throw new Error(`nome di ambiente non valido: ${JSON.stringify(nome)}`);
+  }
+  validaUrlBersaglio(url);
+
+  const { dati, eol } = analizzaBersagli(contenutoJson);
 
   const esistente = dati[nome];
   if (esistente && typeof esistente === 'object' && !Array.isArray(esistente)) {
@@ -222,8 +244,47 @@ export function scriviBersaglio(contenutoJson: string, nome: string, url: string
     dati[nome] = { url };
   }
 
-  // Il fine riga si conserva, come in scriviVariabile.
-  const eol = contenutoJson.includes('\r\n') ? '\r\n' : '\n';
-  const corpo = JSON.stringify(dati, null, 2).replace(/\n/g, eol);
-  return corpo + eol;
+  return scriviBersagli(dati, eol);
+}
+
+/**
+ * Scrive (o sostituisce) il blocco `login` di un ambiente gia' esistente in
+ * bdd-targets.json — quello che «Registra l'accesso» deriva da una
+ * registrazione vera. Stessa forma pura di `scriviBersaglio`: conserva tutto
+ * il resto del file, compreso l'indirizzo dell'ambiente.
+ *
+ * A differenza di `scriviBersaglio`, l'ambiente deve gia' esistere: il blocco
+ * di accesso non ha senso senza un indirizzo a cui appartiene, e quell'
+ * indirizzo lo scrive solo il form "Aggiungi ambiente". Se il tester registra
+ * l'accesso una seconda volta, il blocco esistente viene sostituito per
+ * intero — e' la stessa registrazione a rimpiazzarlo, non ad accodarsi.
+ *
+ * `readyWhen` si scrive solo se la derivazione l'ha trovato: un ambiente che
+ * ne aveva gia' uno preparato a mano, e per cui l'accesso registrato non ha
+ * cambiato indirizzo, non lo perde.
+ */
+export function scriviLoginBersaglio(
+  contenutoJson: string,
+  nome: string,
+  login: LoginRecipe,
+  readyWhen?: string
+): string {
+  if (!BERSAGLIO_VALIDO.test(nome) || nome.startsWith('_')) {
+    throw new Error(`nome di ambiente non valido: ${JSON.stringify(nome)}`);
+  }
+
+  const { dati, eol } = analizzaBersagli(contenutoJson);
+
+  const esistente = dati[nome];
+  if (!esistente || typeof esistente !== 'object' || Array.isArray(esistente)) {
+    throw new Error(`ambiente sconosciuto: ${JSON.stringify(nome)}`);
+  }
+
+  dati[nome] = {
+    ...(esistente as Record<string, unknown>),
+    ...(readyWhen ? { readyWhen } : {}),
+    login,
+  };
+
+  return scriviBersagli(dati, eol);
 }
