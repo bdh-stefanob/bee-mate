@@ -320,10 +320,34 @@ export function emitSteps(
       const candidates = intent.candidates.length
         ? intent.candidates.map((c) => ` *          - ${c.expression}`).join("\n")
         : " *          (nessuno: serve una formulazione nuova)";
+
+      // I componenti che questo intento ha davvero toccato, dedotti dalla
+      // registrazione — non dal catalogo, che qui ancora non ha una voce per
+      // questa frase. E' l'unico momento in cui l'informazione "questo step
+      // usa questo componente" esiste per uno step wanted: se non la si scrive
+      // ora, va persa, ed e' esattamente il buco che il catalogo misura come
+      // "0 ancorati a componenti di frontend". Una password non si dichiara
+      // mai (`secret`): il nome che porta e' un segnaposto, non un'identita'.
+      const multiPagina = new Set(
+        intent.steps.map((r) => r.fromPage ?? intent.page ?? "")
+      ).size > 1;
+      const componentKeys = new Set<string>();
+      const componentLines: string[] = [];
+      for (const r of intent.steps) {
+        if (r.step.secret) continue;
+        const owner = byKey.get(r.fromPage ?? intent.page ?? "") ?? page;
+        const key = `${r.component.role}\u0000${r.component.name}\u0000${owner.key}`;
+        if (componentKeys.has(key)) continue;
+        componentKeys.add(key);
+        const pageSuffix = multiPagina ? ` page=${owner.className}` : "";
+        componentLines.push(` * @component ${r.component.role} ${ts(r.component.name)}${pageSuffix}`);
+      }
+
       blocks.push(
         `/**\n` +
           ` * @intent  ${phrase}\n` +
           ` * @page    ${page.className}\n` +
+          (componentLines.length ? componentLines.join("\n") + "\n" : "") +
           ` * @wanted\n` +
           ` *\n` +
           ` * Formulazione presa dall'etichetta del tester. Da portare nel catalogo:\n` +
