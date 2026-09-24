@@ -251,7 +251,7 @@
     "flusso": "Flow",
     "flussoEsempio": "e.g. orders",
     "nome": "Scenario name",
-    "destinazione": "It will be saved in {percorso}",
+    "destinazione": "It will be saved in {percorso}, with its steps and Page Objects",
     "salva": "Save and go to Run",
     "salvando": "Saving…",
     "tieni": "Keep it with the recorded scenarios",
@@ -261,6 +261,8 @@
     "erroreNonTrovato": "I can't find the scenario that was just generated. Generate the test again.",
     "erroreNonRegistrato": "This file does not come from a recording, so it can't be moved from here.",
     "erroreTroppi": "There are already too many scenarios with this name: choose another one.",
-    "erroreGenerico": "I couldn't save the scenario."
+    "erroreGenerico": "I couldn't save the scenario.",
+    "errorePassoDuplicato": "These step phrases are already defined by another saved scenario. Two definitions of the same phrase would stop every test run. Record the step with a different name, or align it to the catalog first:",
+    "errorePaginaAMano": "A saved page was edited by hand and lacks methods this scenario needs. Add them by hand, or restore the generation marker:"
   }
 }

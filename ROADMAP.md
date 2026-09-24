@@ -107,7 +107,8 @@ credible, then the rest.
 | A destination still carrying the marker is overwritten; a hand-edited one is left alone and the new file goes next to it (`-2`) | ✅ |
 | "Keep it with the recorded scenarios" leaves it in `src/features/generated/`, as before | ✅ |
 | The Run screen picks what to run: all recorded scenarios (both still in `generated/` and already moved, found by the `@generato` tag), one file, or one scenario; after saving, the new scenario is preselected | ✅ |
-| **Glue of saved scenarios**: step definitions and Page Objects stay in `src/steps/generated/` and `src/pages/generated/`, which are **gitignored** since 2026-09-16 because they carry real page and component names. On another machine the saved scenario is in git but its steps are not | ⚠️ **decision needed**: version the glue too (reverses the 09-16 rule and `CLAUDE.md` rule 4), or keep saved scenarios on the machine |
+| **Glue of saved scenarios** — decided 2026-09-24: versioned too. Steps go to `src/steps/<app>/<flow>/<name>.steps.ts`; Page Objects to `src/pages/<app>/`, shared: an existing one is reused, or **grows** with the missing methods, never loses one; a hand-edited one is never touched. A phrase already defined by another saved scenario stops the save and is listed. Everything is planned before anything is written. The generic check step now lives once in `src/steps/common/verifica.steps.ts` | ✅ done |
+| Reusing an existing step definition instead of stopping on a duplicate phrase (needs Page Objects held by the World instead of module variables) | ⬜ |
 | Refresh the catalog after generating | ⬜ |
 | Pick a whole flow or application in Run | ⬜ |
 

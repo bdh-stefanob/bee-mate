@@ -101,6 +101,14 @@ opens *Run* with it already selected. If a scenario with the same name was
 edited by hand, it is left untouched and yours is saved next to it.
 **Keep it with the recorded scenarios** skips this step.
 
+Two messages you may see when saving:
+
+- **"These step phrases are already defined by another saved scenario"**: two
+  scenarios cannot define the same step phrase. Record the step with a
+  different name, or ask whoever looks after the catalog to align it.
+- **"A saved page was edited by hand…"**: someone owns that page now; the
+  window lists the methods this scenario needs, and they add them.
+
 If you leave the screen while recording, the recording is still there when you
 come back. If another operation is already running, the window says so and
 tells you where to watch it: one operation at a time.

@@ -211,7 +211,7 @@ npm run rules:check
   - La barra del recorder e' solo in italiano ("Fine intento", "Verifica"), mentre
     la finestra in inglese dice "End intent" e "Verify".
 
-- [~] 17. Una casa per ogni scenario — **fatto il 2026-09-24** con S1 albero versionato, S2 app/area del catalogo, S3 sovrascrive solo con il marcatore. Resta da decidere se versionare anche step e Page Object generati (oggi gitignorati): vedi `ROADMAP.md` §4, voce 3
+- [x] 17. Una casa per ogni scenario — **fatto il 2026-09-24** con S1 albero versionato, S2 app/area del catalogo, S3 sovrascrive solo con il marcatore. Deciso e fatto anche il resto: step e Page Object seguono lo scenario e si versionano (Page Object condivise per applicazione, che crescono e non perdono metodi). Aperto: riusare una definizione esistente invece di fermarsi su una frase doppia
   - Perche': gli scenari generati finiscono in `src/features/generated/`, piatti,
     gitignorati, con il nome del file di registrazione; la schermata Esecuzione li
     lancia tutti insieme. Non entrano nell'albero `<app>/<flow>` del portale.

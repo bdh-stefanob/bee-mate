@@ -35,13 +35,21 @@ const MAX_TITOLO = 80;
 const MAX_COPIE = 99;
 
 /** Perche' non si e' salvato: la finestra lo traduce, il messaggio resta per i log e i test. */
-export type CodiceErrore = 'non-registrato' | 'non-trovato' | 'app' | 'flusso' | 'titolo' | 'troppi';
+export type CodiceErrore =
+  | 'non-registrato' | 'non-trovato' | 'app' | 'flusso' | 'titolo' | 'troppi'
+  | 'passo-duplicato' | 'pagina-a-mano';
 
 export class ErroreSalvataggio extends Error {
-  constructor(readonly codice: CodiceErrore, messaggio: string) {
+  /** Cio' che la persona deve vedere per rimediare: le frasi in conflitto, le pagine toccate a mano. */
+  readonly dettagli: string[];
+  constructor(readonly codice: CodiceErrore, messaggio: string, dettagli: string[] = []) {
     super(messaggio);
+    this.dettagli = dettagli;
   }
 }
+
+/** Il marcatore dei file generati: esportato per chi sposta anche step e Page Object. */
+export { MARCATORE };
 
 export interface SceltaScenario {
   app: string;
@@ -117,11 +125,34 @@ function trasforma(testo: string, scelta: SceltaScenario, destinazione: string):
   return righe.join('\n');
 }
 
+/** Cosa si scriverebbe, senza scrivere niente: serve a controllare tutto prima di toccare il disco. */
+export interface PianoScenario extends EsitoSalvataggio {
+  origineAssoluta: string;
+  destinazioneAssoluta: string;
+  testo: string;
+}
+
 export function salvaScenario(
   radiceFeatures: string,
   origine: string,
   scelta: SceltaScenario
 ): EsitoSalvataggio {
+  const piano = pianificaScenario(radiceFeatures, origine, scelta);
+  scriviScenario(piano);
+  return { file: piano.file, sovrascritto: piano.sovrascritto, rinominato: piano.rinominato };
+}
+
+export function scriviScenario(piano: PianoScenario): void {
+  fs.mkdirSync(path.dirname(piano.destinazioneAssoluta), { recursive: true });
+  fs.writeFileSync(piano.destinazioneAssoluta, piano.testo);
+  fs.unlinkSync(piano.origineAssoluta);
+}
+
+export function pianificaScenario(
+  radiceFeatures: string,
+  origine: string,
+  scelta: SceltaScenario
+): PianoScenario {
   const registrati = path.join(radiceFeatures, CARTELLA_REGISTRATI);
   const assoluto = dentroLaCartella(registrati, path.relative(registrati, path.join(radiceFeatures, origine)), '.feature');
   if (!assoluto || !origine.startsWith(`${CARTELLA_REGISTRATI}/`) || origine.includes('..')) {
@@ -156,11 +187,14 @@ export function salvaScenario(
     }
   }
 
-  const destinazione = path.join(radiceFeatures, file);
-  fs.mkdirSync(path.dirname(destinazione), { recursive: true });
-  fs.writeFileSync(destinazione, trasforma(fs.readFileSync(assoluto, 'utf-8'), { app, flusso, titolo }, file));
-  fs.unlinkSync(assoluto);
-  return { file, sovrascritto, rinominato };
+  return {
+    file,
+    sovrascritto,
+    rinominato,
+    origineAssoluta: assoluto,
+    destinazioneAssoluta: path.join(radiceFeatures, file),
+    testo: trasforma(fs.readFileSync(assoluto, 'utf-8'), { app, flusso, titolo }, file),
+  };
 }
 
 /** Applicazioni e aree dichiarate nel catalogo: i valori da proporre al tester. */
