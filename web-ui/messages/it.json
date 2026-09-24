@@ -147,7 +147,13 @@
     "comandoSessione": "una sessione",
     "comandoScansione": "una scansione",
     "vaiARegistra": "Vai a Registra",
-    "vaiAControllo": "Vai a Controllo"
+    "vaiAControllo": "Vai a Controllo",
+    "scenarioEtichetta": "Cosa eseguire",
+    "tuttiIRegistrati": "Tutti gli scenari registrati",
+    "gruppoRegistrato": "Registrato · {nome}",
+    "interoFile": "{n, plural, one {L'unico scenario} other {Tutti i # scenari}} di {file}",
+    "nessunoScenario": "Ancora nessuno scenario eseguibile: prima registra una sessione e genera il test.",
+    "notaDocumentati": "Gli scenari marcati @non-automatizzato sono solo documentazione e non compaiono qui."
   },
   "Riepilogo": {
     "durataLabel": "Durata: {durata}",

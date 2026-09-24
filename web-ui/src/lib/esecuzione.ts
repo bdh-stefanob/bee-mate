@@ -17,6 +17,12 @@ export interface Parametri {
   pulito?: boolean;
   manifesto?: string;
   messaggi?: string;
+  /**
+   * Cosa eseguire, quando non sono "tutti gli scenari registrati": un file
+   * `.feature` sotto `src/features/`, oppure uno solo dei suoi scenari con la
+   * sua riga (`file.feature:12`, la forma che Cucumber capisce da solo).
+   */
+  scenario?: string;
 }
 
 /**
@@ -65,6 +71,22 @@ function percorsoDi(valore: string | undefined, etichetta: string): string {
 }
 
 /**
+ * Uno scenario da eseguire: un `.feature` dentro `src/features/`, con la riga
+ * facoltativa. Stesso criterio dei percorsi di artefatto: si dice cosa e'
+ * ammesso — lettere, cifre, `._-/` — invece di cosa e' vietato, e la riga e'
+ * un numero da 1 in su, uno solo. Tutto il resto arriverebbe a Cucumber come
+ * un argomento che nessuno ha scelto.
+ */
+const SCENARIO_VALIDO = /^src\/features\/[A-Za-z0-9._\/-]{1,200}\.feature(:[1-9][0-9]{0,5})?$/;
+
+function scenarioDi(valore: unknown): string {
+  if (typeof valore !== 'string' || valore.includes('..') || valore.includes('//') || !SCENARIO_VALIDO.test(valore)) {
+    throw new Error(`scenario non valido: ${JSON.stringify(valore)}`);
+  }
+  return valore;
+}
+
+/**
  * Gli eseguibili si chiamano per percorso, non per nome.
  *
  * Prima la riga era `npx ts-node ...`, e su Windows `npx` e' uno script: per
@@ -106,7 +128,9 @@ export function rigaDiComando(
     case 'generazione':
       return script('generate.ts', `manifest=${percorsoDi(p?.manifesto, 'manifesto')}`);
     case 'test': {
-      const argomenti = [bersaglioDi(p), 'generati'];
+      // Senza una scelta, gli scenari usciti dalle registrazioni, come prima.
+      const cosa = p?.scenario !== undefined ? scenarioDi(p.scenario) : 'generati';
+      const argomenti = [bersaglioDi(p), cosa];
       if (p?.vedi) argomenti.push('vedi');
       if (p?.pulito) argomenti.push('pulito');
       if (p?.messaggi) argomenti.push(`messaggi=${percorsoDi(p.messaggi, 'messaggi')}`);

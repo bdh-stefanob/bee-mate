@@ -53,6 +53,7 @@ npm run electron:build:win   # Windows installer
 | POST | `/api/ambiente` | the environment chosen in the sidebar |
 | GET | `/api/traccia`, `/api/traccia/ultima` | summary of a recording, read from the trace |
 | GET | `/api/passi` | the steps of a test run, read from Cucumber's messages |
+| GET | `/api/scenari` | runnable scenarios under `src/features/`, with their line numbers, for "What to run" |
 | POST | `/api/lingua` | the window's language (cookie) |
 
 **Portal**

@@ -114,8 +114,10 @@ the recording file, and the *Run* screen can only run all of them at once.
    `@non-automatizzato` (documented only), `@generated` (from a recording),
    and implemented by hand when neither tag is present. The portal's
    *Features* tree then shows everything in one place.
-3. **The Run screen picks what to run** from that tree: one scenario, a flow,
-   or an application, instead of "all generated".
+3. **The Run screen picks what to run** — ✅ done 2026-09-24: all recorded
+   scenarios, one file, or one scenario (`/api/scenari`, parameter `scenario`
+   of the closed command list). Picking a whole flow or application comes with
+   the tree.
 4. **After generating, the catalog is refreshed** as a command of the
    dashboard's closed list, so new `@wanted` entries appear straight away.
 5. **Wiki test cases stay on the wiki**: they are measured, not moved.

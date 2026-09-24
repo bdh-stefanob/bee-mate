@@ -117,3 +117,45 @@ describe('niente shell, e niente che una shell potrebbe interpretare', () => {
     expect(r.argomenti).toContain('messaggi=reports/cruscotto/test-a1.ndjson');
   });
 });
+
+describe('uno scenario scelto dalla finestra', () => {
+  it('un file intero sostituisce "tutti gli scenari registrati"', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro', scenario: 'src/features/app/flusso/ordine.feature' });
+    expect(r.argomenti).toEqual([
+      'node_modules/ts-node/dist/bin.js',
+      'scripts/test-bersaglio.ts', 'lavoro', 'src/features/app/flusso/ordine.feature',
+    ]);
+  });
+
+  it('uno scenario solo si indica con la sua riga', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro', scenario: 'src/features/generated/x.feature:12', vedi: true });
+    expect(r.argomenti).toContain('src/features/generated/x.feature:12');
+    expect(r.argomenti).not.toContain('generati');
+    expect(r.argomenti).toContain('vedi');
+  });
+
+  it('senza scenario resta il comportamento di prima', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro' });
+    expect(r.argomenti).toContain('generati');
+  });
+
+  it('rifiuta tutto cio\' che non e\' un .feature dentro src/features', () => {
+    for (const veleno of [
+      '../src/features/x.feature',
+      'src/features/../../etc/passwd.feature',
+      '/src/features/x.feature',
+      'src/steps/x.steps.ts',
+      'src/features/x.feature:0',
+      'src/features/x.feature:12:3',
+      'src/features/x y.feature',
+      'src/features/x.feature & del *',
+      'src/features/x.feature\n',
+      'vedi',
+    ]) {
+      expect(
+        () => rigaDiComando('test', { bersaglio: 'x', scenario: veleno }),
+        veleno
+      ).toThrow(/scenario non valido/);
+    }
+  });
+});
