@@ -65,31 +65,26 @@ Same message in all three; only the level of detail changes.
 
 ## The deck
 
-Published as a claude.ai deck (private until shared). 21 slides.
+Published as a claude.ai deck (private until shared). Ten slides, plus two
+in the appendix: one idea per slide, everything shown.
 
 | # | Title | Content |
 |---|---|---|
 | 1 | A shared language for test cases | cover, the six key words |
-| 2 | 85 of every 100 steps are written from scratch | reuse ratio 0.72 and 0.85 as bars |
-| 3 | 7 in 10 intentions appear only once | 246 against 107; grouping removes only 14% |
-| 4 | 107 phrases would cover more than half the steps | 57%, with the arithmetic in three steps |
-| 5 | We need a shared vocabulary, and a way to keep it alive | statement |
-| 6 | Six words carry the whole proposal | the key words |
-| 7 | Three cycles turn around one catalog | language, writing, demonstration |
-| 8 | Writers get the phrase that already exists | validator with its three outcomes |
-| 9 | Write freely, converge every month | expected curve of variants, marked as illustrative |
-| 10 | The ritual: 15 minutes a month, 2–3 people | timeline |
-| 11 | A manual test becomes the scenario | business view of the demonstration |
-| 12 | From a manual test to a replayable test | technical pipeline: trace and inventory in parallel, generator, Kiro, judges, run |
-| 13 | Who decides each link in the chain | script or Kiro, link by link |
-| 14 | Three screens, no terminal | the dashboard |
-| 15 | The building blocks: free, and already in place | Electron + Next.js, Node scripts, Playwright, Cucumber, catalog, Kiro, Confluence reader, judges |
-| 16 | AI proposes, judges decide | what uses AI and what does not |
-| 17 | The chain already works on a real app | proven / in progress |
-| 18 | What stays the same | boundaries |
-| 19 | We ask for one owner of the consolidation | the ask |
-| 20 | Appendix: where the numbers come from | data provenance |
-| 21 | Appendix: questions you will hear | short answers |
+| 2 | 85 of every 100 steps are written from scratch | three numbers: reuse ratio 0.85 (0.72), 246 of 353 intentions appear once, 57% coverage with 107 phrases |
+| 3 | A shared vocabulary that stays alive | the proposal as six key words |
+| 4 | Three cycles turn around one catalog | language, writing, demonstration |
+| 5 | Write freely; the ritual picks the Gold | every day: validator and its three outcomes · every month: the ritual timeline |
+| 6 | From a manual test to a replayable test | the pipeline: trace and inventory in parallel, generator (script), Kiro (optional), judges, run; legend script / AI |
+| 7 | Three screens, no terminal | the dashboard |
+| 8 | Free building blocks; AI proposes, judges decide | eight blocks with status; no AI in 4 of 6 links |
+| 9 | The chain already works on a real app | proven / in progress |
+| 10 | One owner of the consolidation | the ask, and what does not change |
+| A1 | Where the numbers come from | data provenance |
+| A2 | Questions you will hear | short answers |
+
+Kiro reads its agent file even where the IDE shows no agent picker: in the
+chat, ask it to follow `.kiro/agents/bdd-generate.json` and read the brief.
 
 Every demo moment has a backup video, recorded the day before.
 
@@ -138,7 +133,7 @@ pages. Readable without having seen the presentation.
 | Act 4 demo (Record) | ✅ from the dashboard · backup video to record |
 | Act 5 demo (Run) | 🟡 5 of 11 steps: needs task 14, or show a flow without lists |
 | Screenshots for slides and document | ⬜ from the dashboard, on a practice app, never company data |
-| Deck | 🟡 first version published; to review |
+| Deck | 🟡 ten slides published; to review |
 | Written document | ⬜ |
 | Tester one-pager | ⬜ |
 | With/without rules comparison (optional) | ⬜ depends on P8 |
