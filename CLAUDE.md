@@ -1,7 +1,7 @@
 # Istruzioni per l'agente (Claude Code)
 
 Leggi sempre prima di operare:
-- `docs/PANORAMICA.md` — il progetto per intero: problema, metodo, processo, componenti, stato.
+- `docs/OVERVIEW.md` — il progetto per intero: problema, metodo, processo, componenti, stato.
 - `CONTRIBUTING.md` — regole architetturali (4 layer, step canonici, `@intent`, anti-rumore).
 - `ROADMAP.md` — backlog, ordine di lavoro, cosa NON costruire.
 

@@ -18,7 +18,7 @@
 
 | Doc | Contenuto | Stato |
 |---|---|---|
-| [../PANORAMICA.md](../PANORAMICA.md) | **Il progetto per intero**: problema, metodo, processo, componenti, stato, cosa manca. Da qui si costruiscono slide e documenti | ✅ 2026-09-24 |
+| [../OVERVIEW.md](../OVERVIEW.md) | **Il progetto per intero**: problema, metodo, processo, componenti, stato, cosa manca. Da qui si costruiscono slide e documenti | ✅ 2026-09-24 |
 | [01-analisi-criticita.md](01-analisi-criticita.md) | Analisi da senior tester: criticita', rischi, cosa manca | ✅ completo |
 | [02-design.md](02-design.md) | Architettura del sistema, i 4 blocchi, i confini | 🟡 Sez. 1-2 costruite, 3-7 da scrivere |
 | [../../.amazonq/rules/](../../.amazonq/rules/) | **Sorgente** delle regole per l'assistente: metodo, come si lavora, lezioni gia' pagate, layer, catalogo. `.kiro/steering/` si genera da qui | ✅ completo |
@@ -31,8 +31,8 @@
 | [../../scripts/CONFLUENCE-API-NOTES.md](../../scripts/CONFLUENCE-API-NOTES.md) | Ricerca sulle API Confluence + 7 assunzioni da confermare al primo run | ✅ completo |
 | [06-rituale.md](06-rituale.md) | **Il processo**: consolidamento mensile del linguaggio, 15 minuti, con i comandi per eseguirlo | ✅ completo |
 | [03-piano-demo.md](03-piano-demo.md) | **Sceneggiatura della demo.** Decide lo scope, non lo riassume: cio' che non e' in scena non si costruisce | ✅ completo |
-| [04-presentazione.md](04-presentazione.md) | **I materiali**: tre pubblici, scaletta delle slide, struttura del documento Word, scheda per i tester | 🟡 impianto scritto, materiali da produrre |
-| [../GUIDA-CRUSCOTTO.md](../GUIDA-CRUSCOTTO.md) | Guida del cruscotto per il tester: Controllo, Registra, Esecuzione | ✅ |
+| [../PRESENTATION.md](../PRESENTATION.md) | **I materiali**: tre pubblici, scaletta delle slide, struttura del documento Word, scheda per i tester | 🟡 impianto scritto, materiali da produrre |
+| [../TESTER-DASHBOARD-GUIDE.md](../TESTER-DASHBOARD-GUIDE.md) | Guida del cruscotto per il tester: Controllo, Registra, Esecuzione | ✅ |
 | [../superpowers/specs/](../superpowers/specs/2026-09-22-cruscotto-tester-design.md) | Specifica del **cruscotto** per il tester, e il suo piano | ✅ MVP costruito |
 
 ## Il problema in una riga
@@ -148,7 +148,7 @@ descritto in N modi diversi, e il costo di riuso supera il costo di riscrivere.
 Il metodo si chiama **Specification by Demonstration** (D9): il tester esegue il test a
 mano, la sessione viene registrata, e da li' si derivano scenario e automazione.
 
-> Aggiornato al 2026-09-24. Quadro completo in [`../PANORAMICA.md`](../PANORAMICA.md).
+> Aggiornato al 2026-09-24. Quadro completo in [`../OVERVIEW.md`](../OVERVIEW.md).
 
 ```
 tester esegue a mano  →  traccia semantica          ✅  provata sul campo (P1)

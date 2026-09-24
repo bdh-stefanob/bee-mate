@@ -1,88 +1,88 @@
-# BDD Catalog — app desktop
+# BDD Catalog — desktop app
 
-L'app ha due facce sullo stesso server Next.js, impacchettato con Electron:
+The app has two faces on the same Next.js server, packaged with Electron:
 
-- il **cruscotto** per il tester manuale: Controllo, Registra, Esecuzione.
-  Specifica in `../docs/superpowers/specs/2026-09-22-cruscotto-tester-design.md`,
-  guida d'uso in `../docs/GUIDA-CRUSCOTTO.md`;
-- il **portale** per scrivere scenari con il catalogo: catalogo, editor, feature,
-  componenti, tag, impostazioni. Guida d'uso in `../docs/USER-GUIDE.md`.
+- the **dashboard** for manual testers: Check-up, Record, Run.
+  Specification in `../docs/superpowers/specs/2026-09-22-cruscotto-tester-design.md`,
+  user guide in `../docs/TESTER-DASHBOARD-GUIDE.md`;
+- the **portal** for writing scenarios with the catalog: catalog, editor,
+  features, components, tags, settings. User guide in `../docs/USER-GUIDE.md`.
 
-La radice `/` reindirizza a `/controllo`.
+The root `/` redirects to `/controllo`.
 
-## Avvio
+## Getting started
 
 ```bash
-cd web-ui            # le rotte risolvono la radice del repository da qui
+cd web-ui            # routes resolve the repository root from here
 npm install
 npm run dev          # http://localhost:3000
-npm run electron:dev # l'app desktop, in sviluppo
+npm run electron:dev # the desktop app, in development
 npm test             # vitest
 npm run build
-npm run electron:build:win   # installatore Windows
+npm run electron:build:win   # Windows installer
 ```
 
-## Pagine
+## Pages
 
-| URL | Gruppo | Cosa fa |
+| URL | Group | What it does |
 |---|---|---|
-| `/controllo` | cruscotto | stato della macchina, ambienti, credenziali, accesso |
-| `/registra` | cruscotto | registra una sessione, mostra cosa ha capito, genera il test |
-| `/esecuzione` | cruscotto | lancia il test, passi in tempo reale, schermata al fallimento |
-| `/portale` | portale | catalogo degli step, cercabile e filtrabile |
-| `/editor` | portale | editor Gherkin con autocomplete vincolato al catalogo |
-| `/features` | portale | i `.feature` del repository, per applicazione e flusso |
-| `/components` | portale | per ogni componente di frontend, quanti step lo usano |
-| `/tags` | portale | tag delle pagine, con step e file che li usano |
-| `/settings` | portale | integrazioni (GitHub, Jira), identita' di commit |
+| `/controllo` | dashboard | machine status, environments, credentials, sign-in |
+| `/registra` | dashboard | records a session, shows what it understood, generates the test |
+| `/esecuzione` | dashboard | runs the test, steps live, screenshot on failure |
+| `/portale` | portal | step catalog, searchable and filterable |
+| `/editor` | portal | Gherkin editor with catalog-only autocomplete |
+| `/features` | portal | the repository's `.feature` files, by application and flow |
+| `/components` | portal | for each UI component, how many steps use it |
+| `/tags` | portal | page tags, with the steps and files that use them |
+| `/settings` | portal | integrations (GitHub, Jira), commit identity |
 
-## Rotte API
+## API routes
 
-**Cruscotto**
+**Dashboard**
 
-| Metodo | Rotta | Cosa fa |
+| Method | Route | What it does |
 |---|---|---|
-| POST | `/api/esegui` | avvia un comando dell'**elenco chiuso** (`src/lib/esecuzione.ts`), restituisce l'id |
-| GET | `/api/esegui` | l'operazione in corso, se c'e' (per riprenderla tornando sulla schermata) |
-| GET | `/api/esegui/[id]/flusso` | eventi dell'esecuzione (Server-Sent Events) |
-| POST | `/api/esegui/[id]/ferma` | interrompe |
-| GET | `/api/controllo` | la diagnosi della macchina, strutturata |
-| GET, POST | `/api/configurazione` | elenca gli ambienti configurati (solo nomi e stato); scrive una variabile in `.env`, senza mai rileggerne il valore |
-| POST, DELETE | `/api/configurazione/ambienti` | aggiunge, modifica ed elimina un ambiente in `bdd-targets.json` |
-| POST | `/api/configurazione/ambienti/login` | ricava il blocco di accesso da una registrazione |
-| POST | `/api/ambiente` | l'ambiente scelto nella barra laterale |
-| GET | `/api/traccia`, `/api/traccia/ultima` | il riepilogo di una registrazione, letto dalla traccia |
-| GET | `/api/passi` | i passi di un test, letti dai messaggi di Cucumber |
-| POST | `/api/lingua` | la lingua della finestra (cookie) |
+| POST | `/api/esegui` | starts a command from the **closed list** (`src/lib/esecuzione.ts`), returns its id |
+| GET | `/api/esegui` | the running operation, if any (so a screen can pick it up again) |
+| GET | `/api/esegui/[id]/flusso` | events of the run (Server-Sent Events) |
+| POST | `/api/esegui/[id]/ferma` | stops it |
+| GET | `/api/controllo` | the machine diagnosis, structured |
+| GET, POST | `/api/configurazione` | lists configured environments (names and status only); writes a variable to `.env` without ever reading its value back |
+| POST, DELETE | `/api/configurazione/ambienti` | adds, updates and deletes an environment in `bdd-targets.json` |
+| POST | `/api/configurazione/ambienti/login` | derives the sign-in block from a recording |
+| POST | `/api/ambiente` | the environment chosen in the sidebar |
+| GET | `/api/traccia`, `/api/traccia/ultima` | summary of a recording, read from the trace |
+| GET | `/api/passi` | the steps of a test run, read from Cucumber's messages |
+| POST | `/api/lingua` | the window's language (cookie) |
 
-**Portale**
+**Portal**
 
-| Metodo | Rotta | Cosa fa |
+| Method | Route | What it does |
 |---|---|---|
 | GET | `/api/catalog` | `step-catalog.json` |
-| POST | `/api/catalog/propose` | propone step nuovi (`@wanted`) |
-| GET, POST | `/api/features` | elenca e salva i `.feature` |
-| POST | `/api/features/move` | sposta un `.feature` |
-| POST | `/api/lint` | valida un testo Gherkin |
-| POST | `/api/import` | importa scenari da testo |
-| GET | `/api/download` | scarica un `.feature` |
-| PUT | `/api/enums` | aggiorna i valori ammessi di un parametro |
-| GET | `/api/tags` | aggregato dei tag |
-| GET | `/api/git/status` | stato del repository |
-| POST | `/api/github/push` | commit su GitHub |
-| POST | `/api/jira/sync` | sincronizzazione con Jira |
+| POST | `/api/catalog/propose` | proposes new steps (`@wanted`) |
+| GET, POST | `/api/features` | lists and saves `.feature` files |
+| POST | `/api/features/move` | moves a `.feature` file |
+| POST | `/api/lint` | validates Gherkin text |
+| POST | `/api/import` | imports scenarios from text |
+| GET | `/api/download` | downloads a `.feature` file |
+| PUT | `/api/enums` | updates the allowed values of a parameter |
+| GET | `/api/tags` | tag aggregate |
+| GET | `/api/git/status` | repository status |
+| POST | `/api/github/push` | commit to GitHub |
+| POST | `/api/jira/sync` | Jira sync |
 
-## Regole che valgono qui
+## Rules that apply here
 
-- **Nessun comando arbitrario.** La finestra manda un nome e parametri
-  tipizzati; gli script partono senza shell.
-- **I risultati si leggono dagli artefatti**, mai dall'output a schermo.
-- **Un comando lungo alla volta**; un'esecuzione interrotta resta registrata
-  come interrotta.
-- **Nessun valore di credenziale** esce dal server: ne' in risposta, ne' nei
-  log, ne' nei file di stato.
-- **Ogni testo in due lingue**: `messages/en.json` e `messages/it.json`,
-  controllati da `npm run check:i18n` nella radice.
+- **No arbitrary commands.** The window sends a name and typed parameters;
+  scripts start without a shell.
+- **Results are read from artifacts**, never from console output.
+- **One long-running command at a time**; an interrupted run stays recorded as
+  interrupted.
+- **No credential value** leaves the server: not in responses, logs or status
+  files.
+- **Every text in two languages**: `messages/en.json` and `messages/it.json`,
+  checked by `npm run check:i18n` at the repository root.
 
 ## Stack
 
