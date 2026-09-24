@@ -99,12 +99,15 @@ tells you where to watch it: one operation at a time.
 ## 3. Run
 
 1. Check the environment in the sidebar.
-2. If you like, switch on one of two options:
+2. Choose **What to run**: all recorded scenarios (the default), every
+   scenario of one file, or a single scenario. Scenarios tagged
+   `@non-automatizzato` are documentation only and are not listed.
+3. If you like, switch on one of two options:
    - **Watch the browser**: the test runs in a visible window instead of
      hidden;
    - **Start without a session**: the test does not use the saved sign-in.
      Use it when the scenario already contains the sign-in.
-3. Press **Run the test**.
+4. Press **Run the test**.
 
 The steps appear one under the other and turn green as they run. If a step
 fails, its row turns red and shows the **screenshot** taken at that moment,

@@ -248,7 +248,9 @@ are handled:
 - they stay on the machine that generated them: nobody else can run them,
   review them or find them in the portal's tree;
 - their names come from the recording file, not from what they test;
-- the *Run* screen runs **all** generated scenarios; there is no way to pick one;
+- ~~the *Run* screen runs **all** generated scenarios~~ — fixed 2026-09-24: the
+  *Run* screen now offers "What to run": all recorded scenarios, one file, or
+  one scenario, from everything under `src/features/` except `@non-automatizzato`;
 - after generating, the catalog is not regenerated automatically, so new
   `@wanted` entries appear only after `npm run catalog`.
 

@@ -147,7 +147,13 @@
     "comandoSessione": "a session",
     "comandoScansione": "a scan",
     "vaiARegistra": "Go to Record",
-    "vaiAControllo": "Go to Check-up"
+    "vaiAControllo": "Go to Check-up",
+    "scenarioEtichetta": "What to run",
+    "tuttiIRegistrati": "All recorded scenarios",
+    "gruppoRegistrato": "Recorded · {nome}",
+    "interoFile": "All {n, plural, one {# scenario} other {# scenarios}} in {file}",
+    "nessunoScenario": "No runnable scenario yet: record a session and generate the test first.",
+    "notaDocumentati": "Scenarios tagged @non-automatizzato are documentation only and are not listed."
   },
   "Riepilogo": {
     "durataLabel": "Duration: {durata}",

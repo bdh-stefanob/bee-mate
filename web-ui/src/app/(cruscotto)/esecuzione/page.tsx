@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
 import { useAmbiente } from '@/context/AmbienteContext';
+import type { FileScenari } from '@/lib/scenari';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
@@ -162,6 +163,11 @@ function EsecuzioneContenuto() {
   const [altrove, setAltrove] = useState<NomeComando | null>(null);
   const [guardaIlBrowser, setGuardaIlBrowser] = useState(false);
   const [senzaSessione, setSenzaSessione] = useState(false);
+  // Cosa eseguire: vuoto vale "tutti gli scenari registrati", il comportamento
+  // di prima; altrimenti un file o uno scenario, nella forma che Cucumber
+  // capisce (`src/features/x.feature` o `...feature:12`).
+  const [scelta, setScelta] = useState('');
+  const [fileScenari, setFileScenari] = useState<FileScenari[] | null>(null);
   const [id, setId] = useState<string | null>(null);
   const [statoCorrente, setStatoCorrente] = useState<StatoEsecuzione | null>(null);
   const [passi, setPassi] = useState<Passo[]>([]);
@@ -228,6 +234,24 @@ function EsecuzioneContenuto() {
     // Solo all'apertura della schermata: `riagganciati` non dipende da niente
     // che possa cambiare (solo funzioni di stato, stabili fra un render e
     // l'altro).
+  }, []);
+
+  // Gli scenari che si possono scegliere: letti una volta, all'apertura. Dopo
+  // una registrazione si arriva qui cambiando schermata, quindi l'elenco e'
+  // gia' aggiornato senza bisogno di interrogarlo di continuo.
+  useEffect(() => {
+    let attivo = true;
+    fetch('/api/scenari')
+      .then((r) => r.json())
+      .then((d: { file?: FileScenari[] }) => {
+        if (attivo) setFileScenari(d.file ?? []);
+      })
+      .catch(() => {
+        if (attivo) setFileScenari([]);
+      });
+    return () => {
+      attivo = false;
+    };
   }, []);
 
   // I passi si aggiornano da soli mentre l'esecuzione gira: una richiesta al
@@ -323,7 +347,12 @@ function EsecuzioneContenuto() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: 'test',
-          parametri: { bersaglio: ambiente, vedi: guardaIlBrowser, pulito: senzaSessione },
+          parametri: {
+            bersaglio: ambiente,
+            vedi: guardaIlBrowser,
+            pulito: senzaSessione,
+            ...(scelta ? { scenario: scelta } : {}),
+          },
         }),
       });
       const dati = (await risposta.json()) as { id?: string; errore?: string };
@@ -344,7 +373,7 @@ function EsecuzioneContenuto() {
     } finally {
       setInLancio(false);
     }
-  }, [ambiente, guardaIlBrowser, senzaSessione, t]);
+  }, [ambiente, guardaIlBrowser, senzaSessione, scelta, t]);
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl min-w-0">
@@ -379,6 +408,51 @@ function EsecuzioneContenuto() {
         <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
           {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunBersaglio')}
         </p>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="scenario-da-eseguire" className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+            {t('scenarioEtichetta')}
+          </label>
+          <select
+            id="scenario-da-eseguire"
+            value={scelta}
+            onChange={(e) => setScelta(e.target.value)}
+            disabled={inCorso}
+            className={cn(
+              'min-h-10 w-full min-w-0 rounded-md border px-3 text-sm',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
+            )}
+            style={{
+              borderColor: 'var(--bordo)',
+              background: 'var(--superficie)',
+              color: 'var(--testo)',
+              outlineColor: 'var(--blu)',
+            }}
+          >
+            <option value="">{t('tuttiIRegistrati')}</option>
+            {(fileScenari ?? []).map((f) => (
+              <optgroup
+                key={f.file}
+                label={f.generato ? t('gruppoRegistrato', { nome: f.nome }) : f.nome}
+              >
+                <option value={`src/features/${f.file}`}>
+                  {t('interoFile', { n: f.scenari.length, file: f.file })}
+                </option>
+                {f.scenari.map((s) => (
+                  <option key={s.riga} value={`src/features/${f.file}:${s.riga}`}>
+                    {s.nome}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            {fileScenari !== null && fileScenari.length === 0
+              ? t('nessunoScenario')
+              : t('notaDocumentati')}
+          </p>
+        </div>
 
         <Interruttore
           etichetta={t('guardaIlBrowser')}
