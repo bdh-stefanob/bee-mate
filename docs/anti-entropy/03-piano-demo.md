@@ -212,14 +212,17 @@ Elenco derivato dagli atti. **Quello che non e' qui non si costruisce.**
 | 4 | Ciclo del catalogo e coda — atto 3 | ✅ fatto |
 | 5 | Recorder — atto 4 | ✅ fatto |
 | 6 | Dizionario dei componenti — atto 4 | ✅ fatto |
-| 7 | **Catalogo neutro per l'app di prova** | ⬜ mezza giornata |
-| 8 | **Mappa componenti ↔ step, sul solo percorso della demo** | ⬜ mezza giornata |
-| 9 | **Generazione dello scenario dalla traccia** | ⬜ 1,5 giorni |
-| 10 | **Refactor del catalogo** — rende il ciclo utile, non descrittivo | ⬜ 1 giorno |
-| 11 | Step + Page Object, esecuzione — atto 5 | ⬜ 1,5 giorni, **tagliabile** |
-| 12 | **Le slide** | ⬜ 1,5 giorni |
+| 7 | **Catalogo neutro per l'app di prova** | ❔ da verificare prima della prova generale |
+| 8 | **Mappa componenti ↔ step, sul solo percorso della demo** | ✅ la generazione scrive i componenti (D38) |
+| 9 | **Generazione dello scenario dalla traccia** | ✅ `npm run generate`, e "Genera il test" nel cruscotto |
+| 10 | **Refactor del catalogo** — rende il ciclo utile, non descrittivo | ⬜ 1-2 giorni (`catalog-apply`, `catalog-refactor`) |
+| 11 | Step + Page Object, esecuzione — atto 5 | 🟡 5 passi su 11 sul caso reale; si ferma sulle liste (task 14). **Tagliabile** |
+| 12 | **Le slide** | 🟡 scaletta in `04-presentazione.md`; da produrre |
 
-**Totale: ~6 giorni** senza l'atto 5, ~7,5 con.
-
-Fuori scope, dichiarato: integrazione nell'app, verifiche tipizzate,
-generalita' della mappa componenti oltre il percorso della demo.
+**Aggiornamento del 2026-09-24.** Lo scope e' cambiato una volta, e va detto:
+l'"integrazione nell'app", dichiarata fuori, e' entrata come **cruscotto**
+(`docs/superpowers/specs/`). Il motivo e' il vincolo V3: finche' la catena si
+guidava con sei comandi in un terminale, la demo valeva solo con il suo autore
+alla tastiera. Negli atti 4 e 5 la registrazione e l'esecuzione si mostrano
+**dal cruscotto**, non da un terminale. Restano fuori le verifiche tipizzate e
+la generalita' della mappa componenti oltre il percorso della demo.

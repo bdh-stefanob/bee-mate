@@ -1,7 +1,9 @@
 # 02 — Design del sistema
 
-> **Stato: Sezione 1 in review.** Le sezioni 2-7 verranno aggiunte man mano che
-> vengono discusse e approvate. Non implementare oltre cio' che e' approvato.
+> **Stato (2026-09-24):** la Sezione 1 e' l'architettura adottata. Le sezioni 2-7
+> non sono state scritte qui come design: i blocchi sono stati costruiti e
+> documentati ciascuno nel suo file, indicato sotto. Il quadro d'insieme
+> aggiornato e' in [`../PANORAMICA.md`](../PANORAMICA.md).
 
 ---
 
@@ -66,7 +68,7 @@ demo con tutto al 70% invece che con una cosa al 100%.
 
 L'AI (blocco 3) e la generazione (blocco 4) sono acceleratori **probabilistici**; il
 validatore e' l'unica garanzia ed e' **deterministico**. L'AI non valida mai se stessa:
-produce, e il validatore giudica. E' `ROADMAP.md` §3 applicato a un contesto senza
+produce, e il validatore giudica. E' `ROADMAP.md` §2 applicato a un contesto senza
 automazione.
 
 ### Le interfacce tra i blocchi
@@ -151,23 +153,34 @@ derivazione dei candidati step e degli alias.
 
 ## Sezione 3 — Centro di verita'
 
-⬜ *Da discutere.* Coprira': glossario, catalogo, linee guida, canale di distribuzione
-per chi non ha il repo, workflow `@wanted` e SLA del gatekeeper.
+➡️ *Costruito, documentato altrove.* Catalogo con alias, Gold e componenti:
+`../STEP-LIFECYCLE.md`, decisioni D13, D17, D20-D22 in `README.md`. Il
+consolidamento e la coda: `06-rituale.md`. Canale per chi non ha il repo: app
+desktop e pubblicazione sulla wiki (D8, in attesa di Q9). Da costruire:
+`catalog-apply` e `catalog-refactor` (task 15).
 
 ## Sezione 4 — Oracolo AI
 
-⬜ *Da discutere.* Coprira': struttura della libreria .md, confini fra cio' che l'AI
-propone e cio' che il validatore decide, sanitizzazione dei dati.
+➡️ *Costruito, documentato altrove.* Regole, agenti, compito generato e misura:
+`07-assistente.md`; decisioni D12, D23, D27-D30. Dati: i referti portano fuori
+solo numeri (`../../referti/LEGGIMI.md`).
 
 ## Sezione 5 — Moltiplicatore
 
-⬜ *Da discutere.* Coprira': scout → dizionario componenti → POM, drift detection,
-strategia di merge sui file generati.
+➡️ *Costruito, documentato altrove.* Scout, recorder, generazione deterministica:
+`../../.kiro/specs/demo-anti-entropia/design.md`; decisioni D9-D11, D23-D26.
+Guidabile senza terminale dal cruscotto (`../superpowers/specs/`). Aperti: drift
+detection (uno step i cui componenti lo scout non trova piu') e riuso delle Page
+Object esistenti alla rigenerazione (task 5.2).
 
 ## Sezione 6 — Piano demo
 
-⬜ *Da discutere.* Bozza in `README.md`; il dettaglio andra' in `03-piano-demo.md`.
+➡️ `03-piano-demo.md` (sceneggiatura) e `04-presentazione.md` (materiali).
 
 ## Sezione 7 — Rischi e mitigazioni
 
-⬜ *Da discutere.*
+🟡 *Non scritta come sezione a se'.* I rischi della demo e le loro mitigazioni
+sono in `03-piano-demo.md` (ordine dei tagli, video di riserva); quelli del
+modello in `06-rituale.md` (proprietario del rituale, entropia che sale prima di
+scendere) e in `01-analisi-criticita.md`. Da raccogliere in una tabella unica
+se servira' al documento Word.

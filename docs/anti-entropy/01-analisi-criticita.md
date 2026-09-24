@@ -79,7 +79,7 @@ validatore; il tool AI e' l'implementazione di riferimento, intercambiabile.
 ### 3.3 L'LLM non puo' essere la garanzia anti-entropia
 
 E' probabilistico. La garanzia vive nei tre meccanismi deterministici gia' definiti in
-`ROADMAP.md` §3: autocomplete vincolato, validazione strutturale, gate CI. L'AI e' uno
+`ROADMAP.md` §2: autocomplete vincolato, validazione strutturale, gate CI. L'AI e' uno
 strumento di **velocita'**, non di garanzia.
 
 ---

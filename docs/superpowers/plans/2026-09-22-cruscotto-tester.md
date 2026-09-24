@@ -4,6 +4,14 @@
 > (consigliato) oppure `superpowers:executing-plans`. I passi hanno le caselle
 > `- [ ]` per essere spuntati.
 
+> **Stato (2026-09-24): eseguito per intero.** Le attivita' 1-9 sono nei commit del
+> branch `cruscotto-tester` dal 22/09, e il lavoro e' proseguito oltre il piano
+> dopo l'uso reale: due lingue, ambienti e accesso configurabili dalla finestra,
+> ripresa delle operazioni in corso, ambiente scelto una volta sola. Cosa e'
+> cambiato rispetto alla specifica: sezione "Stato" in testa alla spec.
+> Criteri di fine MVP: tutti soddisfatti, tranne due casi di `web-ui` che
+> passano solo sulla macchina di chi li ha scritti (task 16 della spec Kiro).
+
 **Obiettivo:** un tester manuale registra una sessione, genera il test e lo vede
 girare, senza mai aprire un terminale.
 
@@ -72,7 +80,7 @@ nessuna: si possono affidare a quattro agenti insieme, e con loro la 6b. Poi 2
   - `interface Parametri { bersaglio?: string; vedi?: boolean; pulito?: boolean; manifesto?: string; messaggi?: string }`
   - `function rigaDiComando(nome: NomeComando, p?: Parametri): { eseguibile: string; argomenti: string[] }`
 
-- [ ] **Passo 1: il caso che fallisce**
+- [x] **Passo 1: il caso che fallisce**
 
 ```ts
 // web-ui/__tests__/lib/esecuzione.test.ts
@@ -108,12 +116,12 @@ describe('elenco chiuso dei comandi', () => {
 });
 ```
 
-- [ ] **Passo 2: eseguilo e verifica che fallisca**
+- [x] **Passo 2: eseguilo e verifica che fallisca**
 
 Da `web-ui`: `npx vitest run __tests__/lib/esecuzione.test.ts`
 Atteso: FAIL, "Cannot find module '@/lib/esecuzione'".
 
-- [ ] **Passo 3: l'implementazione minima**
+- [x] **Passo 3: l'implementazione minima**
 
 ```ts
 // web-ui/src/lib/esecuzione.ts
@@ -188,11 +196,11 @@ export function rigaDiComando(
 }
 ```
 
-- [ ] **Passo 4: eseguilo e verifica che passi**
+- [x] **Passo 4: eseguilo e verifica che passi**
 
 Da `web-ui`: `npx vitest run __tests__/lib/esecuzione.test.ts` → PASS (4 casi).
 
-- [ ] **Passo 5: commit**
+- [x] **Passo 5: commit**
 
 ```bash
 git add web-ui/src/lib/esecuzione.ts web-ui/__tests__/lib/esecuzione.test.ts
@@ -217,7 +225,7 @@ git commit -m "feat(cruscotto): elenco chiuso dei comandi eseguibili"
   - `type Lanciatore = (eseguibile: string, argomenti: string[], cwd: string) => ProcessoMinimo`
   - `interface ProcessoMinimo { onRiga(f: (r: string) => void): void; onFine(f: (codice: number) => void): void; termina(): void }`
 
-- [ ] **Passo 1: il caso che fallisce**
+- [x] **Passo 1: il caso che fallisce**
 
 ```ts
 // web-ui/__tests__/lib/registro.test.ts
@@ -282,11 +290,11 @@ describe('registro delle esecuzioni', () => {
 });
 ```
 
-- [ ] **Passo 2: eseguilo e verifica che fallisca**
+- [x] **Passo 2: eseguilo e verifica che fallisca**
 
 Da `web-ui`: `npx vitest run __tests__/lib/registro.test.ts` → FAIL, modulo assente.
 
-- [ ] **Passo 3: l'implementazione minima**
+- [x] **Passo 3: l'implementazione minima**
 
 ```ts
 // web-ui/src/lib/registro.ts
@@ -410,11 +418,11 @@ export function ferma(id: string): boolean {
 }
 ```
 
-- [ ] **Passo 4: eseguilo e verifica che passi**
+- [x] **Passo 4: eseguilo e verifica che passi**
 
 `npx vitest run __tests__/lib/registro.test.ts` → PASS (5 casi).
 
-- [ ] **Passo 5: commit**
+- [x] **Passo 5: commit**
 
 ```bash
 git add web-ui/src/lib/registro.ts web-ui/__tests__/lib/registro.test.ts
@@ -437,7 +445,7 @@ git commit -m "feat(cruscotto): registro delle esecuzioni, una alla volta"
   `GET /api/esegui/<id>/flusso` → SSE con eventi `riga` e `fine`;
   `POST /api/esegui/<id>/ferma` → `{ fermata: boolean }`.
 
-- [ ] **Passo 1: il caso che fallisce**
+- [x] **Passo 1: il caso che fallisce**
 
 ```ts
 // web-ui/__tests__/api/esegui.test.ts
@@ -466,11 +474,11 @@ describe('POST /api/esegui', () => {
 });
 ```
 
-- [ ] **Passo 2: eseguilo e verifica che fallisca**
+- [x] **Passo 2: eseguilo e verifica che fallisca**
 
 `npx vitest run __tests__/api/esegui.test.ts` → FAIL, modulo assente.
 
-- [ ] **Passo 3: l'implementazione minima**
+- [x] **Passo 3: l'implementazione minima**
 
 ```ts
 // web-ui/src/app/api/esegui/route.ts
@@ -549,11 +557,11 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 }
 ```
 
-- [ ] **Passo 4: eseguilo e verifica che passi**
+- [x] **Passo 4: eseguilo e verifica che passi**
 
 `npx vitest run __tests__/api/esegui.test.ts` → PASS (2 casi).
 
-- [ ] **Passo 5: commit**
+- [x] **Passo 5: commit**
 
 ```bash
 git add web-ui/src/app/api/esegui web-ui/__tests__/api/esegui.test.ts
@@ -573,7 +581,7 @@ git commit -m "feat(cruscotto): rotte per avviare, osservare e fermare un comand
 - Consuma: niente.
 - Produce: `GET /api/controllo` → `{ pronto: boolean; voci: Array<{ nome: string; esito: 'ok' | 'manca' | 'attenzione'; dettaglio: string; rimedio?: { comando: string } }> }`
 
-- [ ] **Passo 1: il caso che fallisce**
+- [x] **Passo 1: il caso che fallisce**
 
 ```ts
 // web-ui/__tests__/api/controllo.test.ts
@@ -596,11 +604,11 @@ describe('controllo della macchina', () => {
 });
 ```
 
-- [ ] **Passo 2: eseguilo e verifica che fallisca**
+- [x] **Passo 2: eseguilo e verifica che fallisca**
 
 `npx vitest run __tests__/api/controllo.test.ts` → FAIL, modulo assente.
 
-- [ ] **Passo 3: l'uscita strutturata nello script**
+- [x] **Passo 3: l'uscita strutturata nello script**
 
 In `scripts/diagnosi.ts`, accanto alla stampa per le persone. `hasFlag` accetta
 sia `json` sia `--json`, e in forma nuda l'opzione arriva in ogni shell.
@@ -639,7 +647,7 @@ I nomi `verifiche`, `v.titolo`, `v.ok`, `v.dettaglio` sono quelli gia' usati
 dallo script: leggilo prima e adatta i campi ai suoi, senza inventarne di nuovi.
 Se una verifica non ha un rimedio automatico, `rimedio` si omette.
 
-- [ ] **Passo 4: la rotta**
+- [x] **Passo 4: la rotta**
 
 ```ts
 // web-ui/src/app/api/controllo/route.ts
@@ -683,13 +691,13 @@ export async function GET() {
 }
 ```
 
-- [ ] **Passo 5: verifica**
+- [x] **Passo 5: verifica**
 
 `npx vitest run __tests__/api/controllo.test.ts` → PASS.
 Dalla radice: `npx ts-node scripts/diagnosi.ts json` stampa JSON valido, e
 `npm run check:all` resta verde.
 
-- [ ] **Passo 6: commit**
+- [x] **Passo 6: commit**
 
 ```bash
 git add scripts/diagnosi.ts web-ui/src/app/api/controllo web-ui/__tests__/api/controllo.test.ts
@@ -712,7 +720,7 @@ git commit -m "feat(cruscotto): la diagnosi parla anche in JSON"
   - `function leggiTraccia(percorso: string): { passi: Array<{ nome: string; gesti: number; verifiche: number }>; durata: number }`
   - `function leggiPassiTest(percorsoMessaggi: string): Array<{ testo: string; esito: 'passato' | 'fallito' | 'saltato'; messaggio?: string }>`
 
-- [ ] **Passo 1: il caso che fallisce**
+- [x] **Passo 1: il caso che fallisce**
 
 ```ts
 // web-ui/__tests__/lib/artefatti.test.ts
@@ -747,11 +755,11 @@ verifica, il secondo con un gesto e due verifiche) nella forma prodotta da
 `scripts/record.ts`; `messaggi.ndjson` con tre `testStepFinished` di esito
 `PASSED`, `FAILED`, `SKIPPED` e i rispettivi `testStep` / `pickleStep`.
 
-- [ ] **Passo 2: eseguilo e verifica che fallisca**
+- [x] **Passo 2: eseguilo e verifica che fallisca**
 
 `npx vitest run __tests__/lib/artefatti.test.ts` → FAIL.
 
-- [ ] **Passo 3: l'implementazione**
+- [x] **Passo 3: l'implementazione**
 
 ```ts
 // web-ui/src/lib/artefatti.ts
@@ -848,18 +856,18 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
 }
 ```
 
-- [ ] **Passo 4: l'opzione `messaggi` nel lanciatore dei test**
+- [x] **Passo 4: l'opzione `messaggi` nel lanciatore dei test**
 
 In `scripts/test-bersaglio.ts`, con `messaggi=<file>` si aggiunge
 `--format message:<file>` agli argomenti di Cucumber (i trattini qui vanno bene:
 non passano da npm, li mette lo script).
 
-- [ ] **Passo 5: verifica**
+- [x] **Passo 5: verifica**
 
 `npx vitest run __tests__/lib/artefatti.test.ts` → PASS.
 Dalla radice: `npx tsc --noEmit -p tsconfig.json` e `npm run check:all` verdi.
 
-- [ ] **Passo 6: commit**
+- [x] **Passo 6: commit**
 
 ```bash
 git add web-ui/src/lib/artefatti.ts web-ui/__tests__ scripts/test-bersaglio.ts
@@ -879,7 +887,7 @@ git commit -m "feat(cruscotto): i risultati si leggono dagli artefatti"
 - Produce: il guscio con tre voci — Controllo (`/controllo`), Registra
   (`/registra`), Esecuzione (`/esecuzione`).
 
-- [ ] **Passo 1: le variabili**
+- [x] **Passo 1: le variabili**
 
 In `globals.css`, accanto a quelle esistenti:
 
@@ -896,20 +904,20 @@ In `globals.css`, accanto a quelle esistenti:
 }
 ```
 
-- [ ] **Passo 2: il guscio**
+- [x] **Passo 2: il guscio**
 
 `layout.tsx` con una griglia: barra laterale 240px e contenuto, che sotto i
 900px diventa una colonna sola con la barra in alto. Ogni voce e' un link con
 stato attivo reso da **icona + testo + colore**, mai dal colore soltanto, e
 contorno di focus visibile (`focus-visible:outline`).
 
-- [ ] **Passo 3: verifica**
+- [x] **Passo 3: verifica**
 
 Da `web-ui`: `npm run build` senza errori. Poi `npm run dev` e, a mano:
 la finestra a 1024px di larghezza non ha scorrimento orizzontale; con il solo
 tasto Tab si raggiungono tutte e tre le voci e si vede dove si e'.
 
-- [ ] **Passo 4: commit**
+- [x] **Passo 4: commit**
 
 ```bash
 git add web-ui/src/app/globals.css web-ui/src/app/\(cruscotto\) web-ui/src/components/cruscotto
@@ -936,7 +944,7 @@ Senza questa attivita' la schermata Controllo puo' solo **dire** cosa manca; il
 tester dovrebbe aprire un file per rimediare, e il vincolo V3 cadrebbe proprio
 dove serve.
 
-- [ ] **Passo 1: il caso che fallisce**
+- [x] **Passo 1: il caso che fallisce**
 
 ```ts
 // web-ui/__tests__/lib/configurazione.test.ts
@@ -966,11 +974,11 @@ describe('scrittura della configurazione', () => {
 });
 ```
 
-- [ ] **Passo 2: eseguilo e verifica che fallisca**
+- [x] **Passo 2: eseguilo e verifica che fallisca**
 
 `npx vitest run __tests__/lib/configurazione.test.ts` → FAIL.
 
-- [ ] **Passo 3: l'implementazione**
+- [x] **Passo 3: l'implementazione**
 
 ```ts
 // web-ui/src/lib/configurazione.ts
@@ -1011,11 +1019,11 @@ La rotta legge `.env` (se c'e'), chiama `scriviVariabile`, riscrive il file con
 permessi invariati e risponde `{ scritta: true }`. **Non rilegge mai il valore
 verso la finestra**: un campo credenziale si scrive, non si rilegge.
 
-- [ ] **Passo 4: eseguilo e verifica che passi**
+- [x] **Passo 4: eseguilo e verifica che passi**
 
 `npx vitest run __tests__/lib/configurazione.test.ts` → PASS (4 casi).
 
-- [ ] **Passo 5: commit**
+- [x] **Passo 5: commit**
 
 ```bash
 git add web-ui/src/lib/configurazione.ts web-ui/src/app/api/configurazione web-ui/__tests__/lib/configurazione.test.ts
@@ -1034,25 +1042,25 @@ git commit -m "feat(cruscotto): indirizzi e credenziali si scrivono dalla finest
 - Consuma: `GET /api/controllo` (attivita' 4), `POST /api/esegui` (attivita' 3),
   `POST /api/configurazione` e `bersagliDaFile` (attivita' 6b).
 
-- [ ] **Passo 1: la schermata**
+- [x] **Passo 1: la schermata**
 
 All'apertura chiama `/api/controllo` e mostra una riga per voce: icona, nome,
 esito a parole, dettaglio. Dove c'e' un rimedio, un pulsante che chiama
 `/api/esegui` con quel comando e mostra l'avanzamento nella stessa riga.
 
-- [ ] **Passo 2: gli stati che si vedono davvero**
+- [x] **Passo 2: gli stati che si vedono davvero**
 
 Caricamento (scheletro, non una rotella sola), errore della diagnosi ("non sono
 riuscito a controllare la macchina" con pulsante *riprova*), e lo stato in
 fondo: *pronto* oppure *mancano N cose*.
 
-- [ ] **Passo 3: verifica a mano**
+- [x] **Passo 3: verifica a mano**
 
 Con la diagnosi che passa: tutte le voci verdi, stato *pronto*.
 Rinomina temporaneamente `bdd-targets.json`: compare la voce rossa con il
 rimedio, e il resto della schermata resta leggibile. Rimettilo a posto.
 
-- [ ] **Passo 4: commit**
+- [x] **Passo 4: commit**
 
 ```bash
 git add web-ui/src/app/\(cruscotto\)/controllo web-ui/src/components/cruscotto/VoceControllo.tsx
@@ -1073,29 +1081,29 @@ git commit -m "feat(cruscotto): schermata di controllo della macchina"
   rotta `GET /api/traccia?percorso=<relativo>` che convalida il percorso dentro
   `reports/recordings/`.
 
-- [ ] **Passo 1: avvio e attesa**
+- [x] **Passo 1: avvio e attesa**
 
 Elenco degli ambienti (dalla stessa fonte della schermata Controllo), pulsante
 **Registra una sessione**, e durante la registrazione un'attesa che dice cosa
 sta succedendo e offre *interrompi*.
 
-- [ ] **Passo 2: il riepilogo**
+- [x] **Passo 2: il riepilogo**
 
 Alla fine mostra i passi con il nome dato dal tester, quante verifiche, e i
 buchi tradotti in italiano comprensibile, ognuno con il suo rimedio dove esiste
 (*scansiona quella pagina*).
 
-- [ ] **Passo 3: generare**
+- [x] **Passo 3: generare**
 
 Un pulsante **Genera il test**, che chiama `/api/esegui` con `generazione` e, a
 fine, porta alla schermata Esecuzione.
 
-- [ ] **Passo 4: verifica a mano**
+- [x] **Passo 4: verifica a mano**
 
 Una registrazione breve vera: la barra compare, alla chiusura il riepilogo
 mostra i passi con i nomi giusti, e *Genera il test* produce i file.
 
-- [ ] **Passo 5: commit**
+- [x] **Passo 5: commit**
 
 ```bash
 git add web-ui/src/app/\(cruscotto\)/registra web-ui/src/components/cruscotto/RiepilogoTraccia.tsx web-ui/src/app/api/traccia
@@ -1115,27 +1123,27 @@ git commit -m "feat(cruscotto): schermata di registrazione con riepilogo"
 - Consuma: `POST /api/esegui` con `test` e `messaggi=reports/cruscotto/<id>.ndjson`;
   `GET /api/esegui/<id>/flusso`; `GET /api/passi?id=<id>`.
 
-- [ ] **Passo 1: lanciare**
+- [x] **Passo 1: lanciare**
 
 Due interruttori (*guarda il browser*, *parti senza sessione*) e un pulsante
 **Lancia il test**.
 
-- [ ] **Passo 2: i passi che diventano verdi**
+- [x] **Passo 2: i passi che diventano verdi**
 
 Mentre gira, la pagina chiede `/api/passi` ogni secondo e disegna i passi con
 icona e parola: *superato*, *fallito*, *saltato*.
 
-- [ ] **Passo 3: il fallimento che si capisce**
+- [x] **Passo 3: il fallimento che si capisce**
 
 Sul passo rosso: il messaggio dell'errore, la schermata catturata se c'e', e in
 fondo una riga che riassume (*4 superati, 1 fallito, 6 saltati*).
 
-- [ ] **Passo 4: verifica a mano**
+- [x] **Passo 4: verifica a mano**
 
 Su uno scenario che passa: tutti verdi. Su uno che fallisce: si vede quale passo
 e perche', senza aprire nessun file.
 
-- [ ] **Passo 5: commit**
+- [x] **Passo 5: commit**
 
 ```bash
 git add web-ui/src/app/\(cruscotto\)/esecuzione web-ui/src/components/cruscotto/PassoTest.tsx web-ui/src/app/api/passi
