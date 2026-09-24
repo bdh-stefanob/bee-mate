@@ -9,6 +9,7 @@ import {
   scriviBersaglio,
   scriviLoginBersaglio,
   ambientiConCredenziali,
+  rimuoviBersaglio,
 } from '@/lib/configurazione';
 
 describe('scrittura della configurazione', () => {
@@ -139,6 +140,78 @@ describe('ambientiConCredenziali: quali variabili servono, quali mancano', () =>
 
     expect(risultato[0].variabiliRichieste).toEqual([]);
     expect(risultato[0].variabiliMancanti).toEqual([]);
+  });
+
+  it('haSessione e\' vero se il file di sessione di default esiste sul disco', () => {
+    fs.writeFileSync(targetsPath, JSON.stringify({ 'con-sessione': { url: 'https://c.invalid' } }));
+    fs.writeFileSync(envPath, '');
+    fs.mkdirSync(path.join(dir, 'reports', 'sessions'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'reports', 'sessions', 'con-sessione.json'), '{}');
+
+    const json = fs.readFileSync(targetsPath, 'utf-8');
+    const risultato = ambientiConCredenziali(json, targetsPath, envPath);
+
+    expect(risultato[0].haSessione).toBe(true);
+  });
+
+  it('haSessione e\' falso se non c\'e\' nessun file al percorso di default', () => {
+    fs.writeFileSync(targetsPath, JSON.stringify({ 'senza-sessione': { url: 'https://d.invalid' } }));
+    fs.writeFileSync(envPath, '');
+
+    const json = fs.readFileSync(targetsPath, 'utf-8');
+    const risultato = ambientiConCredenziali(json, targetsPath, envPath);
+
+    expect(risultato[0].haSessione).toBe(false);
+  });
+
+  it('haSessione rispetta un campo `session` personalizzato, non solo la convenzione di default', () => {
+    const percorsoPersonalizzato = path.join(dir, 'una-sessione-a-parte.json');
+    fs.writeFileSync(
+      targetsPath,
+      JSON.stringify({ personalizzato: { url: 'https://e.invalid', session: percorsoPersonalizzato } })
+    );
+    fs.writeFileSync(envPath, '');
+    fs.writeFileSync(percorsoPersonalizzato, '{}');
+
+    const json = fs.readFileSync(targetsPath, 'utf-8');
+    const risultato = ambientiConCredenziali(json, targetsPath, envPath);
+
+    expect(risultato[0].haSessione).toBe(true);
+  });
+});
+
+describe('rimuoviBersaglio: eliminare un ambiente da bdd-targets.json', () => {
+  it('toglie solo l\'ambiente indicato, conservando gli altri e il _commento', () => {
+    const prima = JSON.stringify({
+      _commento: ['nota'],
+      demo: { url: 'https://demo.invalid' },
+      daTogliere: { url: 'https://x.invalid', login: { steps: [] } },
+    });
+    const dopo = rimuoviBersaglio(prima, 'daTogliere');
+    const dati = JSON.parse(dopo);
+    expect(dati._commento).toEqual(['nota']);
+    expect(dati.demo).toEqual({ url: 'https://demo.invalid' });
+    expect(dati.daTogliere).toBeUndefined();
+  });
+
+  it('rifiuta un nome di ambiente non valido', () => {
+    expect(() => rimuoviBersaglio('{}', 'con spazi qui')).toThrow(/nome di ambiente/);
+  });
+
+  it('rifiuta il nome riservato _commento', () => {
+    expect(() => rimuoviBersaglio('{"_commento":["x"]}', '_commento')).toThrow(/nome di ambiente/);
+  });
+
+  it('rifiuta un ambiente che non esiste', () => {
+    expect(() => rimuoviBersaglio('{"demo":{"url":"https://a.invalid"}}', 'fantasma')).toThrow(/ambiente sconosciuto/);
+  });
+
+  it('conserva il fine riga CRLF del file originale', () => {
+    const prima = '{"a":{"url":"https://a.invalid"},"b":{"url":"https://b.invalid"}}\r\n';
+    const dopo = rimuoviBersaglio(prima, 'b');
+    expect(dopo.includes('\r\n')).toBe(true);
+    expect(dopo).not.toMatch(/[^\r]\n/);
+    expect(JSON.parse(dopo)).toEqual({ a: { url: 'https://a.invalid' } });
   });
 });
 

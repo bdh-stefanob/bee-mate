@@ -91,9 +91,11 @@ export function VoceControllo({ voce, onRimediato }: Props) {
           setStatoRimedio('fallita');
         }
       });
-      sorgente.onerror = () => {
-        sorgente.close();
-      };
+      // Nessun `close` sull'errore, ed e' deliberato — stesso criterio gia'
+      // corretto nella schermata Esecuzione (vedi il commento li'): chiudere
+      // qui spegne per sempre la riconnessione che il browser fa da solo, e
+      // un portatile che si sospende o un ricarico in sviluppo lascerebbero
+      // questa riga a girare con la rotellina anche a rimedio gia' concluso.
     } catch {
       setStatoRimedio('errore');
       setMessaggioErrore(tv('erroreNonRiuscitoPartire'));

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Plus, XCircle } from 'lucide-react';
+import { CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Pencil, Plus, Trash2, XCircle } from 'lucide-react';
 
 export interface AmbienteVisibile {
   nome: string;
@@ -13,6 +13,8 @@ export interface AmbienteVisibile {
   variabiliRichieste?: string[];
   /** Il sottoinsieme di sopra che non e' ancora in .env. Mai i valori. */
   variabiliMancanti?: string[];
+  /** C'e' gia' un file di sessione salvato su disco per questo ambiente? */
+  haSessione?: boolean;
 }
 
 interface RispostaAmbienti {
@@ -27,14 +29,24 @@ interface RispostaEsegui {
 type StatoAccesso = 'inattivo' | 'avvio' | 'in corso' | 'conclusa' | 'fallita' | 'errore';
 
 /**
- * Un indirizzo scritto come `${NOME_VARIABILE}` e' il nome di una variabile
- * d'ambiente che non e' stata risolta, non un indirizzo vero: mostrarlo cosi'
- * com'e' non dice niente a un tester, e un pulsante "Accedi adesso" su quella
- * riga prometterebbe una strada che non esiste (la richiesta fallirebbe
- * sempre, perche' la variabile dietro non e' impostata).
+ * Un indirizzo scritto come `${NOME_VARIABILE}` referenzia una variabile
+ * d'ambiente invece di un indirizzo letterale. Lo stesso pattern esatto
+ * (`[A-Z][A-Z0-9_]*`) usato da `CHIAVE_VALIDA` in `lib/configurazione.ts` per
+ * i nomi di variabile: prima qui si accettava anche il minuscolo, e quel
+ * disallineamento nascondeva un buco vero — una variabile scritta con un
+ * nome che questo controllo riconosceva come "referenziata" ma che
+ * `requiredVars`/`missingVars` (lato server, stesso pattern maiuscolo di
+ * sempre) non contavano affatto come "richiesta": il bottone "Accedi adesso"
+ * restava attivo su un indirizzo che non si sarebbe mai risolto davvero.
+ *
+ * NON basta pero' sapere che l'indirizzo referenzia una variabile per dire
+ * che "manca": bisogna incrociarlo con `variabiliMancanti` (vedi
+ * `RigaAmbiente`) — la stessa variabile, una volta impostata in `.env`,
+ * resta scritta cosi' com'e' qui (il valore non si mostra mai), ma a quel
+ * punto non e' piu' "mancante".
  */
 function variabileNonRisolta(url: string): string | null {
-  const corrispondenza = /^\$\{([A-Za-z0-9_]+)\}$/.exec(url.trim());
+  const corrispondenza = /^\$\{([A-Z][A-Z0-9_]{0,60})\}$/.exec(url.trim());
   return corrispondenza ? corrispondenza[1] : null;
 }
 
@@ -264,7 +276,11 @@ function RegistraAccesso({
           setStato('fallita');
         }
       });
-      sorgente.onerror = () => sorgente.close();
+      // Nessun `close` sull'errore, ed e' deliberato — stesso criterio della
+      // schermata Esecuzione (vedi il commento li'): chiudere qui spegne per
+      // sempre la riconnessione che il browser fa da solo, e un portatile che
+      // si sospende o un ricarico in sviluppo lascerebbero questo pulsante a
+      // girare con la rotellina anche a registrazione gia' conclusa.
     } catch {
       setStato('errore');
       setMessaggioErrore(t('erroreParlareCruscotto'));
@@ -329,6 +345,129 @@ function RegistraAccesso({
   );
 }
 
+type StatoModificaIndirizzo = 'inattivo' | 'salvo' | 'errore';
+
+/**
+ * Corregge l'indirizzo di un ambiente gia' esistente — riusa la stessa rotta
+ * del form "Aggiungi ambiente" (`POST /api/configurazione/ambienti`), che
+ * quando il nome esiste gia' aggiorna solo `url` e lascia intatto tutto il
+ * resto (`scriviBersaglio` in `lib/configurazione.ts`).
+ *
+ * Il nome NON si puo' cambiare da qui, ed e' una scelta esplicita, non
+ * un'omissione: vive anche nelle sessioni salvate e nelle registrazioni di
+ * quell'ambiente, e rinominarlo le lascerebbe orfane. Il campo appare come
+ * testo fisso con la spiegazione accanto, cosi' il limite si vede invece di
+ * doverlo scoprire cercando un campo che non c'e'.
+ */
+function ModificaIndirizzo({
+  ambiente,
+  onSalvato,
+}: {
+  ambiente: AmbienteVisibile;
+  onSalvato: () => void;
+}) {
+  const t = useTranslations('Ambienti');
+  const [aperto, setAperto] = useState(false);
+  const [url, setUrl] = useState(ambiente.url);
+  const [stato, setStato] = useState<StatoModificaIndirizzo>('inattivo');
+  const [messaggioErrore, setMessaggioErrore] = useState('');
+
+  async function salva(evento: React.FormEvent) {
+    evento.preventDefault();
+    setStato('salvo');
+    setMessaggioErrore('');
+    try {
+      const risposta = await fetch('/api/configurazione/ambienti', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: ambiente.nome, url }),
+      });
+      const corpo = (await risposta.json()) as { scritto?: boolean; errore?: string };
+      if (risposta.ok && corpo.scritto) {
+        setAperto(false);
+        setStato('inattivo');
+        onSalvato();
+      } else {
+        setStato('errore');
+        setMessaggioErrore(corpo.errore ?? t('erroreAggiornareIndirizzo'));
+      }
+    } catch {
+      setStato('errore');
+      setMessaggioErrore(t('erroreParlareCruscotto'));
+    }
+  }
+
+  if (!aperto) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setUrl(ambiente.url);
+          setStato('inattivo');
+          setMessaggioErrore('');
+          setAperto(true);
+        }}
+        aria-label={t('modificaIndirizzoAria', { nome: ambiente.nome })}
+        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md border px-3 text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+      >
+        <Pencil size={13} aria-hidden="true" />
+        {t('modificaIndirizzo')}
+      </button>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => void salva(e)}
+      className="flex min-w-0 flex-1 flex-col gap-2 rounded-md border p-2"
+      style={{ borderColor: 'var(--bordo)' }}
+    >
+      <p className="text-xs break-words" style={{ color: 'var(--testo-tenue)' }}>
+        {t('nomeNonModificabileNota')}
+      </p>
+      <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+        <label htmlFor={`url-${ambiente.nome}`} className="shrink-0 text-xs" style={{ color: 'var(--testo)' }}>
+          {t('indirizzo')}
+        </label>
+        <input
+          id={`url-${ambiente.nome}`}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder={t('placeholderIndirizzo')}
+          className="min-h-10 min-w-0 flex-1 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={stato === 'salvo' || !url}
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+        >
+          {stato === 'salvo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : null}
+          {stato === 'salvo' ? t('salvando') : t('salvaIndirizzo')}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setAperto(false); setStato('inattivo'); setMessaggioErrore(''); }}
+          className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        >
+          {t('annullaCompilazione')}
+        </button>
+        {stato === 'errore' && messaggioErrore && (
+          <span className="inline-flex items-center gap-1.5 text-xs break-words" style={{ color: 'var(--rosso)' }}>
+            <XCircle size={14} aria-hidden="true" />
+            {messaggioErrore}
+          </span>
+        )}
+      </div>
+    </form>
+  );
+}
+
 /**
  * Una riga dell'elenco Ambienti, con il pulsante che avvia una sessione di
  * accesso manuale per quell'ambiente e ne segue l'esito.
@@ -343,14 +482,35 @@ function RigaAmbiente({
   const t = useTranslations('Ambienti');
   const [stato, setStato] = useState<StatoAccesso>('inattivo');
   const [messaggioErrore, setMessaggioErrore] = useState('');
+  const [eliminazione, setEliminazione] = useState<'inattivo' | 'in corso' | 'errore'>('inattivo');
+  const [messaggioEliminazione, setMessaggioEliminazione] = useState('');
   const sorgenteRef = useRef<EventSource | null>(null);
   const variabile = variabileNonRisolta(ambiente.url);
   const variabiliMancanti = ambiente.variabiliMancanti ?? [];
   const variabiliRichieste = ambiente.variabiliRichieste ?? [];
-  // Non basta un indirizzo risolto: se manca anche solo una delle variabili
-  // che l'ambiente usa (credenziale o indirizzo), "Accedi adesso" fallirebbe
-  // di sicuro. Meglio non promettere una strada che non c'e' ancora.
-  const pronto = variabiliMancanti.length === 0;
+  // La stessa variabile che l'indirizzo referenzia puo' benissimo essere gia'
+  // stata impostata in .env: `variabile` dice solo che l'indirizzo e' scritto
+  // come `${VAR}`, non che quella variabile manchi davvero. La domanda "manca
+  // davvero?" ha una sola risposta autorevole, `variabiliMancanti` (calcolata
+  // lato server contro .env con la stessa regola di `missingVars`) — prima
+  // questa riga rispondeva "manca" guardando solo la sintassi dell'indirizzo,
+  // e diceva "Indirizzo non ancora risolto" anche quando la variabile era gia'
+  // configurata da un pezzo: la stessa riga contraddiceva se stessa.
+  const indirizzoMancante = variabile !== null && variabiliMancanti.includes(variabile);
+  // Un indirizzo vuoto (nessun `${VAR}`, nessun testo) non e' un caso che
+  // `variabiliMancanti` puo' vedere, perche' un ambiente senza nessuna
+  // variabile referenziata ha comunque un elenco vuoto: senza questo
+  // controllo "Accedi adesso" restava attivo su un ambiente senza indirizzo,
+  // e il browser si apriva su niente.
+  const indirizzoAssente = ambiente.url.trim() === '';
+  // Le credenziali (compreso l'indirizzo, se e' una variabile) sono a posto
+  // solo se .env non ne segnala nessuna mancante: e' cio' che decide se
+  // mostrare "Credenziali configurate" o il modulo per compilarle.
+  const credenzialiOk = variabiliMancanti.length === 0;
+  // "Accedi adesso" in piu' pretende un indirizzo che esista davvero: le due
+  // condizioni servono a domande diverse (le credenziali sono a posto? / c'e'
+  // una strada da percorrere?) e si tengono separate apposta.
+  const prontoPerAccesso = credenzialiOk && !indirizzoAssente && !indirizzoMancante;
 
   useEffect(() => () => sorgenteRef.current?.close(), []);
 
@@ -385,12 +545,48 @@ function RigaAmbiente({
           setStato('fallita');
         }
       });
-      sorgente.onerror = () => sorgente.close();
+      // Nessun `close` sull'errore, ed e' deliberato — stesso criterio della
+      // schermata Esecuzione (vedi il commento li'): chiudere qui spegne per
+      // sempre la riconnessione che il browser fa da solo, e un portatile che
+      // si sospende o un ricarico in sviluppo lascerebbero questa riga a
+      // girare con la rotellina anche a sessione gia' conclusa.
     } catch {
       setStato('errore');
       setMessaggioErrore(t('erroreParlareCruscotto'));
     }
   }, [ambiente.nome, onSessioneConclusa, t]);
+
+  const elimina = useCallback(async () => {
+    // Una conferma che dice cosa si perde DAVVERO, non una generica "sei
+    // sicuro?": un accesso registrato e una sessione salvata sono lavoro del
+    // tester, e sparirebbero insieme all'ambiente senza preavviso altrimenti.
+    const righe = [t('confermaEliminazioneTitolo', { nome: ambiente.nome })];
+    if (ambiente.haLogin) righe.push(t('confermaEliminazioneLogin'));
+    if (ambiente.haSessione) righe.push(t('confermaEliminazioneSessione'));
+    righe.push(t('confermaEliminazioneEnv'));
+    righe.push(t('confermaEliminazioneIrreversibile'));
+    if (!window.confirm(righe.join('\n\n'))) return;
+
+    setEliminazione('in corso');
+    setMessaggioEliminazione('');
+    try {
+      const risposta = await fetch('/api/configurazione/ambienti', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: ambiente.nome }),
+      });
+      const corpo = (await risposta.json()) as { eliminato?: boolean; errore?: string };
+      if (risposta.ok && corpo.eliminato) {
+        onSessioneConclusa();
+      } else {
+        setEliminazione('errore');
+        setMessaggioEliminazione(corpo.errore ?? t('erroreEliminarlo'));
+      }
+    } catch {
+      setEliminazione('errore');
+      setMessaggioEliminazione(t('erroreParlareCruscotto'));
+    }
+  }, [ambiente.haLogin, ambiente.haSessione, ambiente.nome, onSessioneConclusa, t]);
 
   return (
     <li
@@ -401,13 +597,17 @@ function RigaAmbiente({
         <p className="font-medium break-words" style={{ color: 'var(--testo)' }}>{ambiente.nome}</p>
         <p
           className="text-sm break-words"
-          style={{ color: variabile ? 'var(--ambra)' : 'var(--testo-tenue)' }}
+          style={{ color: indirizzoMancante ? 'var(--ambra)' : 'var(--testo-tenue)' }}
         >
-          {variabile ? t('indirizzoNonRisolto', { variabile }) : ambiente.url || t('indirizzoNonImpostato')}
+          {indirizzoMancante
+            ? t('indirizzoNonRisolto', { variabile })
+            : variabile
+              ? t('indirizzoRisoltoTramiteVariabile', { variabile })
+              : ambiente.url || t('indirizzoNonImpostato')}
         </p>
 
         {variabiliRichieste.length > 0 && (
-          pronto ? (
+          credenzialiOk ? (
             <p className="mt-1 inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--verde)' }}>
               <CheckCircle2 size={13} aria-hidden="true" />
               {t('credenzialiConfigurate')}
@@ -450,11 +650,44 @@ function RigaAmbiente({
             </span>
           )}
         </p>
+
+        {/*
+          Modifica ed elimina stanno qui, piccole e in una riga a parte —
+          lontane dal pulsante "Accedi adesso" (grande, blu, sulla destra) di
+          proposito: la prima e' l'azione frequente, elimina e' distruttiva, e
+          non devono poter essere confuse da chi clicca in fretta.
+        */}
+        <div className="mt-2 flex flex-wrap items-start gap-2">
+          <ModificaIndirizzo ambiente={ambiente} onSalvato={onSessioneConclusa} />
+          <div>
+            <button
+              type="button"
+              onClick={() => void elimina()}
+              disabled={eliminazione === 'in corso'}
+              aria-label={t('eliminaAria', { nome: ambiente.nome })}
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md border px-3 text-xs font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
+            >
+              {eliminazione === 'in corso' ? (
+                <Loader2 size={13} className="animate-spin" aria-hidden="true" />
+              ) : (
+                <Trash2 size={13} aria-hidden="true" />
+              )}
+              {t('elimina')}
+            </button>
+            {eliminazione === 'errore' && messaggioEliminazione && (
+              <p className="mt-1 text-xs break-words" style={{ color: 'var(--rosso)' }}>
+                {messaggioEliminazione}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-      {pronto && (
+      {prontoPerAccesso && (
         // Nessun pulsante finche' manca anche una sola variabile (credenziale
-        // o indirizzo): prometterebbe una strada che fallirebbe di sicuro. Il
-        // modo per risolvere e' proprio sopra, nella stessa riga.
+        // o indirizzo) o finche' l'indirizzo e' vuoto: prometterebbe una
+        // strada che fallirebbe di sicuro (il browser si aprirebbe su
+        // niente). Il modo per risolvere e' proprio sopra, nella stessa riga.
         <button
           type="button"
           onClick={() => void accediAdesso()}
@@ -507,6 +740,15 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
 
   async function aggiungi(evento: React.FormEvent) {
     evento.preventDefault();
+    // Questo form scrive con la stessa rotta di "Modifica indirizzo": un nome
+    // gia' in elenco non crea un duplicato, aggiorna quello esistente. E'
+    // comodo per correggersi al volo, ma silenzioso — chi vuole aggiungerne
+    // uno nuovo e sbaglia a digitare un nome gia' preso sovrascriverebbe un
+    // indirizzo senza saperlo. Un'unica conferma esplicita basta a distinguere
+    // le due intenzioni.
+    if (ambienti.some((a) => a.nome === nome) && !window.confirm(t('confermaSovrascritturaIndirizzo', { nome }))) {
+      return;
+    }
     setInCorso(true);
     setMessaggio(null);
     try {
@@ -577,6 +819,9 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
             className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
+          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            {t('nomeNonModificabileNota')}
+          </p>
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="ambiente-url" className="text-sm" style={{ color: 'var(--testo)' }}>

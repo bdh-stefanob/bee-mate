@@ -112,30 +112,54 @@ async function runLogin(
   return { done, total: recipe.steps.length };
 }
 
-/** Aspetta l'URL di conferma, oppure che la persona prema Invio. */
+type Esito = "url" | "invio" | "chiuso" | "timeout";
+
+/**
+ * Aspetta che il login sia finito: l'URL di conferma, l'Invio da terminale, o
+ * la chiusura del browser — chi arriva prima.
+ *
+ * LA CHIUSURA DEL BROWSER E' UN'USCITA VERA, NON UN INCIDENTE
+ * Il messaggio a schermo dice "poi chiudi il browser": deve essere un'uscita
+ * dichiarata, non un effetto collaterale del fatto che waitForURL rifiuta
+ * quando la pagina sparisce. Da una finestra senza terminale, inoltre, non
+ * arriva mai un Invio — quindi senza questo segnale esplicito un bersaglio
+ * senza `readyWhen` non finirebbe mai.
+ *
+ * Si ascoltano sia la pagina che il browser: a seconda di come il processo
+ * reagisce alla chiusura (a volte muore sul colpo, a volte resta vivo un
+ * istante) il primo dei due segnali che arriva basta per svegliarci.
+ */
 async function waitUntilReady(
   page: import("@playwright/test").Page,
+  browser: import("@playwright/test").Browser,
   target: Target
-): Promise<void> {
+): Promise<Esito> {
   if (target.readyWhen) {
     console.log(
       `  Fai login nel browser.\n` +
         `  La sessione si salva da sola appena l'indirizzo contiene "${target.readyWhen}".\n` +
-        `  (oppure premi INVIO qui quando hai finito)\n`
+        `  (oppure premi INVIO qui, oppure chiudi il browser quando hai finito)\n`
     );
   } else {
-    console.log(`  Fai login nel browser, poi premi INVIO qui.\n`);
+    console.log(`  Fai login nel browser, poi premi INVIO qui, oppure chiudi il browser.\n`);
   }
   if (target.hint) console.log(`  Nota: ${target.hint}\n`);
 
-  // Chi arriva prima fra i due. L'Invio serve sempre: readyWhen puo' essere
-  // sbagliato, o l'applicazione puo' atterrare su un URL diverso dal previsto,
-  // e in quel caso restare bloccati a fissare un browser sarebbe assurdo.
+  // Senza readyWhen questa non si risolve mai da sola: e' voluto, restano gli
+  // altri due segnali. Con readyWhen, se il browser chiude prima di arrivarci
+  // questa promessa RIFIUTA (pagina sparita) — e' il comportamento che gia'
+  // c'era per caso, qui diventa un segnale distinto invece di un "timeout"
+  // travestito.
   const byUrl = target.readyWhen
-    ? page.waitForURL(`**${target.readyWhen}**`, { timeout: 300_000 }).then(() => "url")
-    : new Promise<string>(() => { /* mai */ });
+    ? page.waitForURL(`**${target.readyWhen}**`, { timeout: 300_000 }).then((): Esito => "url")
+    : new Promise<Esito>(() => { /* nessun readyWhen: non si risolve mai da sola */ });
 
-  const byEnter = new Promise<string>((resolve) => {
+  const byEnter = new Promise<Esito>((resolve) => {
+    // Da una finestra senza terminale non arriva mai un Invio. Mettersi in
+    // ascolto su stdin quando non e' un vero terminale puo' comportarsi in
+    // modo imprevedibile (non si sa nemmeno se stdin e' un flusso leggibile):
+    // si ascolta solo se stdin e' davvero un TTY.
+    if (!process.stdin.isTTY) return;
     process.stdin.resume();
     process.stdin.once("data", () => {
       process.stdin.pause();
@@ -143,9 +167,30 @@ async function waitUntilReady(
     });
   });
 
-  const who = await Promise.race([byUrl.catch(() => "timeout"), byEnter]);
+  const byClose = new Promise<Esito>((resolve) => {
+    page.once("close", () => resolve("chiuso"));
+  });
+  const byDisconnect = new Promise<Esito>((resolve) => {
+    browser.once("disconnected", () => resolve("chiuso"));
+  });
+
+  let who = await Promise.race([
+    byUrl.catch((): Esito => "timeout"),
+    byEnter,
+    byClose,
+    byDisconnect,
+  ]);
+
+  // Chi vince la corsa fra "byUrl rifiutata" e "byClose" e' un dettaglio
+  // interno di Node, non un fatto su cui costruire un messaggio: la verita'
+  // sta nello stato della pagina, non in chi si e' svegliato per primo.
+  if (who === "timeout" && page.isClosed()) who = "chiuso";
+
   if (who === "url") console.log(`  Riconosciuto l'indirizzo di conferma.\n`);
-  if (who === "timeout") console.log(`  Attesa scaduta sull'indirizzo: salvo comunque.\n`);
+  else if (who === "chiuso") console.log(`  Browser chiuso: concludo subito.\n`);
+  else if (who === "timeout") console.log(`  Attesa scaduta sull'indirizzo (5 minuti): salvo comunque.\n`);
+
+  return who;
 }
 
 async function main(): Promise<void> {
@@ -189,11 +234,27 @@ async function main(): Promise<void> {
     );
   }
 
-  await waitUntilReady(page, target);
+  await waitUntilReady(page, browser, target);
 
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  await context.storageState({ path: out });
-  await browser.close();
+  try {
+    // Se chi ha chiuso il browser arriva qui, il tentativo di salvare puo'
+    // ancora riuscire: il processo a volte resta raggiungibile un istante in
+    // piu' della connessione che ce lo dice. Quando non ce la fa, e' perche'
+    // non c'era piu' niente da salvare — non un bug, un fatto.
+    await context.storageState({ path: out });
+  } catch {
+    console.error(
+      `\nERRORE: il browser e' stato chiuso prima che ci fosse una sessione da salvare.\n` +
+        `  Rilancia lo script e chiudi il browser solo dopo aver fatto login: un file\n` +
+        `  vuoto qui farebbe fallire i test piu' tardi, con un sintomo che non\n` +
+        `  assomiglia a questa causa.\n`
+    );
+    process.exit(1);
+  }
+  // Se il browser si e' gia' chiuso da solo, chiuderlo di nuovo non serve ed
+  // e' innocuo lasciarlo fallire in silenzio.
+  await browser.close().catch(() => { /* gia' chiuso */ });
 
   console.log(`  Sessione salvata in ${out}\n`);
   console.log(`  Da adesso partono gia' autenticati:`);
