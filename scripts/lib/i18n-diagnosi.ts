@@ -46,7 +46,10 @@ export const dizionarioDiagnosi: DizionarioScript = {
 
     // Ambienti
     "diagnosi.ambienti.nessuno": "nessun ambiente configurato — e' da qui che parte tutto",
-    "diagnosi.ambienti.parziali": "{pronti} su {totale} configurati per intero",
+    "diagnosi.ambienti.nessunoUtilizzabile":
+      "{totale} configurati, ma nessuno e' ancora utilizzabile: manca un indirizzo o una credenziale",
+    "diagnosi.ambienti.pronti": "{pronti} su {totale} pronti",
+    "diagnosi.ambienti.daCompletare": "{daCompletare} da completare quando serve",
     "diagnosi.ambienti.conSessione": "{conSessione} con sessione salvata",
     "diagnosi.ambienti.conSessioneVecchie":
       "{conSessione} con sessione salvata, di cui {vecchie} piu' vecchie di 12 ore",
@@ -107,7 +110,10 @@ export const dizionarioDiagnosi: DizionarioScript = {
 
     // Environments
     "diagnosi.ambienti.nessuno": "no environment configured — this is where everything starts",
-    "diagnosi.ambienti.parziali": "{pronti} of {totale} fully configured",
+    "diagnosi.ambienti.nessunoUtilizzabile":
+      "{totale} configured, but none is usable yet: missing an address or a credential",
+    "diagnosi.ambienti.pronti": "{pronti} of {totale} ready",
+    "diagnosi.ambienti.daCompletare": "{daCompletare} to complete when needed",
     "diagnosi.ambienti.conSessione": "{conSessione} with a saved session",
     "diagnosi.ambienti.conSessioneVecchie":
       "{conSessione} with a saved session, {vecchie} of which older than 12 hours",
