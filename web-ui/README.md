@@ -54,6 +54,8 @@ npm run electron:build:win   # Windows installer
 | GET | `/api/traccia`, `/api/traccia/ultima` | summary of a recording, read from the trace |
 | GET | `/api/passi` | the steps of a test run, read from Cucumber's messages |
 | GET | `/api/scenari` | runnable scenarios under `src/features/`, with their line numbers, for "What to run" |
+| GET | `/api/scenari/cartelle` | applications and flows to suggest: the catalog's `app` / `area` plus existing folders |
+| POST | `/api/scenari/salva` | moves the scenario just generated (read from the generation manifest, never from the window) to `src/features/<app>/<flow>/<name>.feature` |
 | POST | `/api/lingua` | the window's language (cookie) |
 
 **Portal**

@@ -12,6 +12,8 @@ import {
 import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
 import { useAmbiente } from '@/context/AmbienteContext';
+import { SalvaScenario } from '@/components/cruscotto/SalvaScenario';
+import type { EsitoSalvataggio } from '@/lib/salva-scenario';
 
 /** Percorso fisso, dentro reports/: la generazione ci scrive l'elenco di cosa ha prodotto. */
 const MANIFESTO = 'reports/cruscotto/generazione-manifesto.json';
@@ -36,6 +38,7 @@ type Fase =
   | { tipo: 'scelta' }
   | { tipo: 'in-corso'; id: string; azione: Azione }
   | { tipo: 'riepilogo'; dati: DatiRiepilogo }
+  | { tipo: 'salva'; titolo: string }
   | { tipo: 'errore'; messaggio: string }
   | { tipo: 'altrove'; comando: NomeComando };
 
@@ -80,6 +83,29 @@ export default function RegistraPage() {
   // tester sta guardando.
   const [inviando, setInviando] = useState(false);
   const sorgenteRef = useRef<EventSource | null>(null);
+  // Il nome del primo passo, dal riepilogo: e' il titolo proposto quando lo
+  // scenario generato riceve la sua casa. Un ref, perche' il riepilogo non e'
+  // piu' sullo schermo quando la generazione finisce.
+  const titoloPropostoRef = useRef('');
+
+  // Dopo la generazione non si salta piu' dritti a Esecuzione: prima lo
+  // scenario riceve applicazione, flusso e nome (vedi SalvaScenario).
+  const dopoGenerazione = useCallback(() => {
+    setFase({ tipo: 'salva', titolo: titoloPropostoRef.current });
+  }, []);
+
+  const versoEsecuzione = useCallback(
+    (esito?: EsitoSalvataggio) => {
+      if (!esito) {
+        router.push('/esecuzione');
+        return;
+      }
+      const come = esito.sovrascritto ? 'sovrascritto' : esito.rinominato ? 'rinominato' : 'nuovo';
+      const scenario = encodeURIComponent(`src/features/${esito.file}`);
+      router.push(`/esecuzione?scenario=${scenario}&salvato=${come}`);
+    },
+    [router]
+  );
 
   useEffect(() => () => sorgenteRef.current?.close(), []);
 
@@ -174,6 +200,7 @@ export default function RegistraPage() {
 
   const generaTest = useCallback(async () => {
     if (inviando) return;
+    if (fase.tipo === 'riepilogo') titoloPropostoRef.current = fase.dati.passi[0]?.nome ?? '';
     setInviando(true);
     try {
       const risposta = await fetch('/api/esegui', {
@@ -194,18 +221,13 @@ export default function RegistraPage() {
         id: corpo.id,
         azione: 'generazione',
       });
-      osserva(corpo.id, 'generazione', () =>
-        // L'ambiente e' la scelta unica della finestra (vedi `useAmbiente`):
-        // Esecuzione la legge da sola, non serve piu' passarla nella query
-        // string.
-        router.push('/esecuzione')
-      );
+      osserva(corpo.id, 'generazione', dopoGenerazione);
     } catch {
       setFase({ tipo: 'errore', messaggio: t('erroreParlareCruscotto') });
     } finally {
       setInviando(false);
     }
-  }, [osserva, router, inviando, ambiente, t]);
+  }, [osserva, dopoGenerazione, inviando, fase, t]);
 
   const interrompi = useCallback(async () => {
     if (fase.tipo !== 'in-corso') return;
@@ -229,7 +251,7 @@ export default function RegistraPage() {
         if (azione === 'registrazione') {
           void caricaRiepilogo();
         } else {
-          router.push('/esecuzione');
+          dopoGenerazione();
         }
       });
     };
@@ -338,6 +360,14 @@ export default function RegistraPage() {
             {t('generaTest')}
           </button>
         </div>
+      )}
+
+      {fase.tipo === 'salva' && (
+        <SalvaScenario
+          titoloProposto={fase.titolo}
+          onSalvato={(esito) => versoEsecuzione(esito)}
+          onTieni={() => versoEsecuzione()}
+        />
       )}
 
       {fase.tipo === 'errore' && (

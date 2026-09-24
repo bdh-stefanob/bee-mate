@@ -231,30 +231,33 @@ recordings (D38).
 
 ## 6. Where scenarios live
 
-### Today
+Cucumber and the app read one root, `src/features/`.
 
 | Kind | Path | In git? | Organised by |
 |---|---|---|---|
 | Hand-written or imported scenarios | `src/features/<app>/<flow>/<name>.feature` | yes | `@app` and `@flow` tags; the portal places files from the tags |
-| Test cases documented but never automated | same tree, tagged `@non-automatizzato` | yes | excluded from runs by `cucumber.js` |
-| Scenarios generated from recordings | `src/features/generated/<recording-name>.feature` | **no** (gitignored with their steps and Page Objects) | flat; named after the recording (host + timestamp) |
+| Test cases documented but never automated | same tree, tagged `@non-automatizzato` | yes | excluded from runs by `cucumber.js`, not offered in Run |
+| Scenarios generated and **saved** by the tester | `src/features/<app>/<flow>/<name>.feature` | the `.feature` yes; its steps and Page Objects **no** (see below) | `@app @flow @generato` tags; app and flow from the catalog's `app` / `area` |
+| Scenarios generated and not saved yet | `src/features/generated/<recording-name>.feature` | no | flat; named after the recording |
 | Test cases on the wiki | Confluence pages | — | the wiki tree |
 
-Cucumber and the app both read one root, `src/features/`, so every
-scenario is already under one path. The gaps are in how generated scenarios
-are handled:
+**The path of a recorded scenario** (since 2026-09-24):
 
-- they never join the `<app>/<flow>` tree, and carry no `@app` / `@flow` tags;
-- they stay on the machine that generated them: nobody else can run them,
-  review them or find them in the portal's tree;
-- their names come from the recording file, not from what they test;
-- ~~the *Run* screen runs **all** generated scenarios~~ — fixed 2026-09-24: the
-  *Run* screen now offers "What to run": all recorded scenarios, one file, or
-  one scenario, from everything under `src/features/` except `@non-automatizzato`;
-- after generating, the catalog is not regenerated automatically, so new
-  `@wanted` entries appear only after `npm run catalog`.
+1. *Record* → the tester runs the test → *Generate the test*.
+2. The screen asks **where it belongs**: application, flow, name. The file
+   moves into the tree with its tags; the generation marker stays, so a later
+   regeneration may overwrite it while nobody has edited it by hand.
+3. *Run* opens with that scenario selected. "All recorded scenarios" finds
+   every `@generato` scenario, wherever it lives.
 
-A proposal is in `ROADMAP.md` §4 (item 3), with the decisions it needs.
+**Open point:** the step definitions and Page Objects of a saved scenario stay
+in `src/steps/generated/` and `src/pages/generated/`, gitignored because they
+carry real page and component names. A saved scenario pushed to git therefore
+fails as "undefined" on another machine until its glue is versioned too, a
+decision recorded in `ROADMAP.md` §4, item 3.
+
+Still missing: the catalog is not refreshed after generating, and Run cannot
+yet pick a whole flow or application.
 
 ---
 

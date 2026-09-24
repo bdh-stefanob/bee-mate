@@ -88,7 +88,18 @@ The window then shows **what it understood** from the recording:
 - **Before you generate**: where the test might be fragile, in
   plain words, with what to do about it.
 
-Then press **Generate the test**.
+Then press **Generate the test**. When it is done, the window asks **where the
+scenario belongs**:
+
+- **Application** and **Flow**: pick one from the list (they come from the
+  step catalog) or type a new one; only lowercase letters, digits and dashes;
+- **Scenario name**: what it checks, for example "Sign in and see the
+  dashboard". The name of your first step is proposed.
+
+**Save and go to Run** puts it next to the other scenarios of that flow and
+opens *Run* with it already selected. If a scenario with the same name was
+edited by hand, it is left untouched and yours is saved next to it.
+**Keep it with the recorded scenarios** skips this step.
 
 If you leave the screen while recording, the recording is still there when you
 come back. If another operation is already running, the window says so and

@@ -95,44 +95,25 @@ credible, then the rest.
 | 8 | A scenario already in the repository fails the validator | it blocks whoever touches it | ½ d | task 13 |
 | 9 | Package the VS Code extension (`.vsix`) | today it installs only from source | ½ d | old 5.6 |
 
-### Proposal for item 3: one home for every scenario
+### Item 3: one home for every scenario
 
-**Today** every scenario is already under one root, `src/features/`, which is
-what Cucumber and the app read. Generated scenarios, though, land flat in
-`src/features/generated/`, are gitignored with their code, are named after
-the recording file, and the *Run* screen can only run all of them at once.
+**Decided on 2026-09-24:** S1 the versioned tree, S2 the catalog's `app` and
+`area`, S3 overwrite only while the generation marker is still there.
 
-**Proposal:**
-
-1. **After "Generate the test", the Record screen asks where the scenario
-   belongs**: application and flow (from a list, as the portal already does
-   when saving), plus a readable name proposed from the first step. The file
-   goes to `src/features/<app>/<flow>/<name>.feature`, tagged `@app`, `@flow`
-   and `@generated`. Generated steps and Page Objects follow the same
-   `<app>` folder.
-2. **One tree for every kind of scenario**, told apart by tags, not by folder:
-   `@non-automatizzato` (documented only), `@generated` (from a recording),
-   and implemented by hand when neither tag is present. The portal's
-   *Features* tree then shows everything in one place.
-3. **The Run screen picks what to run** — ✅ done 2026-09-24: all recorded
-   scenarios, one file, or one scenario (`/api/scenari`, parameter `scenario`
-   of the closed command list). Picking a whole flow or application comes with
-   the tree.
-4. **After generating, the catalog is refreshed** as a command of the
-   dashboard's closed list, so new `@wanted` entries appear straight away.
-5. **Wiki test cases stay on the wiki**: they are measured, not moved.
-
-**Decisions it needs:**
-
-| # | Question | Options |
-|---|---|---|
-| S1 | Where are generated scenarios versioned? | **A)** the company repository (recommended: they contain real page and component names) · B) only on each tester's machine, as today |
-| S2 | What is `<app>`/`<flow>`? | A) the catalog's `app` and `area` fields (one vocabulary) · B) a separate list per team |
-| S3 | Does regenerating the same flow overwrite the scenario? | A) yes, if the file still carries the generation marker (today's rule) · B) always a new file |
+| Part | Status |
+|---|---|
+| After "Generate the test", the Record screen asks application, flow and name, and moves the file to `src/features/<app>/<flow>/<name>.feature` with `@app @flow` tags (the `@generato` tag and the generation marker stay) | ✅ done 2026-09-24 |
+| Suggestions come from the catalog's `app` / `area` and from existing folders; a new value can be typed | ✅ |
+| A destination still carrying the marker is overwritten; a hand-edited one is left alone and the new file goes next to it (`-2`) | ✅ |
+| "Keep it with the recorded scenarios" leaves it in `src/features/generated/`, as before | ✅ |
+| The Run screen picks what to run: all recorded scenarios (both still in `generated/` and already moved, found by the `@generato` tag), one file, or one scenario; after saving, the new scenario is preselected | ✅ |
+| **Glue of saved scenarios**: step definitions and Page Objects stay in `src/steps/generated/` and `src/pages/generated/`, which are **gitignored** since 2026-09-16 because they carry real page and component names. On another machine the saved scenario is in git but its steps are not | ⚠️ **decision needed**: version the glue too (reverses the 09-16 rule and `CLAUDE.md` rule 4), or keep saved scenarios on the machine |
+| Refresh the catalog after generating | ⬜ |
+| Pick a whole flow or application in Run | ⬜ |
 
 **Waiting on a decision** (see §6): two domains (task 3), numeric segments
-(task 4), 3 or 4 layers (task 11), executable without the repository (U3),
-S1–S3 above.
+(task 4), 3 or 4 layers (task 11), executable without the repository (U3), versioning the glue of saved
+scenarios (item 3).
 
 **Waiting on the work machine:** field trials P3–P9
 (`docs/anti-entropy/10-prove-sul-campo.md`). The most important is **P4**: a

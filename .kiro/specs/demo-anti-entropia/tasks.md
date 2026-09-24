@@ -211,7 +211,7 @@ npm run rules:check
   - La barra del recorder e' solo in italiano ("Fine intento", "Verifica"), mentre
     la finestra in inglese dice "End intent" e "Verify".
 
-- [ ] 17. **UMANO decide, poi si costruisce** — Una casa per ogni scenario
+- [~] 17. Una casa per ogni scenario — **fatto il 2026-09-24** con S1 albero versionato, S2 app/area del catalogo, S3 sovrascrive solo con il marcatore. Resta da decidere se versionare anche step e Page Object generati (oggi gitignorati): vedi `ROADMAP.md` §4, voce 3
   - Perche': gli scenari generati finiscono in `src/features/generated/`, piatti,
     gitignorati, con il nome del file di registrazione; la schermata Esecuzione li
     lancia tutti insieme. Non entrano nell'albero `<app>/<flow>` del portale.

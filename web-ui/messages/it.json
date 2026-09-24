@@ -153,7 +153,10 @@
     "gruppoRegistrato": "Registrato · {nome}",
     "interoFile": "{n, plural, one {L'unico scenario} other {Tutti i # scenari}} di {file}",
     "nessunoScenario": "Ancora nessuno scenario eseguibile: prima registra una sessione e genera il test.",
-    "notaDocumentati": "Gli scenari marcati @non-automatizzato sono solo documentazione e non compaiono qui."
+    "notaDocumentati": "Gli scenari marcati @non-automatizzato sono solo documentazione e non compaiono qui.",
+    "salvatoNuovo": "Salvato come {file}.",
+    "salvatoSovrascritto": "Salvato come {file}, al posto della versione generata prima.",
+    "salvatoRinominato": "Salvato come {file}: un file modificato a mano aveva già quel nome ed è rimasto com'era."
   },
   "Riepilogo": {
     "durataLabel": "Durata: {durata}",
@@ -239,5 +242,25 @@
       "riepilogo": "{steps} step, {ancorati} ancorati a componenti di frontend",
       "nessunAncoraggio": "nessun ancoraggio: la rosa dei candidati si reggerà solo sul lessico"
     }
+  },
+  "Salva": {
+    "titolo": "Dove sta questo scenario?",
+    "descrizione": "Scegli l'applicazione e il flusso, e dai allo scenario un nome che dica cosa verifica. Finirà accanto agli altri scenari di quel flusso.",
+    "app": "Applicazione",
+    "appEsempio": "es. shop",
+    "flusso": "Flusso",
+    "flussoEsempio": "es. orders",
+    "nome": "Nome dello scenario",
+    "destinazione": "Verrà salvato in {percorso}",
+    "salva": "Salva e vai a Esecuzione",
+    "salvando": "Salvo…",
+    "tieni": "Lascialo con gli scenari registrati",
+    "erroreApp": "Il nome dell'applicazione può contenere solo lettere minuscole, cifre e trattini.",
+    "erroreFlusso": "Il nome del flusso può contenere solo lettere minuscole, cifre e trattini.",
+    "erroreTitolo": "Il nome deve stare su una riga, con almeno una lettera o una cifra.",
+    "erroreNonTrovato": "Non trovo lo scenario appena generato. Genera di nuovo il test.",
+    "erroreNonRegistrato": "Questo file non viene da una registrazione, quindi non si sposta da qui.",
+    "erroreTroppi": "Ci sono già troppi scenari con questo nome: scegline un altro.",
+    "erroreGenerico": "Non sono riuscito a salvare lo scenario."
   }
 }
