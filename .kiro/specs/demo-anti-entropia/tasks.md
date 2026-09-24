@@ -157,7 +157,7 @@ npm run rules:check
     numeri veri (task 2 e 8) e con l'argomento accessibilita' (i campi senza
     etichetta).
   - Si puo' cominciare subito dagli atti 1-3.
-  - 2026-09-24: impianto scritto in `docs/anti-entropy/04-presentazione.md`
+  - 2026-09-24: impianto scritto in `docs/PRESENTATION.md`
     (pubblici, scaletta di 11 slide, struttura del documento Word, scheda per i
     tester). Mancano i materiali.
   - _Requisiti: R1, R6, R9_
@@ -208,6 +208,15 @@ npm run rules:check
     `reports/` (gitignorata): rossa su ogni altra macchina. Serve una fixture.
   - `web-ui/__tests__/lib/percorsi.test.ts` si aspetta che `C:\...` sia assoluto:
     vero solo su Windows.
+  - La barra del recorder e' solo in italiano ("Fine intento", "Verifica"), mentre
+    la finestra in inglese dice "End intent" e "Verify".
+
+- [ ] 17. **UMANO decide, poi si costruisce** — Una casa per ogni scenario
+  - Perche': gli scenari generati finiscono in `src/features/generated/`, piatti,
+    gitignorati, con il nome del file di registrazione; la schermata Esecuzione li
+    lancia tutti insieme. Non entrano nell'albero `<app>/<flow>` del portale.
+  - Proposta e decisioni S1-S3: `ROADMAP.md` §4, voce 3; stato attuale in
+    `docs/OVERVIEW.md` §6.
 
 ## Prove sul campo — UMANO
 

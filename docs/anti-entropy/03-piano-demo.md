@@ -217,7 +217,7 @@ Elenco derivato dagli atti. **Quello che non e' qui non si costruisce.**
 | 9 | **Generazione dello scenario dalla traccia** | ✅ `npm run generate`, e "Genera il test" nel cruscotto |
 | 10 | **Refactor del catalogo** — rende il ciclo utile, non descrittivo | ⬜ 1-2 giorni (`catalog-apply`, `catalog-refactor`) |
 | 11 | Step + Page Object, esecuzione — atto 5 | 🟡 5 passi su 11 sul caso reale; si ferma sulle liste (task 14). **Tagliabile** |
-| 12 | **Le slide** | 🟡 scaletta in `04-presentazione.md`; da produrre |
+| 12 | **Le slide** | 🟡 scaletta in `../PRESENTATION.md`; da produrre |
 
 **Aggiornamento del 2026-09-24.** Lo scope e' cambiato una volta, e va detto:
 l'"integrazione nell'app", dichiarata fuori, e' entrata come **cruscotto**

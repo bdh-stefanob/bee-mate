@@ -2,7 +2,7 @@
 
 A test-automation scaffold built on **Playwright + Cucumber.js + TypeScript**, paired with a desktop **BDD Catalog** app that lets the QA team browse, search, and compose Gherkin scenarios without touching the codebase directly — and turn a manual test run into a generated, runnable test without opening a terminal.
 
-> **Start here:** [`docs/PANORAMICA.md`](docs/PANORAMICA.md) (Italian) describes the whole project — problem, method, process, components, status and open decisions. [`ROADMAP.md`](ROADMAP.md) lists what comes next.
+> **Start here:** [`docs/OVERVIEW.md`](docs/OVERVIEW.md) describes the whole project — problem, method, process, components, status and open decisions. [`ROADMAP.md`](ROADMAP.md) lists what comes next.
 
 ---
 
@@ -55,7 +55,7 @@ src/
 
 **Rule:** each layer talks only to the one below. Selectors never appear in step definitions. If the UI changes, you fix one Page Object.
 
-Code generated from recordings lands in `src/features/generated/`, `src/steps/generated/` and `src/pages/generated/` (gitignored: it carries real page and component names) and uses three layers — steps call Page Objects directly. Whether the handwritten code stays at four layers is an open decision (see `docs/PANORAMICA.md` §9).
+Code generated from recordings lands in `src/features/generated/`, `src/steps/generated/` and `src/pages/generated/` (gitignored: it carries real page and component names) and uses three layers — steps call Page Objects directly. Whether the handwritten code stays at four layers is an open decision (see `docs/OVERVIEW.md` §9).
 
 See `CONTRIBUTING.md` for the full coding standard.
 
@@ -63,11 +63,11 @@ See `CONTRIBUTING.md` for the full coding standard.
 
 ## Tester dashboard
 
-The first screen the app opens. Three entries in the sidebar, built for a manual tester working alone, with no terminal. User guide (Italian): [`docs/GUIDA-CRUSCOTTO.md`](docs/GUIDA-CRUSCOTTO.md).
+The first screen the app opens. Three entries in the sidebar, built for a manual tester working alone, with no terminal. User guide: [`docs/TESTER-DASHBOARD-GUIDE.md`](docs/TESTER-DASHBOARD-GUIDE.md).
 
 | Screen | What the tester does | What happens underneath |
 |---|---|---|
-| **Check** (`/controllo`) | sees whether the machine is ready; adds environments, fills credentials, records the login once, logs in | structured diagnosis; writes `bdd-targets.json` and `.env` (both gitignored), never echoing a value |
+| **Check-up** (`/controllo`) | sees whether the machine is ready; adds environments, fills credentials, records the login once, logs in | structured diagnosis; writes `bdd-targets.json` and `.env` (both gitignored), never echoing a value |
 | **Record** (`/registra`) | runs the test by hand, closes each step with *End intent*, marks checks with *Verify*, then presses *Generate the test* | `scripts/record.ts` writes a semantic trace (role + accessible name, not selectors); the screen shows what was understood, read from the trace; `scripts/generate.ts` writes feature, Page Objects and steps |
 | **Run** (`/esecuzione`) | presses *Run the test*, optionally watching the browser or starting without the saved session | Cucumber runs on the chosen environment; steps turn green or red live; a failure shows the screenshot and the actual URL |
 
@@ -157,7 +157,7 @@ Configure integrations. All values are stored locally in `localStorage` — neve
 
 - **Git** — to clone the repository ([git-scm.com](https://git-scm.com))
 - **For the portal only**, no Node.js is required — the desktop app is standalone
-- **For the tester dashboard**, the app runs the project's scripts on your clone, so the clone needs its dependencies (`npm install`) and a browser for Playwright (the *Check* screen can install it). Whether the executable should work without the repository is an open decision (U3 in `docs/PANORAMICA.md`)
+- **For the tester dashboard**, the app runs the project's scripts on your clone, so the clone needs its dependencies (`npm install`) and a browser for Playwright (the *Check-up* screen can install it). Whether the executable should work without the repository is an open decision (U3 in `docs/OVERVIEW.md`)
 
 ### Step 1 — Clone the repository
 
@@ -175,7 +175,7 @@ Run the installer. It does not require administrator rights and lets you choose 
 
 ### Step 4 — First launch — Workspace picker
 
-On the first launch, a folder picker dialog appears (the app then opens on the *Check* screen):
+On the first launch, a folder picker dialog appears (the app then opens on the *Check-up* screen):
 
 > *"Select the BDD project folder"*
 > *(the folder must contain `step-catalog.json`)*

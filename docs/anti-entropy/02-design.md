@@ -3,7 +3,7 @@
 > **Stato (2026-09-24):** la Sezione 1 e' l'architettura adottata. Le sezioni 2-7
 > non sono state scritte qui come design: i blocchi sono stati costruiti e
 > documentati ciascuno nel suo file, indicato sotto. Il quadro d'insieme
-> aggiornato e' in [`../PANORAMICA.md`](../PANORAMICA.md).
+> aggiornato e' in [`../OVERVIEW.md`](../OVERVIEW.md).
 
 ---
 
@@ -175,7 +175,7 @@ Object esistenti alla rigenerazione (task 5.2).
 
 ## Sezione 6 — Piano demo
 
-➡️ `03-piano-demo.md` (sceneggiatura) e `04-presentazione.md` (materiali).
+➡️ `03-piano-demo.md` (sceneggiatura) e `../PRESENTATION.md` (materiali).
 
 ## Sezione 7 — Rischi e mitigazioni
 
