@@ -547,6 +547,40 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
   const gruppi = proponiGruppi(sciolti, verifiche);
   if (gruppi.length === 0) return rec;
 
+  // Senza un vero terminale (lanciato dalla finestra dell'app) non arrivera'
+  // mai una riga da leggere: e' lo stesso difetto di session.ts, qui sul lato
+  // "chiedi il nome del passo". Il tester ha gia' chiuso il browser, o ha
+  // premuto "Fine registrazione" senza terminale a disposizione — restare in
+  // ascolto su readline lascerebbe il processo appeso a tempo indeterminato.
+  // Si accettano le etichette proposte cosi' come sono: sono materiale vero,
+  // marcato come non rivisto, non buttato.
+  if (!process.stdin.isTTY) {
+    console.log(
+      `\n  ${sciolti.length} gesti non chiusi con "Fine intento", ma non c'e' un\n` +
+        `  terminale da cui chiedere i nomi (lanciato dalla finestra dell'app).\n` +
+        `  Tengo le etichette proposte automaticamente: rivedile a mano nel file.\n`
+    );
+    const nominati: Intent[] = gruppi.map((g) => ({
+      label: `(da rivedere) ${etichettaProposta(g) ?? "intento senza nome"}`,
+      steps: g.steps,
+      assertions: g.assertions,
+      notes: [],
+      ...(g.pageUrl ? { pageUrl: g.pageUrl } : {}),
+      ...(g.endUrl ? { endUrl: g.endUrl } : {}),
+    }));
+    const gia = rec.intents.filter((i) => i.label && !i.label.startsWith("("));
+    const intents = [...gia, ...nominati];
+    return {
+      ...rec,
+      intents,
+      summary: {
+        ...rec.summary,
+        intents: intents.length,
+        unlabelled: intents.filter((i) => i.label.startsWith("(")).length,
+      },
+    };
+  }
+
   console.log(`\nCOME SI CHIAMANO QUESTI PASSI?\n`);
   console.log(
     `  ${sciolti.length} gesti non sono stati chiusi con "Fine intento". Te li ho\n` +

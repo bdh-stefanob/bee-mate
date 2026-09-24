@@ -6,6 +6,8 @@
  * due volte ha un comportamento che dipende da chi lo legge, e il sintomo
  * (credenziali che "a volte" non funzionano) non assomiglia alla causa.
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import { BERSAGLIO_VALIDO } from './esecuzione';
 // Riusate cosi' come sono: e' la stessa regola che gia' legge `diagnosi.ts`
 // per decidere se un ambiente e' pronto. Riscriverla qui — anche solo il
@@ -117,6 +119,42 @@ export interface AmbienteConCredenziali extends AmbienteVisibile {
   variabiliRichieste: string[];
   /** Il sottoinsieme di sopra che non e' ancora impostato in .env. */
   variabiliMancanti: string[];
+  /**
+   * C'e' gia' un file di sessione salvato su disco per questo ambiente?
+   * Serve solo alla conferma prima di eliminarlo — mai al resto della
+   * schermata — cosi' il tester sa PRIMA di premere "Elimina" che sta per
+   * perdere anche quella, non solo la voce in bdd-targets.json.
+   */
+  haSessione: boolean;
+}
+
+/**
+ * Dove sta (o starebbe) il file di sessione di un ambiente: il campo
+ * `session` dell'oggetto se presente in bdd-targets.json, altrimenti la
+ * stessa convenzione di default usata da `loadTargets`
+ * (`reports/sessions/<nome>.json`) — ma qui risolta contro la cartella del
+ * file degli ambienti, non contro la cartella di lavoro del processo: nella
+ * finestra quest'ultima e' `web-ui/`, non la radice del repository, e un
+ * percorso relativo risolto li' punterebbe a un file che non esiste mai.
+ */
+function percorsoSessioneAmbiente(
+  jsonAmbienti: string,
+  targetsPath: string,
+  nome: string
+): string {
+  const radiceRepo = path.dirname(targetsPath);
+  let grezzo: unknown;
+  try {
+    const dati = JSON.parse(jsonAmbienti) as Record<string, unknown>;
+    grezzo = dati[nome];
+  } catch {
+    grezzo = undefined;
+  }
+  const relativoOAssoluto =
+    grezzo && typeof grezzo === 'object' && typeof (grezzo as { session?: unknown }).session === 'string'
+      ? (grezzo as { session: string }).session
+      : path.join('reports', 'sessions', `${nome}.json`);
+  return path.isAbsolute(relativoOAssoluto) ? relativoOAssoluto : path.join(radiceRepo, relativoOAssoluto);
 }
 
 /**
@@ -144,6 +182,7 @@ export function ambientiConCredenziali(
     ...a,
     variabiliRichieste: richiesteTutte.get(a.nome) ?? [],
     variabiliMancanti: missingVars(a.nome, targetsPath),
+    haSessione: fs.existsSync(percorsoSessioneAmbiente(jsonAmbienti, targetsPath, a.nome)),
   }));
 }
 
@@ -287,4 +326,48 @@ export function scriviLoginBersaglio(
   };
 
   return scriviBersagli(dati, eol);
+}
+
+/**
+ * Toglie un ambiente da bdd-targets.json — l'indirizzo e, se c'era, il
+ * blocco `login` spariscono insieme, perche' sono lo stesso oggetto. Stessa
+ * forma pura delle altre due: si rifiuta su un nome non valido o assente,
+ * non tocca nessun altro ambiente ne' il blocco `_commento`.
+ *
+ * Quello che NON tocca, deliberatamente: le variabili in `.env` che
+ * quell'ambiente usava. Potrebbero servire a un ambiente omonimo ricreato in
+ * seguito, o a un altro bersaglio che le referenzia — cancellarle qui
+ * sarebbe un effetto a distanza che chi elimina un ambiente non sta
+ * chiedendo. La conferma mostrata prima di chiamare questa funzione lo dice
+ * esplicitamente, cosi' il tester non se lo immagina al contrario.
+ */
+export function rimuoviBersaglio(contenutoJson: string, nome: string): string {
+  if (!BERSAGLIO_VALIDO.test(nome) || nome.startsWith('_')) {
+    throw new Error(`nome di ambiente non valido: ${JSON.stringify(nome)}`);
+  }
+
+  const { dati, eol } = analizzaBersagli(contenutoJson);
+
+  if (!(nome in dati)) {
+    throw new Error(`ambiente sconosciuto: ${JSON.stringify(nome)}`);
+  }
+
+  delete dati[nome];
+
+  return scriviBersagli(dati, eol);
+}
+
+/**
+ * Il file di sessione di un ambiente, se ne esiste uno — per cancellarlo
+ * quando l'ambiente stesso viene eliminato. Riusa la stessa risoluzione del
+ * percorso di `ambientiConCredenziali`/`haSessione`, cosi' cio' che la
+ * conferma promette di rimuovere e' esattamente cio' che viene rimosso
+ * davvero, non una convenzione diversa applicata alla cieca.
+ */
+export function percorsoSessionePerEliminazione(
+  jsonAmbienti: string,
+  targetsPath: string,
+  nome: string
+): string {
+  return percorsoSessioneAmbiente(jsonAmbienti, targetsPath, nome);
 }
