@@ -55,7 +55,7 @@ src/
 
 **Rule:** each layer talks only to the one below. Selectors never appear in step definitions. If the UI changes, you fix one Page Object.
 
-Code generated from recordings lands in `src/features/generated/`, `src/steps/generated/` and `src/pages/generated/` (gitignored: it carries real page and component names) and uses three layers — steps call Page Objects directly. Whether the handwritten code stays at four layers is an open decision (see `docs/OVERVIEW.md` §9).
+Code generated from recordings first lands in `src/features/generated/`, `src/steps/generated/` and `src/pages/generated/` (gitignored). When the tester **saves** a scenario from the dashboard, the feature, its steps and its Page Objects move into the versioned tree — `src/features/<app>/<flow>/`, `src/steps/<app>/<flow>/`, `src/pages/<app>/` — so the UI test framework grows with every saved recording. Page Objects are shared per application: a new scenario adds the methods it needs and never removes one. Generated code uses three layers — steps call Page Objects directly. Whether the handwritten code stays at four layers is an open decision (see `docs/OVERVIEW.md` §9).
 
 See `CONTRIBUTING.md` for the full coding standard.
 

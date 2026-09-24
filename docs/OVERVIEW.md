@@ -237,7 +237,7 @@ Cucumber and the app read one root, `src/features/`.
 |---|---|---|---|
 | Hand-written or imported scenarios | `src/features/<app>/<flow>/<name>.feature` | yes | `@app` and `@flow` tags; the portal places files from the tags |
 | Test cases documented but never automated | same tree, tagged `@non-automatizzato` | yes | excluded from runs by `cucumber.js`, not offered in Run |
-| Scenarios generated and **saved** by the tester | `src/features/<app>/<flow>/<name>.feature` | the `.feature` yes; its steps and Page Objects **no** (see below) | `@app @flow @generato` tags; app and flow from the catalog's `app` / `area` |
+| Scenarios generated and **saved** by the tester | `src/features/<app>/<flow>/<name>.feature`, steps in `src/steps/<app>/<flow>/`, Page Objects in `src/pages/<app>/` | yes, all three | `@app @flow @generato` tags; app and flow from the catalog's `app` / `area` |
 | Scenarios generated and not saved yet | `src/features/generated/<recording-name>.feature` | no | flat; named after the recording |
 | Test cases on the wiki | Confluence pages | — | the wiki tree |
 
@@ -250,11 +250,15 @@ Cucumber and the app read one root, `src/features/`.
 3. *Run* opens with that scenario selected. "All recorded scenarios" finds
    every `@generato` scenario, wherever it lives.
 
-**Open point:** the step definitions and Page Objects of a saved scenario stay
-in `src/steps/generated/` and `src/pages/generated/`, gitignored because they
-carry real page and component names. A saved scenario pushed to git therefore
-fails as "undefined" on another machine until its glue is versioned too, a
-decision recorded in `ROADMAP.md` §4, item 3.
+**The glue travels with the scenario** (decided 2026-09-24, the repository is
+private): its steps go to `src/steps/<app>/<flow>/<name>.steps.ts` and its
+Page Objects to `src/pages/<app>/`, all versioned. Page Objects are shared per
+application: a later scenario reuses one, or adds the methods it lacks, and
+never removes a method another scenario calls; a hand-edited Page Object is
+never touched. A step phrase already defined by another saved scenario stops
+the save, with the phrases listed, because Cucumber refuses two definitions of
+the same phrase. Nothing is written until every check has passed. In short,
+the UI test framework builds itself, one saved recording at a time.
 
 Still missing: the catalog is not refreshed after generating, and Run cannot
 yet pick a whole flow or application.

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
 import { FEATURES_DIR, REPO_ROOT } from '@/lib/repo';
-import { ErroreSalvataggio, salvaScenario } from '@/lib/salva-scenario';
+import { ErroreSalvataggio, pianificaScenario, scriviScenario } from '@/lib/salva-scenario';
+import { pianificaGlue, scriviGlue } from '@/lib/salva-glue';
 import { daAltraOrigine } from '@/lib/stessa-origine';
 
 /**
@@ -16,7 +17,12 @@ const MANIFESTO = path.join('reports', 'cruscotto', 'generazione-manifesto.json'
  * POST /api/scenari/salva
  *
  * Corpo: `{ app, flusso, titolo }`. Sposta lo scenario appena generato in
- * `src/features/<app>/<flusso>/<nome>.feature` e dice dove l'ha messo.
+ * `src/features/<app>/<flusso>/<nome>.feature`, e con lui i suoi step
+ * (`src/steps/<app>/<flusso>/`) e le sue Page Object (`src/pages/<app>/`):
+ * tutto versionato, cosi' lo scenario gira anche su un'altra macchina.
+ *
+ * Prima si pianifica tutto, poi si scrive: un conflitto scoperto a meta'
+ * lascerebbe uno scenario spostato senza i suoi step.
  */
 export async function POST(request: Request) {
   if (daAltraOrigine(request)) {
@@ -38,14 +44,18 @@ export async function POST(request: Request) {
   }
 
   let origine: string | undefined;
+  let steps: string | undefined;
   try {
     const manifesto = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, MANIFESTO), 'utf-8')) as {
       files?: Array<{ path?: string }>;
     };
-    const feature = (manifesto.files ?? [])
-      .map((f) => (f.path ?? '').replace(/\\/g, '/'))
-      .find((p) => p.startsWith('src/features/generated/') && p.endsWith('.feature'));
-    origine = feature?.slice('src/features/'.length);
+    const percorsi = (manifesto.files ?? []).map((f) => (f.path ?? '').replace(/\\/g, '/'));
+    origine = percorsi
+      .find((p) => p.startsWith('src/features/generated/') && p.endsWith('.feature'))
+      ?.slice('src/features/'.length);
+    steps = percorsi
+      .find((p) => p.startsWith('src/steps/generated/') && p.endsWith('.steps.ts'))
+      ?.slice('src/'.length);
   } catch {
     origine = undefined;
   }
@@ -57,11 +67,27 @@ export async function POST(request: Request) {
   }
 
   try {
-    return NextResponse.json(salvaScenario(FEATURES_DIR, origine, { app, flusso, titolo }));
+    const scenario = pianificaScenario(FEATURES_DIR, origine, { app, flusso, titolo });
+    const nome = path.basename(scenario.file, '.feature');
+    const glue = steps ? pianificaGlue(path.join(REPO_ROOT, 'src'), steps, app, flusso, nome) : null;
+
+    scriviScenario(scenario);
+    if (glue) scriviGlue(glue);
+
+    return NextResponse.json({
+      file: scenario.file,
+      sovrascritto: scenario.sovrascritto,
+      rinominato: scenario.rinominato,
+      steps: glue?.steps ?? null,
+      pagine: glue?.pagine ?? [],
+    });
   } catch (err) {
-    // I messaggi di salvaScenario sono scritti per una persona e non
-    // contengono percorsi assoluti.
-    const codice = err instanceof ErroreSalvataggio ? err.codice : undefined;
-    return NextResponse.json({ errore: (err as Error).message, codice }, { status: 400 });
+    // I messaggi sono scritti per una persona e non contengono percorsi
+    // assoluti; i dettagli sono frasi di step e nomi di metodi.
+    const e = err instanceof ErroreSalvataggio ? err : null;
+    return NextResponse.json(
+      { errore: (err as Error).message, codice: e?.codice, dettagli: e?.dettagli ?? [] },
+      { status: 400 }
+    );
   }
 }

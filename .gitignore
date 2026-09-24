@@ -34,6 +34,11 @@ bdd-targets.json
 # fermato il validatore degli step, cioe' il controllo sbagliato per il motivo
 # giusto. I nomi dei file bastavano a identificare l'ambiente.
 # Si rigenera in un comando: `npm run generate`.
+#
+# Dal 2026-09-24 queste cartelle tengono solo cio' che non e' ancora stato
+# salvato: quando il tester salva uno scenario dal cruscotto, feature, step e
+# Page Object passano in src/features|steps|pages/<app>/ e si versionano
+# (decisione del proprietario: il repository e' privato, vedi CLAUDE.md).
 src/features/generated/
 src/steps/generated/
 src/pages/generated/

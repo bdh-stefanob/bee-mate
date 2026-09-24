@@ -17,6 +17,8 @@ const CHIAVE_ERRORE: Record<CodiceErrore, string> = {
   flusso: 'erroreFlusso',
   titolo: 'erroreTitolo',
   troppi: 'erroreTroppi',
+  'passo-duplicato': 'errorePassoDuplicato',
+  'pagina-a-mano': 'errorePaginaAMano',
 };
 
 /**
@@ -59,6 +61,7 @@ export function SalvaScenario({
   const [titolo, setTitolo] = useState(titoloProposto);
   const [salvando, setSalvando] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
+  const [dettagli, setDettagli] = useState<string[]>([]);
 
   useEffect(() => {
     let attivo = true;
@@ -82,15 +85,20 @@ export function SalvaScenario({
     if (!pronto || salvando) return;
     setSalvando(true);
     setErrore(null);
+    setDettagli([]);
     try {
       const risposta = await fetch('/api/scenari/salva', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ app, flusso, titolo: titolo.trim() }),
       });
-      const corpo = (await risposta.json()) as Partial<EsitoSalvataggio> & { codice?: CodiceErrore };
+      const corpo = (await risposta.json()) as Partial<EsitoSalvataggio> & {
+        codice?: CodiceErrore;
+        dettagli?: string[];
+      };
       if (!risposta.ok || !corpo.file) {
-        setErrore(t(corpo.codice ? CHIAVE_ERRORE[corpo.codice] : 'erroreGenerico'));
+        setErrore(t(corpo.codice && CHIAVE_ERRORE[corpo.codice] ? CHIAVE_ERRORE[corpo.codice] : 'erroreGenerico'));
+        setDettagli(corpo.dettagli ?? []);
         return;
       }
       onSalvato(corpo as EsitoSalvataggio);
@@ -180,10 +188,19 @@ export function SalvaScenario({
       )}
 
       {errore && (
-        <p role="alert" className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--rosso)' }}>
-          <AlertTriangle size={16} aria-hidden="true" />
-          {errore}
-        </p>
+        <div role="alert" className="flex flex-col gap-1 text-sm" style={{ color: 'var(--rosso)' }}>
+          <p className="flex items-center gap-2 font-medium">
+            <AlertTriangle size={16} aria-hidden="true" />
+            {errore}
+          </p>
+          {dettagli.length > 0 && (
+            <ul className="list-disc pl-6 font-mono text-xs break-words" style={{ color: 'var(--testo)' }}>
+              {dettagli.map((d) => (
+                <li key={d}>{d}</li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <div className="flex flex-wrap gap-3">

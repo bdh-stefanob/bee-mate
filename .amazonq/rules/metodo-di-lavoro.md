@@ -40,14 +40,19 @@ scenario e automazione.
 
 ## Dati aziendali: la regola che non si discute
 
-Questo repository e' **pubblico**, e ha due remote sulla stessa storia: un dato che
-entra in un commit e' a un push dall'essere pubblico per sempre.
+Questo repository ha **due remote sulla stessa storia**. Quello su GitHub e' privato;
+quello aziendale, all'ultimo controllo, era pubblico (domanda Q10). Un dato che entra
+in un commit arriva ovunque arrivi quella storia.
 
 - `reports/` e' gitignorato e contiene tutto cio' che e' reale: registrazioni (con i
   valori digitati), dizionari, sessioni salvate. **Resta sulla macchina.**
 - Dalla macchina aziendale esce solo `npm run referto`, che produce numeri e basta.
-- Il codice generato da un'applicazione aziendale porta nomi di pagine e componenti:
-  va nel repository **aziendale**, mai qui.
+- Il codice generato resta in `*/generated/`, gitignorato, finche' il tester non lo
+  **salva** dal cruscotto. Da quel momento feature, step e Page Object stanno in
+  `src/features|steps|pages/<app>/` e si versionano: e' una decisione del proprietario
+  del progetto (2026-09-24), perche' il framework di test UI deve crescere da solo.
+  Portano nomi di pagine e componenti: **non si fa push verso un remote pubblico** —
+  prima si verifica che sia diventato privato (Q10).
 - Niente URL, nomi di prodotto o di persona nei documenti, nei commenti, negli esempi.
   Si scrive "l'applicazione clinica", "il sito vetrina", "il questionario".
 - Credenziali solo in `.env` come `${VAR}`. Mai stampate a schermo, mai nei log.

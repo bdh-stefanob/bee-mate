@@ -251,7 +251,7 @@
     "flusso": "Flusso",
     "flussoEsempio": "es. orders",
     "nome": "Nome dello scenario",
-    "destinazione": "Verrà salvato in {percorso}",
+    "destinazione": "Verrà salvato in {percorso}, con i suoi step e le sue Page Object",
     "salva": "Salva e vai a Esecuzione",
     "salvando": "Salvo…",
     "tieni": "Lascialo con gli scenari registrati",
@@ -261,6 +261,8 @@
     "erroreNonTrovato": "Non trovo lo scenario appena generato. Genera di nuovo il test.",
     "erroreNonRegistrato": "Questo file non viene da una registrazione, quindi non si sposta da qui.",
     "erroreTroppi": "Ci sono già troppi scenari con questo nome: scegline un altro.",
-    "erroreGenerico": "Non sono riuscito a salvare lo scenario."
+    "erroreGenerico": "Non sono riuscito a salvare lo scenario.",
+    "errorePassoDuplicato": "Queste frasi sono già definite da un altro scenario salvato. Due definizioni della stessa frase fermerebbero ogni esecuzione. Registra il passo con un altro nome, oppure allinealo prima al catalogo:",
+    "errorePaginaAMano": "Una pagina salvata è stata modificata a mano e le mancano metodi che servono a questo scenario. Aggiungili a mano, oppure rimetti il marcatore di generazione:"
   }
 }

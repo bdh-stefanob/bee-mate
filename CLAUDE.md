@@ -10,7 +10,7 @@ Leggi sempre prima di operare:
 1. **Architettura 4 layer**: `features/` → `steps/` (glue sottile) → `actions/` (intenzioni business) → `pages/` (selettori). Ogni layer parla solo a quello sotto. **Mai selettori negli step.**
 2. **Calibrazione deterministica**: i nuovi `.feature` devono riusare step da `step-catalog.json`. Step nuovi → proponi espressione, tagga `@wanted`, aspetta approvazione del team prima di implementare.
 3. **`STEP_CATALOG.md` non si scrive a mano**: si rigenera con `npm run catalog`.
-4. **Niente dati/flussi/nomi aziendali reali** in questo repo (e' pubblico/personale).
+4. **Il repo e' privato.** Dal 2026-09-24 si versionano gli scenari che il tester salva dal cruscotto, con i loro step e Page Object (`src/features|steps|pages/<app>/`): contengono nomi reali di pagine e componenti, ed e' voluto — il framework di test UI cresce da solo a ogni registrazione salvata. Restano **fuori da git**: `reports/` (registrazioni, dizionari, export di Confluence), i file in `*/generated/` non ancora salvati, le sessioni e le credenziali.
 5. **Niente credenziali nel codice o nei commit**: token in `.env` (gitignored).
 
 ## Comandi quotidiani

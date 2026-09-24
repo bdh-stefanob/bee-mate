@@ -266,7 +266,6 @@ export function emitSteps(
 
   const seenPhrases = new Set<string>();
   const blocks: string[] = [];
-  let verifyEmitted = false;
   const initialised = new Set<string>();
 
   ctx.intents.forEach((intent, i) => {
@@ -359,31 +358,12 @@ export function emitSteps(
       );
     }
 
-    // IL PASSO DI VERIFICA GENERICO, E PERCHE' E' UNO SOLO.
-    //
-    // Un passo per elemento verificato produrrebbe uno step nuovo a ogni
-    // registrazione: esattamente l'entropia che questo progetto esiste per
-    // togliere. Parametrizzato, ne basta uno per tutte le verifiche di
-    // presenza, per sempre. E' generico di proposito: l'assistente lo
-    // specializza dove l'intento lo merita.
-    if (intent.assertions.length > 0 && !verifyEmitted) {
-      verifyEmitted = true;
-      blocks.push(
-        `/**\n` +
-          ` * @intent  Verifica che un elemento atteso sia presente sulla pagina.\n` +
-          ` * @param   atteso  Il nome accessibile dell'elemento.\n` +
-          ` * @wanted\n` +
-          ` *\n` +
-          ` * Uno solo per tutte le verifiche di presenza: uno per elemento sarebbe\n` +
-          ` * uno step nuovo a ogni registrazione. La meccanica vive nel World e\n` +
-          ` * non qui: una step definition non deve conoscere selettori.\n` +
-          ` */\n` +
-          `Then(${ts(VERIFY_STEP)}, async function (this: CustomWorld, atteso: string) {\n` +
-          `  await this.expectTextVisible(atteso);\n` +
-          `});`
-      );
-    }
   });
+
+  // Il passo di verifica generico ("the page shows {string}") non si genera
+  // piu' qui: vive una volta sola in src/steps/common/verifica.steps.ts.
+  // Emesso in ogni file generato, bastava salvare due scenari perche' Cucumber
+  // trovasse la stessa frase due volte e si rifiutasse di partire.
 
   const path = `${ctx.outRoot}/steps/generated/${ctx.slug}.steps.ts`;
   return {
