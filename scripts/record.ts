@@ -58,6 +58,7 @@ import { inventory, mergeInventories } from "./lib/inventory";
 import type { ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 import { argValue, hasFlag, positionals } from "./lib/args";
+import { attendiFineSessione } from "./lib/fine-sessione";
 
 // ---------------------------------------------------------------------------
 // Tipi della traccia
@@ -378,19 +379,11 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
   });
   inventaria();
 
-  // Si aspetta il pulsante di stop oppure la chiusura del browser.
-  await new Promise<void>((resolve) => {
-    const timer = setInterval(() => {
-      if (stopped) {
-        clearInterval(timer);
-        resolve();
-      }
-    }, 300);
-    browser.on("disconnected", () => {
-      clearInterval(timer);
-      resolve();
-    });
-  });
+  // Si aspetta il pulsante di stop, la chiusura del browser, oppure la
+  // chiusura dell'ultima finestra: su Windows chiudere la finestra non chiude
+  // sempre il browser, e senza quest'ultimo segnale il processo non finiva mai
+  // (vedi lib/fine-sessione.ts).
+  await attendiFineSessione(browser, context, () => stopped);
 
   // Un ultimo inventario prima di chiudere: l'ultima pagina e' quella su cui si
   // e' fermato il tester, spesso la conferma — cioe' proprio quella che serve
