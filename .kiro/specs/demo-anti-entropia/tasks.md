@@ -29,6 +29,10 @@ npm run rules:check
       il referto conta verifiche sui testi e nominazione dei passi
 - [x] Opzioni degli script in forma nuda (`label=x`), lette da `scripts/lib/args.ts`;
       `check:args` blocca le copie e i comandi suggeriti nella forma che si perde
+- [x] **Cruscotto per il tester** (2026-09-22/24): Controllo, Registra, Esecuzione
+      dentro l'app desktop, senza terminale; ambienti, credenziali e accesso
+      configurabili dalla finestra; due lingue. Spec e piano in `docs/superpowers/`,
+      decisioni D33-D39
 
 ## Da fare
 
@@ -80,6 +84,10 @@ npm run rules:check
 
 - [ ] 5. Una sessione in un comando
   - Perche': oggi servono cinque comandi in ordine, e un tester non li ricorda.
+  - **2026-09-24:** il perche' e' coperto dal cruscotto, dove il tester preme
+    Registra, poi Genera il test, poi Lancia il test. Restano scoperti 5.2
+    (riuso delle Page Object esistenti), 5.3 e 5.4 (conformita' e referto a
+    fine sessione). Da decidere se farli entrare nel cruscotto o chiudere il task.
   - [ ] 5.1 `scripts/sessione.ts` e `npm run sessione <bersaglio>` — argomento nudo,
     niente flag (vedi `lezioni.md`)
   - [ ] 5.2 Verifica di mappa: confronta i componenti necessari alla registrazione con
@@ -93,7 +101,12 @@ npm run rules:check
   - [ ] 5.6 Caso di controllo end-to-end con le fixture di `test-fixtures/generate/`
   - _Requisiti: R5_
 
-- [ ] 6. Ancorare il catalogo ai componenti
+- [~] 6. Ancorare il catalogo ai componenti — **fatto in parte, in un altro modo** (D38)
+  - 2026-09-23: l'estrattore del catalogo legge un tag `components` sopra la
+    definizione dello step, e la generazione lo scrive usando i componenti
+    risolti dalla registrazione. Su una registrazione vera: 2 step ancorati su 137.
+  - Differenza dal piano: **nessuna proposta in coda**, la generazione scrive
+    direttamente. Da confermare, o da riportare sotto approvazione umana.
   - Perche': e' il limite principale adesso. Zero step su 100 dichiarano componenti,
     quindi la classe di candidati piu' affidabile e' sempre vuota.
   - Dipende da: 1
@@ -144,13 +157,16 @@ npm run rules:check
     numeri veri (task 2 e 8) e con l'argomento accessibilita' (i campi senza
     etichetta).
   - Si puo' cominciare subito dagli atti 1-3.
+  - 2026-09-24: impianto scritto in `docs/anti-entropy/04-presentazione.md`
+    (pubblici, scaletta di 11 slide, struttura del documento Word, scheda per i
+    tester). Mancano i materiali.
   - _Requisiti: R1, R6, R9_
 
 - [ ] 11. **UMANO decide** — 3 o 4 layer
   - `CLAUDE.md` dice 4; il generatore ne produce 3, come il POC aziendale.
 
-- [ ] 12. (tagliabile) Due pulsanti nell'app desktop: genera, lancia
-  - Il primo da tagliare se il tempo stringe.
+- [x] 12. ~~(tagliabile) Due pulsanti nell'app desktop: genera, lancia~~ —
+  superato dal cruscotto, che ha "Genera il test" e "Lancia il test"
 
 - [ ] 14. Ancoraggio per riga, nelle liste
   - Perche': e' il punto in cui si ferma il test generato oggi. Un pulsante d'azione
@@ -176,6 +192,22 @@ npm run rules:check
     poi resta un'abitudine.
   - Cosa: allinearlo al catalogo, o marcare `@wanted` gli step che mancano, con
     `npm run validate:steps <file>` come giudice. Nessuna frase inventata.
+
+- [ ] 15. Chiudere il rituale: applicare le decisioni e riscrivere le varianti
+  - Perche': `06-rituale.md` descrive `catalog-apply` (registra Gold elette e
+    rinvii) e `catalog-refactor` (riscrive le occorrenze delle varianti sulla
+    Gold), ma nessuno dei due esiste. Senza, il rituale sceglie e non cambia niente.
+  - Vincolo: il refactor ha **solo** anteprima con diff e applicazione esplicita,
+    mai una modalita' automatica (D19).
+  - Verifica: caso di controllo con tre varianti su due `.feature`; l'anteprima
+    mostra il diff, l'applicazione riscrive, `validate:steps` passa.
+
+- [ ] 16. Pulizia dell'impianto
+  - `web-ui/package-lock.json` non allineato a `package.json`: `npm ci` fallisce.
+  - `web-ui/__tests__/lib/derivazione-login.test.ts` legge una registrazione in
+    `reports/` (gitignorata): rossa su ogni altra macchina. Serve una fixture.
+  - `web-ui/__tests__/lib/percorsi.test.ts` si aspetta che `C:\...` sia assoluto:
+    vero solo su Windows.
 
 ## Prove sul campo — UMANO
 

@@ -1,6 +1,8 @@
 # BDD Automation Scaffold
 
-A test-automation scaffold built on **Playwright + Cucumber.js + TypeScript**, paired with a desktop **BDD Catalog** app that lets the QA team browse, search, and compose Gherkin scenarios without touching the codebase directly.
+A test-automation scaffold built on **Playwright + Cucumber.js + TypeScript**, paired with a desktop **BDD Catalog** app that lets the QA team browse, search, and compose Gherkin scenarios without touching the codebase directly — and turn a manual test run into a generated, runnable test without opening a terminal.
+
+> **Start here:** [`docs/PANORAMICA.md`](docs/PANORAMICA.md) (Italian) describes the whole project — problem, method, process, components, status and open decisions. [`ROADMAP.md`](ROADMAP.md) lists what comes next.
 
 ---
 
@@ -8,25 +10,29 @@ A test-automation scaffold built on **Playwright + Cucumber.js + TypeScript**, p
 
 1. [What this is](#what-this-is)
 2. [Architecture](#architecture)
-3. [BDD Catalog App — Pages & Features](#bdd-catalog-app--pages--features)
-4. [Installation](#installation)
-5. [Proposing steps to the catalog](#proposing-steps-to-the-catalog)
-6. [Updates](#updates)
-7. [Step Catalog](#step-catalog)
-8. [Development Setup](#development-setup)
+3. [Tester dashboard](#tester-dashboard)
+4. [BDD Catalog App — Pages & Features](#bdd-catalog-app--pages--features)
+5. [Installation](#installation)
+6. [Proposing steps to the catalog](#proposing-steps-to-the-catalog)
+7. [Updates](#updates)
+8. [Step Catalog](#step-catalog)
+9. [Development Setup](#development-setup)
 
 ---
 
 ## What this is
 
-This repository contains two things that work together:
+This repository contains three things that work together around one shared step catalog (`step-catalog.json`):
 
 | Part | What it does |
 |---|---|
-| **Scaffold** (`src/`) | Playwright + Cucumber.js test suite, 4-layer architecture, pre-commit validation |
-| **BDD Catalog** (`web-ui/`) | Electron desktop app — browse steps, write feature files, push to GitHub |
+| **Scaffold** (`src/`) | Playwright + Cucumber.js test suite, layered architecture, pre-commit validation |
+| **BDD Catalog app** (`web-ui/`) | Electron desktop app with two faces: the **tester dashboard** (check the machine, record a session, run the generated test) and the **portal** (browse steps, write feature files, push to GitHub) |
+| **Anti-entropy toolchain** (`scripts/`) | measures how fragmented existing test cases are, prepares the monthly consolidation of the shared language, records manual sessions and generates feature files, Page Objects and step definitions from them — deterministically |
 
-The core idea: instead of every engineer inventing new step definitions, the team reuses steps from a shared catalog. The app makes reuse faster than writing from scratch. New steps go through a `@wanted` proposal flow and require team approval before implementation.
+The core idea: testers from different areas describe the same behaviour in different words. A shared catalog gives them one vocabulary; a 15-minute monthly ritual makes variants converge without blocking anyone; and recording a manual test run turns it into a scenario written with the tester's own step names. AI assistants may propose, but deterministic judges (catalog validator, TypeScript compiler, Cucumber dry-run) decide.
+
+New steps go through a `@wanted` proposal flow and require team approval before implementation.
 
 ---
 
@@ -49,13 +55,33 @@ src/
 
 **Rule:** each layer talks only to the one below. Selectors never appear in step definitions. If the UI changes, you fix one Page Object.
 
+Code generated from recordings lands in `src/features/generated/`, `src/steps/generated/` and `src/pages/generated/` (gitignored: it carries real page and component names) and uses three layers — steps call Page Objects directly. Whether the handwritten code stays at four layers is an open decision (see `docs/PANORAMICA.md` §9).
+
 See `CONTRIBUTING.md` for the full coding standard.
+
+---
+
+## Tester dashboard
+
+The first screen the app opens. Three entries in the sidebar, built for a manual tester working alone, with no terminal. User guide (Italian): [`docs/GUIDA-CRUSCOTTO.md`](docs/GUIDA-CRUSCOTTO.md).
+
+| Screen | What the tester does | What happens underneath |
+|---|---|---|
+| **Check** (`/controllo`) | sees whether the machine is ready; adds environments, fills credentials, records the login once, logs in | structured diagnosis; writes `bdd-targets.json` and `.env` (both gitignored), never echoing a value |
+| **Record** (`/registra`) | runs the test by hand, closes each step with *End intent*, marks checks with *Verify*, then presses *Generate the test* | `scripts/record.ts` writes a semantic trace (role + accessible name, not selectors); the screen shows what was understood, read from the trace; `scripts/generate.ts` writes feature, Page Objects and steps |
+| **Run** (`/esecuzione`) | presses *Run the test*, optionally watching the browser or starting without the saved session | Cucumber runs on the chosen environment; steps turn green or red live; a failure shows the screenshot and the actual URL |
+
+The working environment is chosen once, in the sidebar. English and Italian are available; the choice is kept in a cookie.
+
+**Safety by design:** the dashboard only accepts a closed list of command names with typed parameters — never a string to execute — and launches scripts without a shell. Results are read from artifacts on disk (trace JSON, generation manifest, Cucumber messages), never from console output. One long-running command at a time.
 
 ---
 
 ## BDD Catalog App — Pages & Features
 
-### Catalog (`/`)
+The portal is reachable from the dashboard sidebar (*Step catalog*).
+
+### Catalog (`/portale`)
 
 The home page. Displays all steps in the catalog as a searchable table.
 
@@ -90,6 +116,14 @@ Browse all existing `.feature` files in the repository.
 - **Edit button** — loads the selected file into the Editor
 - Each entry shows the feature name, number of scenarios, and tags
 
+### Components (`/components`)
+
+"If I change this component, how many steps depend on it?" — the reverse index from frontend components (role + accessible name) to the catalog steps that declare them. Only steps generated from a recording carry components today; hand-written steps are counted as *not anchored*.
+
+### Tags (`/tags`)
+
+Page tags aggregated across feature files, with how many steps and files use each one.
+
 ### Settings (`/settings`)
 
 Configure integrations. All values are stored locally in `localStorage` — never committed to the repository.
@@ -122,7 +156,8 @@ Configure integrations. All values are stored locally in `localStorage` — neve
 ### Prerequisites
 
 - **Git** — to clone the repository ([git-scm.com](https://git-scm.com))
-- **No Node.js required** — the desktop app is fully standalone
+- **For the portal only**, no Node.js is required — the desktop app is standalone
+- **For the tester dashboard**, the app runs the project's scripts on your clone, so the clone needs its dependencies (`npm install`) and a browser for Playwright (the *Check* screen can install it). Whether the executable should work without the repository is an open decision (U3 in `docs/PANORAMICA.md`)
 
 ### Step 1 — Clone the repository
 
@@ -140,7 +175,7 @@ Run the installer. It does not require administrator rights and lets you choose 
 
 ### Step 4 — First launch — Workspace picker
 
-On the first launch, a folder picker dialog appears:
+On the first launch, a folder picker dialog appears (the app then opens on the *Check* screen):
 
 > *"Select the BDD project folder"*
 > *(the folder must contain `step-catalog.json`)*
@@ -207,10 +242,10 @@ GitHub Actions builds the Windows installer and attaches it to the release autom
 `STEP_CATALOG.md` is a human-readable version generated from `step-catalog.json`:
 
 ```bash
-npx ts-node scripts/render-markdown.ts
+npm run catalog
 ```
 
-> ⚠️ Do not run `npm run catalog` on this repository — it overwrites `step-catalog.json` from the implemented `.steps.ts` files, discarding all `@wanted` steps.
+Regenerating keeps the `@wanted` entries: the code wins for what it defines, and requests that exist only in the catalog are preserved (`scripts/lib/catalog-merge.ts`). Steps generated from recordings also declare the frontend **components** they touch, so the portal can show how many scenarios depend on a component.
 
 ---
 
@@ -225,14 +260,19 @@ npm install
 npx playwright install chromium
 npm test              # run all scenarios
 npm run test:dry      # dry-run — validate steps without executing
+npm run check:all     # the toolchain's own checks
+npm run diagnosi      # is this machine ready? (same checks as the dashboard)
 ```
+
+The recording-to-test chain from a terminal, and setting it up on another machine: [`docs/anti-entropy/08-prova-su-altra-macchina.md`](docs/anti-entropy/08-prova-su-altra-macchina.md).
 
 ### BDD Catalog App (web-ui)
 
 ```bash
 cd web-ui
 npm install
-npm run dev           # Next.js dev server at http://localhost:3000
+npm run dev           # Next.js dev server at http://localhost:3000 (opens on /controllo)
+npm test              # vitest
 npm run electron:dev  # full Electron app in dev mode
 npm run electron:build:win   # build Windows installer
 ```

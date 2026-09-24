@@ -1,6 +1,7 @@
 # Istruzioni per l'agente (Claude Code)
 
 Leggi sempre prima di operare:
+- `docs/PANORAMICA.md` — il progetto per intero: problema, metodo, processo, componenti, stato.
 - `CONTRIBUTING.md` — regole architetturali (4 layer, step canonici, `@intent`, anti-rumore).
 - `ROADMAP.md` — backlog, ordine di lavoro, cosa NON costruire.
 
@@ -24,8 +25,9 @@ npm run catalog     # rigenera STEP_CATALOG.md + step-catalog.json
 
 - **"Aggiungi feature/scenario per X"**: prima `npm run catalog`, poi proponi
   Gherkin riusando step esistenti. Step nuovi → flagga e chiedi conferma.
-- **"Costruisci la UI / authoring portal"**: segui l'ordine in `ROADMAP.md`
-  (5.1 catalog site e 5.2 validator prima di 5.6 semi-app).
+- **"Lavora sull'app / cruscotto"**: segui la spec in
+  `docs/superpowers/specs/2026-09-22-cruscotto-tester-design.md` e l'ordine in
+  `ROADMAP.md` §4.
 - **"Refactor architetturale"**: chiedi conferma esplicita prima di rompere i 4 layer.
 
 ## Filosofia BDD adottata

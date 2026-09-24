@@ -4,6 +4,26 @@
 > la catena usabile senza terminale. Catalogo, assistente e sincronizzazione
 > restano fuori, dichiarati.
 
+## Stato (2026-09-24)
+
+**MVP costruito**, e rifinito dall'uso. Cosa e' cambiato rispetto a questa
+specifica, e perche' — il dettaglio e' nei messaggi di commit e nelle decisioni
+D33-D39 di `docs/anti-entropy/README.md`:
+
+| Rispetto alla specifica | Cosa e' successo |
+|---|---|
+| "Nessuna dipendenza nuova" | entrata `next-intl`: la finestra parla **inglese e italiano**, la lingua vive in un cookie (D36) |
+| Ambiente scelto "da un elenco" in Registra ed Esecuzione | scelto **una volta**, nella barra laterale, per tutta la finestra (D39) |
+| Credenziali in campi mascherati | le credenziali stanno **nella riga del loro ambiente**; un riquadro libero resta solo per le variabili che non appartengono a nessun ambiente |
+| Ambienti "con elenco di quelli gia' noti" | si aggiungono, modificano ed eliminano dalla finestra; l'accesso si **registra** una volta e diventa il blocco `login`, con segnaposto al posto dei valori (D37) |
+| "Accedi adesso" | chiudere il browser conclude l'accesso (prima serviva un Invio in un terminale che non esiste) |
+| Un comando lungo alla volta | in piu', la finestra **ritrova** un'operazione in corso tornando sulla schermata (D35) |
+| Voce "Catalogo" nel Controllo | spostata fra le **avanzate**: e' gergo di chi costruisce lo strumento |
+| Portale vecchio | stesso aspetto del cruscotto; funzioni e disposizione invariate |
+
+**Domande aperte:** U1-U4 restano aperte (sotto). Il nome e' ancora il segnaposto
+"BDD Catalog".
+
 ## Perche' esiste
 
 La catena funziona — registrazione, generazione, test — ma si guida con sei
