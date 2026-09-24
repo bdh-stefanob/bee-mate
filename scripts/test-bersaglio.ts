@@ -27,6 +27,7 @@ import * as path from "path";
 import { loadEnv } from "./lib/atlassian";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 import { argValue } from "./lib/args";
+import { scenariRegistrati } from "./lib/registrati";
 
 loadEnv();
 
@@ -87,8 +88,12 @@ function main(): void {
   // cruscotto: mai la prosa che Cucumber stampa a schermo.
   const messaggi = argValue(args, "--messaggi");
 
+  // Tutti gli scenari registrati: quelli ancora nella loro cartella e quelli
+  // a cui il tester ha gia' dato una casa. Nessuno registrato: si passa la
+  // cartella, e Cucumber dice da se' che non c'e' niente da eseguire.
+  const registrati = scenariRegistrati(path.join("src", "features"));
   const percorsi = soloGenerati
-    ? [path.join("src", "features", "generated")]
+    ? (registrati.length > 0 ? registrati : [path.join("src", "features", "generated")])
     : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito" && !a.startsWith("messaggi="));
 
   const eta = sessionAgeHours(target);

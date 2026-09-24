@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { PlayCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
@@ -166,7 +166,11 @@ function EsecuzioneContenuto() {
   // Cosa eseguire: vuoto vale "tutti gli scenari registrati", il comportamento
   // di prima; altrimenti un file o uno scenario, nella forma che Cucumber
   // capisce (`src/features/x.feature` o `...feature:12`).
-  const [scelta, setScelta] = useState('');
+  // Arrivando da Registra dopo un salvataggio, lo scenario appena salvato e'
+  // gia' scelto. Il valore della query non e' fidato: lo valida il server.
+  const parametri = useSearchParams();
+  const [scelta, setScelta] = useState(() => parametri.get('scenario') ?? '');
+  const salvato = parametri.get('salvato');
   const [fileScenari, setFileScenari] = useState<FileScenari[] | null>(null);
   const [id, setId] = useState<string | null>(null);
   const [statoCorrente, setStatoCorrente] = useState<StatoEsecuzione | null>(null);
@@ -408,6 +412,15 @@ function EsecuzioneContenuto() {
         <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
           {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunBersaglio')}
         </p>
+
+        {(salvato === 'nuovo' || salvato === 'sovrascritto' || salvato === 'rinominato') && scelta && (
+          <p role="status" className="text-sm rounded-md border px-3 py-2" style={{ borderColor: 'var(--verde)', color: 'var(--testo)' }}>
+            {t(
+              salvato === 'nuovo' ? 'salvatoNuovo' : salvato === 'sovrascritto' ? 'salvatoSovrascritto' : 'salvatoRinominato',
+              { file: scelta.replace(/^src\/features\//, '') }
+            )}
+          </p>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="scenario-da-eseguire" className="text-sm font-medium" style={{ color: 'var(--testo)' }}>

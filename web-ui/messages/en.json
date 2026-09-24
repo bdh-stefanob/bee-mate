@@ -151,9 +151,12 @@
     "scenarioEtichetta": "What to run",
     "tuttiIRegistrati": "All recorded scenarios",
     "gruppoRegistrato": "Recorded · {nome}",
-    "interoFile": "All {n, plural, one {# scenario} other {# scenarios}} in {file}",
+    "interoFile": "{n, plural, one {The only scenario in {file}} other {All # scenarios in {file}}}",
     "nessunoScenario": "No runnable scenario yet: record a session and generate the test first.",
-    "notaDocumentati": "Scenarios tagged @non-automatizzato are documentation only and are not listed."
+    "notaDocumentati": "Scenarios tagged @non-automatizzato are documentation only and are not listed.",
+    "salvatoNuovo": "Saved as {file}.",
+    "salvatoSovrascritto": "Saved as {file}, replacing the previous generated version.",
+    "salvatoRinominato": "Saved as {file}: a hand-edited file already had that name and was left untouched."
   },
   "Riepilogo": {
     "durataLabel": "Duration: {durata}",
@@ -239,5 +242,25 @@
       "riepilogo": "{steps} steps, {ancorati} anchored to frontend components",
       "nessunAncoraggio": "no anchoring: the candidate shortlist will rely on wording alone"
     }
+  },
+  "Salva": {
+    "titolo": "Where does this scenario belong?",
+    "descrizione": "Choose the application and the flow, and give the scenario a name that says what it checks. It will sit next to the other scenarios of that flow.",
+    "app": "Application",
+    "appEsempio": "e.g. shop",
+    "flusso": "Flow",
+    "flussoEsempio": "e.g. orders",
+    "nome": "Scenario name",
+    "destinazione": "It will be saved in {percorso}",
+    "salva": "Save and go to Run",
+    "salvando": "Saving…",
+    "tieni": "Keep it with the recorded scenarios",
+    "erroreApp": "The application name can only contain lowercase letters, digits and dashes.",
+    "erroreFlusso": "The flow name can only contain lowercase letters, digits and dashes.",
+    "erroreTitolo": "The name must be one line with at least one letter or digit.",
+    "erroreNonTrovato": "I can't find the scenario that was just generated. Generate the test again.",
+    "erroreNonRegistrato": "This file does not come from a recording, so it can't be moved from here.",
+    "erroreTroppi": "There are already too many scenarios with this name: choose another one.",
+    "erroreGenerico": "I couldn't save the scenario."
   }
 }
