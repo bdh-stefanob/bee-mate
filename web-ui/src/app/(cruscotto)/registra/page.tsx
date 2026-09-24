@@ -11,6 +11,7 @@ import {
 } from '@/components/cruscotto/RiepilogoTraccia';
 import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
+import { useAmbiente } from '@/context/AmbienteContext';
 
 /** Percorso fisso, dentro reports/: la generazione ci scrive l'elenco di cosa ha prodotto. */
 const MANIFESTO = 'reports/cruscotto/generazione-manifesto.json';
@@ -29,7 +30,6 @@ type Azione = 'registrazione' | 'generazione';
 interface DatiRiaggancio {
   id: string;
   azione: Azione;
-  ambiente: string;
 }
 
 type Fase =
@@ -42,10 +42,6 @@ type Fase =
 interface RispostaEsegui {
   id?: string;
   errore?: string;
-}
-
-interface RispostaConfigurazione {
-  bersagli?: string[];
 }
 
 interface RispostaTracciaUltima {
@@ -64,15 +60,18 @@ const ALTROVE: Partial<Record<NomeComando, { chiaveComando: string; percorso: st
 };
 
 /**
- * Registra: il tester sceglie l'ambiente, registra una sessione nel browser
- * che si apre, e vede subito cosa il sistema ne ha capito — prima di
- * generare qualunque file.
+ * Registra: il tester registra una sessione nel browser che si apre, e vede
+ * subito cosa il sistema ne ha capito — prima di generare qualunque file.
+ *
+ * Su quale ambiente: non piu' una tendina locale a questa schermata, ma la
+ * scelta unica per tutta la finestra (barra laterale, `useAmbiente`) — la
+ * stessa che usa Esecuzione, cosi' le due schermate non possono piu' finire
+ * silenziosamente su due ambienti diversi.
  */
 export default function RegistraPage() {
   const t = useTranslations('Registra');
   const router = useRouter();
-  const [ambienti, setAmbienti] = useState<string[]>([]);
-  const [ambiente, setAmbiente] = useState('');
+  const { ambiente } = useAmbiente();
   const [fase, setFase] = useState<Fase>({ tipo: 'scelta' });
   const [righeRicevute, setRigheRicevute] = useState(0);
   // Il pulsante si spegne appena parte la richiesta, non quando torna: fra i
@@ -81,24 +80,6 @@ export default function RegistraPage() {
   // tester sta guardando.
   const [inviando, setInviando] = useState(false);
   const sorgenteRef = useRef<EventSource | null>(null);
-
-  useEffect(() => {
-    let attivo = true;
-    fetch('/api/configurazione')
-      .then((r) => r.json() as Promise<RispostaConfigurazione>)
-      .then((d) => {
-        if (!attivo) return;
-        const elenco = d.bersagli ?? [];
-        setAmbienti(elenco);
-        setAmbiente((corrente) => corrente || elenco[0] || '');
-      })
-      .catch(() => {
-        if (attivo) setAmbienti([]);
-      });
-    return () => {
-      attivo = false;
-    };
-  }, []);
 
   useEffect(() => () => sorgenteRef.current?.close(), []);
 
@@ -180,7 +161,6 @@ export default function RegistraPage() {
       scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
         id: corpo.id,
         azione: 'registrazione',
-        ambiente,
       });
       osserva(corpo.id, 'registrazione', () => {
         void caricaRiepilogo();
@@ -213,13 +193,12 @@ export default function RegistraPage() {
       scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
         id: corpo.id,
         azione: 'generazione',
-        ambiente,
       });
       osserva(corpo.id, 'generazione', () =>
-        // Il bersaglio su cui si e' appena registrato viaggia nella query
-        // string: senza, la schermata di esecuzione ricadrebbe sul primo
-        // dell'elenco, che puo' non essere quello appena usato.
-        router.push(ambiente ? `/esecuzione?bersaglio=${encodeURIComponent(ambiente)}` : '/esecuzione')
+        // L'ambiente e' la scelta unica della finestra (vedi `useAmbiente`):
+        // Esecuzione la legge da sola, non serve piu' passarla nella query
+        // string.
+        router.push('/esecuzione')
       );
     } catch {
       setFase({ tipo: 'errore', messaggio: t('erroreParlareCruscotto') });
@@ -244,25 +223,20 @@ export default function RegistraPage() {
   useEffect(() => {
     let attivo = true;
 
-    const riagganciati = (id: string, azione: Azione, ambienteRicordato: string) => {
-      if (ambienteRicordato) setAmbiente(ambienteRicordato);
+    const riagganciati = (id: string, azione: Azione) => {
       setFase({ tipo: 'in-corso', id, azione });
       osserva(id, azione, () => {
         if (azione === 'registrazione') {
           void caricaRiepilogo();
         } else {
-          router.push(
-            ambienteRicordato
-              ? `/esecuzione?bersaglio=${encodeURIComponent(ambienteRicordato)}`
-              : '/esecuzione'
-          );
+          router.push('/esecuzione');
         }
       });
     };
 
     const salvato = leggiRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO);
     if (salvato) {
-      riagganciati(salvato.id, salvato.azione, salvato.ambiente);
+      riagganciati(salvato.id, salvato.azione);
       return;
     }
 
@@ -272,7 +246,7 @@ export default function RegistraPage() {
         if (!attivo || !d.operazione) return;
         const { id, nome } = d.operazione;
         if (nome === 'registrazione' || nome === 'generazione') {
-          riagganciati(id, nome, '');
+          riagganciati(id, nome);
         } else {
           setFase({ tipo: 'altrove', comando: nome });
         }
@@ -297,22 +271,9 @@ export default function RegistraPage() {
 
       {fase.tipo === 'scelta' && (
         <div className="flex flex-col items-start gap-4">
-          <label className="flex flex-col gap-1 text-sm" style={{ color: 'var(--testo)' }}>
-            {t('ambiente')}
-            <select
-              value={ambiente}
-              onChange={(e) => setAmbiente(e.target.value)}
-              className="min-h-10 rounded-md border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
-            >
-              {ambienti.length === 0 && <option value="">{t('nessunAmbiente')}</option>}
-              {ambienti.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </label>
+          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunAmbiente')}
+          </p>
           <button
             type="button"
             onClick={() => void avviaRegistrazione()}

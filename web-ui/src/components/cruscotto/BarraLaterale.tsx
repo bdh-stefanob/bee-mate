@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ClipboardCheck, CircleDot, PlayCircle, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SelettoreLingua } from '@/components/cruscotto/SelettoreLingua';
+import { SelettoreAmbiente } from '@/components/cruscotto/SelettoreAmbiente';
 
 interface Voce {
   href: string;
@@ -80,6 +81,9 @@ export function BarraLaterale() {
       >
         <VoceNav {...VOCE_PORTALE} pathname={pathname} t={t} />
       </ul>
+      <div className="border-t" style={{ borderColor: 'var(--bordo)' }}>
+        <SelettoreAmbiente />
+      </div>
       <div className="border-t" style={{ borderColor: 'var(--bordo)' }}>
         <SelettoreLingua />
       </div>

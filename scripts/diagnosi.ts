@@ -207,29 +207,59 @@ function sulPath(comando: string): boolean {
       chiaveDallaFinestra: "diagnosi.ambienti.aggiungiQui",
     });
   } else {
+    // "Utilizzabile" e' cio' che i dati dicono, non un'impressione: un
+    // indirizzo risolto (mai vuoto: `expand` lascia "" se la variabile manca)
+    // e nessuna variabile mancante. E' la stessa domanda che gia' si fa la
+    // schermata di controllo per decidere se mostrare "Accedi adesso" (vedi
+    // `prontoPerAccesso` in `SezioneAmbienti.tsx`).
     const attese = requiredVars();
     const pronti = targets.filter(
       (tg) => tg.url && (attese.get(tg.name) ?? []).every((v) => process.env[v])
     );
     const conSessione = targets.filter(hasSession);
     const vecchie = conSessione.filter((tg) => (sessionAgeHours(tg) ?? 0) > 12);
+    const dettaglioSessione: DettaglioVoce =
+      vecchie.length > 0
+        ? {
+            chiave: "diagnosi.ambienti.conSessioneVecchie",
+            dati: { conSessione: conSessione.length, vecchie: vecchie.length },
+          }
+        : { chiave: "diagnosi.ambienti.conSessione", dati: { conSessione: conSessione.length } };
 
-    aggiungi({
-      esito: pronti.length === targets.length ? "ok" : "avviso",
-      chiaveNome: "diagnosi.ambienti.nome",
-      dettaglio: [
-        { chiave: "diagnosi.ambienti.parziali", dati: { pronti: pronti.length, totale: targets.length } },
-        vecchie.length > 0
-          ? {
-              chiave: "diagnosi.ambienti.conSessioneVecchie",
-              dati: { conSessione: conSessione.length, vecchie: vecchie.length },
-            }
-          : { chiave: "diagnosi.ambienti.conSessione", dati: { conSessione: conSessione.length } },
-      ],
-      ...(pronti.length < targets.length
-        ? { rimedio: "npm run targets", chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi" }
-        : {}),
-    });
+    if (pronti.length === 0) {
+      // Configurati ma nessuno utilizzabile: e' esattamente cio' che blocca
+      // un tester — come non averne nessuno — quindi stessa gravita' del
+      // ramo sopra, non un avviso a meta'.
+      aggiungi({
+        esito: "manca",
+        chiaveNome: "diagnosi.ambienti.nome",
+        dettaglio: [
+          { chiave: "diagnosi.ambienti.nessunoUtilizzabile", dati: { totale: targets.length } },
+          dettaglioSessione,
+        ],
+        rimedio: "npm run targets",
+        chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi",
+      });
+    } else {
+      // Almeno un ambiente e' pronto: il tester puo' lavorare. Gli altri, se
+      // incompleti, sono al massimo una cosa da guardare quando serve — mai
+      // un allarme. Per questo l'esito resta "ok" anche quando non sono tutti
+      // pronti, e nessun rimedio finisce nella lista delle cose da fare: solo
+      // un rimando, per chi vuole comunque guardare.
+      const daCompletare = targets.length - pronti.length;
+      aggiungi({
+        esito: "ok",
+        chiaveNome: "diagnosi.ambienti.nome",
+        dettaglio: [
+          { chiave: "diagnosi.ambienti.pronti", dati: { pronti: pronti.length, totale: targets.length } },
+          ...(daCompletare > 0
+            ? [{ chiave: "diagnosi.ambienti.daCompletare", dati: { daCompletare } }]
+            : []),
+          dettaglioSessione,
+        ],
+        ...(daCompletare > 0 ? { chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi" } : {}),
+      });
+    }
   }
 }
 

@@ -8,7 +8,9 @@
     "languageLabel": "Lingua",
     "languageEnglish": "English",
     "languageItalian": "Italiano",
-    "erroreLingua": "Non sono riuscito a cambiare la lingua."
+    "erroreLingua": "Non sono riuscito a cambiare la lingua.",
+    "environmentLabel": "Ambiente",
+    "environmentNone": "Nessun ambiente configurato"
   },
   "Controllo": {
     "titolo": "Controllo",
@@ -92,6 +94,7 @@
   "Registra": {
     "titolo": "Registra",
     "ambiente": "Ambiente",
+    "ambienteCorrente": "Ambiente: {ambiente}",
     "nessunAmbiente": "nessun ambiente configurato",
     "registraSessione": "Registra una sessione",
     "registrazioneInCorso": "Registrazione in corso: segui il browser che si è aperto.",
@@ -123,6 +126,7 @@
     "durataSecondi": "{s} s",
     "durataMinutiSecondi": "{m} min {s} s",
     "bersaglio": "Bersaglio",
+    "ambienteCorrente": "Bersaglio: {ambiente}",
     "nessunBersaglio": "Nessun bersaglio configurato",
     "guardaIlBrowser": "Guarda il browser",
     "partiSenzaSessione": "Parti senza sessione",
@@ -202,7 +206,9 @@
     "ambienti": {
       "nome": "Ambienti",
       "nessuno": "nessun ambiente configurato — è da qui che parte tutto",
-      "parziali": "{pronti} su {totale} configurati per intero",
+      "nessunoUtilizzabile": "{totale} configurati, ma nessuno è ancora utilizzabile: manca un indirizzo o una credenziale",
+      "pronti": "{pronti} su {totale} pronti",
+      "daCompletare": "{daCompletare} da completare quando serve",
       "conSessione": "{conSessione} con sessione salvata",
       "conSessioneVecchie": "{conSessione} con sessione salvata, di cui {vecchie} più vecchie di 12 ore",
       "aggiungiQui": "Aggiungine uno qui sotto, nella sezione Ambienti.",

@@ -8,7 +8,9 @@
     "languageLabel": "Language",
     "languageEnglish": "English",
     "languageItalian": "Italiano",
-    "erroreLingua": "Couldn't change the language."
+    "erroreLingua": "Couldn't change the language.",
+    "environmentLabel": "Environment",
+    "environmentNone": "No environment configured"
   },
   "Controllo": {
     "titolo": "Check-up",
@@ -92,6 +94,7 @@
   "Registra": {
     "titolo": "Record",
     "ambiente": "Environment",
+    "ambienteCorrente": "Environment: {ambiente}",
     "nessunAmbiente": "no environment configured",
     "registraSessione": "Record a session",
     "registrazioneInCorso": "Recording in progress: follow the browser window that opened.",
@@ -123,6 +126,7 @@
     "durataSecondi": "{s} s",
     "durataMinutiSecondi": "{m} min {s} s",
     "bersaglio": "Target",
+    "ambienteCorrente": "Target: {ambiente}",
     "nessunBersaglio": "No target configured",
     "guardaIlBrowser": "Watch the browser",
     "partiSenzaSessione": "Start without a session",
@@ -202,7 +206,9 @@
     "ambienti": {
       "nome": "Environments",
       "nessuno": "no environment configured — this is where everything starts",
-      "parziali": "{pronti} of {totale} fully configured",
+      "nessunoUtilizzabile": "{totale} configured, but none is usable yet: missing an address or a credential",
+      "pronti": "{pronti} of {totale} ready",
+      "daCompletare": "{daCompletare} to complete when needed",
       "conSessione": "{conSessione} with a saved session",
       "conSessioneVecchie": "{conSessione} with a saved session, of which {vecchie} older than 12 hours",
       "aggiungiQui": "Add one below, in the Environments section.",

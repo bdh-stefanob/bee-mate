@@ -1,13 +1,14 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { PlayCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { cn } from '@/lib/utils';
 import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
+import { useAmbiente } from '@/context/AmbienteContext';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
@@ -16,7 +17,6 @@ const CHIAVE_RIAGGANCIO = 'cruscotto.riaggancio.esecuzione';
 
 interface DatiRiaggancio {
   id: string;
-  bersaglio: string;
   avviatoAlle: number;
 }
 
@@ -50,22 +50,6 @@ function formattaRiepilogo(passi: Passo[], t: Traduttore): string {
   return (['passato', 'fallito', 'saltato'] as const)
     .map((esito) => t(CHIAVE_ESITO[esito], { n: conteggio[esito] }))
     .join(', ');
-}
-
-/**
- * Il bersaglio scelto in "Registra" viaggia verso questa schermata nella
- * query string: e' un dato che arriva dall'esterno (chiunque puo' costruire
- * un link con un valore qualsiasi), quindi si accetta solo se corrisponde a
- * uno dei bersagli configurati davvero. Altrimenti si ricade sul valore gia'
- * scelto, o sul primo dell'elenco.
- */
-function scegliBersaglioIniziale(
-  daQuery: string | null,
-  corrente: string,
-  elenco: string[]
-): string {
-  if (daQuery && elenco.includes(daQuery)) return daQuery;
-  return corrente || elenco[0] || '';
 }
 
 /**
@@ -174,10 +158,8 @@ function EsecuzioneContenuto() {
   const t = useTranslations('Esecuzione');
   const locale = useLocale();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { ambiente } = useAmbiente();
   const [altrove, setAltrove] = useState<NomeComando | null>(null);
-  const [bersagli, setBersagli] = useState<string[]>([]);
-  const [bersaglio, setBersaglio] = useState('');
   const [guardaIlBrowser, setGuardaIlBrowser] = useState(false);
   const [senzaSessione, setSenzaSessione] = useState(false);
   const [id, setId] = useState<string | null>(null);
@@ -207,8 +189,7 @@ function EsecuzioneContenuto() {
   useEffect(() => {
     let attivo = true;
 
-    const riagganciati = (idOp: string, bersaglioOp: string, avviatoAlleOp: number | null) => {
-      if (bersaglioOp) setBersaglio((corrente) => corrente || bersaglioOp);
+    const riagganciati = (idOp: string, avviatoAlleOp: number | null) => {
       setErrore(null);
       setPassi([]);
       setRigheOutput([]);
@@ -221,7 +202,7 @@ function EsecuzioneContenuto() {
 
     const salvato = leggiRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO);
     if (salvato) {
-      riagganciati(salvato.id, salvato.bersaglio, salvato.avviatoAlle);
+      riagganciati(salvato.id, salvato.avviatoAlle);
       return;
     }
 
@@ -232,7 +213,7 @@ function EsecuzioneContenuto() {
         const { id: idOp, nome, avvio } = d.operazione;
         if (nome === 'test') {
           const avviatoAlleOp = Number.isNaN(Date.parse(avvio)) ? null : Date.parse(avvio);
-          riagganciati(idOp, '', avviatoAlleOp);
+          riagganciati(idOp, avviatoAlleOp);
         } else {
           setAltrove(nome);
         }
@@ -248,23 +229,6 @@ function EsecuzioneContenuto() {
     // che possa cambiare (solo funzioni di stato, stabili fra un render e
     // l'altro).
   }, []);
-
-  useEffect(() => {
-    let attivo = true;
-    const daQuery = searchParams.get('bersaglio');
-    fetch('/api/configurazione')
-      .then((r) => r.json())
-      .then((d: { bersagli?: string[] }) => {
-        if (!attivo) return;
-        const elenco = d.bersagli ?? [];
-        setBersagli(elenco);
-        setBersaglio((corrente) => scegliBersaglioIniziale(daQuery, corrente, elenco));
-      })
-      .catch(() => {});
-    return () => {
-      attivo = false;
-    };
-  }, [searchParams]);
 
   // I passi si aggiornano da soli mentre l'esecuzione gira: una richiesta al
   // secondo basta, e si ferma da sola quando l'esecuzione non e' piu' in corso.
@@ -359,7 +323,7 @@ function EsecuzioneContenuto() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: 'test',
-          parametri: { bersaglio, vedi: guardaIlBrowser, pulito: senzaSessione },
+          parametri: { bersaglio: ambiente, vedi: guardaIlBrowser, pulito: senzaSessione },
         }),
       });
       const dati = (await risposta.json()) as { id?: string; errore?: string };
@@ -373,7 +337,6 @@ function EsecuzioneContenuto() {
       setStatoCorrente('in corso');
       scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
         id: dati.id,
-        bersaglio,
         avviatoAlle: avviatoAlleOra,
       });
     } catch {
@@ -381,7 +344,7 @@ function EsecuzioneContenuto() {
     } finally {
       setInLancio(false);
     }
-  }, [bersaglio, guardaIlBrowser, senzaSessione, t]);
+  }, [ambiente, guardaIlBrowser, senzaSessione, t]);
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl min-w-0">
@@ -413,30 +376,9 @@ function EsecuzioneContenuto() {
         className="flex flex-col gap-4 rounded-lg border p-4"
         style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
       >
-        <div className="flex flex-col gap-1">
-          <label htmlFor="bersaglio" className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
-            {t('bersaglio')}
-          </label>
-          <select
-            id="bersaglio"
-            value={bersaglio}
-            onChange={(e) => setBersaglio(e.target.value)}
-            disabled={inCorso || bersagli.length === 0}
-            className={cn(
-              'h-10 rounded-md border px-3 text-sm',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              'disabled:opacity-50'
-            )}
-            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
-          >
-            {bersagli.length === 0 && <option value="">{t('nessunBersaglio')}</option>}
-            {bersagli.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-        </div>
+        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunBersaglio')}
+        </p>
 
         <Interruttore
           etichetta={t('guardaIlBrowser')}
@@ -454,7 +396,7 @@ function EsecuzioneContenuto() {
         <button
           type="button"
           onClick={lancia}
-          disabled={inLancio || inCorso || !bersaglio}
+          disabled={inLancio || inCorso || !ambiente}
           className={cn(
             'inline-flex items-center justify-center gap-2 min-h-10 px-4 rounded-md text-sm font-semibold text-white transition-colors',
             'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
