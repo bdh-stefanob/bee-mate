@@ -4,6 +4,17 @@ export interface ParamEnumDef {
   values: string[];   // known valid values; empty = free-text only
 }
 
+/**
+ * Un componente di frontend dichiarato con `@component` sopra uno step.
+ * Stessa forma di `StepComponent` in `scripts/lib/generation-contract.ts`.
+ */
+export interface StepComponentRef {
+  role: string;
+  name: string;
+  /** Pagina su cui vive, solo quando lo step ne tocca piu' di una. */
+  page?: string;
+}
+
 export interface CatalogStep {
   expression: string;
   parameters: string[];
@@ -13,6 +24,8 @@ export interface CatalogStep {
   status: 'implemented' | 'wanted' | 'deprecated' | 'proposed';
   keyword?: 'Given' | 'When' | 'Then';
   page?: string;
+  /** Componenti toccati. Assente = step non ancora ancorato alla UI. */
+  components?: StepComponentRef[];
   requester?: string;
   sourceRef: string;
   documented: boolean;

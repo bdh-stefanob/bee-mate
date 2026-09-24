@@ -21,12 +21,32 @@
 import * as fs from "fs";
 import { conservaRichieste } from "./lib/catalog-merge";
 
+/**
+ * Un componente di frontend dichiarato con `@component` sopra uno step.
+ *
+ * Stessa forma di `StepComponent` in `lib/generation-contract.ts`: role+name
+ * sono l'identita' che il dizionario dello scout usa, `page` e' opzionale
+ * (serve solo quando uno step tocca piu' pagine).
+ */
+interface StepComponentDoc {
+  role: string;
+  name: string;
+  page?: string;
+}
+
 interface StepDoc {
   intent?: string;
   params: Record<string, string>;
   pre?: string;
   post?: string;
   page?: string; // Page Object this step operates on (e.g. LoginPage, CartPage)
+  /**
+   * Componenti che lo step tocca davvero, uno per riga `@component`. Assente =
+   * step non ancora ancorato alla UI: e' il caso dei 137 step scritti a mano,
+   * ed e' giusto che restino cosi' — non si inventano agganci che nessuno ha
+   * verificato.
+   */
+  components?: StepComponentDoc[];
   wanted?: boolean;
   deprecated?: boolean;
   replacedBy?: string;
@@ -45,6 +65,7 @@ interface CatalogStep {
   requester?: string;
   assignee?: string;
   page?: string; // promoted from doc for easy filtering
+  components?: StepComponentDoc[]; // promosso da doc, stessa ragione di `page`
   sourceRef: string;
   doc: StepDoc;
   documented: boolean; // true se ha almeno @intent
@@ -107,6 +128,19 @@ function extractDoc(uri: string, stepLine: number): StepDoc {
     else if (tag === "pre") doc.pre = rest;
     else if (tag === "post") doc.post = rest;
     else if (tag === "page") doc.page = rest;
+    else if (tag === "component") {
+      // Forma:  @component <role> "<name>" [page=<PageClassName>]
+      // Il ruolo e' un token senza spazi (button, link, textbox, ...), il nome
+      // sta fra virgolette perche' quasi sempre contiene spazi ("Add to cart"),
+      // e la pagina e' opzionale: serve solo quando lo step ne tocca piu' di una.
+      const cm = rest.match(/^(\S+)\s+"([^"]*)"(?:\s+page=(\S+))?\s*$/);
+      if (cm) {
+        const [, role, name, page] = cm;
+        const component: StepComponentDoc = { role: role!, name: name! };
+        if (page) component.page = page;
+        doc.components = [...(doc.components ?? []), component];
+      }
+    }
     else if (tag === "wanted") doc.wanted = true;
     else if (tag === "deprecated") doc.deprecated = true;
     else if (tag === "replacedBy") doc.replacedBy = rest;
@@ -173,6 +207,7 @@ for (const line of lines) {
     ...(doc.requester ? { requester: doc.requester } : {}),
     ...(doc.assignee ? { assignee: doc.assignee } : {}),
     page: doc.page,
+    ...(doc.components?.length ? { components: doc.components } : {}),
     sourceRef,
     doc,
     documented,

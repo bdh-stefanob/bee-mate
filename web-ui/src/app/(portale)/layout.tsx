@@ -47,6 +47,13 @@ export default function PortaleLayout({
           >
             Tags
           </Link>
+          <Link
+            href="/components"
+            className="min-h-10 inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
+          >
+            Components
+          </Link>
           <NavSettingsLink />
           {/* Punto di ritorno verso il cruscotto: chi arriva qui dal cruscotto deve poterci tornare. */}
           <Link
