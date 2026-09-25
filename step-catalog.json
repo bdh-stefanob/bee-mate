@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-23T08:08:05.871Z",
-  "totalSteps": 137,
-  "documentedSteps": 36,
+  "generatedAt": "2026-09-25T07:31:12.940Z",
+  "totalSteps": 144,
+  "documentedSteps": 43,
   "undocumentedSteps": 101,
   "steps": [
     {
@@ -331,6 +331,24 @@
       "documented": false
     },
     {
+      "expression": "the page shows {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "common",
+      "area": "common",
+      "domain": "common",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\common\\verifica.steps.ts:21",
+      "doc": {
+        "params": {
+          "atteso": "Il nome accessibile, o il testo, dell'elemento."
+        },
+        "intent": "Verifica che un elemento atteso sia visibile sulla pagina."
+      },
+      "documented": true
+    },
+    {
       "expression": "the user is on the {string} page",
       "parameters": [
         "{string}"
@@ -350,54 +368,202 @@
       "documented": true
     },
     {
-      "expression": "L'utente accede al catalogo",
+      "expression": "the user clcik on the recharge button",
       "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
       "status": "wanted",
-      "page": "HomePage",
-      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:35",
-      "doc": {
-        "params": {},
-        "intent": "L'utente accede al catalogo",
-        "page": "HomePage",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "l'utente aggiunge un prodotto al carrello",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "HomePage",
-      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:64",
-      "doc": {
-        "params": {},
-        "intent": "l'utente aggiunge un prodotto al carrello",
-        "page": "HomePage",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the page shows {string}",
-      "parameters": [
-        "{string}"
+      "page": "AppPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Recharges"
+        }
       ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:52",
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:136",
       "doc": {
-        "params": {
-          "atteso": "Il nome accessibile dell'elemento."
+        "params": {},
+        "intent": "the user clcik on the recharge button",
+        "page": "AppPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Recharges"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on the login button",
+      "parameters": [],
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
+      "status": "wanted",
+      "page": "AccediPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Sign in"
+        }
+      ],
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:102",
+      "doc": {
+        "params": {},
+        "intent": "the user click on the login button",
+        "page": "AccediPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Sign in"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "The user click on the login button",
+      "parameters": [],
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Sign in"
+        }
+      ],
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:48",
+      "doc": {
+        "params": {},
+        "intent": "The user click on the login button",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Sign in"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on the the first music",
+      "parameters": [],
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
+      "status": "wanted",
+      "page": "RicarichePage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Open FOCUS",
+          "page": "RicarichePage"
         },
-        "intent": "Verifica che un elemento atteso sia presente sulla pagina.",
+        {
+          "role": "button",
+          "name": "Listen with headphones or smartphone",
+          "page": "RicaricheDetailPage"
+        },
+        {
+          "role": "button",
+          "name": "Back",
+          "page": "RicaricheDetailPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:155",
+      "doc": {
+        "params": {},
+        "intent": "the user click on the the first music",
+        "page": "RicarichePage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Open FOCUS",
+            "page": "RicarichePage"
+          },
+          {
+            "role": "button",
+            "name": "Listen with headphones or smartphone",
+            "page": "RicaricheDetailPage"
+          },
+          {
+            "role": "button",
+            "name": "Back",
+            "page": "RicaricheDetailPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user insert the password",
+      "parameters": [],
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
+      "status": "wanted",
+      "page": "AccediPage",
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:85",
+      "doc": {
+        "params": {},
+        "intent": "the user insert the password",
+        "page": "AccediPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user insert the username",
+      "parameters": [],
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
+      "status": "wanted",
+      "page": "AccediPage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Email"
+        }
+      ],
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:67",
+      "doc": {
+        "params": {},
+        "intent": "the user insert the username",
+        "page": "AccediPage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Email"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user land on the homepage",
+      "parameters": [],
+      "app": "human-recharge",
+      "area": "recharge",
+      "domain": "human-recharge/recharge",
+      "status": "wanted",
+      "page": "AppPage",
+      "sourceRef": "src\\steps\\human-recharge\\recharge\\user-try-to-recharge-without-charge.steps.ts:118",
+      "doc": {
+        "params": {},
+        "intent": "the user land on the homepage",
+        "page": "AppPage",
         "wanted": true
       },
       "documented": true
@@ -704,6 +870,40 @@
         },
         "intent": "Selects a weight loss medicine with dosage tier and coaching option.",
         "page": "MedicinePreferencePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "L'utente accede al catalogo",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:35",
+      "doc": {
+        "params": {},
+        "intent": "L'utente accede al catalogo",
+        "page": "HomePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "l'utente aggiunge un prodotto al carrello",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:64",
+      "doc": {
+        "params": {},
+        "intent": "l'utente aggiunge un prodotto al carrello",
+        "page": "HomePage",
         "wanted": true
       },
       "documented": true
