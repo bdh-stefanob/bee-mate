@@ -99,6 +99,13 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
     if (occupato) throw new Error("c'e' gia' in corso un'operazione che occupa il browser");
   }
 
+  // Il catalogo non tiene occupato il browser (non e' in LUNGHI), ma due
+  // rigenerazioni insieme scriverebbero sullo stesso step-catalog.json: non
+  // e' il browser il lucchetto che serve qui, e' lui stesso.
+  if (nome === 'catalogo' && [...esecuzioni.values()].some((e) => e.nome === 'catalogo' && e.stato === 'in corso')) {
+    throw new Error("il catalogo si sta gia' aggiornando");
+  }
+
   // L'id nasce prima della riga di comando: un 'test' senza messaggi esplicito
   // scrive i suoi esiti in reports/cruscotto/<id>.ndjson, cosi' chi conosce
   // solo l'id (la schermata di Esecuzione) puo' ritrovare il file da solo,

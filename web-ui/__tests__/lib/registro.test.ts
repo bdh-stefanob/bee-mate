@@ -110,6 +110,26 @@ describe("cosa sta girando adesso, per chi torna e vuole riagganciarsi", () => {
     avvia('generazione', { manifesto: 'reports/cruscotto/m.json' }, () => processoFinto());
     expect(operazioneInCorso()).toBeUndefined();
   });
+
+  it('il catalogo non tiene occupato il browser nemmeno lui', () => {
+    avvia('catalogo', {}, () => processoFinto());
+    expect(operazioneInCorso()).toBeUndefined();
+  });
+
+  it('due rigenerazioni del catalogo insieme: la seconda riceve un no chiaro', () => {
+    // Non e' il lucchetto del browser (il catalogo non ne ha bisogno): e'
+    // il suo, perche' due rigenerazioni scriverebbero insieme sullo stesso
+    // step-catalog.json.
+    avvia('catalogo', {}, () => processoFinto());
+    expect(() => avvia('catalogo', {}, () => processoFinto())).toThrow(/gia' aggiornando/);
+  });
+
+  it('conclusa la prima rigenerazione, la seconda puo\' partire', () => {
+    const finto = processoFinto();
+    avvia('catalogo', {}, () => finto);
+    finto.concludi(0);
+    expect(() => avvia('catalogo', {}, () => processoFinto())).not.toThrow();
+  });
 });
 
 describe('come viene avviato il processo figlio', () => {

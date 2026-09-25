@@ -157,7 +157,7 @@ function SchedaDoppione({ coppia }: { coppia: CoppiaRiconciliazione }) {
             {t('doppioneTitolo')}
           </p>
           <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-            {coppia.spiegazione}
+            {t('doppioneSpiegazione')}
           </p>
         </div>
       </div>
@@ -227,7 +227,7 @@ function SchedaEquivoco({ coppia, onRiconciliato }: { coppia: CoppiaRiconciliazi
             {t('equivocoTitolo')}
           </p>
           <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-            {coppia.spiegazione} — {t('equivocoAvviso')}
+            {t('equivocoAvviso')}
           </p>
         </div>
       </div>

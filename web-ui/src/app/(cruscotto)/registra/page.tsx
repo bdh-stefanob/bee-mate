@@ -98,6 +98,19 @@ export default function RegistraPage() {
   // Dopo la generazione non si salta piu' dritti a Esecuzione: prima lo
   // scenario riceve applicazione, flusso e nome (vedi SalvaScenario).
   const dopoGenerazione = useCallback(() => {
+    // Il catalogo si aggiorna da solo dopo ogni generazione riuscita, senza
+    // che il tester debba saperlo (F19 — la promessa del progetto e' proprio
+    // questa). Parte qui, in un comando dell'elenco chiuso come ogni altro,
+    // e non blocca la scelta di applicazione e flusso: dura decine di secondi
+    // (un dry-run di Cucumber su tutta la suite), e chi vuole vederla arrivare
+    // guarda la schermata Catalogo, che legge il suo esito da
+    // `/api/catalogo/stato`. Se non riesce nemmeno a partire, il catalogo
+    // resta quello di prima e quella schermata lo dira'.
+    fetch('/api/esegui', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome: 'catalogo' }),
+    }).catch(() => {});
     setFase({ tipo: 'salva', titolo: titoloPropostoRef.current });
   }, []);
 

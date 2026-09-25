@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { ScheletroCatalogo, ErroreCatalogo } from './Scheletro';
@@ -64,9 +64,11 @@ export function SezioneComponenti({
             const chiave = `${c.page ?? ''}\u0000${c.role}\u0000${c.name}`;
             const aperto = aperti.has(chiave);
             return (
-              <>
+              // La chiave va sull'elemento piu' esterno che il ciclo
+              // restituisce — il frammento — non sulla riga dentro: React
+              // identifica i figli della lista, e il frammento e' il figlio.
+              <Fragment key={chiave}>
                 <tr
-                  key={chiave}
                   className="border-b cursor-pointer select-none"
                   style={{ borderColor: 'var(--bordo)' }}
                   onClick={() => commuta(chiave)}
@@ -98,7 +100,7 @@ export function SezioneComponenti({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

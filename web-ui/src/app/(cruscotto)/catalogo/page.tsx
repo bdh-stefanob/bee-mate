@@ -6,6 +6,7 @@ import { SezioneStep, useCatalogo } from '@/components/cruscotto/catalogo/Sezion
 import { SezioneComponenti } from '@/components/cruscotto/catalogo/SezioneComponenti';
 import { SezioneRiconciliazione } from '@/components/cruscotto/catalogo/SezioneRiconciliazione';
 import { SezioneScenari } from '@/components/cruscotto/catalogo/SezioneScenari';
+import { BannerAggiornamento } from '@/components/cruscotto/catalogo/BannerAggiornamento';
 
 /**
  * Catalogo: la schermata che risponde a tre domande, in quest'ordine — e' la
@@ -36,6 +37,8 @@ export default function CatalogoPage() {
           {t('descrizionePagina')}
         </p>
       </div>
+
+      <BannerAggiornamento />
 
       <Sezione icona={BookOpen} titolo={t('domanda1Titolo')} sottotitolo={t('domanda1Sottotitolo')}>
         <SezioneStep dati={dati} caricamento={caricamento} errore={errore} />

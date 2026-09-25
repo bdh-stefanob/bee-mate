@@ -36,6 +36,11 @@ describe('elenco chiuso dei comandi', () => {
     expect(r.argomenti).toEqual(['node_modules/ts-node/dist/bin.js', 'scripts/sync-rules.ts']);
   });
 
+  it('catalogo lancia la rigenerazione, senza parametri', () => {
+    const r = rigaDiComando('catalogo');
+    expect(r.argomenti).toEqual(['node_modules/ts-node/dist/bin.js', 'scripts/rigenera-catalogo.ts']);
+  });
+
   it('il bersaglio non puo\' iniettare argomenti', () => {
     expect(() => rigaDiComando('test', { bersaglio: 'lavoro && del *' }))
       .toThrow(/nome di bersaglio non valido/);
