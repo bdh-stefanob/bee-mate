@@ -1,0 +1,4 @@
+{"pickle":{"id":"pickle-1","uri":"features/example.feature","astNodeIds":["1"],"steps":[{"id":"pstep-1","text":"the user lands on the homepage"}]}}
+{"testCase":{"id":"tc-1","pickleId":"pickle-1","testSteps":[{"id":"tstep-1","pickleStepId":"pstep-1"}]}}
+{"testCaseStarted":{"id":"tcs-1","testCaseId":"tc-1","timestamp":{"seconds":0,"nanos":0}}}
+{"testStepFinished":{"testCaseStartedId":"tcs-1","testStepId":"tstep-1","testStepResult":{"status":"FAILED","message":"Error: element(s) not found\n\n  Pagina attesa : AppPage (/app)\n  Indirizzo ora : https://esempio.invalid/accedi\n  Se l'indirizzo non e' quello atteso...","duration":{"seconds":0,"nanos":0}},"timestamp":{"seconds":0,"nanos":0}}}

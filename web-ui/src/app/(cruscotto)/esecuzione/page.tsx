@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { PlayCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { PlayCircle, Loader2, AlertTriangle, Square } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { cn } from '@/lib/utils';
 import type { NomeComando } from '@/lib/esecuzione';
@@ -379,6 +379,16 @@ function EsecuzioneContenuto() {
     }
   }, [ambiente, guardaIlBrowser, senzaSessione, scelta, t]);
 
+  // Stesso meccanismo di Registra (`/api/esegui/[id]/ferma`, gia' testato
+  // li'): niente da inventare, solo il pulsante che mancava qui (finding F7).
+  const interrompi = useCallback(async () => {
+    if (!id) return;
+    await fetch(`/api/esegui/${encodeURIComponent(id)}/ferma`, { method: 'POST' }).catch(() => {
+      // Se la richiesta non arriva, il flusso SSE non manda comunque una fine:
+      // il tester vede l'attesa continuare e puo' riprovare.
+    });
+  }, [id]);
+
   return (
     <div className="flex flex-col gap-6 max-w-3xl min-w-0">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
@@ -480,24 +490,38 @@ function EsecuzioneContenuto() {
           disabilitato={inCorso}
         />
 
-        <button
-          type="button"
-          onClick={lancia}
-          disabled={inLancio || inCorso || !ambiente}
-          className={cn(
-            'inline-flex items-center justify-center gap-2 min-h-10 px-4 rounded-md text-sm font-semibold text-white transition-colors',
-            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={lancia}
+            disabled={inLancio || inCorso || !ambiente}
+            className={cn(
+              'inline-flex items-center justify-center gap-2 min-h-10 px-4 rounded-md text-sm font-semibold text-white transition-colors',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
+            )}
+            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+          >
+            {inCorso ? (
+              <Loader2 size={18} aria-hidden="true" className="animate-spin" />
+            ) : (
+              <PlayCircle size={18} aria-hidden="true" />
+            )}
+            {inCorso ? t('testInCorso') : t('lanciaIlTest')}
+          </button>
+
+          {inCorso && (
+            <button
+              type="button"
+              onClick={() => void interrompi()}
+              className="inline-flex min-h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--rosso)' }}
+            >
+              <Square size={16} aria-hidden="true" />
+              {t('interrompi')}
+            </button>
           )}
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
-        >
-          {inCorso ? (
-            <Loader2 size={18} aria-hidden="true" className="animate-spin" />
-          ) : (
-            <PlayCircle size={18} aria-hidden="true" />
-          )}
-          {inCorso ? t('testInCorso') : t('lanciaIlTest')}
-        </button>
+        </div>
 
         {errore && (
           <p role="alert" className="text-sm font-medium" style={{ color: 'var(--rosso)' }}>

@@ -1,0 +1,4 @@
+{"pickle":{"id":"pickle-1","uri":"features/example.feature","astNodeIds":["1"],"steps":[{"id":"pstep-1","text":"the user opens the page"}]}}
+{"testCase":{"id":"tc-1","pickleId":"pickle-1","testSteps":[{"id":"tstep-1","pickleStepId":"pstep-1"}]}}
+{"testCaseStarted":{"id":"tcs-1","testCaseId":"tc-1","timestamp":{"seconds":0,"nanos":0}}}
+{"testStepFinished":{"testCaseStartedId":"tcs-1","testStepId":"tstep-1","testStepResult":{"status":"FAILED","message":"Error: \u001b[2mexpect(\u001b[22mlocator\u001b[2m).\u001b[22mtoBeVisible failed","duration":{"seconds":0,"nanos":0}},"timestamp":{"seconds":0,"nanos":0}}}

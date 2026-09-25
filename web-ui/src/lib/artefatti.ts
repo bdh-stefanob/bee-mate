@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import { rimuoviCodiciAnsi } from './ansi';
+import { REPO_ROOT } from './repo';
 
 /**
  * I risultati si leggono da qui, non dall'output a schermo: un conteggio preso
@@ -61,10 +63,42 @@ interface MessaggioCucumber {
   };
 }
 
+/**
+ * Cosa dire in una riga sola di un passo fallito, prima dello stack tecnico.
+ *
+ * `expectVisible` (in `src/support/base.page.ts`) aggiunge gia', in fondo al
+ * messaggio, due righe con l'etichetta fissa "Pagina attesa" e "Indirizzo
+ * ora": e' il posto piu' affidabile da cui leggere cosa il test si aspettava
+ * e dove si e' trovato davvero, la promessa fatta in
+ * `docs/TESTER-DASHBOARD-GUIDE.md` §3. Quando quelle righe non ci sono (un
+ * errore che non passa da li'), resta la prima riga del messaggio: sempre
+ * meglio di niente, mai lo stack intero.
+ */
+export interface RiepilogoErrore {
+  paginaAttesa?: string;
+  indirizzoOra?: string;
+  primaRiga: string;
+}
+
+const RIGA_PAGINA_ATTESA = /^\s*Pagina attesa\s*:\s*(.+)$/m;
+const RIGA_INDIRIZZO_ORA = /^\s*Indirizzo ora\s*:\s*(.+)$/m;
+
+export function riepilogoErrore(messaggioPulito: string): RiepilogoErrore {
+  const primaRiga = messaggioPulito.split('\n').find((r) => r.trim()) ?? messaggioPulito;
+  const paginaAttesa = RIGA_PAGINA_ATTESA.exec(messaggioPulito)?.[1]?.trim();
+  const indirizzoOra = RIGA_INDIRIZZO_ORA.exec(messaggioPulito)?.[1]?.trim();
+  return {
+    primaRiga: primaRiga.trim(),
+    ...(paginaAttesa ? { paginaAttesa } : {}),
+    ...(indirizzoOra ? { indirizzoOra } : {}),
+  };
+}
+
 export function leggiPassiTest(percorsoMessaggi: string): Array<{
   testo: string;
   esito: Esito;
   messaggio?: string;
+  riepilogo?: RiepilogoErrore;
   schermata?: string;
 }> {
   let righe: string[];
@@ -80,6 +114,7 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
     testo: string;
     esito: Esito;
     messaggio?: string;
+    riepilogo?: RiepilogoErrore;
     schermata?: string;
     testCaseStartedId: string;
   }> = [];
@@ -129,10 +164,16 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
       const testo = testoPerId.get(id);
       // Gli hook non hanno un testo: non sono passi dello scenario.
       if (!testo) continue;
+      // Il messaggio grezzo puo' portare i codici colore che Playwright si
+      // mette da solo quando chi lo lancia sembra un terminale a colori: qui
+      // non c'e' un terminale, quindi si puliscono prima che arrivino a
+      // qualunque schermata (finding F1). Il riepilogo si calcola dal testo
+      // gia' pulito, cosi' anche lui non porta escape.
+      const messaggio = risultato.message ? rimuoviCodiciAnsi(String(risultato.message), REPO_ROOT) : undefined;
       passi.push({
         testo,
         esito: ESITI[risultato.status as string] ?? 'saltato',
-        ...(risultato.message ? { messaggio: String(risultato.message) } : {}),
+        ...(messaggio ? { messaggio, riepilogo: riepilogoErrore(messaggio) } : {}),
         testCaseStartedId,
       });
     }

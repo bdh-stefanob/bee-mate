@@ -60,7 +60,19 @@ but a tester would not understand it without help · **P3** polish.
 - **Done when:** a unit test feeds a real failure message with escape codes and
   gets clean text; the failed step shows the plain sentence first in both
   languages; the stack is folded.
-- [ ] done
+- **Still there today.** Reproduced on a real run against `app-a`
+  (`user-try-to-recharge-without-charge.feature`, `FORCE_COLOR=1`): the ndjson
+  message carries `\u001b[2m…\u001b[22m` and the machine's absolute paths.
+  Fixed: `rimuoviCodiciAnsi` (`web-ui/src/lib/ansi.ts`) strips the escapes in
+  `leggiPassiTest` (`web-ui/src/lib/artefatti.ts`) before anything reaches the
+  window. `riepilogoErrore` reads the "Pagina attesa" / "Indirizzo ora" lines
+  that `expectVisible` already writes (`src/support/base.page.ts`) and
+  `PassoTest.tsx` shows them as the first, translated sentence; the full
+  cleaned message sits behind a native `<details>` "Technical details" fold.
+  Unit tests: `web-ui/__tests__/lib/ansi.test.ts`,
+  `web-ui/__tests__/lib/artefatti.test.ts` (fixtures
+  `messaggi-ansi.ndjson`, `messaggi-pagina-attesa.ndjson`).
+- [x] done
 
 ### F2 (P1) — A failed recording does not say why
 - **Seen:** the window only says *the recording didn't go through · retry*; the
@@ -72,7 +84,23 @@ but a tester would not understand it without help · **P3** polish.
   and an action.
 - **Done when:** with `BDD_BROWSER=nonexistent`, the Record screen shows why it
   failed and what to do, without a terminal.
-- [ ] done
+- **Still there today.** Reproduced by running `record.ts` directly with
+  `BDD_BROWSER=nonexistent` and with an unreachable address: the window kept
+  only a line count of the streamed output (`righeRicevute`), the actual text
+  was thrown away, and the failure phase showed the generic
+  "the recording didn't go through" with no cause.
+  Fixed: `rilevaCausaFallimento` (`web-ui/src/lib/diagnosi-fallimento.ts`)
+  recognises the two causes from the real text the scripts write
+  ("Nessun browser disponibile" from `scripts/lib/browser.ts`,
+  `net::ERR_…`/`ENOTFOUND`/`ECONNREFUSED` from Playwright's own navigation
+  errors) from the last lines already streamed over SSE. `registra/page.tsx`
+  now keeps those lines, shows a translated sentence with a **Go to
+  Check-up** action for a known cause, and — for an unrecognised failure —
+  the generic message plus the cleaned last lines behind a "Technical
+  details" fold, instead of inventing a diagnosis it doesn't have. Unit
+  tests: `web-ui/__tests__/lib/diagnosi-fallimento.test.ts`, with the two
+  reproduced failure texts as fixtures.
+- [x] done
 
 ### F7 (P2) — Run has no Stop button
 - **Seen:** during a run the button becomes a disabled *Test running*. Record
@@ -82,7 +110,17 @@ but a tester would not understand it without help · **P3** polish.
 - **Change:** reuse Record's Stop button.
 - **Done when:** Stop ends a running test, the screen returns to the choice and
   the registry shows the operation as interrupted.
-- [ ] done
+- **Still there today.** Confirmed by reading `esecuzione/page.tsx`: no Stop
+  button, no call to `/api/esegui/[id]/ferma` anywhere in the file, while
+  `registra/page.tsx` already has both.
+  Fixed: reused Record's own mechanism as instructed — same route, same
+  `<Square>` button and style — added next to the launch button, shown only
+  while `inCorso`. Nothing new needed server-side: `ferma()` in
+  `web-ui/src/lib/registro.ts` already marks the run `interrotta` and the SSE
+  `fine` event Esecuzione already listens to already carries that state, so
+  the screen already falls back to the choice by itself once
+  `statoCorrente` leaves `'in corso'`.
+- [x] done
 
 ## Batch 2 — State that stays in sync (issue #2)
 

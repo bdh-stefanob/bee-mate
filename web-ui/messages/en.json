@@ -116,7 +116,10 @@
     "comandoSessione": "a session",
     "comandoScansione": "a scan",
     "vaiAEsecuzione": "Go to Run",
-    "vaiAControllo": "Go to Check-up"
+    "vaiAControllo": "Go to Check-up",
+    "erroreCausaBrowserMancante": "No usable browser was found on this computer. Install the test browser to fix it.",
+    "erroreCausaIndirizzoIrraggiungibile": "The environment address could not be reached. Check it in Check-up.",
+    "dettagliTecnici": "Technical details"
   },
   "Esecuzione": {
     "titolo": "Run",
@@ -156,7 +159,8 @@
     "notaDocumentati": "Scenarios tagged @non-automatizzato are documentation only and are not listed.",
     "salvatoNuovo": "Saved as {file}.",
     "salvatoSovrascritto": "Saved as {file}, replacing the previous generated version.",
-    "salvatoRinominato": "Saved as {file}: a hand-edited file already had that name and was left untouched."
+    "salvatoRinominato": "Saved as {file}: a hand-edited file already had that name and was left untouched.",
+    "interrompi": "Stop"
   },
   "Riepilogo": {
     "durataLabel": "Duration: {durata}",
@@ -172,7 +176,10 @@
     "esitoPassato": "passed",
     "esitoFallito": "failed",
     "esitoSaltato": "skipped",
-    "altSchermata": "Screenshot captured when step \"{testo}\" failed"
+    "altSchermata": "Screenshot captured when step \"{testo}\" failed",
+    "paginaAttesa": "Expected page: {pagina}",
+    "indirizzoRaggiunto": "Address reached: {indirizzo}",
+    "dettagliTecnici": "Technical details"
   },
   "VoceControllo": {
     "esitoOk": "All set",
