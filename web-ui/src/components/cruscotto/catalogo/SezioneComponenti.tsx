@@ -61,7 +61,7 @@ export function SezioneComponenti({
         </thead>
         <tbody>
           {componenti.map((c) => {
-            const chiave = `${c.page ?? ''}\u0000${c.role}\u0000${c.name}`;
+            const chiave = `${c.role}\u0000${c.name}`;
             const aperto = aperti.has(chiave);
             return (
               // La chiave va sull'elemento piu' esterno che il ciclo
@@ -77,7 +77,15 @@ export function SezioneComponenti({
                   <td className="px-3 py-2 font-mono text-xs">
                     {c.role} &ldquo;{c.name}&rdquo;
                   </td>
-                  <td className="px-3 py-2">{c.page ?? '—'}</td>
+                  <td className="px-3 py-2">
+                    {c.pagineAmbigue ? (
+                      <span title={t('paginaAmbigua', { pagine: c.pagineAmbigue.join(', ') })}>
+                        {t('paginaAmbigua', { pagine: c.pagineAmbigue.join(', ') })}
+                      </span>
+                    ) : (
+                      c.page ?? '—'
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     <Badge
                       variant="outline"

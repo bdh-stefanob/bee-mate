@@ -42,6 +42,8 @@ export interface ComponenteCatalogo {
   role: string;
   name: string;
   page?: string;
+  /** Presente solo quando le occorrenze dichiarano pagine diverse: vedi component-impact.ts. */
+  pagineAmbigue?: string[];
   step: string[];
 }
 
@@ -169,6 +171,7 @@ export function costruisciCatalogo(steps: readonly CatalogStep[], featuresDir: s
     role: c.role,
     name: c.name,
     page: c.page,
+    pagineAmbigue: c.pagineAmbigue,
     step: c.steps.map((s) => s.expression),
   }));
 

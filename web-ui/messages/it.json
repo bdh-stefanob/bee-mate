@@ -297,6 +297,7 @@
     "colonnaStep": "Step",
     "nStep": "{n, plural, one {# step} other {# step}}",
     "nessunComponenteInCatalogo": "Nessuno step del catalogo dichiara ancora un componente.",
+    "paginaAmbigua": "Ambigua: vista su {pagine}",
     "nessunDisordine": "Nessuna coppia sospetta al momento: il catalogo è pulito.",
     "doppioneTitolo": "Doppione: stesso componente, due formulazioni",
     "doppioneNonAutomatizzabile": "Qui non si offre la fusione di due step già definiti: lo strumento dovrebbe puntare una formulazione sul testo che appartiene già a un altro step, e questo lo rifiuta sempre. Sistemarlo richiede una modifica a mano.",
