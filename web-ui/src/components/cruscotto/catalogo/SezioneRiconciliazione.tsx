@@ -2,11 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { GitMerge, Signpost, Loader2, CheckCircle2, Info } from 'lucide-react';
+import { GitMerge, Signpost, Loader2, CheckCircle2, Info, Undo2, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScheletroCatalogo, ErroreCatalogo } from './Scheletro';
-import type { CoppiaRiconciliazione, RispostaCatalogo, RispostaRiconciliazione, StepCatalogo, UsoScenario } from './tipi';
+import type {
+  AnteprimaFusione,
+  CoppiaRiconciliazione,
+  RispostaCatalogo,
+  RispostaFusione,
+  RispostaRiconciliazione,
+  StatoAnnullamentoFusione,
+  StepCatalogo,
+  UsoScenario,
+} from './tipi';
 
 /**
  * Domanda 3: "Dove sta nascendo il disordine?"
@@ -70,38 +79,110 @@ export function SezioneRiconciliazione({ catalogo }: { catalogo: RispostaCatalog
   if (errore) return <ErroreCatalogo messaggio={t('erroreCarico', { dettaglio: errore })} />;
 
   const coppie = dati?.coppie ?? [];
-  if (coppie.length === 0) {
-    return (
-      <p className="text-sm flex items-center gap-2" style={{ color: 'var(--testo-tenue)' }}>
-        <CheckCircle2 size={16} aria-hidden="true" style={{ color: 'var(--blu)' }} />
-        {t('nessunDisordine')}
-      </p>
-    );
-  }
 
   function conUsatoIn(s: CoppiaRiconciliazione['a']): StepCatalogo {
     return { ...s, usatoIn: usatoInPerEspressione.get(s.espressione) ?? [] };
   }
 
   return (
-    <ul className="flex flex-col gap-3">
-      {coppie.map((coppia) => {
-        const arricchita: CoppiaRiconciliazione & { a: StepCatalogo; b: StepCatalogo } = {
-          ...coppia,
-          a: conUsatoIn(coppia.a),
-          b: conUsatoIn(coppia.b),
-        };
-        return (
-          <li key={coppia.id}>
-            {coppia.stessoComponente ? (
-              <SchedaDoppione coppia={arricchita} />
-            ) : (
-              <SchedaEquivoco coppia={arricchita} onRiconciliato={() => setRigenerazione((n) => n + 1)} />
-            )}
-          </li>
-        );
-      })}
-    </ul>
+    <div className="flex flex-col gap-3">
+      <BannerAnnullamentoFusione onAnnullato={() => setRigenerazione((n) => n + 1)} />
+      {coppie.length === 0 ? (
+        <p className="text-sm flex items-center gap-2" style={{ color: 'var(--testo-tenue)' }}>
+          <CheckCircle2 size={16} aria-hidden="true" style={{ color: 'var(--blu)' }} />
+          {t('nessunDisordine')}
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {coppie.map((coppia) => {
+            const arricchita: CoppiaRiconciliazione & { a: StepCatalogo; b: StepCatalogo } = {
+              ...coppia,
+              a: conUsatoIn(coppia.a),
+              b: conUsatoIn(coppia.b),
+            };
+            return (
+              <li key={coppia.id}>
+                {coppia.stessoComponente ? (
+                  <SchedaDoppione coppia={arricchita} onFuso={() => setRigenerazione((n) => n + 1)} />
+                ) : (
+                  <SchedaEquivoco coppia={arricchita} onRiconciliato={() => setRigenerazione((n) => n + 1)} />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/**
+ * "Torna indietro senza rimettere a mano cinque file": un solo livello di
+ * annullamento, l'ultima fusione soltanto (vedi la rotta `fondi/annulla` per
+ * il perche' basta). Il banner compare solo quando c'e' davvero qualcosa da
+ * annullare — niente pulsante morto che non fa nulla.
+ */
+function BannerAnnullamentoFusione({ onAnnullato }: { onAnnullato: () => void }) {
+  const t = useTranslations('Catalogo');
+  const [stato, setStato] = useState<StatoAnnullamentoFusione | null>(null);
+  const [inCorso, setInCorso] = useState(false);
+  const [esito, setEsito] = useState<{ ok: boolean; testo: string } | null>(null);
+
+  useEffect(() => {
+    let annullato = false;
+    fetch('/api/catalogo/fondi/annulla')
+      .then((res) => (res.ok ? res.json() : { disponibile: false }))
+      .then((corpo: StatoAnnullamentoFusione) => {
+        if (!annullato) setStato(corpo);
+      })
+      .catch(() => {
+        if (!annullato) setStato({ disponibile: false });
+      });
+    return () => {
+      annullato = true;
+    };
+  }, []);
+
+  if (!stato?.disponibile) return null;
+
+  async function annulla() {
+    setInCorso(true);
+    setEsito(null);
+    try {
+      const res = await fetch('/api/catalogo/fondi/annulla', { method: 'POST' });
+      const corpo = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setEsito({ ok: false, testo: t('annullamentoFallito', { dettaglio: corpo?.errore ?? `HTTP ${res.status}` }) });
+      } else {
+        setEsito({ ok: true, testo: t('annullamentoRiuscito') });
+        setStato({ disponibile: false });
+        onAnnullato();
+      }
+    } catch (err) {
+      setEsito({ ok: false, testo: t('annullamentoFallito', { dettaglio: err instanceof Error ? err.message : String(err) }) });
+    } finally {
+      setInCorso(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-lg border p-3 flex flex-wrap items-center gap-3"
+      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+    >
+      <span className="text-sm flex-1" style={{ color: 'var(--testo-tenue)' }}>
+        {t('ultimaFusioneDisponibile', { da: stato.da ?? '', a: stato.a ?? '' })}
+      </span>
+      <Button onClick={annulla} disabled={inCorso} variant="outline">
+        {inCorso ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <Undo2 size={16} aria-hidden="true" />}
+        {t('annullaUltimaFusione')}
+      </Button>
+      {esito && (
+        <span className="text-sm w-full" style={{ color: esito.ok ? 'var(--blu)' : 'var(--rosso)' }}>
+          {esito.testo}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -133,20 +214,82 @@ async function inviaRiconciliazione(da: string, a: string): Promise<{ ok: boolea
   }
 }
 
+async function chiediAnteprimaFusione(da: string, a: string): Promise<AnteprimaFusione> {
+  const res = await fetch(`/api/catalogo/fondi?da=${encodeURIComponent(da)}&a=${encodeURIComponent(a)}`);
+  const corpo = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(corpo?.errore ?? `HTTP ${res.status}`);
+  return corpo as AnteprimaFusione;
+}
+
+async function inviaFusione(da: string, a: string, procediNonostanteDifferenza: boolean): Promise<RispostaFusione & { status: number }> {
+  const res = await fetch('/api/catalogo/fondi', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ da, a, procediNonostanteDifferenza }),
+  });
+  const corpo = await res.json().catch(() => ({}));
+  return { ...corpo, status: res.status };
+}
+
 /**
- * Doppione: stesso componente dietro due frasi.
- *
- * Niente pulsante di fusione qui, ed e' voluto: `POST /api/catalogo/riconcilia`
- * rifiuta sempre una destinazione che esiste gia' come step diverso (e' la
- * regola "niente fusione di due definizioni, non in questo giro" del
- * contratto) — e la destinazione di una vera fusione e' per forza una delle
- * due frasi gia' in catalogo. Offrire qui un pulsante "Fondi" significherebbe
- * prometterlo e poi fallire ogni volta con un errore che il tester non
- * saprebbe leggere. La scheda mostra la diagnosi e l'impatto, cosi' chi legge
- * sa dove intervenire a mano.
+ * Doppione: stesso componente dietro due frasi. Il gesto che il tester ha
+ * chiesto: si sceglie la frase che resta, si vede COSA cambierebbe (quante
+ * righe, in quali scenari, quale definizione sparisce), e solo dopo si
+ * conferma. Se i due gestori non fanno la stessa cosa, la fusione normale
+ * resta disabilitata: bisogna prima guardare entrambi i corpi e confermare
+ * esplicitamente che va bene perdere quello della frase che sparisce — un
+ * gesto separato, non lo stesso pulsante "Fondi" di sempre.
  */
-function SchedaDoppione({ coppia }: { coppia: CoppiaRiconciliazione }) {
+function SchedaDoppione({ coppia, onFuso }: { coppia: CoppiaRiconciliazione; onFuso: () => void }) {
   const t = useTranslations('Catalogo');
+  const [vincente, setVincente] = useState<'a' | 'b' | null>(null);
+  const [anteprima, setAnteprima] = useState<AnteprimaFusione | null>(null);
+  const [caricamentoAnteprima, setCaricamentoAnteprima] = useState(false);
+  const [erroreAnteprima, setErroreAnteprima] = useState<string | null>(null);
+  const [confermaCapito, setConfermaCapito] = useState(false);
+  const [inCorso, setInCorso] = useState(false);
+  const [esito, setEsito] = useState<{ ok: boolean; testo: string } | null>(null);
+
+  const fraseVincente = vincente === 'a' ? coppia.a.espressione : vincente === 'b' ? coppia.b.espressione : null;
+  const frasePerdente = vincente === 'a' ? coppia.b.espressione : vincente === 'b' ? coppia.a.espressione : null;
+
+  useEffect(() => {
+    setAnteprima(null);
+    setErroreAnteprima(null);
+    setConfermaCapito(false);
+    setEsito(null);
+    if (!fraseVincente || !frasePerdente) return;
+    let annullato = false;
+    setCaricamentoAnteprima(true);
+    chiediAnteprimaFusione(frasePerdente, fraseVincente)
+      .then((corpo) => {
+        if (!annullato) setAnteprima(corpo);
+      })
+      .catch((err) => {
+        if (!annullato) setErroreAnteprima(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (!annullato) setCaricamentoAnteprima(false);
+      });
+    return () => {
+      annullato = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fraseVincente, frasePerdente]);
+
+  async function fondi(procediNonostanteDifferenza: boolean) {
+    if (!fraseVincente || !frasePerdente) return;
+    setInCorso(true);
+    setEsito(null);
+    const risultato = await inviaFusione(frasePerdente, fraseVincente, procediNonostanteDifferenza);
+    setInCorso(false);
+    if (risultato.ok) {
+      setEsito({ ok: true, testo: t('fusioneRiuscita') });
+      onFuso();
+    } else {
+      setEsito({ ok: false, testo: t('fusioneFallita', { dettaglio: risultato.errore ?? '' }) });
+    }
+  }
 
   return (
     <div className="rounded-lg border p-4" style={{ borderColor: 'var(--ambra)', background: 'var(--superficie)' }}>
@@ -162,26 +305,135 @@ function SchedaDoppione({ coppia }: { coppia: CoppiaRiconciliazione }) {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-col gap-2">
-        {[coppia.a, coppia.b].map((s, i) => (
-          <div
-            key={i}
-            className="min-h-10 flex items-center gap-2 px-3 rounded-md border"
-            style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
-          >
-            <span className="font-mono text-xs flex-1" style={{ color: 'var(--testo)' }}>
-              {s.espressione}
-            </span>
-            <EtichettaComponenti step={s} />
-            <Badge variant="outline">{t('nUsi', { n: s.usatoIn.length })}</Badge>
-          </div>
-        ))}
+      <p className="mt-3 text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        {t('sceltaFraseVincenteLabel')}
+      </p>
+      <div className="mt-1 flex flex-col gap-2">
+        {[coppia.a, coppia.b].map((s, i) => {
+          const l = i === 0 ? 'a' : 'b';
+          return (
+            <label
+              key={l}
+              className="min-h-10 flex items-center gap-2 px-3 rounded-md border cursor-pointer"
+              style={{ borderColor: vincente === l ? 'var(--blu)' : 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+            >
+              <input
+                type="radio"
+                name={`vincente-${coppia.id}`}
+                checked={vincente === l}
+                onChange={() => setVincente(l)}
+                className="focus-visible:outline focus-visible:outline-2"
+                style={{ outlineColor: 'var(--blu)' }}
+              />
+              <span className="font-mono text-xs flex-1" style={{ color: 'var(--testo)' }}>
+                {s.espressione}
+              </span>
+              <EtichettaComponenti step={s} />
+              <Badge variant="outline">{t('nUsi', { n: s.usatoIn.length })}</Badge>
+              {vincente === l && <Badge>{t('fraseVincenteEtichetta')}</Badge>}
+            </label>
+          );
+        })}
       </div>
 
-      <p className="mt-3 text-sm flex items-start gap-2" style={{ color: 'var(--testo-tenue)' }}>
-        <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
-        {t('doppioneNonAutomatizzabile')}
-      </p>
+      {vincente && caricamentoAnteprima && (
+        <p className="mt-3 text-sm flex items-center gap-2" style={{ color: 'var(--testo-tenue)' }}>
+          <Loader2 className="animate-spin" size={14} aria-hidden="true" />
+          {t('fraseCaricamentoAnteprima')}
+        </p>
+      )}
+
+      {vincente && erroreAnteprima && (
+        <p className="mt-3 text-sm" style={{ color: 'var(--rosso)' }}>
+          {t('anteprimaErrore', { dettaglio: erroreAnteprima })}
+        </p>
+      )}
+
+      {vincente && anteprima && fraseVincente && frasePerdente && (
+        <div className="mt-3 flex flex-col gap-3">
+          <div className="text-sm rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+            <p className="font-medium" style={{ color: 'var(--testo)' }}>
+              {t('cosaCambieraTitolo')}
+            </p>
+            <p style={{ color: 'var(--testo-tenue)' }}>
+              {t('cosaCambieraFusione', { righe: anteprima.righeCoinvolte, frase: frasePerdente, file: anteprima.definizionePersa })}
+            </p>
+            {anteprima.scenariCoinvolti.length > 0 && (
+              <ul className="mt-1 flex flex-col gap-0.5">
+                {anteprima.scenariCoinvolti.map((u, i) => (
+                  <li key={i} className="font-mono text-xs" style={{ color: 'var(--testo-tenue)' }}>
+                    {u.scenario} — {u.file}:{u.riga}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {anteprima.equivalenti ? (
+            <div className="flex items-center gap-2">
+              <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+                {t('corpiUgualiEsito')}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border p-3" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
+              <p className="font-medium flex items-center gap-2" style={{ color: 'var(--rosso)' }}>
+                <AlertTriangle size={16} aria-hidden="true" />
+                {t('corpiDiversiTitolo')}
+              </p>
+              <p className="text-sm mt-1" style={{ color: 'var(--testo-tenue)' }}>
+                {t('corpiDiversiSpiegazione', { frase: frasePerdente })}
+              </p>
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="rounded-md border p-2" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+                  <p className="text-xs font-medium mb-1" style={{ color: 'var(--testo)' }}>
+                    {t('corpoDiLabel', { frase: frasePerdente })}
+                  </p>
+                  <pre className="text-xs whitespace-pre-wrap font-mono" style={{ color: 'var(--testo)' }}>
+                    {anteprima.corpoDa ?? ''}
+                  </pre>
+                </div>
+                <div className="rounded-md border p-2" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+                  <p className="text-xs font-medium mb-1" style={{ color: 'var(--testo)' }}>
+                    {t('corpoDiLabel', { frase: fraseVincente })}
+                  </p>
+                  <pre className="text-xs whitespace-pre-wrap font-mono" style={{ color: 'var(--testo)' }}>
+                    {anteprima.corpoA ?? ''}
+                  </pre>
+                </div>
+              </div>
+              <label className="mt-2 flex items-start gap-2 text-sm cursor-pointer" style={{ color: 'var(--testo)' }}>
+                <input
+                  type="checkbox"
+                  checked={confermaCapito}
+                  onChange={(e) => setConfermaCapito(e.target.checked)}
+                  className="mt-0.5"
+                />
+                {t('confermaCapito', { frase: frasePerdente })}
+              </label>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            {anteprima.equivalenti ? (
+              <Button onClick={() => fondi(false)} disabled={inCorso}>
+                {inCorso ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <GitMerge size={16} aria-hidden="true" />}
+                {t('fondiPulsante')}
+              </Button>
+            ) : (
+              <Button onClick={() => fondi(true)} disabled={inCorso || !confermaCapito} variant="destructive">
+                {inCorso ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <AlertTriangle size={16} aria-hidden="true" />}
+                {t('fondiComunquePulsante')}
+              </Button>
+            )}
+            {esito && (
+              <span className="text-sm" style={{ color: esito.ok ? 'var(--blu)' : 'var(--rosso)' }}>
+                {esito.testo}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
