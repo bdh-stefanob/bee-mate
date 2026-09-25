@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Pencil, Plus, Trash2, XCircle } from 'lucide-react';
+import { notificaAmbientiCambiati } from '@/lib/eventi-ambienti';
 
 export interface AmbienteVisibile {
   nome: string;
@@ -764,6 +765,9 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
         setUrl('');
         await carica();
         onCambiato?.();
+        // F3: la barra laterale (SelettoreAmbiente) vive in un altro
+        // sottoalbero e non rileggerebbe mai l'elenco da sola.
+        notificaAmbientiCambiati();
       } else {
         setMessaggio({ ok: false, testo: corpo.errore ?? t('nonSalvato') });
       }
@@ -777,6 +781,10 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
   const sessioneConclusa = useCallback(() => {
     void carica();
     onCambiato?.();
+    // F3: copre eliminazione, modifica indirizzo, accesso registrato e
+    // credenziali salvate — ogni caso in cui l'elenco puo' essere cambiato
+    // da qui, non solo l'aggiunta.
+    notificaAmbientiCambiati();
   }, [carica, onCambiato]);
 
   return (

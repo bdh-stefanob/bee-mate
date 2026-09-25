@@ -5,6 +5,7 @@ import {
   corpiEquivalenti,
   FusioneNonSupportata,
 } from '@/lib/fusione-step';
+import { treStepStessoComponente } from '../fixtures/catalogo';
 
 describe('estraiDefinizione', () => {
   it('legge il corpo di una definizione presente una sola volta', () => {
@@ -126,6 +127,63 @@ describe('rimuoviDefinizione', () => {
     const { rimosse, corpoFunzione } = rimuoviDefinizione(testo, 'x');
     expect(rimosse).toBe(1);
     expect(corpoFunzione).toContain('fai(messaggio)');
+  });
+});
+
+describe('fusione ripetuta (tre step sullo stesso componente)', () => {
+  // Situazione mai esercitata prima, ne' con dati veri ne' sintetici: tre
+  // frasi diverse ancorate allo stesso componente (vedi
+  // __tests__/fixtures/catalogo/fusione-ripetuta.ts), fuse una dopo l'altra
+  // fino a restarne una sola. `fondi/route.ts` fa esattamente questo, una
+  // coppia alla volta: qui si prova che la catena di due fusioni funziona.
+  const [primo, secondo, terzo] = treStepStessoComponente.map((s) => s.expression);
+
+  function glueDiTre(): string {
+    return [
+      'import { When } from "@cucumber/cucumber";',
+      '',
+      `When("${primo}", async function (this: CustomWorld) {`,
+      '  await appPage.apriMenu();',
+      '});',
+      '',
+      `When("${secondo}", async function (this: CustomWorld) {`,
+      '  await appPage.apriMenu();',
+      '});',
+      '',
+      `When("${terzo}", async function (this: CustomWorld) {`,
+      '  await appPage.apriMenu();',
+      '});',
+      '',
+    ].join('\n');
+  }
+
+  it('i corpi dei tre step sono equivalenti fra loro (stesso comportamento, ancorati allo stesso componente)', () => {
+    const testo = glueDiTre();
+    const corpoUno = estraiDefinizione(testo, primo).corpoFunzione!;
+    const corpoDue = estraiDefinizione(testo, secondo).corpoFunzione!;
+    const corpoTre = estraiDefinizione(testo, terzo).corpoFunzione!;
+    expect(corpiEquivalenti(corpoUno, corpoDue)).toBe(true);
+    expect(corpiEquivalenti(corpoUno, corpoTre)).toBe(true);
+  });
+
+  it('due fusioni in sequenza portano da tre definizioni a una sola', () => {
+    let testo = glueDiTre();
+
+    // Prima fusione: il secondo step sparisce, il primo resta.
+    const dopoPrima = rimuoviDefinizione(testo, secondo);
+    expect(dopoPrima.rimosse).toBe(1);
+    testo = dopoPrima.testo;
+    expect(testo).toContain(primo);
+    expect(testo).not.toContain(secondo);
+    expect(testo).toContain(terzo);
+
+    // Seconda fusione: anche il terzo sparisce. Resta solo il primo.
+    const dopoSeconda = rimuoviDefinizione(testo, terzo);
+    expect(dopoSeconda.rimosse).toBe(1);
+    testo = dopoSeconda.testo;
+    expect(testo).toContain(primo);
+    expect(testo).not.toContain(secondo);
+    expect(testo).not.toContain(terzo);
   });
 });
 

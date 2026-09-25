@@ -119,7 +119,9 @@
     "vaiAControllo": "Vai a Controllo",
     "erroreCausaBrowserMancante": "Non ho trovato un browser di test utilizzabile su questo computer. Installalo dal Check-up per risolvere.",
     "erroreCausaIndirizzoIrraggiungibile": "Non sono riuscito a raggiungere l'indirizzo dell'ambiente. Controllalo nel Check-up.",
-    "dettagliTecnici": "Dettagli tecnici"
+    "dettagliTecnici": "Dettagli tecnici",
+    "nienteRegistrato": "Non è stato registrato niente — 0 passi, 0 verifiche.",
+    "registraDiNuovo": "Registra di nuovo"
   },
   "Esecuzione": {
     "titolo": "Esecuzione",
@@ -224,6 +226,8 @@
       "nessuno": "nessun ambiente configurato — è da qui che parte tutto",
       "nessunoUtilizzabile": "{totale} configurati, ma nessuno è ancora utilizzabile: manca un indirizzo o una credenziale",
       "pronti": "{pronti} su {totale} pronti",
+      "accessoNonRegistrato": "{pronti} su {totale} configurati — accesso non ancora registrato",
+      "registraAccessoQui": "Registra un accesso nella sezione Ambienti qui sotto.",
       "daCompletare": "{daCompletare} da completare quando serve",
       "conSessione": "{conSessione} con sessione salvata",
       "conSessioneVecchie": "{conSessione} con sessione salvata, di cui {vecchie} più vecchie di 12 ore",

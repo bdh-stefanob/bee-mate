@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { computeComponentImpact, countAnchoredSteps, componentImpactKey } from '@/lib/component-impact';
 import type { CatalogStep } from '@/lib/types';
+import {
+  catalogoVuoto,
+  stepSenzaComponenti,
+  equivocoDiDenominazione,
+  paginaCompatibile,
+  pagineDiverseNote,
+  paginaAmbigua,
+} from '../fixtures/catalogo';
 
 function step(expression: string, components?: CatalogStep['components']): CatalogStep {
   return {
@@ -22,10 +30,9 @@ describe('lo stesso nome su pagine diverse', () => {
   // pagina di accesso NON e' quello del pagamento. Unirli gonfierebbe il raggio
   // d'impatto proprio mentre si toglie l'informazione che lo rende utile.
   it('resta due componenti distinti, non uno solo', () => {
-    const impact = computeComponentImpact([
-      step('a', [{ role: 'button', name: 'Submit', page: 'LoginPage' }]),
-      step('b', [{ role: 'button', name: 'Submit', page: 'CheckoutPage' }]),
-    ]);
+    // Situazione "pagine diverse e note": stesso ruolo+nome, due pagine
+    // entrambe dichiarate. Vedi __tests__/fixtures/catalogo/pagine-diverse-e-note.ts
+    const impact = computeComponentImpact(pagineDiverseNote);
 
     expect(impact).toHaveLength(2);
     expect(new Set(impact.map((i) => i.page))).toEqual(new Set(['LoginPage', 'CheckoutPage']));
@@ -37,22 +44,18 @@ describe('lo stesso nome su pagine diverse', () => {
     // diverse del registratore, una che segnava la pagina e una no. Il
     // conteggio usciva 1 invece di 2 — sbagliato per difetto, cioe' nella
     // direzione che fa sembrare un cambiamento piu' sicuro di quanto sia.
-    const impact = computeComponentImpact([
-      step('a', [{ role: 'button', name: 'Sign in', page: 'AccediPage' }]),
-      step('b', [{ role: 'button', name: 'Sign in' }]),
-    ]);
+    // Situazione "pagina compatibile": stesso ruolo+nome, una occorrenza sa la
+    // pagina e l'altra no. Vedi __tests__/fixtures/catalogo/pagina-compatibile.ts
+    const impact = computeComponentImpact(paginaCompatibile);
 
     expect(impact).toHaveLength(1);
-    expect(impact[0]!.page).toBe('AccediPage');
+    expect(impact[0]!.page).toBe('LoginPage');
     expect(impact[0]!.steps).toHaveLength(2);
   });
 
   it("e con due pagine possibili non si indovina", () => {
-    const impact = computeComponentImpact([
-      step('a', [{ role: 'button', name: 'Submit', page: 'LoginPage' }]),
-      step('b', [{ role: 'button', name: 'Submit', page: 'CheckoutPage' }]),
-      step('c', [{ role: 'button', name: 'Submit' }]),
-    ]);
+    // Situazione "pagina ambigua". Vedi __tests__/fixtures/catalogo/pagina-ambigua.ts
+    const impact = computeComponentImpact(paginaAmbigua);
 
     const incerta = impact.find((i) => i.pagineAmbigue);
     expect(incerta).toBeDefined();
@@ -128,12 +131,9 @@ describe('computeComponentImpact', () => {
   });
 
   it('due pagine note e diverse restano due componenti, ognuno col suo conteggio', () => {
-    const steps = [
-      step('a', [{ role: 'button', name: 'Submit', page: 'LoginPage' }]),
-      step('b', [{ role: 'button', name: 'Submit', page: 'CheckoutPage' }]),
-    ];
-
-    const impact = computeComponentImpact(steps);
+    // Stessa situazione "pagine diverse e note" del primo test di questo
+    // describe: coincidono di proposito, e' la stessa fixture condivisa.
+    const impact = computeComponentImpact(pagineDiverseNote);
 
     // La pagina fa parte dell'identita' quando si conosce: due pulsanti con lo
     // stesso nome su pagine diverse sono due pulsanti. Unirli direbbe che
@@ -148,12 +148,9 @@ describe('computeComponentImpact', () => {
     // Caso vicino da NON toccare: button "Sign in" e link "Sign in" sono due
     // componenti diversi davvero — riconciliazione.ts si appoggia proprio a
     // questa distinzione per riconoscere un equivoco di denominazione.
-    const steps = [
-      step('a', [{ role: 'button', name: 'Sign in', page: 'AccediPage' }]),
-      step('b', [{ role: 'link', name: 'Sign in', page: 'HomePage' }]),
-    ];
-
-    const impact = computeComponentImpact(steps);
+    // Situazione "equivoco di denominazione". Vedi
+    // __tests__/fixtures/catalogo/equivoco-di-denominazione.ts
+    const impact = computeComponentImpact(equivocoDiDenominazione);
 
     expect(impact).toHaveLength(2);
     expect(new Set(impact.map((i) => i.role))).toEqual(new Set(['button', 'link']));
@@ -170,7 +167,13 @@ describe('computeComponentImpact', () => {
   });
 
   it('returns an empty map when nothing is anchored', () => {
-    expect(computeComponentImpact([step('a'), step('b')])).toEqual([]);
+    // Situazione "step senza componenti agganciati".
+    expect(computeComponentImpact(stepSenzaComponenti)).toEqual([]);
+  });
+
+  it('returns an empty map for an empty catalog', () => {
+    // Situazione "catalogo vuoto".
+    expect(computeComponentImpact(catalogoVuoto)).toEqual([]);
   });
 });
 
@@ -185,6 +188,12 @@ describe('countAnchoredSteps', () => {
   });
 
   it('is zero for a catalog with no anchoring at all', () => {
-    expect(countAnchoredSteps([step('a'), step('b')])).toBe(0);
+    // Situazione "step senza componenti agganciati".
+    expect(countAnchoredSteps(stepSenzaComponenti)).toBe(0);
+  });
+
+  it('is zero for an empty catalog', () => {
+    // Situazione "catalogo vuoto".
+    expect(countAnchoredSteps(catalogoVuoto)).toBe(0);
   });
 });

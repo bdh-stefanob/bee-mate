@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { AlertTriangle, CircleDot, Loader2, Square } from 'lucide-react';
+import { AlertTriangle, CircleDot, Loader2, RotateCcw, Square } from 'lucide-react';
 import {
   RiepilogoTraccia,
   type BucoRiepilogo,
@@ -260,6 +260,14 @@ export default function RegistraPage() {
     }
   }, [osserva, dopoGenerazione, inviando, fase, t]);
 
+  // F6: la sola via d'uscita dal riepilogo era "Genera il test" — chi si era
+  // sbagliato di ambiente o voleva rifare la sessione doveva ricaricare la
+  // pagina per tornare all'inizio. Non genera niente: riporta solo alla
+  // scelta iniziale, la stessa da cui si parte all'apertura della schermata.
+  const registraDiNuovo = useCallback(() => {
+    setFase({ tipo: 'scelta' });
+  }, []);
+
   const interrompi = useCallback(async () => {
     if (fase.tipo !== 'in-corso') return;
     await fetch(`/api/esegui/${fase.id}/ferma`, { method: 'POST' }).catch(() => {
@@ -376,20 +384,64 @@ export default function RegistraPage() {
 
       {fase.tipo === 'riepilogo' && (
         <div className="flex flex-col gap-6">
-          <RiepilogoTraccia
-            passi={fase.dati.passi}
-            durata={fase.dati.durata}
-            buchi={fase.dati.buchi}
-          />
-          <button
-            type="button"
-            onClick={() => void generaTest()}
-            disabled={inviando}
-            className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
-          >
-            {t('generaTest')}
-          </button>
+          {fase.dati.passi.length === 0 ? (
+            // F5: zero passi e zero verifiche non e' un riepilogo da generare,
+            // e' una registrazione che non ha registrato niente (browser
+            // chiuso subito, o nessun intento chiuso dentro). "Genera il
+            // test" qui produrrebbe uno scenario vuoto: si offre solo la
+            // strada che ha senso, ricominciare.
+            <div
+              className="flex flex-col items-start gap-3 rounded-lg border p-4 text-sm"
+              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+            >
+              <p className="flex items-center gap-2">
+                <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+                {t('nienteRegistrato')}
+              </p>
+              <button
+                type="button"
+                onClick={registraDiNuovo}
+                className="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+              >
+                <RotateCcw size={16} aria-hidden="true" />
+                {t('registraDiNuovo')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <RiepilogoTraccia
+                passi={fase.dati.passi}
+                durata={fase.dati.durata}
+                buchi={fase.dati.buchi}
+              />
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => void generaTest()}
+                  disabled={inviando}
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                  style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+                >
+                  {t('generaTest')}
+                </button>
+                {/* F6: prima l'unica via dal riepilogo era generare. Questa
+                    riporta alla scelta iniziale senza scrivere niente, per chi
+                    si accorge di aver sbagliato ambiente o vuole rifare la
+                    sessione. */}
+                <button
+                  type="button"
+                  onClick={registraDiNuovo}
+                  disabled={inviando}
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                  style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+                >
+                  <RotateCcw size={16} aria-hidden="true" />
+                  {t('registraDiNuovo')}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

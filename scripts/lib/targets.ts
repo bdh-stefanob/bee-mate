@@ -196,6 +196,21 @@ export function hasSession(target: Target): boolean {
 }
 
 /**
+ * Qualcuno ha gia' fatto l'accesso su questo ambiente — a mano (c'e' una
+ * sessione salvata) o l'ha reso automatico (c'e' un blocco `login`)?
+ *
+ * (F4) Un ambiente puo' avere indirizzo risolto e tutte le credenziali in
+ * .env senza che nessuno l'abbia mai aperto: e' esattamente lo stato subito
+ * dopo "Aggiungi" nella sezione Ambienti. Fino a quel primo accesso il
+ * tester non sa se l'applicazione risponde davvero, ne' se il login
+ * funziona — "pronto" a quel punto e' una promessa che la diagnosi non puo'
+ * ancora mantenere.
+ */
+export function accessoRegistrato(target: Target): boolean {
+  return hasSession(target) || Boolean(target.login);
+}
+
+/**
  * Da quanto tempo e' stata salvata. Le sessioni scadono senza avvisare, e il
  * sintomo — l'applicazione che rimanda al login a meta' registrazione — non
  * assomiglia per niente alla causa.

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { espressioneInRegex, trovaUsatoIn, costruisciCatalogo } from '@/lib/catalogo';
 import type { CatalogStep } from '@/lib/types';
+import { catalogoVuoto, stepSenzaComponenti } from '../fixtures/catalogo';
 
 function step(expression: string, sourceRef: string, components?: CatalogStep['components']): CatalogStep {
   return {
@@ -76,5 +77,20 @@ describe('trovaUsatoIn / costruisciCatalogo', () => {
     expect(dati.step[0]).toMatchObject({ espressione: 'a', usatoIn: [] });
     expect(dati.componenti).toHaveLength(1);
     expect(dati.componenti[0]).toMatchObject({ role: 'button', name: 'X', step: ['a'] });
+  });
+
+  it('costruisciCatalogo su un catalogo vuoto non fallisce: step e componenti vuoti', () => {
+    // Situazione "catalogo vuoto".
+    const dati = costruisciCatalogo(catalogoVuoto, '/percorso/che/non/esiste');
+    expect(dati.step).toEqual([]);
+    expect(dati.componenti).toEqual([]);
+  });
+
+  it('costruisciCatalogo su step senza componenti agganciati: nessun componente in mappa', () => {
+    // Situazione "step senza componenti agganciati": il caso di chi scrive lo
+    // step a mano.
+    const dati = costruisciCatalogo(stepSenzaComponenti, '/percorso/che/non/esiste');
+    expect(dati.step).toHaveLength(stepSenzaComponenti.length);
+    expect(dati.componenti).toEqual([]);
   });
 });

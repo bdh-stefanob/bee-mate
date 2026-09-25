@@ -14,6 +14,16 @@ import { ErroreSalvataggio, MARCATORE } from './salva-scenario';
  *   steps/<app>/<flusso>/<nome>.steps.ts   uno per scenario, accanto al flusso
  *   pages/<app>/<pagina>.page.ts           uno per pagina, condiviso fra scenari
  *
+ * La sorgente, in `pages/generated/`, e' invece divisa per HOST
+ * (`pages/generated/<host>/<pagina>.page.ts`): due applicazioni diverse
+ * possono registrare una pagina con lo stesso slug ("home", "accedi"), e senza
+ * quella sottocartella la seconda registrazione sovrascriveva la Page Object
+ * della prima in silenzio. Qui, a valle, quell'informazione non serve piu':
+ * il tester ha gia' scelto l'applicazione (`app`), quindi la Page Object
+ * salvata resta piatta sotto `pages/<app>/` come prima — l'host e' solo il
+ * modo in cui la generazione tiene separati due sorgenti, non un livello che
+ * il salvataggio deve propagare.
+ *
  * Le regole, ciascuna con il suo caso in `salva-glue.test.ts`:
  *  - una Page Object gia' salvata si riusa se ha tutti i metodi che servono; se
  *    gliene mancano, **cresce**: si aggiungono i metodi e i locator mancanti, e
@@ -24,6 +34,11 @@ import { ErroreSalvataggio, MARCATORE } from './salva-scenario';
  *    rifiuterebbe di partire con due definizioni della stessa frase. Oggi la
  *    risposta e' dirlo; riusare la definizione esistente richiede che le
  *    pagine vivano nel World e non nel modulo (vedi il modello degli step);
+ *  - una Page Object copiata da `pages/generated/<host>/` sparisce da li' dopo
+ *    il salvataggio: altrimenti resterebbe una copia orfana, identica a quella
+ *    appena salvata, che la generazione successiva riscriverebbe. Resta solo
+ *    se un altro scenario ancora da salvare (un altro file in
+ *    `steps/generated/`) la sta ancora usando;
  *  - niente si scrive finche' tutto non e' stato controllato: `pianificaGlue`
  *    legge soltanto, `scriviGlue` scrive.
  */
@@ -41,6 +56,7 @@ export interface PianoGlue {
   steps: string;
   pagine: PaginaSalvata[];
   scritture: Array<{ assoluto: string; testo: string }>;
+  /** File di `generated/` da rimuovere dopo la scrittura: gli step sempre, le Page Object copiate solo se orfane. */
   daCancellare: string[];
 }
 
@@ -73,6 +89,24 @@ function fileDiStep(dir: string, escludi: string[]): string[] {
     }
   }
   return trovati;
+}
+
+/**
+ * Un altro scenario ancora da salvare importa la stessa Page Object generata?
+ *
+ * Si guarda solo `steps/generated/`: gli scenari gia' salvati non importano piu'
+ * da li' (l'import e' stato riscritto verso `pages/<app>/...` proprio da questa
+ * funzione), quindi non possono tenere in vita una sorgente che altrimenti
+ * sarebbe orfana.
+ */
+function ancoraUsataAltrove(radiceSrc: string, modulo: string, escludiSteps: string): boolean {
+  const cartellaRegistrati = path.join(radiceSrc, 'steps', REGISTRATI);
+  for (const f of fileDiStep(cartellaRegistrati, [escludiSteps])) {
+    if (!f.endsWith('.steps.ts')) continue;
+    const testo = fs.readFileSync(f, 'utf-8');
+    if (testo.includes(`from "../../pages/generated/${modulo}"`)) return true;
+  }
+  return false;
 }
 
 /** Il blocco di un metodo, con il commento che lo precede, fino alla sua graffa di chiusura. */
@@ -181,19 +215,44 @@ export function pianificaGlue(
   const scritture: PianoGlue['scritture'] = [];
   const pagine: PaginaSalvata[] = [];
   const aMano: string[] = [];
-  const importazioni = [...steps.matchAll(/^import \{ (\w+) \} from "\.\.\/\.\.\/pages\/generated\/([\w.-]+)";$/gm)];
+  const daCancellare: string[] = [stepsAssoluto];
+  // Un segmento solo com'era sempre ("accesso.page"), o un host davanti
+  // ("esempio.invalid/accesso.page"): la generazione ora divide le pagine per
+  // host, ma una registrazione piu' vecchia — o un file scritto a mano nello
+  // stesso posto — puo' ancora avere un solo segmento. Si accettano entrambi.
+  const importazioni = [
+    ...steps.matchAll(/^import \{ (\w+) \} from "\.\.\/\.\.\/pages\/generated\/([\w.-]+(?:\/[\w.-]+)?)";$/gm),
+  ];
+  // (modulo completo, con l'eventuale host) -> nome semplice, quello con cui la
+  // pagina vive sotto `pages/<app>/`. Serve dopo, per riscrivere l'import negli
+  // step senza lasciarci dentro l'host.
+  const nomiSemplici = new Map<string, string>();
 
   for (const [, classe, modulo] of importazioni) {
+    const nomeModulo = modulo.split('/').pop()!;
+    nomiSemplici.set(modulo, nomeModulo);
     const sorgenteAssoluta = path.join(radiceSrc, 'pages', REGISTRATI, `${modulo}.ts`);
     if (!fs.existsSync(sorgenteAssoluta)) throw new ErroreSalvataggio('non-trovato', `non trovo la pagina ${classe}`);
     const sorgente = fs.readFileSync(sorgenteAssoluta, 'utf-8');
-    const file = `pages/${app}/${modulo}.ts`;
+    const file = `pages/${app}/${nomeModulo}.ts`;
     const destinazioneAssoluta = path.join(radiceSrc, file);
+
+    // La sorgente e' stata copiata: se nessun altro scenario ancora da salvare
+    // la sta ancora usando, sparisce da `generated/` invece di restare li' come
+    // copia orfana che la prossima generazione riscriverebbe.
+    if (!ancoraUsataAltrove(radiceSrc, modulo, stepsAssoluto)) daCancellare.push(sorgenteAssoluta);
 
     if (!fs.existsSync(destinazioneAssoluta)) {
       scritture.push({
         assoluto: destinazioneAssoluta,
-        testo: sorgente.replace(/^\/\/ src\/pages\/generated\/(\S+)$/m, `// src/pages/${app}/$1`),
+        // La sorgente, sotto un host, e' un livello piu' in fondo di dove va a
+        // finire: la sua import di BasePage lo riflette ("../../../...") e va
+        // riportata al livello piatto di `pages/<app>/` ("../../..."). Se la
+        // sorgente non aveva host (un file di prima, o scritto a mano), la
+        // sostituzione non trova niente e non cambia nulla.
+        testo: sorgente
+          .replace(/^\/\/ src\/pages\/generated\/\S+$/m, `// src/pages/${app}/${nomeModulo}.ts`)
+          .replace('from "../../../support/base.page"', 'from "../../support/base.page"'),
       });
       pagine.push({ file, come: 'nuova' });
       continue;
@@ -218,15 +277,18 @@ export function pianificaGlue(
     );
   }
 
-  scritture.push({
-    assoluto: stepsDestinazione,
-    testo: steps
-      .replace(/^\/\/ src\/steps\/generated\/\S+$/m, `// src/${stepsFile}`)
-      .replaceAll('from "../../support/world"', 'from "../../../support/world"')
-      .replaceAll('from "../../pages/generated/', `from "../../../pages/${app}/`),
-  });
+  let stepsTesto = steps
+    .replace(/^\/\/ src\/steps\/generated\/\S+$/m, `// src/${stepsFile}`)
+    .replaceAll('from "../../support/world"', 'from "../../../support/world"');
+  for (const [modulo, nomeModulo] of nomiSemplici) {
+    stepsTesto = stepsTesto.replaceAll(
+      `from "../../pages/generated/${modulo}"`,
+      `from "../../../pages/${app}/${nomeModulo}"`
+    );
+  }
+  scritture.push({ assoluto: stepsDestinazione, testo: stepsTesto });
 
-  return { steps: stepsFile, pagine, scritture, daCancellare: [stepsAssoluto] };
+  return { steps: stepsFile, pagine, scritture, daCancellare };
 }
 
 export function scriviGlue(piano: PianoGlue): void {
@@ -235,6 +297,9 @@ export function scriviGlue(piano: PianoGlue): void {
     fs.writeFileSync(s.assoluto, s.testo);
   }
   // Gli step lasciati in generated/ definirebbero le stesse frasi una seconda
-  // volta. Le pagine invece restano: altri scenari non ancora salvati possono usarle.
+  // volta. Le Page Object copiate lascerebbero invece una copia orfana,
+  // identica a quella appena salvata, che la prossima generazione riscriverebbe:
+  // `pianificaGlue` le ha gia' aggiunte qui solo se nessun altro scenario ancora
+  // da salvare le sta ancora usando.
   for (const f of piano.daCancellare) fs.unlinkSync(f);
 }
