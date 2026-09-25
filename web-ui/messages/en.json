@@ -297,6 +297,7 @@
     "colonnaStep": "Steps",
     "nStep": "{n, plural, one {# step} other {# steps}}",
     "nessunComponenteInCatalogo": "No step in the catalog declares a component yet.",
+    "paginaAmbigua": "Ambiguous: seen on {pagine}",
     "nessunDisordine": "No suspicious pair right now: the catalog is clean.",
     "doppioneTitolo": "Duplicate: same component, two phrasings",
     "doppioneNonAutomatizzabile": "Merging two existing step definitions isn't offered here: the tool would have to point one phrasing at wording that already belongs to another step, which it always refuses. Fixing this one takes a manual edit.",

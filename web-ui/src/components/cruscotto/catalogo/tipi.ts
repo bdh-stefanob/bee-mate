@@ -31,6 +31,8 @@ export interface ComponenteConStep {
   role: string;
   name: string;
   page?: string;
+  /** Presente solo quando le occorrenze dichiarano pagine diverse: non fuse, elencate. */
+  pagineAmbigue?: string[];
   step: string[];
 }
 

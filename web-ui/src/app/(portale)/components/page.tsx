@@ -120,7 +120,7 @@ export default function ComponentsPage() {
             </thead>
             <tbody>
               {impact.map((item) => {
-                const key = `${item.page ?? ''}\u0000${item.role}\u0000${item.name}`;
+                const key = `${item.role}\u0000${item.name}`;
                 const isOpen = expanded.has(key);
                 return (
                   <>
@@ -134,7 +134,9 @@ export default function ComponentsPage() {
                       <td className="px-3 py-2 font-mono text-xs">
                         {item.role} &ldquo;{item.name}&rdquo;
                       </td>
-                      <td className="px-3 py-2">{item.page ?? '—'}</td>
+                      <td className="px-3 py-2">
+                        {item.pagineAmbigue ? `Ambiguous: seen on ${item.pagineAmbigue.join(', ')}` : item.page ?? '—'}
+                      </td>
                       <td className="px-3 py-2">
                         <Badge
                           variant="outline"
