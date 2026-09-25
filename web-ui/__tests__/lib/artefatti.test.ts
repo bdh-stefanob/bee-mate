@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as path from 'path';
-import { leggiTraccia, leggiPassiTest } from '@/lib/artefatti';
+import { leggiTraccia, leggiPassiTest, riepilogoErrore } from '@/lib/artefatti';
 
 const FIXTURES = path.join(__dirname, '..', 'fixtures');
 
@@ -42,5 +42,34 @@ describe('lettura degli artefatti', () => {
       const fallito = passi.find((p) => p.esito === 'fallito');
       expect(fallito?.schermata).toBeUndefined();
     });
+  });
+
+  describe('messaggio del passo fallito (finding F1: niente escape ANSI, riepilogo in chiaro)', () => {
+    it('pulisce gli escape ANSI dal messaggio prima che arrivi alla finestra', () => {
+      const passi = leggiPassiTest(path.join(FIXTURES, 'messaggi-ansi.ndjson'));
+      const fallito = passi.find((p) => p.esito === 'fallito');
+      expect(fallito?.messaggio).not.toContain('\u001b[');
+      expect(fallito?.messaggio).toBe('Error: expect(locator).toBeVisible failed');
+    });
+
+    it('estrae pagina attesa e indirizzo raggiunto quando il messaggio li porta', () => {
+      const passi = leggiPassiTest(path.join(FIXTURES, 'messaggi-pagina-attesa.ndjson'));
+      const fallito = passi.find((p) => p.esito === 'fallito');
+      expect(fallito?.riepilogo?.paginaAttesa).toBe('AppPage (/app)');
+      expect(fallito?.riepilogo?.indirizzoOra).toBe('https://esempio.invalid/accedi');
+    });
+
+    it('senza quelle righe, il riepilogo e\' la prima riga del messaggio', () => {
+      const passi = leggiPassiTest(path.join(FIXTURES, 'messaggi.ndjson'));
+      const fallito = passi.find((p) => p.esito === 'fallito');
+      expect(fallito?.riepilogo?.paginaAttesa).toBeUndefined();
+      expect(fallito?.riepilogo?.primaRiga).toBe('expected list to contain "First item"');
+    });
+  });
+});
+
+describe('riepilogoErrore', () => {
+  it('un messaggio senza le righe fisse da\' solo la prima riga', () => {
+    expect(riepilogoErrore('primo\nsecondo').primaRiga).toBe('primo');
   });
 });

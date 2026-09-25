@@ -116,7 +116,10 @@
     "comandoSessione": "una sessione",
     "comandoScansione": "una scansione",
     "vaiAEsecuzione": "Vai a Esecuzione",
-    "vaiAControllo": "Vai a Controllo"
+    "vaiAControllo": "Vai a Controllo",
+    "erroreCausaBrowserMancante": "Non ho trovato un browser di test utilizzabile su questo computer. Installalo dal Check-up per risolvere.",
+    "erroreCausaIndirizzoIrraggiungibile": "Non sono riuscito a raggiungere l'indirizzo dell'ambiente. Controllalo nel Check-up.",
+    "dettagliTecnici": "Dettagli tecnici"
   },
   "Esecuzione": {
     "titolo": "Esecuzione",
@@ -156,7 +159,8 @@
     "notaDocumentati": "Gli scenari marcati @non-automatizzato sono solo documentazione e non compaiono qui.",
     "salvatoNuovo": "Salvato come {file}.",
     "salvatoSovrascritto": "Salvato come {file}, al posto della versione generata prima.",
-    "salvatoRinominato": "Salvato come {file}: un file modificato a mano aveva già quel nome ed è rimasto com'era."
+    "salvatoRinominato": "Salvato come {file}: un file modificato a mano aveva già quel nome ed è rimasto com'era.",
+    "interrompi": "Interrompi"
   },
   "Riepilogo": {
     "durataLabel": "Durata: {durata}",
@@ -172,7 +176,10 @@
     "esitoPassato": "superato",
     "esitoFallito": "fallito",
     "esitoSaltato": "saltato",
-    "altSchermata": "Schermata catturata al momento del fallimento del passo «{testo}»"
+    "altSchermata": "Schermata catturata al momento del fallimento del passo «{testo}»",
+    "paginaAttesa": "Pagina attesa: {pagina}",
+    "indirizzoRaggiunto": "Indirizzo raggiunto: {indirizzo}",
+    "dettagliTecnici": "Dettagli tecnici"
   },
   "VoceControllo": {
     "esitoOk": "A posto",

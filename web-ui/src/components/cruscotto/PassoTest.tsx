@@ -1,10 +1,12 @@
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, XCircle, MinusCircle, type LucideIcon } from 'lucide-react';
+import type { RiepilogoErrore } from '@/lib/artefatti';
 
 export interface Passo {
   testo: string;
   esito: 'passato' | 'fallito' | 'saltato';
   messaggio?: string;
+  riepilogo?: RiepilogoErrore;
   schermata?: string;
 }
 
@@ -50,12 +52,46 @@ export function PassoTest({ passo }: { passo: Passo }) {
       </div>
 
       {passo.esito === 'fallito' && passo.messaggio && (
-        <pre
-          className="text-xs whitespace-pre-wrap break-words rounded-md p-2 m-0 font-mono"
-          style={{ background: 'var(--superficie-tenue)', color: 'var(--rosso)' }}
-        >
-          {passo.messaggio}
-        </pre>
+        <div className="flex flex-col gap-2">
+          {/*
+           * La riga in chiaro, prima di tutto: la frase in plain language
+           * (dove il messaggio la porta, "pagina attesa" / "indirizzo ora")
+           * oppure la prima riga del messaggio ripulita dai codici colore —
+           * mai lo stack per intero come prima cosa (finding F1).
+           */}
+          <div
+            className="flex flex-col gap-0.5 text-sm font-medium"
+            style={{ color: 'var(--rosso)' }}
+          >
+            {passo.riepilogo?.paginaAttesa || passo.riepilogo?.indirizzoOra ? (
+              <>
+                {passo.riepilogo.paginaAttesa && (
+                  <span>{t('paginaAttesa', { pagina: passo.riepilogo.paginaAttesa })}</span>
+                )}
+                {passo.riepilogo.indirizzoOra && (
+                  <span>{t('indirizzoRaggiunto', { indirizzo: passo.riepilogo.indirizzoOra })}</span>
+                )}
+              </>
+            ) : (
+              <span>{passo.riepilogo?.primaRiga}</span>
+            )}
+          </div>
+
+          <details className="text-xs">
+            <summary
+              className="cursor-pointer select-none font-medium min-h-10 flex items-center"
+              style={{ color: 'var(--testo-tenue)' }}
+            >
+              {t('dettagliTecnici')}
+            </summary>
+            <pre
+              className="mt-2 whitespace-pre-wrap break-words rounded-md p-2 m-0 font-mono"
+              style={{ background: 'var(--superficie-tenue)', color: 'var(--rosso)' }}
+            >
+              {passo.messaggio}
+            </pre>
+          </details>
+        </div>
       )}
 
       {passo.esito === 'fallito' && passo.schermata && (

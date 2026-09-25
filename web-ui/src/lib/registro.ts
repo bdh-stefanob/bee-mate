@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import { ambienteFiglio } from './ambiente-figlio';
+import { rimuoviCodiciAnsi } from './ansi';
 import { rigaDiComando, type NomeComando, type Parametri } from '@/lib/esecuzione';
 
 export interface ProcessoMinimo {
@@ -121,7 +122,13 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
   processi.set(id, processo);
 
   processo.onRiga((r) => {
-    e.righe.push(r);
+    // Si ripulisce QUI, dove la riga nasce e dove la radice del progetto si
+    // conosce: piu' avanti la riga finisce in una schermata che gira nel
+    // browser, e li' quel percorso non e' piu' ricavabile. Cosi' nessun codice
+    // colore e nessun percorso assoluto — con dentro il nome di chi usa il
+    // computer e quello della cartella — entra nella memoria del registro, nel
+    // flusso di eventi o su uno schermo proiettato.
+    e.righe.push(rimuoviCodiciAnsi(r, REPO_ROOT));
     if (e.righe.length > MAX_RIGHE) e.righe.splice(0, e.righe.length - MAX_RIGHE);
   });
   processo.onFine((codice) => {

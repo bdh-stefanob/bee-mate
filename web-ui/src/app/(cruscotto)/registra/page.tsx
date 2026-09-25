@@ -14,6 +14,10 @@ import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/ria
 import { useAmbiente } from '@/context/AmbienteContext';
 import { SalvaScenario } from '@/components/cruscotto/SalvaScenario';
 import type { EsitoSalvataggio } from '@/lib/salva-scenario';
+import { rilevaCausaFallimento, type CausaFallimento } from '@/lib/diagnosi-fallimento';
+
+/** Quante righe finali tenere per il fallimento che non ha una causa nota: solo per mostrarle, non per capirne di piu' di quanto sappiamo davvero. */
+const MAX_RIGHE_TECNICHE = 20;
 
 /** Percorso fisso, dentro reports/: la generazione ci scrive l'elenco di cosa ha prodotto. */
 const MANIFESTO = 'reports/cruscotto/generazione-manifesto.json';
@@ -39,7 +43,7 @@ type Fase =
   | { tipo: 'in-corso'; id: string; azione: Azione }
   | { tipo: 'riepilogo'; dati: DatiRiepilogo }
   | { tipo: 'salva'; titolo: string }
-  | { tipo: 'errore'; messaggio: string }
+  | { tipo: 'errore'; messaggio: string; causa?: CausaFallimento; righeTecniche?: string[] }
   | { tipo: 'altrove'; comando: NomeComando };
 
 interface RispostaEsegui {
@@ -87,6 +91,9 @@ export default function RegistraPage() {
   // scenario generato riceve la sua casa. Un ref, perche' il riepilogo non e'
   // piu' sullo schermo quando la generazione finisce.
   const titoloPropostoRef = useRef('');
+  // Le ultime righe grezze dell'operazione in corso: servono solo se fallisce
+  // (F2), per capire perche' senza aprire un terminale.
+  const righeGrezzeRef = useRef<string[]>([]);
 
   // Dopo la generazione non si salta piu' dritti a Esecuzione: prima lo
   // scenario riceve applicazione, flusso e nome (vedi SalvaScenario).
@@ -113,12 +120,16 @@ export default function RegistraPage() {
     (id: string, azione: 'registrazione' | 'generazione', quandoConclusa: () => void) => {
       sorgenteRef.current?.close();
       setRigheRicevute(0);
+      // Le righe grezze servono solo per il caso in cui l'operazione fallisca:
+      // e' li' che sta il perche' (F2), non nell'esito "fallita" da solo.
+      righeGrezzeRef.current = [];
       const sorgente = new EventSource(`/api/esegui/${id}/flusso`);
       sorgenteRef.current = sorgente;
 
       sorgente.addEventListener('riga', (evento) => {
         const nuove = JSON.parse((evento as MessageEvent).data) as string[];
         setRigheRicevute((n) => n + nuove.length);
+        righeGrezzeRef.current = [...righeGrezzeRef.current, ...nuove].slice(-MAX_RIGHE_TECNICHE);
       });
 
       sorgente.addEventListener('fine', (evento) => {
@@ -132,12 +143,19 @@ export default function RegistraPage() {
         } else if (dati.stato === 'interrotta') {
           setFase({ tipo: 'scelta' });
         } else {
+          const righeGrezze = righeGrezzeRef.current;
+          const causa = rilevaCausaFallimento(righeGrezze) ?? undefined;
           setFase({
             tipo: 'errore',
             messaggio:
               azione === 'registrazione'
                 ? t('erroreRegistrazione')
                 : t('erroreGenerazione'),
+            ...(causa ? { causa } : {}),
+            // Le righe arrivano gia' ripulite dal registro, che e' l'unico punto
+            // che conosce la radice del progetto: qui ripulirle di nuovo sarebbe
+            // una seconda regola da tenere allineata alla prima.
+            righeTecniche: righeGrezze,
           });
         }
       });
@@ -372,19 +390,63 @@ export default function RegistraPage() {
 
       {fase.tipo === 'errore' && (
         <div
-          className="flex items-center gap-3 rounded-lg border p-4 text-sm"
+          className="flex flex-col gap-3 rounded-lg border p-4 text-sm"
           style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', background: 'var(--superficie-tenue)' }}
         >
-          <AlertTriangle size={18} aria-hidden="true" />
-          <span className="flex-1">{fase.messaggio}</span>
-          <button
-            type="button"
-            onClick={() => setFase({ tipo: 'scelta' })}
-            className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
-          >
-            {t('riprova')}
-          </button>
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p>{fase.messaggio}</p>
+              {/*
+               * Perche' e' successo, non solo che e' successo: le due cause
+               * che si riconoscono con sicurezza dal testo vero dello script
+               * (finding F2). Senza una causa nota, si mostrano le ultime
+               * righe invece di indovinare.
+               */}
+              {fase.causa === 'browser-mancante' && <p>{t('erroreCausaBrowserMancante')}</p>}
+              {fase.causa === 'indirizzo-irraggiungibile' && (
+                <p>{t('erroreCausaIndirizzoIrraggiungibile')}</p>
+              )}
+            </div>
+          </div>
+
+          {!fase.causa && fase.righeTecniche && fase.righeTecniche.length > 0 && (
+            <details className="text-xs" style={{ color: 'var(--testo)' }}>
+              <summary
+                className="cursor-pointer select-none font-medium min-h-10 flex items-center"
+                style={{ color: 'var(--testo-tenue)' }}
+              >
+                {t('dettagliTecnici')}
+              </summary>
+              <pre
+                className="mt-2 whitespace-pre-wrap break-words rounded-md p-2 m-0 font-mono"
+                style={{ background: 'var(--superficie)', color: 'var(--testo)' }}
+              >
+                {fase.righeTecniche.join('\n')}
+              </pre>
+            </details>
+          )}
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setFase({ tipo: 'scelta' })}
+              className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            >
+              {t('riprova')}
+            </button>
+            {fase.causa && (
+              <button
+                type="button"
+                onClick={() => router.push('/controllo')}
+                className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+              >
+                {t('vaiAControllo')}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
