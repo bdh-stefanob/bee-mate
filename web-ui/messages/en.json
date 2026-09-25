@@ -311,6 +311,11 @@
     "generato": "recorded",
     "esporta": "Export",
     "esportaScenario": "Export scenario {nome}",
-    "nessunoScenarioSalvato": "No saved scenario yet."
+    "nessunoScenarioSalvato": "No saved scenario yet.",
+    "doppioneSpiegazione": "The same component, reached with two different phrasings: one of them can go.",
+    "aggiornamentoInCorso": "Updating the catalog… what you see below may not include the scenario you just saved yet.",
+    "aggiornatoIl": "Catalog updated on {data}, in {secondi, plural, one {# second} other {# seconds}} — {n, plural, one {# step} other {# steps}}.",
+    "aggiornamentoFallito": "The last automatic update failed: {dettaglio}. The catalog below is the last one that worked, not necessarily today's.",
+    "maiAggiornato": "The catalog has never been rebuilt automatically yet: what you see below comes from the last manual run."
   }
 }

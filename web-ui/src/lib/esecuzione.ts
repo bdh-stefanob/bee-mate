@@ -9,7 +9,7 @@
  */
 export type NomeComando =
   | 'diagnosi' | 'sessione' | 'registrazione' | 'generazione' | 'test' | 'scansione'
-  | 'installa-browser' | 'sincronizza-regole';
+  | 'installa-browser' | 'sincronizza-regole' | 'catalogo';
 
 export interface Parametri {
   bersaglio?: string;
@@ -119,6 +119,11 @@ export function rigaDiComando(
       return { eseguibile: NODE, argomenti: [PLAYWRIGHT, 'install', 'chromium'] };
     case 'sincronizza-regole':
       return script('sync-rules.ts');
+    case 'catalogo':
+      // Niente parametri: rilegge tutta la suite e riscrive step-catalog.json
+      // e STEP_CATALOG.md, o non tocca niente se il dry-run fallisce (vedi
+      // rigenera-catalogo.ts).
+      return script('rigenera-catalogo.ts');
     case 'sessione':
       return script('session.ts', bersaglioDi(p));
     case 'registrazione':

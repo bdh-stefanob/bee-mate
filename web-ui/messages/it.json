@@ -311,6 +311,11 @@
     "generato": "registrato",
     "esporta": "Esporta",
     "esportaScenario": "Esporta lo scenario {nome}",
-    "nessunoScenarioSalvato": "Ancora nessuno scenario salvato."
+    "nessunoScenarioSalvato": "Ancora nessuno scenario salvato.",
+    "doppioneSpiegazione": "Lo stesso componente, raggiunto con due frasi diverse: una delle due puo' sparire.",
+    "aggiornamentoInCorso": "Sto aggiornando il catalogo… quello che vedi sotto potrebbe non includere ancora lo scenario appena salvato.",
+    "aggiornatoIl": "Catalogo aggiornato il {data}, in {secondi, plural, one {# secondo} other {# secondi}} — {n, plural, one {# step} other {# step}}.",
+    "aggiornamentoFallito": "L'ultimo aggiornamento automatico non e' riuscito: {dettaglio}. Quello sotto e' l'ultimo catalogo buono, non necessariamente quello di oggi.",
+    "maiAggiornato": "Il catalogo non si e' ancora aggiornato da solo: quello che vedi sotto viene dall'ultima rigenerazione manuale."
   }
 }
