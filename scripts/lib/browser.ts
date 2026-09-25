@@ -40,10 +40,20 @@ const NOME_LEGGIBILE: Record<Canale, string> = {
   msedge: "l'Edge installato sulla macchina",
 };
 
-/** L'errore che si prende quando il binario non e' stato scaricato. */
-function eseguibileMancante(err: unknown): boolean {
+/**
+ * L'errore che si prende quando il binario non c'e': il Chromium di Playwright
+ * non scaricato, oppure Chrome o Edge non installati sulla macchina ("Chromium
+ * distribution 'chrome' is not found at ..."). Senza il secondo caso il recorder,
+ * che preferisce Chrome, si fermava su una macchina senza Chrome invece di
+ * ripiegare sul Chromium di Playwright.
+ */
+export function eseguibileMancante(err: unknown): boolean {
   const m = (err as Error).message ?? "";
-  return m.includes("Executable doesn't exist") || m.includes("looks like Playwright");
+  return (
+    m.includes("Executable doesn't exist") ||
+    m.includes("looks like Playwright") ||
+    /distribution '[^']+' is not found/.test(m)
+  );
 }
 
 export interface RisultatoAvvio {

@@ -20,6 +20,7 @@
 
 import { DOM_PROBE_SOURCE } from "./dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./recorder-overlay";
+import { eseguibileMancante } from "./browser";
 
 let failures = 0;
 const ok = (w: string): void => console.log(`OK   ${w}`);
@@ -60,6 +61,25 @@ senzaBacktick("recorder-overlay", RECORDER_OVERLAY_SOURCE);
 for (const atteso of ["describeAny", "describe", "closestInteractive", "isVisible"]) {
   if (DOM_PROBE_SOURCE.includes(`${atteso}:`)) ok(`dom-probe espone ${atteso}`);
   else fail(`dom-probe non espone piu' ${atteso}`, "chi lo chiama fallirebbe solo a browser aperto");
+}
+
+console.log("\n--- ripiego tra i browser ---\n");
+
+// Ogni browser assente deve far provare il successivo: il recorder preferisce
+// Chrome, e su una macchina senza Chrome deve arrivare al Chromium di Playwright.
+const mancanti: Array<[string, string]> = [
+  ["Chromium di Playwright non scaricato", "browserType.launch: Executable doesn't exist at /x/chrome"],
+  ["Chrome non installato", "browserType.launch: Chromium distribution 'chrome' is not found at /opt/google/chrome/chrome"],
+  ["Edge non installato", "browserType.launch: Chromium distribution 'msedge' is not found at /opt/microsoft/msedge/msedge"],
+];
+for (const [caso, messaggio] of mancanti) {
+  if (eseguibileMancante(new Error(messaggio))) ok(`${caso}: si prova il browser successivo`);
+  else fail(`${caso}: non riconosciuto come browser mancante`, "il ripiego si fermerebbe qui");
+}
+if (!eseguibileMancante(new Error("browserType.launch: Target page, context or browser has been closed"))) {
+  ok("un errore diverso non fa ripiegare");
+} else {
+  fail("un errore diverso fa ripiegare", "tre canali ripeterebbero lo stesso errore");
 }
 
 console.log(failures === 0 ? "\nTutti i controlli passano.\n" : `\n${failures} controlli falliti.\n`);
