@@ -134,7 +134,27 @@ but a tester would not understand it without help · **P3** polish.
   automatically.
 - **Done when:** add and delete are reflected in the sidebar without reload, and
   Record shows the new environment straight away.
-- [ ] done
+- **Still there today.** Confirmed by reading `SelettoreAmbiente.tsx`: it read
+  `/api/configurazione` once, in a `useEffect` with an empty dependency array
+  (deliberately, per its own comment), and nothing in `SezioneAmbienti.tsx`
+  told it the list had changed — the two live in separate React subtrees with
+  no shared ancestor to hold the state.
+  Fixed: a small in-memory pub/sub, `web-ui/src/lib/eventi-ambienti.ts`
+  (`notificaAmbientiCambiati` / `suAmbientiCambiati`) — a `CustomEvent` on
+  `window` would work too, but this stays testable without a fake DOM.
+  `SezioneAmbienti.tsx` calls it after a successful add and after
+  `sessioneConclusa` (which already covers delete, address edit, sign-in
+  recorded, credentials saved). `SelettoreAmbiente.tsx` now re-reads the list
+  on that notification, on top of its original one-time load, and keeps its
+  existing fallback (auto-select the first environment when none is chosen
+  or the chosen one no longer exists). Verified live: with the dev server on
+  a spare port, `POST /api/configurazione/ambienti` followed by
+  `GET /api/configurazione` shows the new environment immediately — the
+  write path was never the problem; the read path in the sidebar was, and is
+  now wired to the same notification the write path already triggered
+  (`onCambiato`) one hop further. Unit test:
+  `web-ui/__tests__/lib/eventi-ambienti.test.ts`.
+- [x] done
 
 ### F4 (P2) — An environment is "ready" before anyone has signed in
 - **Seen:** right after adding, with no recorded sign-in and no session:
@@ -144,7 +164,24 @@ but a tester would not understand it without help · **P3** polish.
   Attention when the application needs a sign-in.
 - **Done when:** a case with an environment lacking sign-in and session yields
   Attention, not All set.
-- [ ] done
+- **Still there today.** Reproduced with `scripts/diagnosi.ts --json`: a
+  freshly-added environment (resolved address, no missing variable, no
+  `login` block, no session file) still reported
+  `{"esito":"ok","chiaveDettaglio":"diagnosi.ambienti.pronti"}` — "All set"
+  before anyone had ever opened it.
+  Fixed: `accessoRegistrato(target)` in `scripts/lib/targets.ts` (a session on
+  disk, or a `login` recipe — the only two ways the diagnosis can know
+  someone has actually been through this environment). In
+  `scripts/diagnosi.ts`, when every "ready" environment (address + creds
+  resolved) still fails `accessoRegistrato`, the outcome is now `avviso`
+  (Attention in the window) with a new sentence, "{pronti} of {totale}
+  configured — sign-in not recorded yet", instead of `ok`. An environment
+  with a recorded sign-in still reports "All set" exactly as before —
+  verified both ways with the same script and a throwaway
+  `bdd-targets.json` (copied back immediately after). Unit test:
+  `scripts/lib/targets.check.ts` (wired into `npm run check:all` as
+  `check:targets`).
+- [x] done
 
 ### F5 (P2) — An empty recording still offers "Generate the test"
 - **Seen:** closing the browser without doing anything shows *0 steps, 0 checks*
@@ -152,14 +189,27 @@ but a tester would not understand it without help · **P3** polish.
 - **Where:** `registra/page.tsx`, summary phase.
 - **Change:** say nothing was recorded; offer **Record again** instead.
 - **Done when:** a recording with no intents never shows Generate.
-- [ ] done
+- **Still there today.** Confirmed by reading `registra/page.tsx`: the
+  `riepilogo` phase always rendered `RiepilogoTraccia` plus an enabled
+  "Generate the test" button, with no check on `fase.dati.passi.length`.
+  Fixed: when `passi.length === 0`, the phase now shows a plain sentence
+  ("Nothing was recorded — 0 steps, 0 checks.") and a **Record again**
+  button instead of the summary and Generate; Generate is only reachable
+  when at least one step was recorded.
+- [x] done
 
 ### F6 (P2) — No way back from the summary
 - **Seen:** the summary offers only **Generate the test**.
 - **Where:** `registra/page.tsx`, summary phase.
 - **Change:** a secondary **Record again** next to Generate.
 - **Done when:** Record again returns to the start without generating.
-- [ ] done
+- **Still there today.** Confirmed: the `riepilogo` phase's only button was
+  "Generate the test" — no way back short of reloading the page.
+  Fixed: a secondary **Record again** button next to Generate, calling
+  `registraDiNuovo()` which just sets the phase back to `{ tipo: 'scelta' }`
+  — the same starting state the screen opens in, nothing generated, nothing
+  written. Reused for the empty-recording case in F5 as the sole action.
+- [x] done
 
 ## Batch 3 — No terminal, one language (issue #3)
 

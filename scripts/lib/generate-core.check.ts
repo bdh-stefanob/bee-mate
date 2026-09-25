@@ -379,7 +379,10 @@ try {
   const made = runGenerate([]);
   eq("tre file generati: due pagine e la glue, piu' la feature", made.files.length, 4);
 
-  const page = fs.readFileSync(path.join(ROOT, "src", "pages", "generated", "ordini.page.ts"), "utf-8");
+  const page = fs.readFileSync(
+    path.join(ROOT, "src", "pages", "generated", "esempio.invalid", "ordini.page.ts"),
+    "utf-8"
+  );
   truthy("la Page Object espone il componente sintetizzato", page.includes("clickAnnullaOrdine"));
 
   const steps = fs.readFileSync(path.join(ROOT, "src", "steps", "generated", "zz-controllo.steps.ts"), "utf-8");

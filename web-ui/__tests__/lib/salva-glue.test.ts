@@ -108,6 +108,11 @@ describe('step e Page Object seguono lo scenario salvato', () => {
     expect(leggi('pages/shop/ordini.page.ts')).toContain('from "../../support/base.page"');
     // Gli step generati spariscono: lasciati li', le frasi sarebbero definite due volte.
     expect(esiste('steps/generated/rec-1.steps.ts')).toBe(false);
+    // Le Page Object copiate spariscono anche loro: nessuno scenario ancora da
+    // salvare le usa piu', quindi restare sarebbe una copia orfana che la
+    // prossima generazione riscriverebbe.
+    expect(esiste('pages/generated/accesso.page.ts')).toBe(false);
+    expect(esiste('pages/generated/ordini.page.ts')).toBe(false);
   });
 
   it('una pagina gia\' salvata che ha tutti i metodi che servono si riusa com\'e\'', () => {
@@ -181,5 +186,56 @@ describe('step e Page Object seguono lo scenario salvato', () => {
     const r = albero({ ...BASE, 'steps/common/common.steps.ts': 'Given("x", async () => {});' });
     expect(() => pianificaGlue(r, 'steps/common/common.steps.ts', 'shop', 'orders', 'x')).toThrow(/registrat/);
     expect(() => pianificaGlue(r, 'steps/generated/../common/common.steps.ts', 'shop', 'orders', 'x')).toThrow(/registrat/);
+  });
+
+  describe('le Page Object generate vivono sotto una sottocartella per host', () => {
+    // Una pagina generata sotto un host sta un livello piu' in fondo di una
+    // piatta: la sua import di BasePage lo riflette. E' cosi' che la genera
+    // davvero `generate-emit.ts`, non un dettaglio del test.
+    const ACCESSO_HOST = ACCESSO.replace('from "../../support/base.page"', 'from "../../../support/base.page"');
+    const ORDINI_HOST = ORDINI.replace('from "../../support/base.page"', 'from "../../../support/base.page"');
+    const STEPS_HOST = STEPS
+      .replace('../../pages/generated/accesso.page', '../../pages/generated/esempio.invalid/accesso.page')
+      .replace('../../pages/generated/ordini.page', '../../pages/generated/esempio.invalid/ordini.page');
+    const BASE_HOST = {
+      'steps/generated/rec-1.steps.ts': STEPS_HOST,
+      'pages/generated/esempio.invalid/accesso.page.ts': ACCESSO_HOST,
+      'pages/generated/esempio.invalid/ordini.page.ts': ORDINI_HOST,
+    };
+
+    it('si trovano, e si salvano piatte sotto l\'applicazione come prima', () => {
+      const r = albero(BASE_HOST);
+      const piano = pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'new-order');
+      scriviGlue(piano);
+      expect(piano.pagine).toEqual([
+        { file: 'pages/shop/accesso.page.ts', come: 'nuova' },
+        { file: 'pages/shop/ordini.page.ts', come: 'nuova' },
+      ]);
+      const steps = leggi('steps/shop/orders/new-order.steps.ts');
+      expect(steps).toContain('from "../../../pages/shop/accesso.page"');
+      expect(steps).not.toContain('esempio.invalid');
+      expect(leggi('pages/shop/ordini.page.ts')).toContain('// src/pages/shop/ordini.page.ts');
+      // Tornata piatta, la sua import di BasePage torna a due livelli: a tre
+      // punterebbe fuori da src/.
+      expect(leggi('pages/shop/ordini.page.ts')).toContain('from "../../support/base.page"');
+      expect(leggi('pages/shop/ordini.page.ts')).not.toContain('../../../support/base.page');
+      // Copiate: la sorgente sotto generated/, per host, sparisce.
+      expect(esiste('pages/generated/esempio.invalid/accesso.page.ts')).toBe(false);
+      expect(esiste('pages/generated/esempio.invalid/ordini.page.ts')).toBe(false);
+    });
+
+    it('restano in generated/ se un altro scenario non ancora salvato le usa ancora', () => {
+      const r = albero({
+        ...BASE_HOST,
+        'steps/generated/rec-2.steps.ts': STEPS_HOST.replace('rec-1', 'rec-2'),
+      });
+      const piano = pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x');
+      scriviGlue(piano);
+      // rec-2 non e' ancora stato salvato e importa le stesse due pagine: non
+      // sono orfane, restano al loro posto.
+      expect(esiste('pages/generated/esempio.invalid/accesso.page.ts')).toBe(true);
+      expect(esiste('pages/generated/esempio.invalid/ordini.page.ts')).toBe(true);
+      expect(esiste('steps/generated/rec-2.steps.ts')).toBe(true);
+    });
   });
 });

@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Server } from 'lucide-react';
 import { useAmbiente } from '@/context/AmbienteContext';
+import { suAmbientiCambiati } from '@/lib/eventi-ambienti';
 
 interface RispostaConfigurazione {
   bersagli?: string[];
@@ -23,12 +24,17 @@ export function SelettoreAmbiente() {
   const { ambiente, impostaAmbiente } = useAmbiente();
   const [ambienti, setAmbienti] = useState<string[]>([]);
 
-  useEffect(() => {
-    let attivo = true;
-    fetch('/api/configurazione')
-      .then((r) => r.json() as Promise<RispostaConfigurazione>)
-      .then((d) => {
-        if (!attivo) return;
+  // F3: prima si leggeva /api/configurazione una volta sola, all'apertura
+  // della finestra. Aggiungere o eliminare un ambiente nella schermata
+  // Check-up non cambiava questo elenco finche' non si ricaricava — Registra
+  // ed Esecuzione, che leggono l'ambiente scelto da qui, restavano indietro
+  // con loro. Ora si ricarica anche a ogni notifica di `eventi-ambienti`.
+  const carica = useCallback(
+    async (attivo: () => boolean) => {
+      try {
+        const risposta = await fetch('/api/configurazione');
+        const d = (await risposta.json()) as RispostaConfigurazione;
+        if (!attivo()) return;
         const elenco = d.bersagli ?? [];
         setAmbienti(elenco);
         // Nessun ambiente scelto ancora (prima apertura), o quello scelto non
@@ -37,17 +43,24 @@ export function SelettoreAmbiente() {
         if (elenco.length > 0 && !elenco.includes(ambiente)) {
           impostaAmbiente(elenco[0]);
         }
-      })
-      .catch(() => {
-        if (attivo) setAmbienti([]);
-      });
+      } catch {
+        if (attivo()) setAmbienti([]);
+      }
+    },
+    [ambiente, impostaAmbiente]
+  );
+
+  useEffect(() => {
+    let attivo = true;
+    void carica(() => attivo);
+    const disiscriviti = suAmbientiCambiati(() => {
+      void carica(() => attivo);
+    });
     return () => {
       attivo = false;
+      disiscriviti();
     };
-    // Solo all'apertura della finestra: la lista cambia quando la sezione
-    // Ambienti la modifica, non a ogni render di questo componente.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [carica]);
 
   return (
     <div className="flex flex-col gap-1 p-2">

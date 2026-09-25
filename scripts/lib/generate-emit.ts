@@ -195,13 +195,23 @@ export function emitPageObject(
     );
   });
 
-  const path = `${ctx.outRoot}/pages/generated/${page.slug}.page.ts`;
+  // Una sottocartella per host: due applicazioni diverse possono produrre lo
+  // stesso slug (due "home", due "accedi"), e prima di questa sottocartella la
+  // seconda registrazione sovrascriveva la Page Object della prima in
+  // silenzio — compilava, girava, e chiamava i metodi sbagliati. `page.host`
+  // e' gia' parte dell'identita' della pagina (vedi `pageIdentity` in
+  // generate-core.ts), quindi non e' un'informazione nuova da mantenere: e'
+  // la stessa che gia' distingue due pagine con lo stesso `slug` su domini
+  // diversi.
+  const path = `${ctx.outRoot}/pages/generated/${page.host}/${page.slug}.page.ts`;
   const contents = render("page-object.ts.tmpl", {
     OUT_PATH: path,
     SOURCE_RECORDING: ctx.recordingPath,
     SOURCE_DICTIONARY: ctx.dictionaryPaths.join(", ") || "(nessuno)",
     GENERATED_AT: ctx.generatedAt,
-    BASE_PAGE_IMPORT: "../../support/base.page",
+    // Un livello in piu' di prima: la pagina vive sotto pages/generated/<host>/,
+    // non piu' sotto pages/generated/ direttamente.
+    BASE_PAGE_IMPORT: "../../../support/base.page",
     EXTRA_IMPORTS: "",
     CLASS_NAME: page.className,
     PATH: page.path,
@@ -257,7 +267,7 @@ export function emitSteps(
   const byKey = new Map(ctx.pages.map((p) => [p.key, p]));
 
   const imports = pagesUsed
-    .map((p) => `import { ${p.className} } from "../../pages/generated/${p.slug}.page";`)
+    .map((p) => `import { ${p.className} } from "../../pages/generated/${p.host}/${p.slug}.page";`)
     .join("\n");
 
   const declarations = pagesUsed

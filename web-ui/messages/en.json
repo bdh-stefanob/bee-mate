@@ -119,7 +119,9 @@
     "vaiAControllo": "Go to Check-up",
     "erroreCausaBrowserMancante": "No usable browser was found on this computer. Install the test browser to fix it.",
     "erroreCausaIndirizzoIrraggiungibile": "The environment address could not be reached. Check it in Check-up.",
-    "dettagliTecnici": "Technical details"
+    "dettagliTecnici": "Technical details",
+    "nienteRegistrato": "Nothing was recorded — 0 steps, 0 checks.",
+    "registraDiNuovo": "Record again"
   },
   "Esecuzione": {
     "titolo": "Run",
@@ -224,6 +226,8 @@
       "nessuno": "no environment configured — this is where everything starts",
       "nessunoUtilizzabile": "{totale} configured, but none is usable yet: missing an address or a credential",
       "pronti": "{pronti} of {totale} ready",
+      "accessoNonRegistrato": "{pronti} of {totale} configured — sign-in not recorded yet",
+      "registraAccessoQui": "Register a sign-in in the Environments section below.",
       "daCompletare": "{daCompletare} to complete when needed",
       "conSessione": "{conSessione} with a saved session",
       "conSessioneVecchie": "{conSessione} with a saved session, of which {vecchie} older than 12 hours",

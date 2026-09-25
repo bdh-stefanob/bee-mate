@@ -35,7 +35,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { chromium } from "@playwright/test";
 import { loadEnv } from "./lib/atlassian";
-import { loadTargets, requiredVars, hasSession, sessionAgeHours } from "./lib/targets";
+import { loadTargets, requiredVars, hasSession, sessionAgeHours, accessoRegistrato } from "./lib/targets";
 import { hasFlag } from "./lib/args";
 import { linguaCorrente, traduci } from "./lib/i18n";
 import { dizionarioDiagnosi } from "./lib/i18n-diagnosi";
@@ -239,6 +239,21 @@ function sulPath(comando: string): boolean {
         ],
         rimedio: "npm run targets",
         chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi",
+      });
+    } else if (pronti.every((tg) => !accessoRegistrato(tg))) {
+      // (F4) Indirizzo risolto e credenziali a posto non bastano da soli:
+      // nessuno di questi ambienti e' mai stato aperto. "Tutto ok" qui
+      // sarebbe una promessa che la diagnosi non puo' mantenere — resta un
+      // avviso, con l'azione che manca ancora (registrare l'accesso), non
+      // un blocco: il tester puo' comunque registrare a mano nello stesso
+      // browser (vedi RegistraAccesso in SezioneAmbienti.tsx).
+      aggiungi({
+        esito: "avviso",
+        chiaveNome: "diagnosi.ambienti.nome",
+        dettaglio: [
+          { chiave: "diagnosi.ambienti.accessoNonRegistrato", dati: { pronti: pronti.length, totale: targets.length } },
+        ],
+        chiaveDallaFinestra: "diagnosi.ambienti.registraAccessoQui",
       });
     } else {
       // Almeno un ambiente e' pronto: il tester puo' lavorare. Gli altri, se

@@ -49,6 +49,7 @@ export const dizionarioDiagnosi: DizionarioScript = {
     "diagnosi.ambienti.nessunoUtilizzabile":
       "{totale} configurati, ma nessuno e' ancora utilizzabile: manca un indirizzo o una credenziale",
     "diagnosi.ambienti.pronti": "{pronti} su {totale} pronti",
+    "diagnosi.ambienti.accessoNonRegistrato": "{pronti} su {totale} configurati — accesso non ancora registrato",
     "diagnosi.ambienti.daCompletare": "{daCompletare} da completare quando serve",
     "diagnosi.ambienti.conSessione": "{conSessione} con sessione salvata",
     "diagnosi.ambienti.conSessioneVecchie":
@@ -113,6 +114,7 @@ export const dizionarioDiagnosi: DizionarioScript = {
     "diagnosi.ambienti.nessunoUtilizzabile":
       "{totale} configured, but none is usable yet: missing an address or a credential",
     "diagnosi.ambienti.pronti": "{pronti} of {totale} ready",
+    "diagnosi.ambienti.accessoNonRegistrato": "{pronti} of {totale} configured — sign-in not recorded yet",
     "diagnosi.ambienti.daCompletare": "{daCompletare} to complete when needed",
     "diagnosi.ambienti.conSessione": "{conSessione} with a saved session",
     "diagnosi.ambienti.conSessioneVecchie":

@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { individuaCoppie } from '@/lib/riconciliazione';
 import type { CatalogStep } from '@/lib/types';
+import {
+  doppione,
+  equivocoDiDenominazione,
+  treStepStessoComponente,
+} from '../fixtures/catalogo';
 
 function step(expression: string, components?: CatalogStep['components']): CatalogStep {
   return {
@@ -18,12 +23,9 @@ function step(expression: string, components?: CatalogStep['components']): Catal
 
 describe('individuaCoppie', () => {
   it('il caso guida del progetto: stessa frase (a meno di maiuscole), componenti diversi -> equivoco, non doppione', () => {
-    const steps = [
-      step('the user click on the login button', [{ role: 'button', name: 'Sign in', page: 'AccediPage' }]),
-      step('The user click on the login button', [{ role: 'link', name: 'Sign in', page: 'HomePage' }]),
-    ];
-
-    const coppie = individuaCoppie(steps);
+    // Situazione "equivoco di denominazione". Vedi
+    // __tests__/fixtures/catalogo/equivoco-di-denominazione.ts
+    const coppie = individuaCoppie(equivocoDiDenominazione);
 
     expect(coppie).toHaveLength(1);
     expect(coppie[0]!.motivo).toBe('testo-quasi-uguale');
@@ -46,16 +48,23 @@ describe('individuaCoppie', () => {
   });
 
   it('frasi diverse ma stesso componente -> segnalato come motivo "stessi-componenti"', () => {
-    const steps = [
-      step('the user confirms the order', [{ role: 'button', name: 'Confirm', page: 'CheckoutPage' }]),
-      step('the user submits the checkout', [{ role: 'button', name: 'Confirm', page: 'CheckoutPage' }]),
-    ];
-
-    const coppie = individuaCoppie(steps);
+    // Situazione "doppione": frasi diverse, stesso identico componente. Vedi
+    // __tests__/fixtures/catalogo/doppione.ts
+    const coppie = individuaCoppie(doppione);
 
     expect(coppie).toHaveLength(1);
     expect(coppie[0]!.motivo).toBe('stessi-componenti');
     expect(coppie[0]!.stessoComponente).toBe(true);
+  });
+
+  it('tre step sullo stesso componente -> tre coppie, tutte "stessi-componenti"', () => {
+    // Situazione "fusione ripetuta": mai esercitata prima, ne' con dati veri
+    // ne' sintetici. Vedi __tests__/fixtures/catalogo/fusione-ripetuta.ts
+    const coppie = individuaCoppie(treStepStessoComponente);
+
+    expect(coppie).toHaveLength(3); // C(3,2): ogni coppia non ordinata una volta sola
+    expect(coppie.every((c) => c.motivo === 'stessi-componenti')).toBe(true);
+    expect(coppie.every((c) => c.stessoComponente === true)).toBe(true);
   });
 
   it('non segnala step senza nessuna relazione', () => {
