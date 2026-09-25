@@ -4,8 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-09-23T08:08:05.871Z
-Total: **137** steps (10 implemented, 127 wanted, 0 deprecated)
+Last update: 2026-09-25T07:31:12.940Z
+Total: **144** steps (11 implemented, 133 wanted, 0 deprecated)
+
+Ancorati a componenti di frontend: **5/144** (3%)
 
 ## How to use
 
@@ -566,11 +568,20 @@ _Source:_ `team-qa`
 
 _Source:_ `team-qa`
 
-## Domain: `common` (2 steps)
+## Domain: `common` (3 steps)
 
 ### `I am logged in as a {string} user` ⚠️ _undocumented_
 
 _Source:_ `src\steps\common\common.steps.ts:29`
+
+### `the page shows {string}`
+
+Verifica che un elemento atteso sia visibile sulla pagina.
+
+**Parameters:**
+- `atteso` — Il nome accessibile, o il testo, dell'elemento.
+
+_Source:_ `src\steps\common\verifica.steps.ts:21`
 
 ### 🔧 `the user is on the {string} page`
 
@@ -581,7 +592,7 @@ Asserts or navigates to any named page. Shared across all domains.
 
 _Source:_ `src\steps\common\common.steps.ts:22`
 
-## Domain: `generated` (3 steps)
+## Domain: `generated` (2 steps)
 
 ### 🔧 `L'utente accede al catalogo`
 
@@ -595,14 +606,66 @@ l'utente aggiunge un prodotto al carrello
 
 _Source:_ `src\steps\generated\www-saucedemo-com.steps.ts:64`
 
-### 🔧 `the page shows {string}`
+## Domain: `human-recharge/recharge` (7 steps)
 
-Verifica che un elemento atteso sia presente sulla pagina.
+### 🔧 `the user clcik on the recharge button`
 
-**Parameters:**
-- `atteso` — Il nome accessibile dell'elemento.
+the user clcik on the recharge button
 
-_Source:_ `src\steps\generated\www-saucedemo-com.steps.ts:52`
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Recharges"
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:136`
+
+### 🔧 `the user click on the login button`
+
+the user click on the login button
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Sign in"
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:102`
+
+### 🔧 `The user click on the login button`
+
+The user click on the login button
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Sign in"
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:48`
+
+### 🔧 `the user click on the the first music`
+
+the user click on the the first music
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open FOCUS" — pagina `RicarichePage`
+- `button` "Listen with headphones or smartphone" — pagina `RicaricheDetailPage`
+- `button` "Back" — pagina `RicaricheDetailPage`
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:155`
+
+### 🔧 `the user insert the password`
+
+the user insert the password
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:85`
+
+### 🔧 `the user insert the username`
+
+the user insert the username
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `textbox` "Email"
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:67`
+
+### 🔧 `the user land on the homepage`
+
+the user land on the homepage
+
+_Source:_ `src\steps\human-recharge\recharge\user-try-to-recharge-without-charge.steps.ts:118`
 
 ## Domain: `orders` (5 steps)
 
