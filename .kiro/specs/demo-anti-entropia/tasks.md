@@ -218,6 +218,17 @@ npm run rules:check
   - Proposta e decisioni S1-S3: `ROADMAP.md` §4, voce 3; stato attuale in
     `docs/OVERVIEW.md` §6.
 
+- [ ] 18. Correzioni del cruscotto dal giro manuale del 2026-09-25
+  - Perche': il flusso completo funziona (registra, genera, salva, esegui), ma un
+    tester non capisce perche' un passo fallisce, la barra laterale non si
+    aggiorna, e restano comandi da terminale e due lingue sulla stessa schermata.
+  - Lista di lavoro, con dove toccare e quando e' chiuso ogni punto:
+    `docs/reviews/2026-09-25-dashboard-walkthrough.md`. Si spunta li'.
+  - Ordine: blocco 1 (F1, F2, F7) → blocco 2 (F3–F6) → blocco 3 (F8–F11) →
+    blocco 4 (F12–F20). Issue GitHub #1–#4, una per blocco.
+  - Verifica: il "Done when" di ogni punto, piu' i controlli in cima a questo file
+    e `npm test` / `npm run build` in `web-ui`.
+
 ## Prove sul campo — UMANO
 
 Il protocollo di ciascuna — perche', come, quando va bene, cosa riportare — e' in

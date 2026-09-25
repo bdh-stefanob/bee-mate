@@ -28,6 +28,9 @@ npm run catalog     # rigenera STEP_CATALOG.md + step-catalog.json
 - **"Lavora sull'app / cruscotto"**: segui la spec in
   `docs/superpowers/specs/2026-09-22-cruscotto-tester-design.md` e l'ordine in
   `ROADMAP.md` §4.
+- **"Correggi il cruscotto" / "cosa c'e' da fare sull'app"**: la lista e'
+  `docs/reviews/2026-09-25-dashboard-walkthrough.md` (task 18), un blocco alla
+  volta, nell'ordine indicato; spunta il punto quando il suo "Done when" e' vero.
 - **"Refactor architetturale"**: chiedi conferma esplicita prima di rompere i 4 layer.
 
 ## Filosofia BDD adottata
