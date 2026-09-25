@@ -94,6 +94,7 @@ credible, then the rest.
 | 7 | **Typed checks**: value, appeared, disappeared, navigated | better generated assertions | ½–1 d | task 7, D16 |
 | 8 | A scenario already in the repository fails the validator | it blocks whoever touches it | ½ d | task 13 |
 | 9 | Package the VS Code extension (`.vsix`) | today it installs only from source | ½ d | old 5.6 |
+| 10 | **Dashboard fixes from the 25 September walkthrough**: readable failures, sidebar in sync, no terminal commands, one language | a tester cannot tell why a step failed; four batches, F1–F20 | 3.5–4 d | task 18, `docs/reviews/2026-09-25-dashboard-walkthrough.md`, issues #1–#4 |
 
 ### Item 3: one home for every scenario
 
