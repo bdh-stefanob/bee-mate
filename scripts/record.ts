@@ -59,6 +59,15 @@ import type { ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 import { argValue, hasFlag, positionals } from "./lib/args";
 import { attendiFineSessione } from "./lib/fine-sessione";
+import { loadEnv } from "./lib/atlassian";
+
+// Le variabili si leggono qui, come fanno gia' session.ts, scout.ts e
+// test-bersaglio.ts. Questo script era l'unico a non farlo: funzionava solo
+// quando chi lo lanciava aveva gia' le variabili in memoria — cioe' per
+// eredita', e quindi per caso. Un bersaglio con l'indirizzo scritto come
+// ${VARIABILE} falliva con "non ha un URL" a seconda di chi lo avviava, che e'
+// il tipo di guasto peggiore: dipende dal contesto e non si riproduce.
+loadEnv();
 
 // ---------------------------------------------------------------------------
 // Tipi della traccia
