@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-25T07:35:46.840Z",
-  "totalSteps": 8,
-  "documentedSteps": 8,
+  "generatedAt": "2026-09-25T10:19:14.299Z",
+  "totalSteps": 10,
+  "documentedSteps": 10,
   "undocumentedSteps": 0,
   "steps": [
     {
@@ -19,6 +19,86 @@
           "atteso": "Il nome accessibile, o il testo, dell'elemento."
         },
         "intent": "Verifica che un elemento atteso sia visibile sulla pagina."
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user open the recharge tab",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "AppPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Recharges"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\humanrechargeweb-humanrecharge-up-railway-app.steps.ts:64",
+      "doc": {
+        "params": {},
+        "intent": "the user open the recharge tab",
+        "page": "AppPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Recharges"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user signs in",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Sign in",
+          "page": "HomePage"
+        },
+        {
+          "role": "textbox",
+          "name": "Email",
+          "page": "AccediPage"
+        },
+        {
+          "role": "button",
+          "name": "Sign in",
+          "page": "AccediPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\humanrechargeweb-humanrecharge-up-railway-app.steps.ts:44",
+      "doc": {
+        "params": {},
+        "intent": "the user signs in",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Sign in",
+            "page": "HomePage"
+          },
+          {
+            "role": "textbox",
+            "name": "Email",
+            "page": "AccediPage"
+          },
+          {
+            "role": "button",
+            "name": "Sign in",
+            "page": "AccediPage"
+          }
+        ],
+        "wanted": true
       },
       "documented": true
     },

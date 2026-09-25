@@ -1,23 +1,15 @@
 import { NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execFileSync } from 'child_process';
 import { REPO_ROOT, FEATURES_DIR } from '@/lib/repo';
 import { daAltraOrigine } from '@/lib/stessa-origine';
 import { dentroLaCartellaSuDisco } from '@/lib/percorsi-disco';
 import { walkFeatures } from '@/lib/features';
 import type { CatalogStep } from '@/lib/types';
 import { riscriviScenario, riscriviDefinizione, haParametri, RiscritturaNonSupportata } from '@/lib/riscrittura-step';
+import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
 
 const CARTELLA_SRC = path.join(REPO_ROOT, 'src');
-
-// Stessa convenzione di `esecuzione.ts` (rigaDiComando/script): si invoca
-// l'eseguibile Node di questo stesso processo su un file .js/.ts, mai una
-// shell — cosi' non serve npm.cmd sul PATH ne' un interprete di comandi che
-// su Windows spezzerebbe un percorso con spazi.
-const NODE = process.execPath;
-const TS_NODE = 'node_modules/ts-node/dist/bin.js';
-const CUCUMBER_CLI = 'node_modules/@cucumber/cucumber/bin/cucumber-js';
 
 function leggiCatalogo(): CatalogStep[] {
   const p = path.join(REPO_ROOT, 'step-catalog.json');
@@ -35,33 +27,6 @@ function percorsoDefinizione(sourceRef: string): string | null {
   const senzaRiga = sourceRef.replace(/:\d+$/, '');
   const relativoASrc = senzaRiga.replace(/\\/g, '/').replace(/^src\//, '');
   return dentroLaCartellaSuDisco(CARTELLA_SRC, relativoASrc, '.ts');
-}
-
-/**
- * Tenta di rigenerare `step-catalog.json` cosi' come fa `npm run catalog`
- * (stesse tre fasi, stesso ordine), senza passare da npm: se fallisce non e'
- * un errore della riscrittura, che a questo punto e' gia' avvenuta ed e'
- * completa sui file sorgente — e' solo il catalogo che restera' indietro
- * fino al prossimo `npm run catalog` lanciato a mano.
- */
-function tentaRigenerazioneCatalogo(): boolean {
-  try {
-    const messaggi = execFileSync(
-      NODE,
-      [CUCUMBER_CLI, '--dry-run', '--format', 'message:cucumber-messages.ndjson'],
-      { cwd: REPO_ROOT, timeout: 60000 }
-    );
-    void messaggi;
-    execFileSync(NODE, [TS_NODE, 'scripts/extract-steps.ts', 'cucumber-messages.ndjson'], {
-      cwd: REPO_ROOT,
-      timeout: 60000,
-    });
-    execFileSync(NODE, [TS_NODE, 'scripts/render-markdown.ts'], { cwd: REPO_ROOT, timeout: 60000 });
-    return true;
-  } catch (err) {
-    console.error('rigenerazione del catalogo non riuscita dopo la riscrittura:', err);
-    return false;
-  }
 }
 
 /**

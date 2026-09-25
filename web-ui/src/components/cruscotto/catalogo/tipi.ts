@@ -67,3 +67,35 @@ export interface RispostaRiconcilia {
   ok: boolean;
   errore?: string;
 }
+
+/** GET /api/catalogo/fondi?da=...&a=... — anteprima di sola lettura della fusione. */
+export interface AnteprimaFusione {
+  equivalenti: boolean;
+  corpoDa: string | null;
+  corpoA: string | null;
+  definizionePersa: string;
+  fileFeatureCoinvolti: number;
+  righeCoinvolte: number;
+  scenariCoinvolti: UsoScenario[];
+  /** presente solo quando la GET risponde con un errore (frase non trovata, ecc.) */
+  errore?: string;
+}
+
+export interface RispostaFusione {
+  ok?: boolean;
+  errore?: string;
+  fileFeatureAggiornati?: number;
+  definizioneRimossa?: string;
+  equivalenti?: boolean;
+  catalogoRigenerato?: boolean;
+  /** presenti solo su errore 'corpi_diversi': i due comportamenti, da mostrare al tester. */
+  corpoDa?: string | null;
+  corpoA?: string | null;
+}
+
+export interface StatoAnnullamentoFusione {
+  disponibile: boolean;
+  quando?: string;
+  da?: string;
+  a?: string;
+}

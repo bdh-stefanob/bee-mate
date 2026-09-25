@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-09-25T07:35:46.840Z
-Total: **8** steps (1 implemented, 7 wanted, 0 deprecated)
+Last update: 2026-09-25T10:19:14.299Z
+Total: **10** steps (1 implemented, 9 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **5/8** (63%)
+Ancorati a componenti di frontend: **7/10** (70%)
 
 ## How to use
 
@@ -27,6 +27,28 @@ Verifica che un elemento atteso sia visibile sulla pagina.
 - `atteso` — Il nome accessibile, o il testo, dell'elemento.
 
 _Source:_ `src\steps\common\verifica.steps.ts:21`
+
+## Domain: `generated` (2 steps)
+
+### 🔧 `the user open the recharge tab`
+
+the user open the recharge tab
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Recharges"
+
+_Source:_ `src\steps\generated\humanrechargeweb-humanrecharge-up-railway-app.steps.ts:64`
+
+### 🔧 `the user signs in`
+
+the user signs in
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Sign in" — pagina `HomePage`
+- `textbox` "Email" — pagina `AccediPage`
+- `button` "Sign in" — pagina `AccediPage`
+
+_Source:_ `src\steps\generated\humanrechargeweb-humanrecharge-up-railway-app.steps.ts:44`
 
 ## Domain: `human-recharge/recharge` (7 steps)
 
