@@ -10,19 +10,19 @@ import { SelettoreAmbiente } from '@/components/cruscotto/SelettoreAmbiente';
 
 interface Voce {
   href: string;
-  chiaveEtichetta: 'navCheck' | 'navRecord' | 'navRun' | 'navStepCatalog';
+  chiaveEtichetta: 'navCheck' | 'navRecord' | 'navRun' | 'navCatalog';
   Icona: typeof ClipboardCheck;
 }
 
+// Il vecchio portale (catalogo/editor step) non ha piu' una voce qui: la sua
+// mappa dei componenti e' entrata nel Catalogo, e il resto resta nel codice,
+// raggiungibile scrivendone l'indirizzo, ma non fa piu' parte del cruscotto.
 const VOCI: Voce[] = [
   { href: '/controllo', chiaveEtichetta: 'navCheck', Icona: ClipboardCheck },
   { href: '/registra', chiaveEtichetta: 'navRecord', Icona: CircleDot },
   { href: '/esecuzione', chiaveEtichetta: 'navRun', Icona: PlayCircle },
+  { href: '/catalogo', chiaveEtichetta: 'navCatalog', Icona: BookOpen },
 ];
-
-// Voce separata: porta al vecchio portale (catalogo/editor step), che resta
-// raggiungibile ma non fa parte del cruscotto vero e proprio.
-const VOCE_PORTALE: Voce = { href: '/portale', chiaveEtichetta: 'navStepCatalog', Icona: BookOpen };
 
 function VoceNav({
   href,
@@ -73,13 +73,6 @@ export function BarraLaterale() {
     >
       <ul className="flex flex-row min-[900px]:flex-col p-2 gap-1">
         {VOCI.map((voce) => <VoceNav key={voce.href} {...voce} pathname={pathname} t={t} />)}
-      </ul>
-      {/* Separatore: da qui in giu' si esce dal cruscotto verso il vecchio portale. */}
-      <ul
-        className="flex flex-row min-[900px]:flex-col p-2 gap-1 border-t min-[900px]:border-t"
-        style={{ borderColor: 'var(--bordo)' }}
-      >
-        <VoceNav {...VOCE_PORTALE} pathname={pathname} t={t} />
       </ul>
       <div className="border-t" style={{ borderColor: 'var(--bordo)' }}>
         <SelettoreAmbiente />
