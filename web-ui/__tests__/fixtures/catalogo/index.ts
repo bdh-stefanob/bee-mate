@@ -23,3 +23,4 @@ export { pagineDiverseNote } from './pagine-diverse-e-note';
 export { paginaAmbigua } from './pagina-ambigua';
 export { stepSottoinsieme } from './step-sottoinsieme';
 export { treStepStessoComponente } from './fusione-ripetuta';
+export { applicazioniDiverseTestoSimile } from './applicazioni-diverse';

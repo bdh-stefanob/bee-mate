@@ -4,6 +4,7 @@ import { Fragment, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { ScheletroCatalogo, ErroreCatalogo } from './Scheletro';
+import { EtichettaApplicazione } from './EtichettaApplicazione';
 import type { RispostaCatalogo } from './tipi';
 
 /**
@@ -51,10 +52,11 @@ export function SezioneComponenti({
 
   return (
     <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
-      <table className="min-w-[600px] w-full text-sm">
+      <table className="min-w-[760px] w-full text-sm">
         <thead>
           <tr className="border-b" style={{ borderColor: 'var(--bordo)' }}>
             <th className="text-left px-3 py-2">{t('colonnaComponente')}</th>
+            <th className="text-left px-3 py-2">{t('colonnaApplicazioni')}</th>
             <th className="text-left px-3 py-2">{t('colonnaPagina')}</th>
             <th className="text-left px-3 py-2">{t('colonnaStep')}</th>
           </tr>
@@ -78,6 +80,13 @@ export function SezioneComponenti({
                     {c.role} &ldquo;{c.name}&rdquo;
                   </td>
                   <td className="px-3 py-2">
+                    <span className="flex flex-wrap gap-1">
+                      {c.apps.map((app) => (
+                        <EtichettaApplicazione key={app} app={app} />
+                      ))}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">
                     {c.pagineAmbigue ? (
                       <span title={t('paginaAmbigua', { pagine: c.pagineAmbigue.join(', ') })}>
                         {t('paginaAmbigua', { pagine: c.pagineAmbigue.join(', ') })}
@@ -97,7 +106,7 @@ export function SezioneComponenti({
                 </tr>
                 {aperto && (
                   <tr key={`${chiave}-dettaglio`} style={{ background: 'var(--superficie-tenue)' }}>
-                    <td colSpan={3} className="px-3 py-2">
+                    <td colSpan={4} className="px-3 py-2">
                       <ul className="flex flex-col gap-1">
                         {c.step.map((espressione, i) => (
                           <li key={i} className="font-mono text-xs" style={{ color: 'var(--testo-tenue)' }}>

@@ -21,14 +21,70 @@ import type { CatalogStep, StepComponentRef } from './types';
  *
  * Funzione pura: nessun accesso al disco, cosi' si verifica con dati inventati
  * senza toccare `step-catalog.json`.
+ *
+ * IL CONFRONTO E' PER APPLICAZIONE
+ * ---------------------------------
+ * Il catalogo sa gia' a quale applicazione appartiene ogni step (campo `app`,
+ * derivato dalla cartella sotto `src/steps/`: vedi `scripts/extract-steps.ts`).
+ * Due step di applicazioni diverse non si confrontano affatto per doppione:
+ * un `button "Sign in"` e' comunissimo, e fondere gli step di due prodotti
+ * diversi solo perche' si somigliano nel testo sarebbe il danno esatto che
+ * questo file esiste per evitare.
+ *
+ * Due eccezioni, scelte guardando i dati veri (`step-catalog.json`, 10 step,
+ * 2026-09-28):
+ *
+ *  - `common`: condiviso apposta fra le applicazioni (i suoi step sono
+ *    scritti per essere riusati ovunque — vedi `CONTRIBUTING.md`). Confrontarlo
+ *    con ogni applicazione e' voluto: se un giorno uno step "di app" somiglia
+ *    a uno comune, e' un segnale che quello step dovrebbe riusare il comune,
+ *    non una minaccia di fusione fra prodotti diversi (i componenti quasi mai
+ *    coincidono, e senza componenti uguali non si offre comunque la fusione).
+ *  - `generated`: il limbo di cio' che il tester ha appena registrato e non
+ *    ancora salvato. E' UNA cartella sola per qualsiasi applicazione (nessuna
+ *    sotto-cartella per app: vedi `scripts/extract-steps.ts`), quindi uno step
+ *    li' oggi e lo stesso step salvato domani sotto un'app reale sono LO
+ *    STESSO STEP in due momenti diversi. Il caso e' gia' nei dati veri:
+ *    "the user open the recharge tab" (generated) e "the user clcik on the
+ *    recharge button" (human-recharge) toccano entrambi `link "Recharges"` —
+ *    trattare "generated" come un'applicazione a se' nasconderebbe esattamente
+ *    questo doppione, quello che la calibrazione deve smettere di lasciar
+ *    scappare. Il prezzo accettato: con piu' applicazioni registrate e non
+ *    ancora salvate nello stesso limbo, la coincidenza di testo potrebbe
+ *    accostare per errore step di prodotti diversi. Si accetta perche' la
+ *    schermata mostra sempre l'applicazione di ciascun lato della coppia (vedi
+ *    `SezioneRiconciliazione.tsx`): il tester vede "generated" contro un nome
+ *    di app reale e decide lui, invece di scoprirlo dopo aver fuso alla cieca.
+ *
+ * Per due applicazioni REALI e diverse (nessuna delle due `common`/`generated`)
+ * il confronto per componente non si fa nemmeno: sarebbe rumore puro (ogni app
+ * ha un suo `button "Sign in"`). Ma il testo simile non si tace del tutto — se
+ * due step di applicazioni diverse hanno un testo quasi identico, la coppia
+ * compare comunque, con motivo `applicazioni-diverse`: e' un'informazione
+ * onesta ("la stessa frase esiste anche altrove"), mai un invito a fondere ne'
+ * a rinominare (`stessoComponente` resta sempre `false` per questo motivo, e
+ * la schermata non offre alcun gesto).
  */
 
-export type MotivoRiconciliazione = 'testo-quasi-uguale' | 'stessi-componenti';
+export type MotivoRiconciliazione = 'testo-quasi-uguale' | 'stessi-componenti' | 'applicazioni-diverse';
 
 export interface StepPerConfronto {
   espressione: string;
   componenti: StepComponentRef[];
   documentato: boolean;
+  app: string;
+}
+
+/**
+ * Vero se i due step condividono l'ambito di confronto per doppioni/equivoci:
+ * stessa applicazione, o almeno uno dei due e' `common`/`generated` (vedi il
+ * commento in testa al file per il perche' di queste due eccezioni).
+ */
+function stessoAmbito(appA: string, appB: string): boolean {
+  if (appA === appB) return true;
+  if (appA === 'common' || appB === 'common') return true;
+  if (appA === 'generated' || appB === 'generated') return true;
+  return false;
 }
 
 export interface CoppiaRiconciliazione {
@@ -105,7 +161,7 @@ function stessiComponenti(a: StepComponentRef[] | undefined, b: StepComponentRef
 }
 
 function vista(s: CatalogStep): StepPerConfronto {
-  return { espressione: s.expression, componenti: s.components ?? [], documentato: s.documented };
+  return { espressione: s.expression, componenti: s.components ?? [], documentato: s.documented, app: s.app };
 }
 
 /**
@@ -127,6 +183,26 @@ export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconcilia
       const normB = normalizza(b.expression);
       const testoIdentico = normA === normB;
       const testoMoltoSimile = !testoIdentico && somiglianza(normA, normB) >= SOGLIA_SOMIGLIANZA;
+
+      if (!stessoAmbito(a.app, b.app)) {
+        // Applicazioni diverse, nessuna delle due common/generated: mai
+        // fusione ne' rinomina (vedi il commento in testa al file). Il
+        // confronto per componente non si fa nemmeno — troppo rumoroso fra
+        // prodotti diversi — ma il testo molto simile resta un'informazione
+        // onesta da mostrare.
+        if (testoIdentico || testoMoltoSimile) {
+          coppie.push({
+            id: `${a.expression}||${b.expression}`,
+            motivo: 'applicazioni-diverse',
+            spiegazione: `il testo e' molto simile ma gli step appartengono ad applicazioni diverse (${a.app} e ${b.app}): puo' essere una coincidenza di formulazione (nomi comuni come "Sign in"), non un doppione — nessuna fusione ne' rinomina proposta`,
+            a: vista(a),
+            b: vista(b),
+            stessoComponente: false,
+          });
+        }
+        continue;
+      }
+
       const uguali = stessiComponenti(a.components, b.components);
 
       if (!testoIdentico && !testoMoltoSimile && !uguali) continue;

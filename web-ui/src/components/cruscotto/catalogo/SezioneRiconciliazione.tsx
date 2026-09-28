@@ -6,6 +6,7 @@ import { GitMerge, Signpost, Loader2, CheckCircle2, Info, Undo2, AlertTriangle }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScheletroCatalogo, ErroreCatalogo } from './Scheletro';
+import { EtichettaApplicazione } from './EtichettaApplicazione';
 import type {
   AnteprimaFusione,
   CoppiaRiconciliazione,
@@ -102,7 +103,9 @@ export function SezioneRiconciliazione({ catalogo }: { catalogo: RispostaCatalog
             };
             return (
               <li key={coppia.id}>
-                {coppia.stessoComponente ? (
+                {coppia.motivo === 'applicazioni-diverse' ? (
+                  <SchedaInformativa coppia={arricchita} />
+                ) : coppia.stessoComponente ? (
                   <SchedaDoppione coppia={arricchita} onFuso={() => setRigenerazione((n) => n + 1)} />
                 ) : (
                   <SchedaEquivoco coppia={arricchita} onRiconciliato={() => setRigenerazione((n) => n + 1)} />
@@ -325,6 +328,7 @@ function SchedaDoppione({ coppia, onFuso }: { coppia: CoppiaRiconciliazione; onF
                 className="focus-visible:outline focus-visible:outline-2"
                 style={{ outlineColor: 'var(--blu)' }}
               />
+              <EtichettaApplicazione app={s.app} />
               <span className="font-mono text-xs flex-1" style={{ color: 'var(--testo)' }}>
                 {s.espressione}
               </span>
@@ -501,6 +505,7 @@ function SchedaEquivoco({ coppia, onRiconciliato }: { coppia: CoppiaRiconciliazi
                 className="focus-visible:outline focus-visible:outline-2"
                 style={{ outlineColor: 'var(--blu)' }}
               />
+              <EtichettaApplicazione app={s.app} />
               <span className="font-mono text-xs flex-1" style={{ color: 'var(--testo)' }}>
                 {s.espressione}
               </span>
@@ -558,6 +563,51 @@ function SchedaEquivoco({ coppia, onRiconciliato }: { coppia: CoppiaRiconciliazi
             {esito.testo}
           </span>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Applicazioni diverse: testo simile, ma non e' un doppione ne' un equivoco
+ * di denominazione — sono due prodotti distinti, e ognuno dei due ha il
+ * diritto di chiamare "Sign in" il proprio bottone. Nessun gesto offerto
+ * apposta: fondere o rinominare qui sarebbe l'errore che il resto di questa
+ * schermata esiste per evitare. Colore neutro (blu, non ambra/rosso): non e'
+ * un problema da sistemare, e' un'informazione.
+ */
+function SchedaInformativa({ coppia }: { coppia: CoppiaRiconciliazione }) {
+  const t = useTranslations('Catalogo');
+
+  return (
+    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--blu)', background: 'var(--superficie)' }}>
+      <div className="flex items-start gap-2">
+        <Info size={18} aria-hidden="true" style={{ color: 'var(--blu)' }} className="mt-0.5 shrink-0" />
+        <div className="flex-1">
+          <p className="font-medium" style={{ color: 'var(--testo)' }}>
+            {t('informativaTitolo')}
+          </p>
+          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            {t('informativaSpiegazione')}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-col gap-2">
+        {[coppia.a, coppia.b].map((s, i) => (
+          <div
+            key={i}
+            className="min-h-10 flex items-center gap-2 px-3 rounded-md border"
+            style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+          >
+            <EtichettaApplicazione app={s.app} />
+            <span className="font-mono text-xs flex-1" style={{ color: 'var(--testo)' }}>
+              {s.espressione}
+            </span>
+            <EtichettaComponenti step={s} />
+            <Badge variant="outline">{t('nUsi', { n: s.usatoIn.length })}</Badge>
+          </div>
+        ))}
       </div>
     </div>
   );

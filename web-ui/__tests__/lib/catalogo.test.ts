@@ -93,4 +93,47 @@ describe('trovaUsatoIn / costruisciCatalogo', () => {
     expect(dati.step).toHaveLength(stepSenzaComponenti.length);
     expect(dati.componenti).toEqual([]);
   });
+
+  it('ogni step porta con se\' la sua applicazione', () => {
+    const steps = [{ ...step('a', 'x.ts:1', [{ role: 'button', name: 'X' }]), app: 'human-recharge' }];
+    const dati = costruisciCatalogo(steps, '/percorso/che/non/esiste');
+    expect(dati.step[0]!.app).toBe('human-recharge');
+  });
+
+  it('ogni componente della mappa elenca le applicazioni degli step che lo dichiarano, senza duplicati', () => {
+    const steps: CatalogStep[] = [
+      { ...step('a', 'x.ts:1', [{ role: 'button', name: 'X' }]), app: 'shop' },
+      { ...step('b', 'x.ts:2', [{ role: 'button', name: 'X' }]), app: 'shop' },
+      { ...step('c', 'x.ts:3', [{ role: 'button', name: 'X' }]), app: 'blog' },
+    ];
+    const dati = costruisciCatalogo(steps, '/percorso/che/non/esiste');
+    expect(dati.componenti).toHaveLength(1);
+    expect(dati.componenti[0]!.apps).toEqual(['blog', 'shop']);
+  });
+
+  it('senza una cartella src, gli step restano senza "comportamento" (stato onesto, non un errore)', () => {
+    const steps = [step('a', 'x.ts:1')];
+    const dati = costruisciCatalogo(steps, '/percorso/che/non/esiste');
+    expect(dati.step[0]!.comportamento).toBeUndefined();
+  });
+
+  it('con una cartella src vera, uno step interpretabile porta il suo "comportamento"', async () => {
+    const fs = await import('fs');
+    const os = await import('os');
+    const path = await import('path');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'catalogo-comportamento-test-'));
+    try {
+      fs.mkdirSync(path.join(dir, 'steps'), { recursive: true });
+      fs.writeFileSync(
+        path.join(dir, 'steps', 'x.steps.ts'),
+        ['Given("the user signs in", async function () {', '  await homePage.goToSignIn();', '});'].join('\n')
+      );
+
+      const steps = [step('the user signs in', 'steps/x.steps.ts:1')];
+      const dati = costruisciCatalogo(steps, '/percorso/che/non/esiste', dir);
+      expect(dati.step[0]!.comportamento?.chiamate).toEqual(['homePage.goToSignIn()']);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

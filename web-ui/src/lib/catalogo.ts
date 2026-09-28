@@ -3,6 +3,7 @@ import * as path from 'path';
 import type { CatalogStep, StepComponentRef } from './types';
 import { walkFeatures } from './features';
 import { computeComponentImpact } from './component-impact';
+import { leggiComportamenti, type ComportamentoStep } from './descrizione-step';
 
 /**
  * catalogo.ts
@@ -34,8 +35,12 @@ export interface UsoScenario {
 export interface StepCatalogo {
   espressione: string;
   documentato: boolean;
+  /** L'applicazione a cui appartiene (`common`/`generated` compresi): vedi `riconciliazione.ts`. */
+  app: string;
   componenti: StepComponentRef[];
   usatoIn: UsoScenario[];
+  /** Cosa fa quando gira, se il corpo si riesce a leggere: vedi `descrizione-step.ts`. Assente per step con parametri o la cui definizione non si trova/e' ambigua. */
+  comportamento?: ComportamentoStep;
 }
 
 export interface ComponenteCatalogo {
@@ -45,6 +50,8 @@ export interface ComponenteCatalogo {
   /** Presente solo quando le occorrenze dichiarano pagine diverse: vedi component-impact.ts. */
   pagineAmbigue?: string[];
   step: string[];
+  /** Le applicazioni degli step che dichiarano questo componente, senza duplicati, in ordine alfabetico. */
+  apps: string[];
 }
 
 export interface DatiCatalogo {
@@ -155,15 +162,31 @@ export function trovaUsatoIn(
   return risultato;
 }
 
-/** I dati per la schermata Catalogo: step con i loro usi, e la mappa al contrario dei componenti. */
-export function costruisciCatalogo(steps: readonly CatalogStep[], featuresDir: string): DatiCatalogo {
+/**
+ * I dati per la schermata Catalogo: step con i loro usi, e la mappa al
+ * contrario dei componenti.
+ *
+ * `cartellaSrc` e' opzionale e attiva il "cosa fa" di ogni step
+ * (`comportamento`, vedi `descrizione-step.ts`): serve il percorso vero di
+ * `src/` per leggere le definizioni. Senza (i test che passano un catalogo
+ * finto, o una radice inventata) gli step restano senza `comportamento` —
+ * stato onesto, non un errore.
+ */
+export function costruisciCatalogo(
+  steps: readonly CatalogStep[],
+  featuresDir: string,
+  cartellaSrc?: string
+): DatiCatalogo {
   const usi = trovaUsatoIn(steps, featuresDir);
+  const comportamenti = cartellaSrc ? leggiComportamenti(cartellaSrc, steps) : new Map<string, ComportamentoStep>();
 
   const step: StepCatalogo[] = steps.map((s) => ({
     espressione: s.expression,
     documentato: s.documented,
+    app: s.app,
     componenti: s.components ?? [],
     usatoIn: usi.get(s.expression) ?? [],
+    comportamento: comportamenti.get(s.expression),
   }));
 
   const impatto = computeComponentImpact(steps);
@@ -173,6 +196,7 @@ export function costruisciCatalogo(steps: readonly CatalogStep[], featuresDir: s
     page: c.page,
     pagineAmbigue: c.pagineAmbigue,
     step: c.steps.map((s) => s.expression),
+    apps: [...new Set(c.steps.map((s) => s.app))].sort(),
   }));
 
   return { step, componenti };
