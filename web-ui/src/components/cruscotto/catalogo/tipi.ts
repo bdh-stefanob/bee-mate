@@ -20,11 +20,22 @@ export interface UsoScenario {
   riga: number;
 }
 
+export interface ComportamentoStep {
+  /** Le chiamate alle Page Object nel corpo dello step, in ordine — assente se il corpo non e' interpretabile. */
+  chiamate?: string[];
+  /** Il corpo grezzo del gestore. */
+  corpo: string;
+}
+
 export interface StepCatalogo {
   espressione: string;
   documentato: boolean;
+  /** L'applicazione a cui appartiene: nome reale, oppure `common`/`generated`. */
+  app: string;
   componenti: ComponenteCatalogo[];
   usatoIn: UsoScenario[];
+  /** Cosa fa quando gira, se leggibile: vedi `ComportamentoStep`. */
+  comportamento?: ComportamentoStep;
 }
 
 export interface ComponenteConStep {
@@ -34,6 +45,8 @@ export interface ComponenteConStep {
   /** Presente solo quando le occorrenze dichiarano pagine diverse: non fuse, elencate. */
   pagineAmbigue?: string[];
   step: string[];
+  /** Le applicazioni degli step che dichiarano questo componente. */
+  apps: string[];
 }
 
 export interface RispostaCatalogo {
@@ -41,7 +54,7 @@ export interface RispostaCatalogo {
   componenti: ComponenteConStep[];
 }
 
-export type MotivoCoppia = 'testo-quasi-uguale' | 'stessi-componenti';
+export type MotivoCoppia = 'testo-quasi-uguale' | 'stessi-componenti' | 'applicazioni-diverse';
 
 export interface CoppiaRiconciliazione {
   id: string;
@@ -50,7 +63,9 @@ export interface CoppiaRiconciliazione {
   a: StepCatalogo;
   b: StepCatalogo;
   /** true = stesso componente dietro le due frasi (doppione da fondere).
-   *  false = componenti diversi (equivoco di denominazione, da distinguere). */
+   *  false = componenti diversi (equivoco di denominazione, da distinguere),
+   *  oppure applicazioni diverse (`motivo === 'applicazioni-diverse'`: solo
+   *  informazione, nessun gesto offerto). */
   stessoComponente: boolean;
 }
 

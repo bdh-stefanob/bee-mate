@@ -5,9 +5,14 @@ import {
   doppione,
   equivocoDiDenominazione,
   treStepStessoComponente,
+  applicazioniDiverseTestoSimile,
 } from '../fixtures/catalogo';
 
-function step(expression: string, components?: CatalogStep['components']): CatalogStep {
+function step(
+  expression: string,
+  components?: CatalogStep['components'],
+  overrides: Partial<CatalogStep> = {}
+): CatalogStep {
   return {
     expression,
     parameters: [],
@@ -18,6 +23,7 @@ function step(expression: string, components?: CatalogStep['components']): Catal
     sourceRef: `x.ts:1`,
     documented: true,
     components,
+    ...overrides,
   };
 }
 
@@ -101,5 +107,58 @@ describe('individuaCoppie', () => {
     expect(coppie).toHaveLength(1);
     expect(coppie[0]!.stessoComponente).toBe(false);
     expect(coppie[0]!.spiegazione).toMatch(/non si puo' concludere/);
+  });
+
+  describe('confronto per applicazione', () => {
+    it('due step di applicazioni diverse con testo molto simile: informazione, mai fusione ne\' rinomina', () => {
+      // Situazione "applicazioni diverse": vedi
+      // __tests__/fixtures/catalogo/applicazioni-diverse.ts
+      const coppie = individuaCoppie(applicazioniDiverseTestoSimile);
+
+      expect(coppie).toHaveLength(1);
+      expect(coppie[0]!.motivo).toBe('applicazioni-diverse');
+      expect(coppie[0]!.stessoComponente).toBe(false);
+    });
+
+    it('due step di applicazioni diverse con lo stesso identico componente, ma testo diverso: nessuna coppia (il confronto per componente non attraversa le app)', () => {
+      const steps = [
+        step('the user confirms the order', [{ role: 'button', name: 'Confirm', page: 'CheckoutPage' }], { app: 'shop-a' }),
+        step('the user submits the checkout', [{ role: 'button', name: 'Confirm', page: 'CheckoutPage' }], { app: 'shop-b' }),
+      ];
+      expect(individuaCoppie(steps)).toHaveLength(0);
+    });
+
+    it('"generated" e un\'applicazione reale con lo stesso componente: e\' un doppione vero, non si nasconde (caso reale del catalogo)', () => {
+      const steps = [
+        step('the user open the recharge tab', [{ role: 'link', name: 'Recharges' }], { app: 'generated' }),
+        step('the user clcik on the recharge button', [{ role: 'link', name: 'Recharges' }], { app: 'human-recharge' }),
+      ];
+      const coppie = individuaCoppie(steps);
+      expect(coppie).toHaveLength(1);
+      expect(coppie[0]!.motivo).toBe('stessi-componenti');
+      expect(coppie[0]!.stessoComponente).toBe(true);
+    });
+
+    it('"common" entra nel confronto con qualunque applicazione', () => {
+      const steps = [
+        step('the user click on the login button', [{ role: 'button', name: 'Sign in', page: 'AccediPage' }], {
+          app: 'common',
+        }),
+        step('The user click on the login button', [{ role: 'button', name: 'Sign in', page: 'AccediPage' }], {
+          app: 'una-app-qualunque',
+        }),
+      ];
+      const coppie = individuaCoppie(steps);
+      expect(coppie).toHaveLength(1);
+      expect(coppie[0]!.motivo).toBe('testo-quasi-uguale');
+      expect(coppie[0]!.stessoComponente).toBe(true);
+    });
+
+    it('ogni step porta la propria applicazione nella vista di confronto', () => {
+      const coppie = individuaCoppie(applicazioniDiverseTestoSimile);
+      expect(coppie[0]!.a.app).toBeTruthy();
+      expect(coppie[0]!.b.app).toBeTruthy();
+      expect(coppie[0]!.a.app).not.toBe(coppie[0]!.b.app);
+    });
   });
 });

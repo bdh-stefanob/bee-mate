@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronRight, FileQuestion } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScheletroCatalogo, ErroreCatalogo } from './Scheletro';
+import { EtichettaApplicazione } from './EtichettaApplicazione';
 import type { RispostaCatalogo, StepCatalogo } from './tipi';
 
 /**
@@ -69,6 +70,7 @@ function RigaStep({ step, aperto, onCommuta }: { step: StepCatalogo; aperto: boo
         style={{ outlineColor: 'var(--blu)' }}
       >
         <Icona size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} />
+        <EtichettaApplicazione app={step.app} />
         <span className="font-mono text-xs flex-1" style={{ color: 'var(--testo)' }}>
           {step.espressione}
         </span>
@@ -84,6 +86,29 @@ function RigaStep({ step, aperto, onCommuta }: { step: StepCatalogo; aperto: boo
       </button>
       {aperto && (
         <div className="px-3 pb-3 flex flex-col gap-3 text-sm">
+          {step.comportamento && (
+            <div>
+              <p className="font-medium mb-1" style={{ color: 'var(--testo)' }}>
+                {t('cosaFaTitolo')}
+              </p>
+              {step.comportamento.chiamate ? (
+                <ol className="flex flex-col gap-0.5 list-decimal list-inside">
+                  {step.comportamento.chiamate.map((c, i) => (
+                    <li key={i} className="font-mono text-xs" style={{ color: 'var(--testo-tenue)' }}>
+                      {c}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <pre
+                  className="text-xs whitespace-pre-wrap font-mono rounded-md border p-2"
+                  style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+                >
+                  {step.comportamento.corpo}
+                </pre>
+              )}
+            </div>
+          )}
           <div>
             <p className="font-medium mb-1" style={{ color: 'var(--testo)' }}>
               {t('componentiToccati')}

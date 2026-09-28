@@ -3,13 +3,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT, FEATURES_DIR } from '@/lib/repo';
 import { daAltraOrigine } from '@/lib/stessa-origine';
-import { dentroLaCartellaSuDisco } from '@/lib/percorsi-disco';
 import { walkFeatures } from '@/lib/features';
 import { trovaUsatoIn } from '@/lib/catalogo';
 import type { CatalogStep } from '@/lib/types';
 import { riscriviScenario, haParametri } from '@/lib/riscrittura-step';
 import { estraiDefinizione, rimuoviDefinizione, corpiEquivalenti, FusioneNonSupportata } from '@/lib/fusione-step';
 import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
+import { percorsoDefinizione as risolviPercorsoDefinizione, cartellaSrcDiRepo } from '@/lib/percorso-definizione';
 
 /**
  * POST /api/catalogo/fondi — GET /api/catalogo/fondi (anteprima)
@@ -50,15 +50,13 @@ function leggiCatalogo(): CatalogStep[] {
   return (JSON.parse(fs.readFileSync(p, 'utf-8')) as { steps: CatalogStep[] }).steps;
 }
 
-const CARTELLA_SRC = path.join(REPO_ROOT, 'src');
+const CARTELLA_SRC = cartellaSrcDiRepo(REPO_ROOT);
 const CARTELLA_ANNULLAMENTO = path.join(REPO_ROOT, 'reports', 'fusioni');
 const FILE_ANNULLAMENTO = path.join(CARTELLA_ANNULLAMENTO, 'ultima-fusione.json');
 
-/** Stessa risoluzione di `sourceRef` usata da `POST /api/catalogo/riconcilia`. */
+/** Stessa risoluzione di `sourceRef` usata da `POST /api/catalogo/riconcilia` — vedi `@/lib/percorso-definizione`. */
 function percorsoDefinizione(sourceRef: string): string | null {
-  const senzaRiga = sourceRef.replace(/:\d+$/, '');
-  const relativoASrc = senzaRiga.replace(/\\/g, '/').replace(/^src\//, '');
-  return dentroLaCartellaSuDisco(CARTELLA_SRC, relativoASrc, '.ts');
+  return risolviPercorsoDefinizione(CARTELLA_SRC, sourceRef);
 }
 
 interface CorpoRichiesta {
