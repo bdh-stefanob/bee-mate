@@ -126,11 +126,15 @@ function main(): void {
   const formato = messaggi ? ["--format", `message:${messaggi}`] : [];
 
   try {
-    execFileSync(process.execPath, [cucumber, ...percorsi, ...formato], {
+    // I percorsi vanno in BDD_PATHS e non sulla riga di comando: Cucumber unisce i
+    // percorsi di cucumber.js con quelli della riga di comando, e uno scenario
+    // scelto finiva eseguito insieme a tutti gli altri.
+    execFileSync(process.execPath, [cucumber, ...formato], {
       stdio: "inherit",
       env: {
         ...process.env,
         ...ambiente,
+        BDD_PATHS: percorsi.join(";"),
         ...(vedi ? { HEADED: "1" } : {}),
         ...(pulito ? { BDD_NO_SESSION: "1" } : {}),
       },

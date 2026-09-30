@@ -140,6 +140,18 @@ export function assertLoadedBody(
   const primoToccato = toccati.find((c) => c.stability === "stable");
   if (primoToccato) return `await this.expectVisible(this.${fields.get(primoToccato)!});`;
 
+  // Toccato ma ambiguo (lo stesso pulsante ripetuto in una lista): esisteva
+  // comunque all'arrivo, e il suo locator usa gia' `.first()`. Meglio di una
+  // verifica, che descrive cio' che compare DOPO un'azione.
+  const toccatoAmbiguo = toccati.find((c) => c.stability === "ambiguous");
+  if (toccatoAmbiguo) {
+    return (
+      `// Nessun elemento stabile fra quelli toccati: si usa il primo toccato, che\n` +
+      `// esisteva all'arrivo ma non e' univoco (ce ne sono piu' d'uno uguali).\n` +
+      `await this.expectVisible(this.${fields.get(toccatoAmbiguo)!});`
+    );
+  }
+
   const verificaStabile = assertions.find((a) => judge(a.name, 1).stability === "stable");
   if (verificaStabile) {
     const match = components.find(

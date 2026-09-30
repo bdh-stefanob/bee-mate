@@ -143,6 +143,27 @@ for (const [segment, expected, why] of [
 }
 
 {
+  // LA PAGINA NON SI RICONOSCE DA CIO' CHE COMPARE DOPO UN'AZIONE.
+  //
+  // Il difetto che questo caso ferma (collaudo del 30/9, saucedemo): nella
+  // pagina dei prodotti "Add to cart" esiste sei volte, quindi e' ambiguo e non
+  // "stabile". Non c'era altro di toccato, e si ripiegava sulla verifica del
+  // tester — "Cart, 1 items" — che compare solo DOPO il clic. assertLoaded()
+  // la aspettava all'arrivo, prima di cliccare: dieci secondi e il test cadeva
+  // sul primo passo, con un messaggio che accusava il locator.
+  //
+  // Un elemento toccato ma ambiguo esisteva di sicuro all'arrivo (ci si e'
+  // cliccato sopra) e il suo locator usa gia' .first(): e' un'ancora migliore
+  // di una verifica, e il generatore lo sa dichiarare.
+  const ambiguo = toComponent({ role: "button", name: "Add to cart" }, 6);
+  const poi = toComponent({ role: "button", name: "Cart, 1 items" }, 1);
+  const campiInventario = new Map([[ambiguo, "addToCartButton"], [poi, "cart1ItemsButton"]]);
+  const corpoInventario = assertLoadedBody([{ role: "button", name: "Cart, 1 items" }], [ambiguo, poi], campiInventario);
+  eq("un elemento toccato ma ambiguo ancora la pagina", corpoInventario.includes("addToCartButton"), true);
+  eq("e la verifica che compare dopo il clic no", corpoInventario.includes("cart1ItemsButton"), false);
+}
+
+{
   // Due pagine diverse che finiscono uguale: senza disambiguazione la seconda
   // sovrascriverebbe la prima in silenzio.
   const ids = uniqueNames([

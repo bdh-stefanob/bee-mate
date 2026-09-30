@@ -6,7 +6,13 @@ module.exports = {
   default: {
     requireModule: ["ts-node/register"],
     require: ["src/steps/**/*.ts", "src/support/**/*.ts"],
-    paths: ["src/features/**/*.feature"],
+    // I percorsi scelti (la schermata Esegui, `npm run test:bersaglio`) arrivano da
+    // BDD_PATHS e NON dalla riga di comando: Cucumber unisce i percorsi di questo
+    // file a quelli della riga di comando, quindi scegliere un solo scenario
+    // eseguiva comunque tutti gli altri. Senza BDD_PATHS, tutto come prima.
+    paths: process.env["BDD_PATHS"]
+      ? process.env["BDD_PATHS"].split(";").filter(Boolean)
+      : ["src/features/**/*.feature"],
     // Gli scenari marcati @non-automatizzato non si eseguono.
     //
     // Sono i casi di test scritti dal team e mai automatizzati: nel repository
