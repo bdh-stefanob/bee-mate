@@ -75,6 +75,26 @@ console.log("\n--- una verifica dopo l'ultimo Fine intento non apre un passo vuo
   eq("gesti rimasti aperti restano non chiusi", senzaNome.unlabelled, 1);
 }
 
+console.log("\n--- dove finisce il passo: l'ultimo evento nel tempo, non l'ultima verifica in lista ---\n");
+{
+  // Il difetto (collaudo del 30/9): una verifica fatta sul carrello a meta' passo
+  // finiva in coda alla lista e ne diventava l'endUrl, invece di checkout-complete.
+  const shop = (p: string) => `https://shop.invalid/${p}.html`;
+  const click = (name: string, at: number, p: string) =>
+    ({ type: "action" as const, at, action: "click" as const, role: "button", name, url: shop(p) });
+  const { intents } = group([
+    click("Add to cart", 1, "inventory"),
+    click("Cart", 2, "cart"),
+    { type: "assert" as const, at: 3, role: "button", name: "Cart, 1 items", url: shop("cart") }, // afterStep 2
+    click("Checkout", 4, "checkout-step-one"),
+    click("Finish", 5, "checkout-step-two"),
+    { type: "intent" as const, at: 6, label: "the user completes the order" },
+    { type: "assert" as const, at: 7, role: "heading", name: "Thank you", url: shop("checkout-complete") }, // leftover
+  ]);
+  eq("pageUrl e' la pagina di partenza", intents[0]?.pageUrl, shop("inventory"));
+  eq("endUrl e' la pagina finale (checkout-complete)", intents[0]?.endUrl, shop("checkout-complete"));
+}
+
 console.log("\n--- il generatore la rispetta ---\n");
 {
   const pagina = (nome: string, percorso: string) => ({

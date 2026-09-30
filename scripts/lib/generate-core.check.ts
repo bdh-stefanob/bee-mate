@@ -161,6 +161,13 @@ for (const [segment, expected, why] of [
   const corpoInventario = assertLoadedBody([{ role: "button", name: "Cart, 1 items" }], [ambiguo, poi], campiInventario);
   eq("un elemento toccato ma ambiguo ancora la pagina", corpoInventario.includes("addToCartButton"), true);
   eq("e la verifica che compare dopo il clic no", corpoInventario.includes("cart1ItemsButton"), false);
+
+  // Stessa pagina, ma "Cart, 1 items" toccato in un passo successivo invece che
+  // verificato. Era stabile e vinceva sull'ambiguo toccato prima: ma esiste solo
+  // DOPO il clic su Add to cart. L'ancora e' il primo toccato, stabile o no.
+  const corpoSenzaVerifica = assertLoadedBody([], [ambiguo, poi], campiInventario);
+  eq("il primo toccato vince anche se ambiguo", corpoSenzaVerifica.includes("addToCartButton"), true);
+  eq("e lo stabile toccato dopo no", corpoSenzaVerifica.includes("cart1ItemsButton"), false);
 }
 
 {

@@ -110,9 +110,16 @@ interface RawEvent {
  * regola: chi genera non deve indovinare dove finisce una pagina.
  */
 function boundaries(intent: Intent): { pageUrl?: string; endUrl?: string } {
-  const urls = [...intent.steps, ...intent.assertions]
-    .map((e) => e.url)
-    .filter((u): u is string => Boolean(u));
+  // Ordine nel tempo, non "prima i gesti poi le verifiche": una verifica con
+  // afterStep = k e' stata fatta dopo il k-esimo gesto. Senza afterStep resta in fondo.
+  const eventi = [
+    ...intent.steps.map((s, i) => ({ url: s.url, quando: i + 1 })),
+    ...intent.assertions.map((a) => ({
+      url: a.url,
+      quando: a.afterStep !== undefined ? a.afterStep + 0.5 : Infinity,
+    })),
+  ].sort((x, y) => x.quando - y.quando); // sort stabile: a parita' resta l'ordine di inserimento
+  const urls = eventi.map((e) => e.url).filter((u): u is string => Boolean(u));
   if (urls.length === 0) return {};
 
   const first = urls[0]!;
@@ -197,6 +204,10 @@ export function group(events: RawEvent[]): { intents: Intent[]; unlabelled: numb
     for (const a of current.assertions) {
       precedente.assertions.push({ ...a, afterStep: precedente.steps.length });
     }
+    // Le verifiche aggiunte cambiano dove il passo finisce.
+    delete precedente.pageUrl;
+    delete precedente.endUrl;
+    Object.assign(precedente, boundaries(precedente));
   } else if (leftover) {
     current.label = "(non chiuso — il tester non ha premuto Fine intento)";
     Object.assign(current, boundaries(current));
