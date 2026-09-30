@@ -186,7 +186,18 @@ export function group(events: RawEvent[]): { intents: Intent[]; unlabelled: numb
 
   const leftover =
     current.steps.length > 0 || current.assertions.length > 0 || current.notes.length > 0;
-  if (leftover) {
+  // Solo verifiche, dopo l'ultimo "Fine intento": il tester ha chiuso il passo e
+  // poi ha controllato la pagina di arrivo. Non e' un passo senza nome, e' l'esito
+  // del passo che l'ha preceduto — e va in fondo a quello.
+  const soloVerifiche =
+    current.steps.length === 0 && current.notes.length === 0 && current.assertions.length > 0;
+  const precedente = intents[intents.length - 1];
+
+  if (leftover && soloVerifiche && precedente) {
+    for (const a of current.assertions) {
+      precedente.assertions.push({ ...a, afterStep: precedente.steps.length });
+    }
+  } else if (leftover) {
     current.label = "(non chiuso — il tester non ha premuto Fine intento)";
     Object.assign(current, boundaries(current));
     intents.push(current);

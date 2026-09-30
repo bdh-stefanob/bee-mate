@@ -168,6 +168,7 @@ Tutte provate su un solo scenario; se una non regge, e' una **regressione**.
 | X4 | premi **Verifica a meta' di un passo lungo** e poi continua | nello step la verifica sta **fra** i gesti, nel punto in cui l'hai fatta; nel `.feature` compare come commento sotto il passo, non come `Then` in fondo |
 | X5 | pagina dei prodotti con il solito pulsante ripetuto ("Add to cart" x6) | `assertLoaded()` si ancora sul primo elemento toccato, **non** su una verifica che compare dopo il clic |
 | X7 | genera e lancia uno scenario che contiene il login, **senza** `APP_PASSWORD` in `.env` | il test prende la password dal blocco `login` dell'ambiente (`this.passwordAmbiente()`); niente nome fisso da aggiungere a mano. Se l'ambiente non dichiara una password, l'errore **nomina l'ambiente** e dice di registrare l'accesso dal Controllo |
+| X8 | chiudi l'ultimo passo con "Fine intento", poi premi **Verifica** sulla pagina di arrivo e chiudi il browser | la verifica va in fondo al passo che hai appena chiuso: **nessun passo "non chiuso"** in piu' nella traccia e nel riepilogo. Se invece restano gesti senza "Fine intento", quelli sono ancora un gruppo non chiuso |
 | X6 | ultimo passo lasciato aperto | la frase in feature e' inglese ("the tester did not close this step"), non italiana |
 
 ## 7. Catalogo, portale e catena dei dati

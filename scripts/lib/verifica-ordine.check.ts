@@ -48,6 +48,33 @@ console.log("\n--- il recorder ricorda dove e' stata fatta la verifica ---\n");
   );
 }
 
+console.log("\n--- una verifica dopo l'ultimo Fine intento non apre un passo vuoto ---\n");
+{
+  // Il difetto che questo caso ferma (registrazione del 30/9): il tester chiude il
+  // passo "completa l'ordine" e poi verifica la pagina di conferma. Nessun gesto
+  // segue, quindi quella verifica finiva in un gruppo nuovo, vuoto e "non chiuso",
+  // e lo scenario si ritrovava un passo fantasma. La verifica appartiene al passo
+  // che l'ha preceduta.
+  const click = (name: string, at: number) => ({ type: "action" as const, at, action: "click" as const, role: "button", name });
+  const { intents, unlabelled } = group([
+    click("Finish", 1),
+    { type: "intent" as const, at: 2, label: "the user completes the order" },
+    { type: "assert" as const, at: 3, role: "heading", name: "Thank you for your order!" },
+  ]);
+  eq("nessun passo fantasma: un solo intento", intents.length, 1);
+  eq("e nessun gruppo non chiuso", unlabelled, 0);
+  eq(
+    "la verifica va in fondo al passo precedente",
+    intents[0]?.assertions.map((a) => [a.name, a.afterStep]),
+    [["Thank you for your order!", 1]]
+  );
+
+  // Gesti senza verifiche, invece, restano un gruppo non chiuso: sono lavoro
+  // vero che il tester non ha nominato.
+  const senzaNome = group([click("A", 1), { type: "intent" as const, at: 2, label: "primo" }, click("B", 3)]);
+  eq("gesti rimasti aperti restano non chiusi", senzaNome.unlabelled, 1);
+}
+
 console.log("\n--- il generatore la rispetta ---\n");
 {
   const pagina = (nome: string, percorso: string) => ({
