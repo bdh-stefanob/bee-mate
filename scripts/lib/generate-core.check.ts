@@ -29,9 +29,9 @@ import {
   looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates,
 } from "./generate-core";
 import { toComponent } from "./component-naming";
-import { assertLoadedBody } from "./generate-emit";
+import { assertLoadedBody, emitSteps, phraseOf } from "./generate-emit";
 import type {
-  CatalogStep, Gap, Intent, Recording, ResolvedStep, ScoutResult,
+  CatalogStep, Gap, Intent, Recording, ResolvedIntent, ResolvedStep, ScoutResult,
 } from "./generation-contract";
 
 const ROOT = path.join(__dirname, "..", "..");
@@ -322,6 +322,99 @@ console.log("\n--- rosa dei candidati ---\n");
     "quando i due segnali litigano, vince il componente",
     rosa[0]?.step.expression,
     "il cliente accede"
+  );
+}
+
+{
+  // UN PASSO CHE ATTRAVERSA PIU' PAGINE.
+  //
+  // Il difetto che questo caso ferma (collaudo del 30/9): "l'utente completa
+  // l'ordine" parte dal carrello e arriva fino a "Finish", toccando tre pagine.
+  // La Page Object si creava solo per la pagina dove l'intento comincia; le
+  // altre venivano usate senza mai essere assegnate. tsc dava TS2454
+  // ("used before being assigned") e, finche' quel file restava in src/steps,
+  // NESSUNO scenario compilava piu'. Il fixture di questo controllo non aveva
+  // un intento cosi', e la compilazione della catena qui sotto non poteva
+  // accorgersene.
+  const pagina = (host: string, percorso: string, nome: string) => ({
+    key: `${host}${percorso}`, host, path: percorso, pattern: percorso,
+    className: `${nome}Page`, slug: nome.toLowerCase(),
+  });
+  const carrello = pagina("shop.invalid", "/cart", "Cart");
+  const dati = pagina("shop.invalid", "/checkout-step-one", "CheckoutStepOne");
+  const riepilogo = pagina("shop.invalid", "/checkout-step-two", "CheckoutStepTwo");
+
+  const componente = (nome: string) => toComponent({ role: "button", name: nome }, 1);
+  const cCheckout = componente("Checkout");
+  const cContinue = componente("Continue");
+  const cFinish = componente("Finish");
+  const passo = (c: typeof cCheckout, nome: string, fromPage: string): ResolvedStep => ({
+    step: { action: "click", role: "button", name: nome },
+    component: c, synthesised: false, fromPage,
+  });
+
+  const intento: ResolvedIntent = {
+    label: "the user completes the order",
+    steps: [
+      passo(cCheckout, "Checkout", carrello.key),
+      passo(cContinue, "Continue", dati.key),
+      passo(cFinish, "Finish", riepilogo.key),
+    ],
+    assertions: [], notes: [],
+    page: carrello.key, navigatesTo: null, candidates: [],
+  };
+  const metodi = new Map([
+    [carrello.key, new Map([[cCheckout, "clickCheckout"]])],
+    [dati.key, new Map([[cContinue, "clickContinue"]])],
+    [riepilogo.key, new Map([[cFinish, "clickFinish"]])],
+  ]);
+
+  const file = emitSteps(
+    {
+      intents: [intento], pages: [carrello, dati, riepilogo],
+      recordingPath: "x.json", dictionaryPaths: [], recordedAt: "", durationSeconds: 0,
+      generatedAt: "", slug: "tre-pagine", outRoot: "src",
+    },
+    [carrello, dati, riepilogo],
+    metodi as never
+  );
+
+  // Ogni variabile di Page Object deve essere assegnata, in ordine di
+  // esecuzione, PRIMA della riga che ne chiama un metodo.
+  const assegnate = new Set<string>();
+  const usateSenzaAssegnare: string[] = [];
+  for (const riga of file.contents.split(/\r?\n/)) {
+    const nuova = riga.match(/^\s*(\w+) = new \w+\(/);
+    if (nuova) assegnate.add(nuova[1]!);
+    const uso = riga.match(/^\s*await (\w+)\.(?!assertLoaded|navigate)\w+\(/);
+    if (uso && !assegnate.has(uso[1]!)) usateSenzaAssegnare.push(uso[1]!);
+  }
+  eq("un passo su tre pagine: nessuna Page Object usata prima di essere creata", usateSenzaAssegnare, []);
+  truthy(
+    "la prima pagina si apre con navigate(), le altre si riconoscono con assertLoaded()",
+    file.contents.includes("await cartPage.navigate();") &&
+      ["checkoutStepOnePage", "checkoutStepTwoPage"].every((v) =>
+        file.contents.includes(`await ${v}.assertLoaded();`)
+      ),
+    "una delle pagine non viene riconosciuta prima dell'uso"
+  );
+}
+
+{
+  // L'ultimo passo non chiuso finiva nel feature come una frase in italiano,
+  // dentro uno scenario scritto in inglese (collaudo del 30/9). Il generatore
+  // parla la lingua delle frasi del catalogo, anche quando la traccia porta
+  // un'etichetta di servizio scritta dal recorder.
+  const vuoto = { steps: [], assertions: [], notes: [], page: null, navigatesTo: null, candidates: [] };
+  eq(
+    "un passo non chiuso non diventa una frase in italiano",
+    phraseOf({ ...vuoto, label: "(non chiuso — il tester non ha premuto Fine intento)" }),
+    "the tester did not close this step"
+  );
+  eq(
+    "un passo senza nome nemmeno",
+    phraseOf({ ...vuoto, label: "(intento senza nome)" }),
+    "unnamed step"
   );
 }
 

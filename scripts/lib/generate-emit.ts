@@ -240,8 +240,8 @@ export function emitPageObject(
  */
 export function phraseOf(intent: ResolvedIntent): string {
   return intent.label
-    .replace(/^\(non chiuso.*\)$/, "il tester non ha chiuso questo passo")
-    .replace(/^\(intento senza nome\)$/, "passo senza nome")
+    .replace(/^\(non chiuso.*\)$/, "the tester did not close this step")
+    .replace(/^\(intento senza nome\)$/, "unnamed step")
     .replace(/\s+/g, " ")
     .replace(/[.;:]+$/, "")
     .trim();
@@ -298,6 +298,16 @@ export function emitSteps(
       const ownerVar = variableName(owner.className);
       const method = methodsByPage.get(owner.key)?.get(r.component);
       if (!method) continue;
+      // Un passo che attraversa piu' pagine (dal carrello fino a "Finish")
+      // tocca Page Object diverse da quella in cui comincia. Ognuna va creata
+      // la prima volta che si incontra: usarla prima di assegnarla e' TS2454, e
+      // un solo file cosi' in src/steps fa fallire la compilazione di TUTTI gli
+      // scenari, non solo del suo.
+      if (!initialised.has(owner.key)) {
+        initialised.add(owner.key);
+        lines.push(`${ownerVar} = new ${owner.className}(this.page);`);
+        lines.push(`await ${ownerVar}.assertLoaded();`);
+      }
       const arg =
         r.component.kind === "input" ? valueExpression(r.step.value, r.step.secret) : "";
       lines.push(`await ${ownerVar}.${method}(${arg});`);
