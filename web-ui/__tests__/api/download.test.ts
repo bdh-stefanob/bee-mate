@@ -1,43 +1,33 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GET } from '@/app/api/download/route';
 import { REPO_ROOT } from '@/lib/repo';
 
 /**
- * Il percorso della feature non si scrive a mano.
+ * La feature la crea il test, e la toglie alla fine.
  *
- * Questo test conteneva `auth/login.feature`, una cartella cancellata quando il
- * catalogo e' stato riazzerato: da allora restava rosso, e un rosso che resta
- * rosso smette di essere un segnale. Qui la feature si cerca su disco, cosi' il
- * test parla della rotta — che e' cio' che deve proteggere — e non
- * dell'inventario del catalogo, che cambia per conto suo.
+ * Prima si cercava una feature vera su disco: il test dipendeva da cosa c'era nel
+ * repository, e quando gli scenari di esempio sono stati tolti non partiva
+ * nemmeno. La rotta si protegge con un file suo, non con l'inventario degli scenari.
  */
-function primaFeature(): string {
-  const radice = path.resolve(REPO_ROOT, 'src', 'features');
-  const cerca = (dir: string): string | null => {
-    for (const voce of fs.readdirSync(dir, { withFileTypes: true })) {
-      const pieno = path.join(dir, voce.name);
-      if (voce.isDirectory()) {
-        const trovato = cerca(pieno);
-        if (trovato) return trovato;
-      } else if (voce.name.endsWith('.feature')) {
-        return path.relative(radice, pieno).split(path.sep).join('/');
-      }
-    }
-    return null;
-  };
-  const trovato = cerca(radice);
-  if (!trovato) throw new Error('nessuna feature in src/features: il test non puo' + "' dire niente");
-  return trovato;
-}
+const CARTELLA = path.resolve(REPO_ROOT, 'src', 'features', 'zz-test-download');
+const FEATURE = 'zz-test-download/rotta.feature';
 
 function makeRequest(file: string): Request {
   return new Request(`http://localhost:3000/api/download?file=${encodeURIComponent(file)}`);
 }
 
 describe('GET /api/download', () => {
-  const feature = primaFeature();
+  const feature = FEATURE;
+  beforeAll(() => {
+    fs.mkdirSync(CARTELLA, { recursive: true });
+    fs.writeFileSync(
+      path.join(CARTELLA, 'rotta.feature'),
+      'Feature: rotta di download\n  Scenario: esiste\n    Then the page shows "x"\n'
+    );
+  });
+  afterAll(() => fs.rmSync(CARTELLA, { recursive: true, force: true }));
 
   it('Test 1: file valido (.feature esistente) → 200, contiene Feature:, Content-Disposition', async () => {
     const res = await GET(makeRequest(feature));
