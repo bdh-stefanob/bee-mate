@@ -85,6 +85,12 @@ interface Voce {
    * schermata di controllo va in una sezione a parte, richiudibile.
    */
   avanzata?: boolean;
+  /**
+   * Nasce usando l'applicazione: su un'installazione nuova manca per forza,
+   * e non e' un guasto. La finestra lo mostra come "Per iniziare", non come
+   * rosso.
+   */
+  daUso?: boolean;
 }
 
 const voci: Voce[] = [];
@@ -299,6 +305,7 @@ function sulPath(comando: string): boolean {
           dettaglio: [{ chiave: "diagnosi.dizionari.nessuno" }],
           rimedio: "npm run scout:pausa <url>",
           rimedioChiuso: "scansione",
+          daUso: true,
         }
   );
 }
@@ -330,6 +337,7 @@ function sulPath(comando: string): boolean {
           rimedio: "npm run record <url>",
           rimedioChiuso: "registrazione",
           chiaveDallaFinestra: "diagnosi.registrazioni.vaiSuRegistra",
+          daUso: true,
         }
       : conUrl.length === 0
         ? {
@@ -420,6 +428,8 @@ interface VoceJson {
    * in una sezione a parte. Assente (non `false`) quando non si applica.
    */
   avanzata?: true;
+  /** Nasce dall'uso: mancante non vuol dire guasto. Assente quando non si applica. */
+  daUso?: true;
 }
 
 const ESITO_JSON: Record<Esito, VoceJson["esito"]> = { ok: "ok", manca: "manca", avviso: "attenzione" };
@@ -434,6 +444,7 @@ if (hasFlag(process.argv.slice(2), "--json")) {
     ...(v.chiaveDallaFinestra ? { chiaveDallaFinestra: v.chiaveDallaFinestra } : {}),
     ...(v.rimedioChiuso ? { rimedioChiuso: v.rimedioChiuso } : {}),
     ...(v.avanzata ? { avanzata: true as const } : {}),
+    ...(v.daUso ? { daUso: true as const } : {}),
   }));
   console.log(JSON.stringify({ voci: vociJson }, null, 2));
   process.exit(0);

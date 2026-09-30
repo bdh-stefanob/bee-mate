@@ -244,7 +244,8 @@ but a tester would not understand it without help · **P3** polish.
 - **Seen:** Run says *Target: demo* and *No target configured* (*Bersaglio*).
 - **Where:** `web-ui/messages/en.json`, `it.json`, `Esecuzione` namespace.
 - **Change and done when:** Run says *Environment* / *Ambiente*.
-- [ ] done
+- **Fixed 2026-09-30:** `Esecuzione.bersaglio`, `ambienteCorrente` and `nessunBersaglio` in `en.json` / `it.json`; guarded by `web-ui/__tests__/lib/lessico-messaggi.test.ts`.
+- [x] done
 
 ### F11 (P2) — First launch opens on a red "Missing 3 things"
 - **Seen:** on a fresh install, dictionaries and recordings count as missing,
@@ -252,7 +253,8 @@ but a tester would not understand it without help · **P3** polish.
 - **Change:** red only for real blockers (no browser, no environment); the rest
   as a neutral *Getting started · 1 of 3* with the next action.
 - **Done when:** a fresh install with a browser and one environment is not red.
-- [ ] done
+- **Fixed 2026-09-30:** empty Dictionaries and Recordings carry `daUso` (`scripts/diagnosi.ts`), which `interpreta` ignores for "ready"; the banner shows a neutral *Getting started · n of m*. Tests in `web-ui/__tests__/api/controllo.test.ts`.
+- [x] done
 
 ## Batch 4 — Polish and housekeeping (issue #4)
 

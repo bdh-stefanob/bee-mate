@@ -30,6 +30,7 @@
     "salvataEccezione": "couldn't save it",
     "statoPronto": "Ready",
     "statoDaGuardare": "{daGuardare, plural, one {Ready — # thing worth a look} other {Ready — # things worth a look}}",
+    "statoPerIniziare": "Getting started · {fatte} of {totale}",
     "statoMancante": "{mancanti, plural, one {Missing # thing} other {Missing # things}}"
   },
   "Ambienti": {
@@ -130,9 +131,9 @@
     "esitoSaltato": "{n, plural, one {# skipped} other {# skipped}}",
     "durataSecondi": "{s} s",
     "durataMinutiSecondi": "{m} min {s} s",
-    "bersaglio": "Target",
-    "ambienteCorrente": "Target: {ambiente}",
-    "nessunBersaglio": "No target configured",
+    "bersaglio": "Environment",
+    "ambienteCorrente": "Environment: {ambiente}",
+    "nessunBersaglio": "No environment configured",
     "guardaIlBrowser": "Watch the browser",
     "partiSenzaSessione": "Start without a session",
     "testInCorso": "Test running",

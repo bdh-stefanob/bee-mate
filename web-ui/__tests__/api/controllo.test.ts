@@ -133,3 +133,33 @@ describe('le voci avanzate non decidono se la macchina e\' pronta', () => {
     expect(r.voci[0].avanzata).toBe(true);
   });
 });
+
+describe('cio\' che viene dall\'uso non e\' un guasto (F11)', () => {
+  // Il difetto che questo caso ferma: su un'installazione nuova, con il browser
+  // e un ambiente a posto, "Dizionari" e "Registrazioni" risultavano mancanti e
+  // la schermata si apriva su un rosso. Sono cose che nascono usando
+  // l'applicazione: il tester non ha niente da riparare.
+  const primoAvvio = [
+    { chiaveNome: 'diagnosi.browser.nome', esito: 'ok' as const, chiaveDettaglio: 'diagnosi.browser.scaricato' },
+    { chiaveNome: 'diagnosi.ambienti.nome', esito: 'ok' as const, chiaveDettaglio: 'diagnosi.ambienti.pronti' },
+    { chiaveNome: 'diagnosi.dizionari.nome', esito: 'manca' as const, chiaveDettaglio: 'diagnosi.dizionari.nessuno', daUso: true },
+    { chiaveNome: 'diagnosi.registrazioni.nome', esito: 'manca' as const, chiaveDettaglio: 'diagnosi.registrazioni.nessuna', daUso: true },
+  ];
+
+  it('con browser e ambiente a posto, una voce che nasce dall\'uso non rompe "pronto"', () => {
+    expect(interpreta({ voci: primoAvvio }).pronto).toBe(true);
+  });
+
+  it('il segnale arriva fino alla voce, per il riquadro "Per iniziare"', () => {
+    const r = interpreta({ voci: primoAvvio });
+    expect(r.voci.filter((v) => v.daUso).map((v) => v.chiaveNome)).toEqual([
+      'diagnosi.dizionari.nome',
+      'diagnosi.registrazioni.nome',
+    ]);
+  });
+
+  it('un blocco vero resta un blocco, anche accanto a voci che nascono dall\'uso', () => {
+    const senzaBrowser = [{ ...primoAvvio[0]!, esito: 'manca' as const }, ...primoAvvio.slice(1)];
+    expect(interpreta({ voci: senzaBrowser }).pronto).toBe(false);
+  });
+});

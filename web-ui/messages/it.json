@@ -30,6 +30,7 @@
     "salvataEccezione": "non sono riuscito a salvarla",
     "statoPronto": "Pronto",
     "statoDaGuardare": "{daGuardare, plural, one {Pronto — # cosa da guardare} other {Pronto — # cose da guardare}}",
+    "statoPerIniziare": "Per iniziare · {fatte} di {totale}",
     "statoMancante": "{mancanti, plural, one {Manca # cosa} other {Mancano # cose}}"
   },
   "Ambienti": {
@@ -130,9 +131,9 @@
     "esitoSaltato": "{n, plural, one {# saltato} other {# saltati}}",
     "durataSecondi": "{s} s",
     "durataMinutiSecondi": "{m} min {s} s",
-    "bersaglio": "Bersaglio",
-    "ambienteCorrente": "Bersaglio: {ambiente}",
-    "nessunBersaglio": "Nessun bersaglio configurato",
+    "bersaglio": "Ambiente",
+    "ambienteCorrente": "Ambiente: {ambiente}",
+    "nessunBersaglio": "Nessun ambiente configurato",
     "guardaIlBrowser": "Guarda il browser",
     "partiSenzaSessione": "Parti senza sessione",
     "testInCorso": "Test in corso",

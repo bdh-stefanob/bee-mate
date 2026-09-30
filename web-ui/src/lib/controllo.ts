@@ -25,6 +25,13 @@ export interface VoceDiagnosiGrezza {
    * ha né vuole un assistente da riga di comando sul PATH.
    */
   avanzata?: boolean;
+  /**
+   * Nasce usando l'applicazione (un dizionario, una registrazione): su
+   * un'installazione nuova mancano per forza, e il tester non ha niente da
+   * riparare. Non e' un guasto, quindi non deve mai rendere rosso il "pronto":
+   * la finestra lo mostra come "Per iniziare".
+   */
+  daUso?: boolean;
 }
 
 export interface RimedioDiagnosi {
@@ -43,6 +50,7 @@ export interface VoceDiagnosi {
   rimedio?: RimedioDiagnosi;
   chiaveDallaFinestra?: string;
   avanzata?: boolean;
+  daUso?: boolean;
 }
 
 /** Separata dalla rotta perche' e' la parte che si puo' verificare da sola. */
@@ -53,6 +61,7 @@ export function interpreta(grezzo: { voci: VoceDiagnosiGrezza[] }) {
     chiaveDettaglio: v.chiaveDettaglio,
     dati: v.dati,
     avanzata: v.avanzata,
+    daUso: v.daUso,
     chiaveDallaFinestra: v.chiaveDallaFinestra,
     // I due campi restano distinti fino alla riga che li mostra: un rimedio che
     // la macchina non sa avviare deve comunque arrivare all'occhio del tester,
@@ -72,5 +81,5 @@ export function interpreta(grezzo: { voci: VoceDiagnosiGrezza[] }) {
   // ha registrato, cioe' finche' non ha fatto la cosa che quella schermata
   // dovrebbe invitarlo a fare.
   const essenziali = voci.filter((v) => !v.avanzata);
-  return { pronto: essenziali.every((v) => v.esito !== 'manca'), voci };
+  return { pronto: essenziali.every((v) => v.esito !== 'manca' || v.daUso), voci };
 }

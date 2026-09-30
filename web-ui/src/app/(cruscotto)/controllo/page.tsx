@@ -172,7 +172,12 @@ export default function ControlloPage() {
   // sommava le mancanze agli avvisi, mentre il verdetto "pronto" guardava solo
   // le mancanze. Cosi' la riga in cima mostrava una spunta verde accanto alla
   // scritta "mancano 2 cose" — l'icona diceva una cosa e le parole un'altra.
-  const mancanti = essenziali.filter((v) => v.esito === 'manca').length;
+  const mancanti = essenziali.filter((v) => v.esito === 'manca' && !v.daUso).length;
+  // (F11) Cio' che nasce usando l'applicazione non e' un guasto: un riquadro
+  // neutro con l'avanzamento, non un rosso.
+  const daUso = essenziali.filter((v) => v.daUso);
+  const daUsoFatte = daUso.filter((v) => v.esito !== 'manca').length;
+  const perIniziare = daUso.length > 0 && daUsoFatte < daUso.length;
   const daGuardare = essenziali.filter((v) => v.esito === 'attenzione').length;
 
   return (
@@ -211,8 +216,8 @@ export default function ControlloPage() {
             role="status"
             className="flex items-center gap-2 rounded-lg border p-3 font-medium"
             style={{
-              borderColor: dati.pronto ? 'var(--verde)' : 'var(--rosso)',
-              color: dati.pronto ? 'var(--verde)' : 'var(--rosso)',
+              borderColor: dati.pronto ? (perIniziare ? 'var(--blu)' : 'var(--verde)') : 'var(--rosso)',
+              color: dati.pronto ? (perIniziare ? 'var(--blu)' : 'var(--verde)') : 'var(--rosso)',
               background: 'var(--superficie)',
             }}
           >
@@ -225,7 +230,9 @@ export default function ControlloPage() {
               ? t('statoMancante', { mancanti })
               : daGuardare > 0
                 ? t('statoDaGuardare', { daGuardare })
-                : t('statoPronto')}
+                : perIniziare
+                  ? t('statoPerIniziare', { fatte: daUsoFatte, totale: daUso.length })
+                  : t('statoPronto')}
           </div>
 
           <ul className="flex flex-col gap-2">
