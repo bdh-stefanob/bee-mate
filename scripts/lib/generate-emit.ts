@@ -300,6 +300,10 @@ export function emitSteps(
     .map((p) => `let ${variableName(p.className)}: ${p.className};`)
     .join("\n");
 
+  // Solo le pagine con una Page Object generata (almeno un componente toccato)
+  // si possono costruire nello step: le altre non sono importate ne' dichiarate.
+  const conPageObject = new Set(pagesUsed.map((p) => p.key));
+
   const seenPhrases = new Set<string>();
   const blocks: string[] = [];
   const initialised = new Set<string>();
@@ -312,7 +316,7 @@ export function emitSteps(
     const lines: string[] = [];
 
     // La Page Object si crea nello step che la introduce, mai in un hook.
-    if (!initialised.has(page.key)) {
+    if (!initialised.has(page.key) && conPageObject.has(page.key)) {
       initialised.add(page.key);
       lines.push(`${variable} = new ${page.className}(this.page);`);
       if (i === 0) lines.push(`await ${variable}.navigate();`);
@@ -359,7 +363,12 @@ export function emitSteps(
     // La transizione resta esplicita, solo che avviene qui: si vede lo stesso
     // che la pagina e' cambiata, e non si rischia un ciclo.
     const next = intent.navigatesTo ? byKey.get(intent.navigatesTo) : undefined;
-    if (next && next.key !== page.key) {
+    if (next && next.key !== page.key && !conPageObject.has(next.key)) {
+      // Si arriva su una pagina dove il tester non ha toccato niente: non ha una
+      // Page Object, quindi non c'e' niente con cui riconoscerla. Costruirla qui
+      // era un nome inesistente, e un file che non compila ferma TUTTI gli scenari.
+      lines.push(`// Arrivo su ${next.className.replace(/Page$/, "")}: nessun componente toccato, nessuna Page Object da riconoscere.`);
+    } else if (next && next.key !== page.key) {
       const nextVar = variableName(next.className);
       initialised.add(next.key);
       lines.push(`${nextVar} = new ${next.className}(this.page);`);

@@ -418,6 +418,28 @@ console.log("\n--- rosa dei candidati ---\n");
     if (uso && !assegnate.has(uso[1]!)) usateSenzaAssegnare.push(uso[1]!);
   }
   eq("un passo su tre pagine: nessuna Page Object usata prima di essere creata", usateSenzaAssegnare, []);
+
+  // UN PASSO CHE FINISCE SU UNA PAGINA DOVE NON SI E' TOCCATO NIENTE.
+  //
+  // Il difetto (collaudo sull'app vera, 30/9): il passo arrivava su una pagina di
+  // messaggi e finiva li'. Nessun gesto su quella pagina, quindi nessuna Page
+  // Object generata; ma lo step la costruiva lo stesso per riconoscere l'arrivo.
+  // tsc: "Cannot find name 'MessagesPage'", e con lui tutti gli scenari fermi.
+  const arrivo = pagina("shop.invalid", "/messages", "Messages");
+  const conArrivo = emitSteps(
+    {
+      intents: [{ ...intento, navigatesTo: arrivo.key }], pages: [carrello, dati, riepilogo, arrivo],
+      recordingPath: "x.json", dictionaryPaths: [], recordedAt: "", durationSeconds: 0,
+      generatedAt: "", slug: "arrivo", outRoot: "src",
+    },
+    [carrello, dati, riepilogo], // la pagina di arrivo non ha componenti: nessuna Page Object
+    metodi as never
+  ).contents;
+  eq(
+    "una pagina senza Page Object non viene mai costruita nello step",
+    /\bMessagesPage\b|\bmessagesPage\b/.test(conArrivo.replace(/^\s*\/\/.*$/gm, "")),
+    false
+  );
   truthy(
     "la prima pagina si apre con navigate(), le altre si riconoscono con assertLoaded()",
     file.contents.includes("await cartPage.navigate();") &&
