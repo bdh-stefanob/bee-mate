@@ -68,7 +68,7 @@ Lancia e riporta l'esito di ognuno, con le ultime righe:
 | B1 | `npx tsc --noEmit` (radice) | nessun errore |
 | B2 | `npm run check:all` (radice) | "Tutti i controlli passano" (nessun `FAIL`) |
 | B3 | `npm run rules:check` (radice) | "Regole allineate" |
-| B4 | `npm run test:dry` (radice) | scenari e step validi, nessuno "undefined" |
+| B4 | `npm run test:dry` (radice) | scenari e step validi, nessuno "undefined" **e nessuno "ambiguous"**: l'uscita e' 0 anche con step ambigui, quindi leggi il riepilogo, non il codice di uscita |
 | B5 | in `web-ui`: `npm test` | tutti verdi |
 | B6 | `npm run check:i18n` (radice) | passa |
 | B7 | in `web-ui`: `npm run build` | build riuscita |

@@ -207,3 +207,77 @@ Un elenco corto, senza indirizzi reali:
 4. Se serve l'opzione A (codice) o basta la B (due registrazioni).
 5. Cosa c'e' ora di **salvato e verde** da mostrare come rete di sicurezza
    nella demo.
+
+## 9. Impostare ambienti e variabili con Stefano (app aziendali)
+
+Sulla macchina aziendale si prova **solo** sulle app aziendali; sulle altre
+macchine si prova tutto il resto. Qui il tuo lavoro e' guidare Stefano nella
+configurazione **senza mai vedere un valore reale**.
+
+### 9.1 Regole per i segreti
+
+1. **Non aprire, non stampare, non incollare in chat il contenuto di `.env`.**
+   Per sapere cosa c'e', elenca solo i **nomi** delle variabili:
+   `Get-Content .env | ForEach-Object { if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=') { $matches[1] } }`
+2. **I valori li scrive Stefano**, a mano, nel suo editor. Tu proponi il **nome**
+   e la riga vuota (`NOME_VARIABILE=`); non chiedere di dettartelo.
+3. `npm run targets` **stampa l'indirizzo reale** risolto dalla variabile. Va
+   bene guardarlo a schermo, ma **non copiarlo** in un file, in un commit, in un
+   messaggio o in un riepilogo a Stefano: scrivi `<indirizzo dell'ambiente X>`.
+4. `.env`, `bdd-targets.json` e `reports/` sono gitignorati: verifica con
+   `git status` che **non compaiano** mai fra i file da committare.
+5. Le password si mettono in `.env` e nel JSON compaiono solo come `${VARIABILE}`.
+   Con MFA o SSO di terze parti **non** si mette un blocco `login`: si accede a
+   mano, una volta, e si salva la sessione.
+
+### 9.2 Convenzione dei nomi
+
+Un ambiente = un nome corto in minuscolo (`lavoro`, `pims`, `clinica`), scelto da
+Stefano. Le variabili derivano dal nome, in maiuscolo:
+
+| Cosa | Nome variabile | Dove compare |
+|---|---|---|
+| indirizzo di partenza | `<NOME>_URL` | `"url": "${<NOME>_URL}"` |
+| utente (se login automatico) | `<NOME>_USER` | `"value": "${<NOME>_USER}"` |
+| password (se login automatico) | `<NOME>_PASS` | `"value": "${<NOME>_PASS}"` |
+
+I nomi `CLINIC_*` delle sezioni precedenti sono **esempi**: sulla macchina di
+Stefano usa i nomi che vedi in `.env` e in `bdd-targets.json`, non sostituirli
+con quelli del documento. Se un nome non ti torna, chiedi.
+
+### 9.3 Sequenza per ogni nuovo ambiente
+
+Un ambiente alla volta. Dopo ogni passo riporta l'output **testuale** (con gli
+indirizzi oscurati) e aspetta la conferma di Stefano.
+
+| # | Chi | Cosa | Verifica |
+|---|---|---|---|
+| 1 | tu | proponi nome ambiente e nomi delle variabili (tabella 9.2) | Stefano approva i nomi |
+| 2 | Stefano | aggiunge le righe `NOME_URL=...` (e USER/PASS se serve) in `.env` | i **nomi** compaiono nell'elenco del punto 9.1.1 |
+| 3 | tu | aggiungi la voce in `bdd-targets.json` con solo `${VARIABILE}`; `readyWhen` da chiedere a Stefano (testo dell'indirizzo dopo il login) | `npm run targets`: l'ambiente e' "OK", nessuna variabile mancante |
+| 4 | Stefano | `npm run session <nome>` (forma nuda), accede a mano se serve, chiude il browser | `npm run targets` dice "sessione: di 0 ore fa" o simile |
+| 5 | tu | `npm run scout <nome>`, poi `npm run record <nome>` con Stefano che esegue il flusso | c'e' un file in `reports/recordings/` |
+| 6 | tu | `npm run generate`, `npx tsc --noEmit`, `npm run test:dry` | tsc verde; **nessun "undefined" e nessun "ambiguous"** |
+| 7 | tu | `npm run test:bersaglio <nome>` | test **verde** con l'output visibile |
+
+Se il passo 6 mostra "Multiple step definitions match", quasi sempre e' un file
+in `src/steps/generated/` generato **prima** del 24/9, che contiene ancora lo
+step `the page shows {string}` (ora vive solo in `src/steps/common/`).
+Non e' un difetto del generatore: cancella quel file gitignorato e rigenera.
+
+### 9.4 Sessioni: quando si rifanno
+
+- `npm run targets` indica l'eta' della sessione. Oltre circa 12 ore e' da
+  ritenere sospetta; oltre qualche giorno, quasi sicuramente scaduta.
+- Una sessione scaduta si vede nel test: parte e a meta' compare il login. Non
+  correggere il test: rifai `npm run session <nome>`.
+- Le sessioni valgono come credenziali: **non si copiano** su un'altra macchina
+  e non si condividono.
+
+### 9.5 Cosa fai se qualcosa non torna
+
+- Variabile segnalata come mancante: riporta il **nome**, non cercare il valore.
+- Rete o proxy che blocca l'app o il download dei browser: fermati e dillo.
+- Comando che suggerisce la forma con `--` (`npm run session -- x`): e' una
+  scritta vecchia di un messaggio. Usa la forma nuda. Se ne trovi ancora una,
+  segnalala a Stefano con il nome del file.
