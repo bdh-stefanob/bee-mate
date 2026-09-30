@@ -271,6 +271,16 @@ function valueExpression(value: string | undefined, secret: boolean | undefined)
   return ts(value ?? "");
 }
 
+/**
+ * La verifica e' stata fatta a META' del passo, non alla fine?
+ *
+ * Se si', va eseguita nel punto in cui il tester l'ha fatta: in fondo, un elemento
+ * che compare solo a meta' (il carrello, prima di pagare) non c'e' piu'.
+ */
+export function verificaNelPasso(a: Assertion, intent: { steps: readonly unknown[] }): boolean {
+  return a.afterStep !== undefined && a.afterStep < intent.steps.length;
+}
+
 export function emitSteps(
   ctx: EmitContext,
   pagesUsed: PageIdentity[],
@@ -305,7 +315,14 @@ export function emitSteps(
       else lines.push(`await ${variable}.assertLoaded();`);
     }
 
-    for (const r of intent.steps) {
+    for (const [k, r] of intent.steps.entries()) {
+      // Le verifiche fatte prima di questo gesto, nel punto in cui il tester le ha
+      // fatte. `expectTextVisible` sta nel World: uno step non conosce selettori.
+      for (const a of intent.assertions) {
+        if (verificaNelPasso(a, intent) && a.afterStep === k) {
+          lines.push(`await this.expectTextVisible(${ts(a.name)});`);
+        }
+      }
       const owner = byKey.get(r.fromPage ?? intent.page ?? "") ?? page;
       const ownerVar = variableName(owner.className);
       const method = methodsByPage.get(owner.key)?.get(r.component);
@@ -425,7 +442,12 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
   // come tre verifiche indipendenti, e sono invece un solo esito osservato.
   ctx.intents.forEach((intent, i) => {
     lines.push(`${keywordOf(i)} ${phraseOf(intent)}`);
-    intent.assertions.forEach((a, j) => {
+    // Le verifiche a meta' del passo stanno dentro lo step, nel punto giusto; qui si
+    // vedono come commento, perche' chi legge lo scenario sappia che ci sono.
+    for (const a of intent.assertions.filter((x) => verificaNelPasso(x, intent))) {
+      lines.push(`# durante questo passo si verifica: "${a.name.replace(/"/g, "'")}"`);
+    }
+    intent.assertions.filter((x) => !verificaNelPasso(x, intent)).forEach((a, j) => {
       const keyword = j === 0 ? "Then" : "And";
       lines.push(`${keyword} ${VERIFY_STEP.replace("{string}", `"${a.name.replace(/"/g, "'")}"`)}`);
     });

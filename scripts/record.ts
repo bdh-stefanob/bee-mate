@@ -120,7 +120,7 @@ function boundaries(intent: Intent): { pageUrl?: string; endUrl?: string } {
   return { pageUrl: first, ...(last !== first ? { endUrl: last } : {}) };
 }
 
-function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
+export function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
   const intents: Intent[] = [];
   let current: Intent = { label: "", steps: [], assertions: [], notes: [] };
   let unlabelled = 0;
@@ -169,6 +169,8 @@ function group(events: RawEvent[]): { intents: Intent[]; unlabelled: number } {
           name: e.name ?? "",
           ...(e.text ? { text: e.text } : {}),
           ...(e.url ? { url: e.url } : {}),
+          // Dove e' stata fatta: dopo quanti gesti di questo intento.
+          afterStep: current.steps.length,
         });
         break;
       case "note":
@@ -545,7 +547,10 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
   if (daNominare.length === 0) return rec;
 
   const sciolti = daNominare.flatMap((i) => i.steps);
-  const verifiche = daNominare.flatMap((i) => i.assertions);
+  // La posizione (`afterStep`) e' relativa al gruppo in cui e' nata: dopo aver
+  // ridiviso i gesti per pagina non vale piu', e una posizione sbagliata e' peggio
+  // di nessuna. Qui si ricade nel comportamento di prima (verifica in fondo).
+  const verifiche = daNominare.flatMap((i) => i.assertions).map(({ afterStep: _posizione, ...v }) => v);
   const gruppi = proponiGruppi(sciolti, verifiche);
   if (gruppi.length === 0) return rec;
 
@@ -698,7 +703,10 @@ async function main(): Promise<void> {
   report(finale, outPath, sessione.dizionari);
 }
 
-main().catch((err) => {
-  console.error(`\nRegistrazione fallita: ${(err as Error).message}\n`);
-  process.exit(1);
-});
+// Solo lanciato come script: importarlo da un controllo non deve aprire un browser.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(`\nRegistrazione fallita: ${(err as Error).message}\n`);
+    process.exit(1);
+  });
+}

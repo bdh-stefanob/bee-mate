@@ -76,6 +76,13 @@ export interface Assertion {
   text?: string;
   /** Su quale pagina e' stata dichiarata. Vedi `Step.url`. */
   url?: string;
+  /**
+   * Quanti gesti dell'intento la precedevano. Serve a tenerla nel punto in cui
+   * il tester l'ha fatta: una verifica a meta' di un passo lungo non puo' finire
+   * in fondo, dove l'elemento potrebbe non esserci piu'. Assente nelle
+   * registrazioni vecchie: si comportano come prima (verifica in fondo).
+   */
+  afterStep?: number;
 }
 
 /**
