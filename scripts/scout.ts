@@ -211,8 +211,8 @@ async function main(): Promise<void> {
   if (!which) {
     console.error(
       "ERRORE: manca il bersaglio.\n\n" +
-        "  npm run scout -- clinic               (bersaglio configurato)\n" +
-        "  npm run scout -- https://example.com  (url diretto)\n\n" +
+        "  npm run scout clinic               (bersaglio configurato)\n" +
+        "  npm run scout https://example.com  (url diretto)\n\n" +
         "  I bersagli si configurano in bdd-targets.json — vedi bdd-targets.example.json.\n"
     );
     process.exit(1);
@@ -263,7 +263,7 @@ SCANSIONE — ${url}
 ` +
         `  modulo di login. Per fermarti e navigare a mano:
 ` +
-        `      npm run scout:pausa -- ${which}`
+        `      npm run scout:pausa ${which}`
     );
   }
 
@@ -287,7 +287,7 @@ ${nota}`);
     } else if (target.name !== "(url diretto)") {
       console.log(
         `\n  Nessuna sessione salvata per "${target.name}".\n` +
-          `  Se la pagina e' dietro login:  npm run session -- ${target.name}\n` +
+          `  Se la pagina e' dietro login:  npm run session ${target.name}\n` +
           `  Oppure usa --pause e accedi a mano.`
       );
     }

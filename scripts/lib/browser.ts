@@ -112,8 +112,8 @@ export async function avviaBrowser(
       `      npx playwright install chromium\n\n` +
       `  Se il download e' bloccato dal proxy aziendale, usa un browser che c'e'\n` +
       `  gia' sulla macchina — non scarica niente:\n\n` +
-      `      BDD_BROWSER=chrome  npm run scout -- <url>     (oppure msedge)\n\n` +
-      `  In PowerShell:  $env:BDD_BROWSER="chrome"; npm run scout -- <url>\n\n` +
+      `      BDD_BROWSER=chrome  npm run scout <url>     (oppure msedge)\n\n` +
+      `  In PowerShell:  $env:BDD_BROWSER="chrome"; npm run scout <url>\n\n` +
       `  Dettaglio di cosa ho provato:\n` +
       errori.map((e) => `    ${e}`).join("\n") +
       `\n`

@@ -62,7 +62,7 @@ function reportTarget(t: Target, dettaglio: boolean): boolean {
   );
 
   if (!hasSession(t)) {
-    console.log(`       sessione  : nessuna — serve  npm run session -- ${t.name}`);
+    console.log(`       sessione  : nessuna — serve  npm run session ${t.name}`);
   } else if (eta !== null && eta > SESSIONE_VECCHIA_ORE) {
     console.log(`       sessione  : di ${eta} ore fa. Probabilmente scaduta: rifalla`);
   } else {
@@ -76,9 +76,9 @@ function reportTarget(t: Target, dettaglio: boolean): boolean {
     if (mancanti.length > 0) {
       console.log(`         1. metti in .env:  ${mancanti.map((v) => `${v}=...`).join("  ")}`);
     }
-    console.log(`         ${mancanti.length > 0 ? "2" : "1"}. npm run session  -- ${t.name}     login una volta sola`);
-    console.log(`         ${mancanti.length > 0 ? "3" : "2"}. npm run scout    -- ${t.name}     dizionario dei componenti`);
-    console.log(`         ${mancanti.length > 0 ? "4" : "3"}. npm run record   -- ${t.name}     esegui il test a mano`);
+    console.log(`         ${mancanti.length > 0 ? "2" : "1"}. npm run session ${t.name}     login una volta sola`);
+    console.log(`         ${mancanti.length > 0 ? "3" : "2"}. npm run scout ${t.name}     dizionario dei componenti`);
+    console.log(`         ${mancanti.length > 0 ? "4" : "3"}. npm run record ${t.name}     esegui il test a mano`);
     console.log(`         ${mancanti.length > 0 ? "5" : "4"}. npm run generate`);
     console.log(`         ${mancanti.length > 0 ? "6" : "5"}. npm run test:bersaglio ${t.name}`);
   }

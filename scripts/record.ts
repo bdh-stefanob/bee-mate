@@ -26,11 +26,11 @@
  *   - "Verifica": cosa prova che il flusso e' riuscito. Senza, niente `Then`.
  *
  * Uso:
- *   npm run record -- clinic                (bersaglio configurato in bdd-targets.json)
- *   npm run record -- https://example.com   (url diretto)
+ *   npm run record clinic                (bersaglio configurato in bdd-targets.json)
+ *   npm run record https://example.com   (url diretto)
  *
  * Con un bersaglio configurato parte gia' autenticato, se prima si e' fatto
- * `npm run session -- clinic`: il login si fa una volta e per giorni non si rifa'.
+ * `npm run session clinic`: il login si fa una volta e per giorni non si rifa'.
  *
  * Flag:
  *   --out PATH     file di output (default reports/recordings/<slug>-<ts>.json)
@@ -254,7 +254,7 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
     console.log(
       `  Sessione salvata ${sessionAge} ore fa.` +
         (sessionAge > 24
-          ? `\n  Se l'applicazione ti rimanda al login, rifalla:  npm run session -- ${target.name}`
+          ? `\n  Se l'applicazione ti rimanda al login, rifalla:  npm run session ${target.name}`
           : "")
     );
   }
@@ -655,8 +655,8 @@ async function main(): Promise<void> {
   if (!which) {
     console.error(
       "ERRORE: manca il bersaglio.\n\n" +
-        "  npm run record -- clinic               (bersaglio configurato)\n" +
-        "  npm run record -- https://example.com  (url diretto)\n\n" +
+        "  npm run record clinic               (bersaglio configurato)\n" +
+        "  npm run record https://example.com  (url diretto)\n\n" +
         "  I bersagli si configurano in bdd-targets.json — vedi bdd-targets.example.json.\n"
     );
     process.exit(1);

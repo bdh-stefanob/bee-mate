@@ -258,8 +258,8 @@ async function main(): Promise<void> {
 
   console.log(`  Sessione salvata in ${out}\n`);
   console.log(`  Da adesso partono gia' autenticati:`);
-  console.log(`    npm run record -- ${target.name}`);
-  console.log(`    npm run scout  -- ${target.name}\n`);
+  console.log(`    npm run record ${target.name}`);
+  console.log(`    npm run scout ${target.name}\n`);
   console.log(
     `  Il file equivale a delle credenziali: sta sotto reports/, che e'\n` +
       `  gitignorato. Non condividerlo e non copiarlo altrove.\n`

@@ -68,7 +68,7 @@ function latestRecording(): string {
   if (!fs.existsSync(RECORDINGS)) {
     throw new Error(
       `Nessuna registrazione: ${RECORDINGS} non esiste.\n` +
-        `  Registrane una con:  npm run record -- <bersaglio>`
+        `  Registrane una con:  npm run record <bersaglio>`
     );
   }
   const files = fs

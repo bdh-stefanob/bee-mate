@@ -68,7 +68,7 @@ function ambiente(): Ambiente {
         ? `bersaglio "${nome}", sessione ignorata: si parte da un browser pulito`
         : hasSession(target)
         ? `bersaglio "${nome}", sessione di ${eta} ore fa`
-        : `bersaglio "${nome}", nessuna sessione salvata (npm run session -- ${nome})`,
+        : `bersaglio "${nome}", nessuna sessione salvata (npm run session ${nome})`,
     };
   }
 

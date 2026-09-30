@@ -8,7 +8,7 @@
  * Il destinatario di questi strumenti e' un tester manuale. Chiedergli di
  * ricordare l'URL di staging di tre applicazioni diverse, e di incollarlo
  * giusto ogni volta, e' l'attrito che decide se lo strumento viene usato o no.
- * Con un bersaglio nominato il comando diventa `npm run record -- clinic`.
+ * Con un bersaglio nominato il comando diventa `npm run record clinic`.
  *
  * DOVE VIVONO GLI URL, E PERCHE' NON QUI
  * Il file `bdd-targets.json` e' **gitignorato**: contiene gli indirizzi degli
