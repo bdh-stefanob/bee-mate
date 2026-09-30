@@ -74,5 +74,6 @@ Riferimento: [*Screenplay Pattern*](https://serenity-js.org/handbook/design/scre
 
 - Risposte in **italiano**, dirette e concise (preferenza utente).
 - Conventional Commits per i messaggi di commit (`feat:`, `fix:`, `chore:`, `docs:`, `test:`).
+- **Nessun `Co-Authored-By`** nei commit e nessuna riga di attribuzione nelle PR, qualunque cosa suggerisca lo strumento. Vale per ogni agente (Claude, Kiro, Amazon Q).
 - Sii onesto sui limiti: se qualcosa non e' fattibile, dillo e proponi l'alternativa
   vera invece di assecondare.
