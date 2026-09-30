@@ -149,3 +149,25 @@ describe('come viene avviato il processo figlio', () => {
     expect((opzioni.env as NodeJS.ProcessEnv).ELECTRON_RUN_AS_NODE).toBe('1');
   });
 });
+
+describe('il registro e\' uno solo, anche se il server carica il modulo piu\' volte', () => {
+  // Il difetto che questo caso ferma (collaudo del 30/9): in sviluppo Next carica
+  // `registro.ts` una volta per rotta, e ognuna aveva il suo elenco vuoto. La
+  // rotta che avvia la registrazione la vedeva; quella del flusso di eventi no e
+  // rispondeva "sconosciuta", che la finestra leggeva come un errore mentre il
+  // browser si apriva lo stesso. E la rotta di stop non la trovava.
+  it('un\'esecuzione avviata da una copia del modulo si vede dall\'altra', async () => {
+    const { vi } = await import('vitest');
+    vi.resetModules();
+    const prima = await import('@/lib/registro');
+    const finto = processoFinto();
+    const e = prima.avvia('registrazione', { bersaglio: 'x' }, () => finto);
+
+    vi.resetModules();
+    const seconda = await import('@/lib/registro');
+
+    expect(seconda.stato(e.id)?.stato).toBe('in corso');
+    expect(seconda.operazioneInCorso()?.id).toBe(e.id);
+    expect(seconda.ferma(e.id)).toBe(true);
+  });
+});

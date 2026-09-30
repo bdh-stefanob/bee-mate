@@ -44,8 +44,20 @@ const MAX_RIGHE = 500;
 /** I comandi che tengono occupata la macchina: uno alla volta. */
 const LUNGHI: NomeComando[] = ['registrazione', 'sessione', 'scansione', 'test'];
 
-const esecuzioni = new Map<string, Esecuzione>();
-const processi = new Map<string, ProcessoMinimo>();
+// Su `globalThis`, non in due `const` di modulo. Il server di sviluppo di Next
+// carica questo file una volta per rotta: con una `Map` di modulo, la rotta che
+// avvia una registrazione la vedeva, mentre quella del flusso di eventi e quella
+// di stop no — la finestra leggeva "sconosciuta" come un errore, con il browser
+// che si apriva lo stesso. E' il modo documentato di tenere uno stato solo in
+// tutto il processo.
+interface StatoRegistro {
+  esecuzioni: Map<string, Esecuzione>;
+  processi: Map<string, ProcessoMinimo>;
+}
+const globale = globalThis as unknown as { __bddRegistro?: StatoRegistro };
+const registro = (globale.__bddRegistro ??= { esecuzioni: new Map(), processi: new Map() });
+const esecuzioni = registro.esecuzioni;
+const processi = registro.processi;
 
 /** Solo per i test: il registro e' di processo, non globale al sistema. */
 export function azzeraPerTest(): void {
