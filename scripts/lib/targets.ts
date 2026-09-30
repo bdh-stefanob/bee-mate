@@ -190,6 +190,26 @@ export function resolveTarget(input: string, file = CONFIG): Target {
   );
 }
 
+/**
+ * La password dell'ambiente, presa da dove l'ambiente la dichiara.
+ *
+ * Le credenziali di un ambiente stanno nel suo blocco `login`, come
+ * `${VARIABILE}` risolta da `.env` (che scrive il Controllo): un test generato
+ * non deve inventarsi un nome suo, ne' chiedere al tester di aggiungerlo a mano.
+ *
+ * Restituisce `undefined` se l'ambiente non ha un login, non ha un campo
+ * password, o il valore non si risolve (variabile assente in `.env`): una
+ * stringa vuota sembrerebbe una password e farebbe fallire il login con un
+ * messaggio che non c'entra.
+ */
+export function passwordDelBersaglio(target: Target): string | undefined {
+  const passo = target.login?.steps.find(
+    (s) => s.fill && /password/i.test(`${s.fill.name ?? ""} ${s.fill.selector ?? ""}`)
+  );
+  const valore = passo?.value !== undefined ? expand(passo.value) : "";
+  return valore || undefined;
+}
+
 /** La sessione esiste ed e' leggibile? */
 export function hasSession(target: Target): boolean {
   return Boolean(target.session) && fs.existsSync(target.session);

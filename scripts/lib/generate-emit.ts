@@ -266,7 +266,8 @@ function keywordOf(index: number): "Given" | "When" {
 /** Il valore da scrivere in un campo. Le password non si sono mai avute. */
 function valueExpression(value: string | undefined, secret: boolean | undefined): string {
   if (secret) {
-    return `process.env["APP_PASSWORD"] ?? "" /* mai registrata: viene da .env */`;
+    // Mai registrata: la dichiara l'ambiente nel suo blocco `login` (Controllo).
+    return `this.passwordAmbiente()`;
   }
   return ts(value ?? "");
 }

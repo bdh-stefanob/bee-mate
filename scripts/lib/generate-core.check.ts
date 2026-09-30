@@ -507,7 +507,7 @@ try {
   );
   truthy(
     "la password non finisce mai nel codice",
-    !steps.includes("<password>") && steps.includes('process.env["APP_PASSWORD"]'),
+    !steps.includes("<password>") && steps.includes("this.passwordAmbiente()"),
     "il valore segreto e' stato scritto nel file"
   );
   truthy(

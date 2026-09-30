@@ -117,8 +117,8 @@ function main(): void {
     for (const v of [...tutte].sort()) {
       console.log(`${v}=${process.env[v] ? "   # gia' definita" : ""}`);
     }
-    console.log(`\n# Serve anche alla password dei test generati, se ne usano:`);
-    console.log(`APP_PASSWORD=`);
+    console.log(`\n# La password dei test generati viene dal login dell'ambiente: non serve altro.`);
+    console.log(`# APP_PASSWORD= solo per un indirizzo diretto, senza ambiente.`);
     console.log(`\n# Alternativa a BDD_TARGET, per puntare un indirizzo senza nominarlo:`);
     console.log(`# BASE_URL=https://...\n`);
     return;

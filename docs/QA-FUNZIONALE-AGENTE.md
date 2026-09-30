@@ -167,6 +167,7 @@ Tutte provate su un solo scenario; se una non regge, e' una **regressione**.
 | X3 | verifica su un elemento che ha un **nome accessibile diverso dal testo visibile** (il carrello: si legge "1", si chiama "Cart, 1 items") | la verifica lo trova. Prima cercava solo il testo e cadeva dopo 10 s |
 | X4 | premi **Verifica a meta' di un passo lungo** e poi continua | nello step la verifica sta **fra** i gesti, nel punto in cui l'hai fatta; nel `.feature` compare come commento sotto il passo, non come `Then` in fondo |
 | X5 | pagina dei prodotti con il solito pulsante ripetuto ("Add to cart" x6) | `assertLoaded()` si ancora sul primo elemento toccato, **non** su una verifica che compare dopo il clic |
+| X7 | genera e lancia uno scenario che contiene il login, **senza** `APP_PASSWORD` in `.env` | il test prende la password dal blocco `login` dell'ambiente (`this.passwordAmbiente()`); niente nome fisso da aggiungere a mano. Se l'ambiente non dichiara una password, l'errore **nomina l'ambiente** e dice di registrare l'accesso dal Controllo |
 | X6 | ultimo passo lasciato aperto | la frase in feature e' inglese ("the tester did not close this step"), non italiana |
 
 ## 7. Catalogo, portale e catena dei dati
@@ -319,9 +320,9 @@ un'intera applicazione, T3 (piu' domini), T4 (segmenti numerici), lockfile di
 `web-ui`.
 
 **Emersi dal collaudo del 30/9 e ancora aperti:**
-- il login generato legge `APP_PASSWORD`, mentre l'ambiente dichiara altre
-  variabili: con la password vuota il login fallisce, e il **Controllo dice
-  comunque "Tutto a posto"** (mente al tester, P1);
+- un ambiente il cui login usa una `${VARIABILE}` non definita in `.env`: il
+  **Controllo dice comunque "Tutto a posto"**, mentre il login fallira' (mente al
+  tester, P1). Il messaggio di errore del test, invece, ora nomina l'ambiente;
 - una Verifica presa su un contenitore grande (`main`) produce un testo incollato
   e troncato che non si trova mai;
 - la verifica a meta' di un passo torna **in fondo** se l'ultimo passo non e'
