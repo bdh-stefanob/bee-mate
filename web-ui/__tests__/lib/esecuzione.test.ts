@@ -164,3 +164,26 @@ describe('uno scenario scelto dalla finestra', () => {
     }
   });
 });
+
+describe('la velocita\' con cui si guarda il browser', () => {
+  // Chi guarda il test vuole vedere cosa succede: senza rallentare, sei secondi
+  // di passi verdi passano in un lampo. La velocita' e' un numero, mai una riga.
+  it('un test lento porta i millisecondi in forma nuda', () => {
+    const r = rigaDiComando('test', { bersaglio: 'demo', vedi: true, rallenta: 500 });
+    expect(r.argomenti).toEqual([
+      'node_modules/ts-node/dist/bin.js',
+      'scripts/test-bersaglio.ts', 'demo', 'generati', 'vedi', 'rallenta=500',
+    ]);
+  });
+
+  it('senza velocita\' o a zero, non compare niente', () => {
+    expect(rigaDiComando('test', { bersaglio: 'demo', vedi: true }).argomenti.join(' ')).not.toMatch(/rallenta/);
+    expect(rigaDiComando('test', { bersaglio: 'demo', vedi: true, rallenta: 0 }).argomenti.join(' ')).not.toMatch(/rallenta/);
+  });
+
+  it('rifiuta cio\' che non e\' un numero intero ragionevole', () => {
+    for (const cattivo of [-1, 1.5, 999999, Number.NaN, '500; rm -rf /' as unknown as number]) {
+      expect(() => rigaDiComando('test', { bersaglio: 'demo', vedi: true, rallenta: cattivo })).toThrow(/velocita/);
+    }
+  });
+});

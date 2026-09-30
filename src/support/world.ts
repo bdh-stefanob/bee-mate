@@ -109,7 +109,14 @@ export class CustomWorld extends World {
     // browser di Playwright non sono stati scaricati, l'alternativa sarebbe
     // trenta scenari che falliscono con "Executable doesn't exist" invece di
     // un messaggio che dice quale comando lo risolve.
-    const avvio = await avviaBrowser({ headless: process.env["HEADED"] !== "1" });
+    // BDD_SLOWMO: pausa in millisecondi fra un'azione e l'altra, per chi guarda.
+    // Vale per ogni scenario, generato o scritto a mano: e' una proprieta' del
+    // browser, non del test, quindi il generatore non deve saperne niente.
+    const slowMo = process.env["HEADED"] === "1" ? Number(process.env["BDD_SLOWMO"] ?? "0") : 0;
+    const avvio = await avviaBrowser({
+      headless: process.env["HEADED"] !== "1",
+      ...(Number.isInteger(slowMo) && slowMo > 0 ? { slowMo } : {}),
+    });
     this.browser = avvio.browser;
     this.context = await this.browser.newContext({
       ...(AMBIENTE.baseURL ? { baseURL: AMBIENTE.baseURL } : {}),

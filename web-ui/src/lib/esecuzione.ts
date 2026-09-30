@@ -23,6 +23,23 @@ export interface Parametri {
    * sua riga (`file.feature:12`, la forma che Cucumber capisce da solo).
    */
   scenario?: string;
+  /**
+   * Millisecondi di pausa fra un'azione e l'altra, per chi guarda il browser.
+   * Un numero intero, mai una riga: vale solo con `vedi`.
+   */
+  rallenta?: number;
+}
+
+/** Piu' di cosi' non e' guardare un test, e' aspettarlo. */
+const RALLENTA_MASSIMO = 5000;
+
+function rallentaDi(p?: Parametri): number {
+  const v = p?.rallenta;
+  if (v === undefined || v === 0) return 0;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > RALLENTA_MASSIMO) {
+    throw new Error(`velocita' non valida: ${JSON.stringify(v)}`);
+  }
+  return v;
 }
 
 /**
@@ -137,6 +154,8 @@ export function rigaDiComando(
       const cosa = p?.scenario !== undefined ? scenarioDi(p.scenario) : 'generati';
       const argomenti = [bersaglioDi(p), cosa];
       if (p?.vedi) argomenti.push('vedi');
+      const rallenta = rallentaDi(p);
+      if (p?.vedi && rallenta > 0) argomenti.push(`rallenta=${rallenta}`);
       if (p?.pulito) argomenti.push('pulito');
       if (p?.messaggi) argomenti.push(`messaggi=${percorsoDi(p.messaggi, 'messaggi')}`);
       return script('test-bersaglio.ts', ...argomenti);

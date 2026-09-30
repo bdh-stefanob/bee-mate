@@ -163,6 +163,9 @@ function EsecuzioneContenuto() {
   const [altrove, setAltrove] = useState<NomeComando | null>(null);
   const [guardaIlBrowser, setGuardaIlBrowser] = useState(false);
   const [senzaSessione, setSenzaSessione] = useState(false);
+  // Pausa fra un'azione e l'altra, in millisecondi: serve solo a chi guarda il
+  // browser. 0 e' la velocita' di sempre.
+  const [rallenta, setRallenta] = useState(0);
   // Cosa eseguire: vuoto vale "tutti gli scenari registrati", il comportamento
   // di prima; altrimenti un file o uno scenario, nella forma che Cucumber
   // capisce (`src/features/x.feature` o `...feature:12`).
@@ -355,6 +358,7 @@ function EsecuzioneContenuto() {
             bersaglio: ambiente,
             vedi: guardaIlBrowser,
             pulito: senzaSessione,
+            ...(guardaIlBrowser && rallenta > 0 ? { rallenta } : {}),
             ...(scelta ? { scenario: scelta } : {}),
           },
         }),
@@ -483,6 +487,25 @@ function EsecuzioneContenuto() {
           onChange={setGuardaIlBrowser}
           disabilitato={inCorso}
         />
+        {guardaIlBrowser && (
+          <div className="flex items-center justify-between gap-3 min-h-10 rounded-md border px-3 text-sm" style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}>
+            <label htmlFor="velocita-browser" className="font-medium">
+              {t('velocita')}
+            </label>
+            <select
+              id="velocita-browser"
+              value={rallenta}
+              onChange={(e) => setRallenta(Number(e.target.value))}
+              disabled={inCorso}
+              className="min-h-10 rounded-md border px-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            >
+              <option value={0}>{t('velocitaNormale')}</option>
+              <option value={500}>{t('velocitaLenta')}</option>
+              <option value={1200}>{t('velocitaMoltoLenta')}</option>
+            </select>
+          </div>
+        )}
         <Interruttore
           etichetta={t('partiSenzaSessione')}
           attivo={senzaSessione}

@@ -16,6 +16,7 @@
  *   npm run test:bersaglio clinic             tutti gli scenari su "clinic"
  *   npm run test:bersaglio clinic generati    solo quelli usciti dalla registrazione
  *   npm run test:bersaglio clinic vedi        con il browser visibile
+ *   npm run test:bersaglio clinic vedi rallenta=500   ...con mezzo secondo fra un'azione e l'altra
  *   npm run test:bersaglio clinic pulito      senza la sessione salvata
  *   npm run test:bersaglio clinic src/features/generated/x.feature
  *   npm run test:bersaglio https://...        un indirizzo, senza bersaglio nominato
@@ -88,13 +89,19 @@ function main(): void {
   // cruscotto: mai la prosa che Cucumber stampa a schermo.
   const messaggi = argValue(args, "--messaggi");
 
+  // "rallenta=<ms>": pausa fra un'azione e l'altra, per chi guarda il browser. Senza
+  // rallentare, sei secondi di passi verdi passano in un lampo. Vale solo con
+  // "vedi": nascosto, rallentare non serve a nessuno.
+  const rallentaMs = Number(argValue(args, "--rallenta") ?? "0");
+  const rallenta = vedi && Number.isInteger(rallentaMs) && rallentaMs > 0 ? rallentaMs : 0;
+
   // Tutti gli scenari registrati: quelli ancora nella loro cartella e quelli
   // a cui il tester ha gia' dato una casa. Nessuno registrato: si passa la
   // cartella, e Cucumber dice da se' che non c'e' niente da eseguire.
   const registrati = scenariRegistrati(path.join("src", "features"));
   const percorsi = soloGenerati
     ? (registrati.length > 0 ? registrati : [path.join("src", "features", "generated")])
-    : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito" && !a.startsWith("messaggi="));
+    : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito" && !a.startsWith("messaggi=") && !a.startsWith("rallenta="));
 
   const eta = sessionAgeHours(target);
   console.log(`\nTEST — ${indirizzoDiretto ? "indirizzo diretto" : `bersaglio "${target.name}"`}\n`);
@@ -136,6 +143,7 @@ function main(): void {
         ...ambiente,
         BDD_PATHS: percorsi.join(";"),
         ...(vedi ? { HEADED: "1" } : {}),
+        ...(rallenta > 0 ? { BDD_SLOWMO: String(rallenta) } : {}),
         ...(pulito ? { BDD_NO_SESSION: "1" } : {}),
       },
     });
