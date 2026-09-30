@@ -187,3 +187,19 @@ describe('la velocita\' con cui si guarda il browser', () => {
     }
   });
 });
+
+describe('la diagnosi non ricontrolla i tipi', () => {
+  // Misurato il 30/9: 1,45 s per ogni apertura del Controllo, di cui circa 0,8
+  // spesi a ricontrollare i tipi di script che `tsc` e `check:all` controllano
+  // gia'. Solo la diagnosi: nei test il controllo dei tipi e' quello che mostra
+  // in chiaro un passo generato sbagliato.
+  it('la diagnosi parte con ts-node in sola traduzione', () => {
+    expect(rigaDiComando('diagnosi').argomenti).toEqual([
+      'node_modules/ts-node/dist/bin-transpile.js', 'scripts/diagnosi.ts', 'json',
+    ]);
+  });
+
+  it('gli altri script restano con il controllo dei tipi', () => {
+    expect(rigaDiComando('test', { bersaglio: 'x' }).argomenti[0]).toBe('node_modules/ts-node/dist/bin.js');
+  });
+});

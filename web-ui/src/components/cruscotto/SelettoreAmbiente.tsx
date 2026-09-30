@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Server } from 'lucide-react';
 import { useAmbiente } from '@/context/AmbienteContext';
@@ -23,6 +23,11 @@ export function SelettoreAmbiente() {
   const t = useTranslations('Cruscotto');
   const { ambiente, impostaAmbiente } = useAmbiente();
   const [ambienti, setAmbienti] = useState<string[]>([]);
+  // L'ambiente attuale si legge da un riferimento: se `carica` dipendesse da
+  // `ambiente`, la scelta automatica del primo ambiente la ricreerebbe, l'effetto
+  // ripartirebbe e l'elenco verrebbe richiesto una seconda volta per niente.
+  const ambienteRef = useRef(ambiente);
+  ambienteRef.current = ambiente;
 
   // F3: prima si leggeva /api/configurazione una volta sola, all'apertura
   // della finestra. Aggiungere o eliminare un ambiente nella schermata
@@ -40,14 +45,14 @@ export function SelettoreAmbiente() {
         // Nessun ambiente scelto ancora (prima apertura), o quello scelto non
         // esiste piu' (cancellato dalla sezione Ambienti): si ricade sul
         // primo dell'elenco, mai su un nome che non corrisponde piu' a niente.
-        if (elenco.length > 0 && !elenco.includes(ambiente)) {
+        if (elenco.length > 0 && !elenco.includes(ambienteRef.current)) {
           impostaAmbiente(elenco[0]);
         }
       } catch {
         if (attivo()) setAmbienti([]);
       }
     },
-    [ambiente, impostaAmbiente]
+    [impostaAmbiente]
   );
 
   useEffect(() => {

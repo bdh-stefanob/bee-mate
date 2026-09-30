@@ -119,6 +119,10 @@ function scenarioDi(valore: unknown): string {
  */
 const NODE = process.execPath;
 const TS_NODE = 'node_modules/ts-node/dist/bin.js';
+// Sola traduzione, senza controllo dei tipi: la meta' del tempo. Solo per la
+// diagnosi, che gira a ogni apertura del Controllo; i tipi li controllano gia'
+// `tsc` e `check:all`.
+const TS_NODE_SOLO_TRADUZIONE = 'node_modules/ts-node/dist/bin-transpile.js';
 const PLAYWRIGHT = 'node_modules/playwright/cli.js';
 
 function script(nome: string, ...argomenti: string[]) {
@@ -131,7 +135,7 @@ export function rigaDiComando(
 ): { eseguibile: string; argomenti: string[] } {
   switch (nome) {
     case 'diagnosi':
-      return script('diagnosi.ts', 'json');
+      return { eseguibile: NODE, argomenti: [TS_NODE_SOLO_TRADUZIONE, 'scripts/diagnosi.ts', 'json'] };
     case 'installa-browser':
       return { eseguibile: NODE, argomenti: [PLAYWRIGHT, 'install', 'chromium'] };
     case 'sincronizza-regole':

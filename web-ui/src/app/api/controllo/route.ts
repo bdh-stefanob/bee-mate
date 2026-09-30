@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import { REPO_ROOT } from '@/lib/repo';
 import { rigaDiComando } from '@/lib/esecuzione';
 import { interpreta } from '@/lib/controllo';
 import { ambienteFiglio } from '@/lib/ambiente-figlio';
+
+// Asincrono, non `execFileSync`: la diagnosi dura quasi un secondo, e una chiamata
+// sincrona bloccava tutto il server — l'elenco degli ambienti e la barra laterale
+// restavano in coda dietro di lei (misurato: 0,36 s da sola, 1,73 s in coda).
+const eseguiFile = promisify(execFile);
 
 export async function GET() {
   const { eseguibile, argomenti } = rigaDiComando('diagnosi');
@@ -13,7 +19,7 @@ export async function GET() {
     // ("C:\Program Files\..."), e una shell lo spezza sul primo spazio. La
     // prima schermata del cruscotto rispondeva 500 sempre, con un pulsante
     // "Riprova" che non poteva riuscire.
-    const uscita = execFileSync(eseguibile, argomenti, {
+    const { stdout: uscita } = await eseguiFile(eseguibile, argomenti, {
       cwd: REPO_ROOT,
       encoding: 'utf-8',
       timeout: 60000,

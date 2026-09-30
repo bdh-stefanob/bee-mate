@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { VoceControllo } from '@/components/cruscotto/VoceControllo';
@@ -141,20 +141,32 @@ export default function ControlloPage() {
   const t = useTranslations('Controllo');
   const [stato, setStato] = useState<StatoPagina>('caricamento');
   const [dati, setDati] = useState<RispostaControllo | null>(null);
+  // Una diagnosi rifatta dopo una modifica (un ambiente aggiunto, un rimedio
+  // lanciato) non svuota la pagina: le voci di prima restano, segnate come in
+  // aggiornamento, finche' non arrivano le nuove. Svuotarla ogni volta faceva
+  // sparire per un secondo proprio la riga su cui il tester stava lavorando.
+  const [aggiornando, setAggiornando] = useState(false);
+  const giaCaricato = useRef(false);
 
   const carica = useCallback(async () => {
-    setStato('caricamento');
+    if (giaCaricato.current) setAggiornando(true);
+    else setStato('caricamento');
     try {
       const risposta = await fetch('/api/controllo');
       const corpo = (await risposta.json()) as RispostaControllo;
       if (!risposta.ok) {
-        setStato('errore');
+        // Con delle voci gia' a schermo, un aggiornamento fallito le lascia li':
+        // meglio lo stato di un momento fa che una pagina rossa senza niente.
+        if (!giaCaricato.current) setStato('errore');
         return;
       }
       setDati(corpo);
       setStato('pronto');
+      giaCaricato.current = true;
     } catch {
-      setStato('errore');
+      if (!giaCaricato.current) setStato('errore');
+    } finally {
+      setAggiornando(false);
     }
   }, []);
 
@@ -211,7 +223,7 @@ export default function ControlloPage() {
       )}
 
       {stato === 'pronto' && dati && (
-        <>
+        <div className="flex flex-col gap-4" aria-busy={aggiornando}>
           <div
             role="status"
             className="flex items-center gap-2 rounded-lg border p-3 font-medium"
@@ -256,22 +268,24 @@ export default function ControlloPage() {
               </ul>
             </details>
           )}
-
-          <SezioneAmbienti onCambiato={carica} />
-
-          <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
-            <summary
-              className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
-            >
-              {t('credenzialeApri')}
-            </summary>
-            <div className="p-3 pt-0">
-              <ConfiguraCredenziale />
-            </div>
-          </details>
-        </>
+        </div>
       )}
+
+      {/* Ambienti e credenziali non dipendono dalla diagnosi: si mostrano subito,
+          invece di aspettare quasi un secondo che la macchina sia stata controllata. */}
+      <SezioneAmbienti onCambiato={carica} />
+
+      <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+        <summary
+          className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        >
+          {t('credenzialeApri')}
+        </summary>
+        <div className="p-3 pt-0">
+          <ConfiguraCredenziale />
+        </div>
+      </details>
     </div>
   );
 }
