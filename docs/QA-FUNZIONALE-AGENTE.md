@@ -56,6 +56,15 @@ cd web-ui && npm ci
 - Copia `bdd-targets.example.json` in `bdd-targets.json` **solo** quando un caso
   lo chiede (la partenza pulita e' un caso).
 
+- **Se ti danno un indirizzo gia' attivo** (di solito http://localhost:3000),
+  controlla che risponda (`GET /api/controllo` deve dare 200) e **usalo**: non
+  avviare un secondo server, finirebbe su un'altra porta e i due si confonderebbero.
+  In quel caso la finestra scrive nella cartella del server, non in una copia:
+  a fine collaudo elenca **tutto cio' che hai creato** (ambienti, scenari salvati
+  sotto `src/`, registrazioni) e rimuovi solo quello, lasciando `git status`
+  com'era. Lo scenario `shop/order/...` e i file `src/*/shop/` esistevano gia': non
+  toccarli.
+
 Verifiche di base da riportare: versione di Node, sistema operativo, browser
 usato, porta, `git rev-parse --short HEAD`.
 
@@ -147,6 +156,19 @@ poi ripeti con un ambiente configurato.
 | E9 | senza assistente (Kiro) | lo scenario deterministico gira comunque (R8.2) |
 | E10 | da riga di comando: `npm run test:bersaglio demo` | funziona in PowerShell e in bash (senza variabili di ambiente scritte a mano) |
 
+### 6b. Correzioni del 30/9: verificale come regressioni
+
+Tutte provate su un solo scenario; se una non regge, e' una **regressione**.
+
+| ID | Caso | Atteso |
+|---|---|---|
+| X1 | in Esegui scegli **un solo scenario** e lancia | parte **solo** quello. Prima partivano tutti gli scenari con glue (anche di un'altra applicazione, rossi contro l'ambiente scelto). Conta i file nel flusso dei messaggi |
+| X2 | registra un passo che **attraversa 3 pagine** (carrello, dati, riepilogo), genera | `npx tsc --noEmit` passa; nello step ogni Page Object e' creata prima di essere usata (prima: TS2454, e un solo file cosi' rompeva la compilazione di **tutti** gli scenari) |
+| X3 | verifica su un elemento che ha un **nome accessibile diverso dal testo visibile** (il carrello: si legge "1", si chiama "Cart, 1 items") | la verifica lo trova. Prima cercava solo il testo e cadeva dopo 10 s |
+| X4 | premi **Verifica a meta' di un passo lungo** e poi continua | nello step la verifica sta **fra** i gesti, nel punto in cui l'hai fatta; nel `.feature` compare come commento sotto il passo, non come `Then` in fondo |
+| X5 | pagina dei prodotti con il solito pulsante ripetuto ("Add to cart" x6) | `assertLoaded()` si ancora sul primo elemento toccato, **non** su una verifica che compare dopo il clic |
+| X6 | ultimo passo lasciato aperto | la frase in feature e' inglese ("the tester did not close this step"), non italiana |
+
 ## 7. Catalogo, portale e catena dei dati
 
 | ID | Caso | Atteso |
@@ -195,6 +217,83 @@ Per ogni schermata (`/controllo`, `/registra`, `/esecuzione`, `/catalogo`,
 | U12 | coerenza | stesse parole per la stessa cosa ("Ambiente"); il portale ha lo stesso aspetto del cruscotto (oggi no: F19) |
 | U13 | messaggi | nessun gergo da sviluppatore ("Playwright", "locator", "13 eventi ricevuti") visibile a un tester (gia' noto: F12) |
 
+### 9b. Giudizio di stile e di UX (oltre alle verifiche sopra)
+
+Le tabelle sopra rispondono "rispetta il requisito?". Qui si risponde "e' fatto
+bene?". Per **ogni schermata** dai un voto da 1 a 5 a ciascun punto, **con una
+prova** (screenshot con nome file o testo citato). Un voto senza prova non conta.
+
+| Punto | Cosa guardare |
+|---|---|
+| Gerarchia visiva | cosa si nota per primo, e' la cosa giusta? c'e' un'azione principale chiara? |
+| Coerenza | stessi componenti, colori, parole e posizioni fra tutte le schermate, portale incluso |
+| Spaziatura e allineamento | ritmo verticale, margini, testi che si sovrappongono o si troncano |
+| Tipografia | dimensioni, pesi, leggibilita' su 1280 e su 390 px |
+| Densita' | troppo vuoto o troppo pieno? righe lunghe? |
+| Feedback | ogni azione risponde subito (caricamento, esito, errore)? lo stato e' sempre visibile? |
+| Prevenzione degli errori | conferme prima di azioni distruttive, valori di default sensati, campi guidati |
+| Linguaggio | frasi che un tester capisce senza aiuto; niente gergo; stessa parola per la stessa cosa |
+| Recuperabilita' | dopo un errore si sa cosa fare; si puo' annullare o ripetere |
+| Prime impressioni | **il test dei 60 secondi**: aprendo l'app per la prima volta, sai cosa fare e in che ordine? Prova a completare registra → genera → esegui **senza leggere la guida** e riporta dove ti sei fermato |
+
+Poi, in tre righe ciascuno: **le tre cose fatte meglio** e **le tre da migliorare
+per prime**, di tutta l'app.
+
+### 9c. Colori, contrasti, dimensioni: si misurano, non si stimano a occhio
+
+Per ogni schermata, in **tema chiaro e scuro**, a 1280 px e a 390 px. Le soglie
+sono WCAG 2.2 livello AA piu' quelle piu' severe della spec del cruscotto.
+
+| Misura | Soglia | Come |
+|---|---|---|
+| Contrasto del testo normale | **almeno 4,5:1** | per ogni elemento di testo visibile, leggi `getComputedStyle` (colore e sfondo **effettivo**, risalendo gli antenati fino a un colore non trasparente) e calcola il rapporto con la formula WCAG (luminanza relativa). Riporta **ogni coppia sotto soglia**, con selettore, colori, rapporto |
+| Testo grande (da 24 px, o 18,66 px in grassetto) | almeno 3:1 | stesso metodo |
+| Elementi di interfaccia: bordi dei campi, icone, contorno di focus, stati | almeno 3:1 contro lo sfondo vicino | stesso metodo, per ogni controllo |
+| Il colore non e' mai l'unico segnale | sempre icona **e** parola | metti la pagina in scala di grigi (`filter: grayscale(1)`) e verifica che esiti, errori e stato attivo si capiscano ancora |
+| Stati (hover, focus, disabilitato, attivo) | distinguibili e con il contrasto di sopra | portali tutti e cinque su ogni tipo di controllo; il disabilitato deve restare **leggibile** |
+| Dimensione del testo | corpo almeno 16 px; niente sotto 12 px | elenca ogni testo sotto soglia con selettore e misura |
+| Interlinea e larghezza delle righe | interlinea almeno 1,5 nel corpo; righe non oltre ~80 caratteri | misura su un paragrafo lungo |
+| Aree cliccabili | **almeno 40x40 px** (WCAG 2.2 ne chiede 24; la spec ne chiede 40) | misura con `getBoundingClientRect` per ogni controllo interattivo, anche su 390 px |
+| Ingrandimento | a 200% e a 400% nessuna perdita di contenuto ne' scroll orizzontale (a 320 px di larghezza) | zoom del browser |
+| Spaziatura del testo | leggibile con interlinea 1,5, spazio fra paragrafi 2x, fra lettere 0,12 em | inietta gli stili e guarda se si tronca o si sovrappone |
+| Movimento | nessuna animazione essenziale; rispetta `prefers-reduced-motion` | attivalo e guarda |
+| Scala e ritmo | poche dimensioni di carattere e di spaziatura, coerenti | elenca le dimensioni distinte trovate: molte varianti quasi uguali sono un difetto di sistema |
+| Coerenza dei token | i colori usati sono quelli della palette dichiarata (`#1A56DB` blu, `#067647` verde, `#B42318` rosso, `#101828` / `#475467` testi) | elenca i colori **non** in palette |
+
+Riporta i numeri in una tabella (schermata, tema, selettore, misura, soglia, esito).
+Un contrasto "sembra buono" non vale: serve il rapporto calcolato.
+
+### 9d. Riferimenti nel secondo cervello (sola lettura)
+
+Se puoi accedere al vault Obsidian di Stefano, usalo **solo in lettura** per
+ancorare i giudizi di stile a buone pratiche, e **cita la nota** accanto al
+giudizio. Radice: `C:/Users/sbert/Desktop/StefanoBertaccini/Obsian_Stefano`.
+
+- **Non leggere mai** cartelle `_riservato/` ne' note con `riservato: true`; non
+  modificare, non cancellare, non creare file nel vault.
+- Usabilita' e principi:
+  `40_Università/Corsi/2_anno/2_Sem/Human Computer Interaction/Interface Design principles/`
+  → `Shneiderman's Golden Rules & Nielsen's Heuristics/` (le dieci euristiche di
+  Nielsen, una nota ciascuna, e le otto regole di Shneiderman), la cartella
+  `Foundational Design Principles - Norman's Framework/` (affordance, feedback,
+  vincoli, modello mentale) e `Interaction Design Patterns & MobileResponsive
+  Consideration/` (design responsive e mobile).
+- Accessibilita' e colore:
+  `40_Università/Corsi/2_anno/2_Sem/Human Computer Interaction/Accessibility Foundations/`
+  → `Designing for Disabilities/` (criteri WCAG, principi POUR, livelli di
+  conformita', tastiera e motoria, accessibilita' visiva). **Nota:** la nota
+  "Color & Contrast" del vault e' vuota (il testo non era disponibile): per i
+  numeri del contrasto valgono le soglie di §9c.
+- Un esempio di audit gia' fatto, per formato e livello di dettaglio:
+  `20_Lavoro/Like-Digital/Bhave/_docs/behatrix-ui/docs/audit-contrast.md` (tabella
+  coppia di colori, rapporto, soglia, esito, per tema) e
+  `.../behatrix-ui/docs/UI-IMPROVEMENTS-v0.2.md`. Non sono di questo progetto:
+  servono come modello del report, non come requisiti.
+
+Per ogni difetto di UX riportato indica **quale euristica viola** (es. "visibilita'
+dello stato del sistema", "prevenzione degli errori", "coerenza e standard") e, se
+hai letto la nota, quale.
+
 ## 10. Requisiti della catena (R1, R4, R6, R7, R9) da riga di comando
 
 Non servono fonti reali: usa le fixture (`test-fixtures/generate/`).
@@ -210,14 +309,27 @@ Non servono fonti reali: usa le fixture (`test-fixtures/generate/`).
 
 ## 11. Cosa e' gia' noto (non riportare come nuovo)
 
-**Corretti:** F0, F1, F2, F3, F4, F5, F6, F7, F10, F11 (verificali: se non
-reggono, e' una **regressione**, e va in cima).
+**Corretti:** F0, F1, F2, F3, F4, F5, F6, F7, F10, F11 e i casi X1-X6 di §6b
+(verificali: se non reggono, e' una **regressione**, e va in cima).
 
 **Ancora aperti (attesi):** F8 (comandi `npm` in schermata), F9 (due lingue),
 F12-F20 (rifiniture), task 14 (riga dentro una lista), task 16 (barra recorder
 in due lingue), catalogo non aggiornato dopo la generazione, Esegui non sceglie
 un'intera applicazione, T3 (piu' domini), T4 (segmenti numerici), lockfile di
 `web-ui`.
+
+**Emersi dal collaudo del 30/9 e ancora aperti:**
+- il login generato legge `APP_PASSWORD`, mentre l'ambiente dichiara altre
+  variabili: con la password vuota il login fallisce, e il **Controllo dice
+  comunque "Tutto a posto"** (mente al tester, P1);
+- una Verifica presa su un contenitore grande (`main`) produce un testo incollato
+  e troncato che non si trova mai;
+- la verifica a meta' di un passo torna **in fondo** se l'ultimo passo non e'
+  chiuso, o se la registrazione e' stata fatta prima di questa correzione;
+- il primo clic su "Registra una sessione" a volte non parte (non riprodotto);
+- Catalogo: la data in italiano e' nel formato americano ("9/25/2026,
+  12:19:15 PM"); i due interruttori di Esegui non hanno un nome accessibile; il
+  campo "Applicazione" ha come nome il segnaposto "es. shop".
 
 **Fuori perimetro, non e' un difetto:** Kiro da riga di comando non
 presidiato, pubblicazione su Confluence (Q9), pacchetto `.vsix`, materiale di
@@ -237,7 +349,13 @@ presentazione.
    Per ognuno: verificato / parziale / non verificabile, e perche'.
 5. **Cosa non hai potuto provare** e cosa serve per provarlo (es. app con
    accesso aziendale, MFA, macchina Windows).
-6. Una riga finale: la catena registra → genera → esegui e' **verde, si', o no**,
+6. **Cosa funziona bene**, non solo cosa non va: un elenco di almeno cinque
+   punti, ognuno con la prova. Serve a chi decide cosa non toccare.
+7. **Scheda per schermata** (§9b): una tabella schermata x punto con i voti da 1
+   a 5, e sotto le **tre cose migliori** e le **tre da migliorare per prime**.
+8. **Le tue prove visive**: elenco degli screenshot con nome file, per schermata,
+   larghezza e tema.
+9. Una riga finale: la catena registra → genera → esegui e' **verde, si', o no**,
    e dove si ferma.
 
 **Onesta':** se un caso non e' eseguibile, scrivilo. Un esito "ok" senza
