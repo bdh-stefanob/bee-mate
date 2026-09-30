@@ -72,4 +72,20 @@ describe('riepilogoErrore', () => {
   it('un messaggio senza le righe fisse da\' solo la prima riga', () => {
     expect(riepilogoErrore('primo\nsecondo').primaRiga).toBe('primo');
   });
+
+  it('stessa pagina e locator getByRole: dice quale elemento manca', () => {
+    const msg =
+      "Error: element(s) not found\n  Locator: getByRole('button', { name: 'Checkout' })\n\n" +
+      '  Pagina attesa : InventoryPage (/inventory.html)\n' +
+      '  Indirizzo ora : https://www.saucedemo.com/inventory.html\n';
+    expect(riepilogoErrore(msg).elementoMancante).toEqual({ ruolo: 'button', nome: 'Checkout' });
+  });
+
+  it('indirizzo diverso: nessun elemento mancante, resta il messaggio sull\'indirizzo', () => {
+    const msg =
+      "  Locator: getByRole('button', { name: 'Checkout' })\n" +
+      '  Pagina attesa : InventoryPage (/inventory.html)\n' +
+      '  Indirizzo ora : https://www.saucedemo.com/\n';
+    expect(riepilogoErrore(msg).elementoMancante).toBeUndefined();
+  });
 });

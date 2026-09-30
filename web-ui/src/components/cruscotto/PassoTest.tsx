@@ -63,7 +63,9 @@ export function PassoTest({ passo }: { passo: Passo }) {
             className="flex flex-col gap-0.5 text-sm font-medium"
             style={{ color: 'var(--rosso)' }}
           >
-            {passo.riepilogo?.paginaAttesa || passo.riepilogo?.indirizzoOra ? (
+            {passo.riepilogo?.elementoMancante ? (
+              <span>{t('paginaGiustaElementoMancante', passo.riepilogo.elementoMancante)}</span>
+            ) : passo.riepilogo?.paginaAttesa || passo.riepilogo?.indirizzoOra ? (
               <>
                 {passo.riepilogo.paginaAttesa && (
                   <span>{t('paginaAttesa', { pagina: passo.riepilogo.paginaAttesa })}</span>

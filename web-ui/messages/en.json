@@ -186,6 +186,7 @@
     "altSchermata": "Screenshot captured when step \"{testo}\" failed",
     "paginaAttesa": "Expected page: {pagina}",
     "indirizzoRaggiunto": "Address reached: {indirizzo}",
+    "paginaGiustaElementoMancante": "You are on the right page, but I can't find the {ruolo} element \"{nome}\"",
     "dettagliTecnici": "Technical details"
   },
   "VoceControllo": {

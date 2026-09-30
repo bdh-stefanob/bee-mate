@@ -186,6 +186,7 @@
     "altSchermata": "Schermata catturata al momento del fallimento del passo «{testo}»",
     "paginaAttesa": "Pagina attesa: {pagina}",
     "indirizzoRaggiunto": "Indirizzo raggiunto: {indirizzo}",
+    "paginaGiustaElementoMancante": "Sei sulla pagina giusta, ma non trovo l'elemento {ruolo} «{nome}»",
     "dettagliTecnici": "Dettagli tecnici"
   },
   "VoceControllo": {

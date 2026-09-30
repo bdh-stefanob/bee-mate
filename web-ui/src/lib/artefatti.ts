@@ -77,20 +77,48 @@ interface MessaggioCucumber {
 export interface RiepilogoErrore {
   paginaAttesa?: string;
   indirizzoOra?: string;
+  /**
+   * Presente solo quando l'indirizzo raggiunto COINCIDE con la pagina attesa e
+   * il locator che manca e' un `getByRole`: il tester e' nel posto giusto e
+   * manca l'elemento. Senza questo, "attesa /x · raggiunto /x" non dice nulla.
+   */
+  elementoMancante?: { ruolo: string; nome: string };
   primaRiga: string;
 }
 
 const RIGA_PAGINA_ATTESA = /^\s*Pagina attesa\s*:\s*(.+)$/m;
 const RIGA_INDIRIZZO_ORA = /^\s*Indirizzo ora\s*:\s*(.+)$/m;
 
+const RIGA_LOCATOR_RUOLO =
+  /^\s*Locator\s*:\s*getByRole\(\s*(['"])(.+?)\1\s*,\s*\{\s*name\s*:\s*(['"])(.*?)\3/m;
+
+function percorsoDi(valore: string): string {
+  let p = valore;
+  try {
+    p = new URL(valore).pathname;
+  } catch {
+    p = valore.split(/[?#]/)[0];
+  }
+  return p.length > 1 ? p.replace(/\/+$/, '') : p;
+}
+
+/** `AppPage (/app)` -> `/app`; un valore senza parentesi resta com'e'. */
+function percorsoAtteso(paginaAttesa: string): string {
+  return percorsoDi(/\(([^)]*)\)\s*$/.exec(paginaAttesa)?.[1] ?? paginaAttesa);
+}
+
 export function riepilogoErrore(messaggioPulito: string): RiepilogoErrore {
   const primaRiga = messaggioPulito.split('\n').find((r) => r.trim()) ?? messaggioPulito;
   const paginaAttesa = RIGA_PAGINA_ATTESA.exec(messaggioPulito)?.[1]?.trim();
   const indirizzoOra = RIGA_INDIRIZZO_ORA.exec(messaggioPulito)?.[1]?.trim();
+  const locator = RIGA_LOCATOR_RUOLO.exec(messaggioPulito);
+  const paginaGiusta =
+    !!paginaAttesa && !!indirizzoOra && percorsoAtteso(paginaAttesa) === percorsoDi(indirizzoOra);
   return {
     primaRiga: primaRiga.trim(),
     ...(paginaAttesa ? { paginaAttesa } : {}),
     ...(indirizzoOra ? { indirizzoOra } : {}),
+    ...(paginaGiusta && locator ? { elementoMancante: { ruolo: locator[2], nome: locator[4] } } : {}),
   };
 }
 
