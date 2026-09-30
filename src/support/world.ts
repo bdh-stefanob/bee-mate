@@ -7,6 +7,7 @@
 import { setWorldConstructor, World, IWorldOptions } from "@cucumber/cucumber";
 import { Browser, BrowserContext, Page } from "@playwright/test";
 import { avviaBrowser } from "../../scripts/lib/browser";
+import { aspettaPresenza } from "./presenza";
 import { loadEnv } from "../../scripts/lib/atlassian";
 import { resolveTarget, hasSession, sessionAgeHours } from "../../scripts/lib/targets";
 
@@ -134,10 +135,8 @@ export class CustomWorld extends World {
    * stessi.
    */
   async expectTextVisible(text: string, ms = 10_000): Promise<void> {
-    await this.page
-      .getByText(text, { exact: false })
-      .first()
-      .waitFor({ state: "visible", timeout: ms });
+    // Non solo il testo: vedi presenza.ts.
+    await aspettaPresenza(this.page, text, ms);
   }
 
   async destroy(): Promise<void> {
