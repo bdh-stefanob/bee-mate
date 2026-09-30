@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-25T10:19:14.299Z",
-  "totalSteps": 10,
-  "documentedSteps": 10,
+  "generatedAt": "2026-09-30T14:39:46.350Z",
+  "totalSteps": 19,
+  "documentedSteps": 19,
   "undocumentedSteps": 0,
   "steps": [
     {
@@ -299,6 +299,413 @@
         "params": {},
         "intent": "the user land on the homepage",
         "page": "AppPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "The user back to home",
+      "parameters": [],
+      "app": "shop",
+      "area": "order",
+      "domain": "shop/order",
+      "status": "wanted",
+      "page": "CheckoutCompletePage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Back Home"
+        }
+      ],
+      "sourceRef": "src\\steps\\shop\\order\\the-user-complete-the-order-and-go-back-to-home.steps.ts:101",
+      "doc": {
+        "params": {},
+        "intent": "The user back to home",
+        "page": "CheckoutCompletePage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Back Home"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "The user complete the order",
+      "parameters": [],
+      "app": "shop",
+      "area": "order",
+      "domain": "shop/order",
+      "status": "wanted",
+      "page": "InventoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Add to cart",
+          "page": "InventoryPage"
+        },
+        {
+          "role": "button",
+          "name": "Cart, 1 items",
+          "page": "InventoryPage"
+        },
+        {
+          "role": "button",
+          "name": "Checkout",
+          "page": "CartPage"
+        },
+        {
+          "role": "textbox",
+          "name": "First Name",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "textbox",
+          "name": "Last Name",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "textbox",
+          "name": "Zip/Postal Code",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "button",
+          "name": "Continue",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "button",
+          "name": "Finish",
+          "page": "CheckoutStepTwoPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\shop\\order\\the-user-complete-the-order-and-go-back-to-home.steps.ts:72",
+      "doc": {
+        "params": {},
+        "intent": "The user complete the order",
+        "page": "InventoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Add to cart",
+            "page": "InventoryPage"
+          },
+          {
+            "role": "button",
+            "name": "Cart, 1 items",
+            "page": "InventoryPage"
+          },
+          {
+            "role": "button",
+            "name": "Checkout",
+            "page": "CartPage"
+          },
+          {
+            "role": "textbox",
+            "name": "First Name",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "textbox",
+            "name": "Last Name",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "textbox",
+            "name": "Zip/Postal Code",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "button",
+            "name": "Continue",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "button",
+            "name": "Finish",
+            "page": "CheckoutStepTwoPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "The user logged in",
+      "parameters": [],
+      "app": "shop",
+      "area": "order",
+      "domain": "shop/order",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Username"
+        },
+        {
+          "role": "button",
+          "name": "Login"
+        }
+      ],
+      "sourceRef": "src\\steps\\shop\\order\\the-user-complete-the-order-and-go-back-to-home.steps.ts:47",
+      "doc": {
+        "params": {},
+        "intent": "The user logged in",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Username"
+          },
+          {
+            "role": "button",
+            "name": "Login"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user adds a product to the cart",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "InventoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Add to cart"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:64",
+      "doc": {
+        "params": {},
+        "intent": "the user adds a product to the cart",
+        "page": "InventoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Add to cart"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user complete the order",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "InventoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Cart, 1 items",
+          "page": "InventoryPage"
+        },
+        {
+          "role": "button",
+          "name": "Checkout",
+          "page": "CartPage"
+        },
+        {
+          "role": "textbox",
+          "name": "First Name",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "textbox",
+          "name": "Last Name",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "textbox",
+          "name": "Zip/Postal Code",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "button",
+          "name": "Continue",
+          "page": "CheckoutStepOnePage"
+        },
+        {
+          "role": "button",
+          "name": "Finish",
+          "page": "CheckoutStepTwoPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:86",
+      "doc": {
+        "params": {},
+        "intent": "the user complete the order",
+        "page": "InventoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Cart, 1 items",
+            "page": "InventoryPage"
+          },
+          {
+            "role": "button",
+            "name": "Checkout",
+            "page": "CartPage"
+          },
+          {
+            "role": "textbox",
+            "name": "First Name",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "textbox",
+            "name": "Last Name",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "textbox",
+            "name": "Zip/Postal Code",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "button",
+            "name": "Continue",
+            "page": "CheckoutStepOnePage"
+          },
+          {
+            "role": "button",
+            "name": "Finish",
+            "page": "CheckoutStepTwoPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user logs in",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Username"
+        },
+        {
+          "role": "button",
+          "name": "Login"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\www-saucedemo-com.steps.ts:46",
+      "doc": {
+        "params": {},
+        "intent": "the user logs in",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Username"
+          },
+          {
+            "role": "button",
+            "name": "Login"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the tester did not close this step",
+      "parameters": [],
+      "app": "shop",
+      "area": "order",
+      "domain": "shop/order",
+      "status": "wanted",
+      "page": "CheckoutCompletePage",
+      "sourceRef": "src\\steps\\shop\\order\\the-user-complet-the-order-on-demo.steps.ts:110",
+      "doc": {
+        "params": {},
+        "intent": "the tester did not close this step",
+        "page": "CheckoutCompletePage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user add a product to the cart",
+      "parameters": [],
+      "app": "shop",
+      "area": "order",
+      "domain": "shop/order",
+      "status": "wanted",
+      "page": "InventoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Add to cart"
+        }
+      ],
+      "sourceRef": "src\\steps\\shop\\order\\the-user-complet-the-order-on-demo.steps.ts:64",
+      "doc": {
+        "params": {},
+        "intent": "the user add a product to the cart",
+        "page": "InventoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Add to cart"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user logged in",
+      "parameters": [],
+      "app": "shop",
+      "area": "order",
+      "domain": "shop/order",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Username"
+        },
+        {
+          "role": "button",
+          "name": "Login"
+        }
+      ],
+      "sourceRef": "src\\steps\\shop\\order\\the-user-complet-the-order-on-demo.steps.ts:47",
+      "doc": {
+        "params": {},
+        "intent": "the user logged in",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Username"
+          },
+          {
+            "role": "button",
+            "name": "Login"
+          }
+        ],
         "wanted": true
       },
       "documented": true
