@@ -44,9 +44,9 @@ indovinare.
 4. **Architettura a 4 layer** (`features` → `steps` → `actions` → `pages`).
    Mai selettori negli step. Un refactor architetturale si chiede prima.
 5. **I comandi `npm run` si scrivono nella forma nuda**, senza trattini prima
-   delle opzioni: `npm run record clinic`, `npm run generate scope=main`. La
-   forma `npm run x -- --opzione` e' gia' costata esecuzioni sbagliate senza
-   errore (vedi `.kiro/steering/lezioni.md`).
+   delle opzioni: `npm run record clinic`, `npm run generate scope=main`. Le
+   opzioni con i trattini dopo `npm run` sono gia' costate esecuzioni
+   sbagliate senza errore (vedi `.kiro/steering/lezioni.md`).
 6. **Uno script dice cosa sta per fare prima di farlo.** Riporta a Stefano
    l'output che vedi, non un riassunto.
 7. **Non aggiungere codice per il doppio dominio senza il suo via libera**
