@@ -35,7 +35,14 @@ import * as fs from "fs";
 import * as path from "path";
 import { chromium } from "@playwright/test";
 import { loadEnv } from "./lib/atlassian";
-import { loadTargets, requiredVars, hasSession, sessionAgeHours, accessoRegistrato } from "./lib/targets";
+import {
+  loadTargets,
+  requiredVars,
+  ambientiIncompleti,
+  hasSession,
+  sessionAgeHours,
+  accessoRegistrato,
+} from "./lib/targets";
 import { hasFlag } from "./lib/args";
 import { linguaCorrente, traduci } from "./lib/i18n";
 import { dizionarioDiagnosi } from "./lib/i18n-diagnosi";
@@ -232,6 +239,16 @@ function sulPath(comando: string): boolean {
           }
         : { chiave: "diagnosi.ambienti.conSessione", dati: { conSessione: conSessione.length } };
 
+    const incompleti = ambientiIncompleti(attese);
+    const dettaglioVariabiliMancanti: DettaglioVoce = {
+      chiave: "diagnosi.ambienti.variabiliMancanti",
+      dati: {
+        ambienti: incompleti.map((i) => i.ambiente).join(", "),
+        variabili: [...new Set(incompleti.flatMap((i) => i.variabili))].join(", "),
+      },
+    };
+    const righeVariabiliMancanti = incompleti.length > 0 ? [dettaglioVariabiliMancanti] : [];
+
     if (pronti.length === 0) {
       // Configurati ma nessuno utilizzabile: e' esattamente cio' che blocca
       // un tester — come non averne nessuno — quindi stessa gravita' del
@@ -241,6 +258,7 @@ function sulPath(comando: string): boolean {
         chiaveNome: "diagnosi.ambienti.nome",
         dettaglio: [
           { chiave: "diagnosi.ambienti.nessunoUtilizzabile", dati: { totale: targets.length } },
+          ...righeVariabiliMancanti,
           dettaglioSessione,
         ],
         rimedio: "npm run targets",
@@ -258,6 +276,7 @@ function sulPath(comando: string): boolean {
         chiaveNome: "diagnosi.ambienti.nome",
         dettaglio: [
           { chiave: "diagnosi.ambienti.accessoNonRegistrato", dati: { pronti: pronti.length, totale: targets.length } },
+          ...righeVariabiliMancanti,
         ],
         chiaveDallaFinestra: "diagnosi.ambienti.registraAccessoQui",
       });
@@ -268,18 +287,36 @@ function sulPath(comando: string): boolean {
       // pronti, e nessun rimedio finisce nella lista delle cose da fare: solo
       // un rimando, per chi vuole comunque guardare.
       const daCompletare = targets.length - pronti.length;
-      aggiungi({
-        esito: "ok",
-        chiaveNome: "diagnosi.ambienti.nome",
-        dettaglio: [
-          { chiave: "diagnosi.ambienti.pronti", dati: { pronti: pronti.length, totale: targets.length } },
-          ...(daCompletare > 0
-            ? [{ chiave: "diagnosi.ambienti.daCompletare", dati: { daCompletare } }]
-            : []),
-          dettaglioSessione,
-        ],
-        ...(daCompletare > 0 ? { chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi" } : {}),
-      });
+      // (F3) Se a un ambiente mancano delle variabili, non e' "da completare
+      // quando serve": il suo login fallira' e il test lo dira' solo dopo. Si
+      // avvisa adesso, coi NOMI delle variabili (mai i valori), e il rimando
+      // porta alla riga di quell'ambiente.
+      aggiungi(
+        incompleti.length > 0
+          ? {
+              esito: "avviso",
+              chiaveNome: "diagnosi.ambienti.nome",
+              dettaglio: [
+                dettaglioVariabiliMancanti,
+                { chiave: "diagnosi.ambienti.pronti", dati: { pronti: pronti.length, totale: targets.length } },
+                dettaglioSessione,
+              ],
+              rimedio: "npm run targets env",
+              chiaveDallaFinestra: "diagnosi.ambienti.completaQui",
+            }
+          : {
+              esito: "ok",
+              chiaveNome: "diagnosi.ambienti.nome",
+              dettaglio: [
+                { chiave: "diagnosi.ambienti.pronti", dati: { pronti: pronti.length, totale: targets.length } },
+                ...(daCompletare > 0
+                  ? [{ chiave: "diagnosi.ambienti.daCompletare", dati: { daCompletare } }]
+                  : []),
+                dettaglioSessione,
+              ],
+              ...(daCompletare > 0 ? { chiaveDallaFinestra: "diagnosi.ambienti.controllaIndirizzi" } : {}),
+            }
+      );
     }
   }
 }

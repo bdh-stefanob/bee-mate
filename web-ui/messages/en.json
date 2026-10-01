@@ -318,6 +318,8 @@
       "accessoNonRegistrato": "{pronti} of {totale} configured — sign-in not recorded yet",
       "registraAccessoQui": "Register a sign-in in the Environments section below.",
       "daCompletare": "{daCompletare} to complete when needed",
+      "variabiliMancanti": "{ambienti}: missing variables {variabili} — sign-in will fail",
+      "completaQui": "Fill in the missing credentials on that environment's row, in the Environments section below.",
       "conSessione": "{conSessione} with a saved session",
       "conSessioneVecchie": "{conSessione} with a saved session, of which {vecchie} older than 12 hours",
       "aggiungiQui": "Add one below, in the Environments section.",

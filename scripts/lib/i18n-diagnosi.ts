@@ -51,6 +51,7 @@ export const dizionarioDiagnosi: DizionarioScript = {
     "diagnosi.ambienti.pronti": "{pronti} su {totale} pronti",
     "diagnosi.ambienti.accessoNonRegistrato": "{pronti} su {totale} configurati — accesso non ancora registrato",
     "diagnosi.ambienti.daCompletare": "{daCompletare} da completare quando serve",
+    "diagnosi.ambienti.variabiliMancanti": "{ambienti}: mancano le variabili {variabili} — l'accesso non riuscira'",
     "diagnosi.ambienti.conSessione": "{conSessione} con sessione salvata",
     "diagnosi.ambienti.conSessioneVecchie":
       "{conSessione} con sessione salvata, di cui {vecchie} piu' vecchie di 12 ore",
@@ -116,6 +117,7 @@ export const dizionarioDiagnosi: DizionarioScript = {
     "diagnosi.ambienti.pronti": "{pronti} of {totale} ready",
     "diagnosi.ambienti.accessoNonRegistrato": "{pronti} of {totale} configured — sign-in not recorded yet",
     "diagnosi.ambienti.daCompletare": "{daCompletare} to complete when needed",
+    "diagnosi.ambienti.variabiliMancanti": "{ambienti}: missing variables {variabili} — sign-in will fail",
     "diagnosi.ambienti.conSessione": "{conSessione} with a saved session",
     "diagnosi.ambienti.conSessioneVecchie":
       "{conSessione} with a saved session, {vecchie} of which older than 12 hours",

@@ -157,6 +157,30 @@ export function missingVars(name: string, file = CONFIG): string[] {
   return (requiredVars(file).get(name) ?? []).filter((v) => !process.env[v]);
 }
 
+/**
+ * Gli ambienti che si aspettano variabili che non ci sono, con i NOMI di quelle
+ * che mancano — mai i valori, nemmeno quelli delle variabili presenti.
+ *
+ * (F3) Serve alla diagnosi: un ambiente il cui login usa una `${VARIABILE}` non
+ * definita non e' pronto, e dirlo con un conteggio ("1 su 2") lascia il tester a
+ * indovinare quale. Un ambiente senza variabili attese (accesso a mano, o
+ * credenziali in chiaro come l'esempio `demo`) non compare mai qui.
+ *
+ * Una variabile definita ma vuota manca, come in `passwordDelBersaglio`: una
+ * stringa vuota non e' una credenziale.
+ */
+export function ambientiIncompleti(
+  attese: Map<string, string[]>,
+  env: Record<string, string | undefined> = process.env
+): Array<{ ambiente: string; variabili: string[] }> {
+  const out: Array<{ ambiente: string; variabili: string[] }> = [];
+  for (const [ambiente, richieste] of attese) {
+    const variabili = richieste.filter((v) => !env[v]);
+    if (variabili.length > 0) out.push({ ambiente, variabili });
+  }
+  return out;
+}
+
 export function loadTargets(file = CONFIG): Target[] {
   if (!fs.existsSync(file)) return [];
   const json = JSON.parse(fs.readFileSync(file, "utf-8")) as Record<string, Partial<Target>>;

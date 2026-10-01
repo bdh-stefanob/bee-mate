@@ -13,7 +13,7 @@
 
 import * as path from "path";
 import type { Target } from "./targets";
-import { accessoRegistrato, passwordDelBersaglio } from "./targets";
+import { accessoRegistrato, ambientiIncompleti, passwordDelBersaglio } from "./targets";
 
 let failures = 0;
 const ok = (w: string): void => console.log(`OK   ${w}`);
@@ -79,6 +79,40 @@ eq(
   "una variabile mancante non diventa una password vuota che sembra buona",
   passwordDelBersaglio(conLogin("${CHECK_VARIABILE_INESISTENTE}", { selector: "#password" })),
   undefined
+);
+
+console.log("\n--- F3: un ambiente con variabili mancanti non e' pronto, e si dice quali ---\n");
+
+// Il difetto: la diagnosi diceva "ok, 1 su 2 pronti" senza nominare l'ambiente
+// ne' le variabili che mancano. Il test generato poi fallisce con un errore che
+// nomina l'ambiente: il Controllo deve avvisare PRIMA, e senza mai un valore.
+const attese = new Map<string, string[]>([
+  ["demo", []], // password in chiaro apposta, nessuna variabile
+  ["manuale", []], // nessun `login`: accesso a mano (MFA), nessuna variabile
+  ["completo", ["APP_C_URL", "APP_C_PASS"]],
+  ["incompleto", ["APP_A_URL", "APP_A_USER", "APP_A_PASS"]],
+]);
+const env = { APP_C_URL: "https://c.invalid", APP_C_PASS: "segretissima", APP_A_URL: "https://a.invalid" };
+
+eq(
+  "senza variabili attese non c'e' niente di incompleto (demo, accesso a mano)",
+  ambientiIncompleti(new Map([["demo", []], ["manuale", []]]), {}),
+  []
+);
+eq(
+  "solo l'ambiente con variabili assenti e' incompleto, con i NOMI di quelle assenti",
+  ambientiIncompleti(attese, env),
+  [{ ambiente: "incompleto", variabili: ["APP_A_USER", "APP_A_PASS"] }]
+);
+eq(
+  "una variabile definita ma vuota conta come mancante",
+  ambientiIncompleti(new Map([["x", ["A_VUOTA"]]]), { A_VUOTA: "" }),
+  [{ ambiente: "x", variabili: ["A_VUOTA"] }]
+);
+eq(
+  "nessun valore compare nel risultato, nemmeno quello delle variabili presenti",
+  JSON.stringify(ambientiIncompleti(attese, env)).includes("segretissima"),
+  false
 );
 
 console.log(failures === 0 ? "\nTutti i controlli passano.\n" : `\n${failures} controlli falliti.\n`);

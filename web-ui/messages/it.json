@@ -318,6 +318,8 @@
       "accessoNonRegistrato": "{pronti} su {totale} configurati — accesso non ancora registrato",
       "registraAccessoQui": "Registra un accesso nella sezione Ambienti qui sotto.",
       "daCompletare": "{daCompletare} da completare quando serve",
+      "variabiliMancanti": "{ambienti}: mancano le variabili {variabili} — l'accesso non riuscirà",
+      "completaQui": "Compila le credenziali mancanti nella riga di quell'ambiente, nella sezione Ambienti qui sotto.",
       "conSessione": "{conSessione} con sessione salvata",
       "conSessioneVecchie": "{conSessione} con sessione salvata, di cui {vecchie} più vecchie di 12 ore",
       "aggiungiQui": "Aggiungine uno qui sotto, nella sezione Ambienti.",

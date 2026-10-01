@@ -163,3 +163,29 @@ describe('cio\' che viene dall\'uso non e\' un guasto (F11)', () => {
     expect(interpreta({ voci: senzaBrowser }).pronto).toBe(false);
   });
 });
+
+describe('ambiente con variabili mancanti (F3)', () => {
+  // Il difetto: l'ambiente col login incompleto passava per "ok, 1 su 2 pronti".
+  // Ora la diagnosi manda un'attenzione coi nomi delle variabili e il rimando
+  // alla riga dell'ambiente: la finestra deve portarli fino alla voce, senza
+  // mostrare il comando da copiare e senza trasformarla in un blocco.
+  const voce = {
+    chiaveNome: 'diagnosi.ambienti.nome',
+    esito: 'attenzione' as const,
+    chiaveDettaglio: 'diagnosi.ambienti.variabiliMancanti',
+    dati: { ambienti: 'app-a', variabili: 'APP_A_USER, APP_A_PASS' },
+    rimedio: 'npm run targets env',
+    chiaveDallaFinestra: 'diagnosi.ambienti.completaQui',
+  };
+
+  it('arrivano i nomi delle variabili e il rimando dentro la finestra, non il comando', () => {
+    const [v] = interpreta({ voci: [voce] }).voci;
+    expect(v!.dati).toEqual({ ambienti: 'app-a', variabili: 'APP_A_USER, APP_A_PASS' });
+    expect(v!.chiaveDallaFinestra).toBe('diagnosi.ambienti.completaQui');
+    expect(v!.rimedio).toBeUndefined();
+  });
+
+  it('e\' un\'attenzione, non un blocco: "pronto" non cambia', () => {
+    expect(interpreta({ voci: [voce] }).pronto).toBe(true);
+  });
+});
