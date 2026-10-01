@@ -141,6 +141,26 @@ function createWindow() {
   // vuoto sul vecchio portale: la radice comunque reindirizza qui, ma partire
   // gia' dalla schermata giusta evita un lampo del portale prima del redirect.
   mainWindow.loadURL(`http://127.0.0.1:${PORT}/controllo`);
+
+  // Una modifica a uno scenario non salvata registra un `beforeunload`. In una
+  // finestra di Electron, se nessuno ascolta `will-prevent-unload`, il browser
+  // interno BLOCCA LA CHIUSURA IN SILENZIO: la finestra non si chiude piu' e il
+  // tester non capisce perche'. Si chiede qui, in italiano come gli altri dialoghi:
+  // "Resta qui" lascia tutto com'e'; "Esci senza salvare" ignora il blocco e la
+  // finestra si chiude (`preventDefault` su questo evento vuol dire proprio questo).
+  mainWindow.webContents.on('will-prevent-unload', (event) => {
+    const scelta = dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      title: 'Modifiche non salvate',
+      message: 'Hai modifiche non salvate a uno scenario.',
+      detail: 'Se esci adesso le perdi.',
+      buttons: ['Resta qui', 'Esci senza salvare'],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    });
+    if (scelta === 1) event.preventDefault();
+  });
   mainWindow.once('ready-to-show', () => { log('Window ready to show'); mainWindow.show(); });
 }
 
