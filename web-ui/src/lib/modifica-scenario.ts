@@ -126,6 +126,16 @@ export function titoloDi(testo: string): string {
   return '';
 }
 
+/**
+ * La riga (da 1) dello `Scenario:` nel testo, per puntare Esecuzione sullo scenario
+ * appena salvato: togliere il marcatore sposta le righe, e l'elenco ancora non
+ * l'ha riletto. Se non c'e', la prima riga.
+ */
+export function rigaScenario(testo: string): number {
+  const i = dividi(testo).righe.findIndex((r) => SCENARIO.test(r));
+  return i < 0 ? 1 : i + 1;
+}
+
 // ---------------------------------------------------------------------------
 // I gesti
 // ---------------------------------------------------------------------------

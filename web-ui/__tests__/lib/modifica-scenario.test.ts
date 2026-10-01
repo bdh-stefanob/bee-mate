@@ -3,6 +3,7 @@ import {
   valutaSemplicita,
   leggiPassi,
   titoloDi,
+  rigaScenario,
   cambiaTitolo,
   sostituisciPasso,
   rimuoviPasso,
@@ -122,6 +123,14 @@ describe('cambiaTitolo', () => {
 
   it('il titolo senza cambiamenti restituisce lo stesso testo', () => {
     expect(cambiaTitolo(BASE, 'Pagamento con carta')).toBe(BASE);
+  });
+});
+
+describe('rigaScenario', () => {
+  it('da la riga dello Scenario, anche dopo che il marcatore e stato tolto', () => {
+    expect(rigaScenario(BASE)).toBe(9);
+    expect(rigaScenario(togliMarcatore(BASE))).toBe(8);
+    expect(rigaScenario('Feature: F\n')).toBe(1);
   });
 });
 
