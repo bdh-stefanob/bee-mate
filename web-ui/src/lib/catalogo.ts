@@ -35,6 +35,10 @@ export interface UsoScenario {
 export interface StepCatalogo {
   espressione: string;
   documentato: boolean;
+  /** Lo stato nel catalogo (`implemented`/`wanted`/...): serve ai filtri e ai numeri della pagina. */
+  stato: CatalogStep['status'];
+  /** La frase per il tester (`doc.intent`); assente se lo step non e' documentato. */
+  intento?: string;
   /** L'applicazione a cui appartiene (`common`/`generated` compresi): vedi `riconciliazione.ts`. */
   app: string;
   componenti: StepComponentRef[];
@@ -183,6 +187,8 @@ export function costruisciCatalogo(
   const step: StepCatalogo[] = steps.map((s) => ({
     espressione: s.expression,
     documentato: s.documented,
+    stato: s.status,
+    intento: s.doc?.intent,
     app: s.app,
     componenti: s.components ?? [],
     usatoIn: usi.get(s.expression) ?? [],

@@ -27,9 +27,16 @@ export interface ComportamentoStep {
   corpo: string;
 }
 
+/** Lo stato di uno step nel catalogo su disco (`CatalogStep.status`). */
+export type StatoStep = 'implemented' | 'wanted' | 'deprecated' | 'proposed';
+
 export interface StepCatalogo {
   espressione: string;
   documentato: boolean;
+  /** Opzionali e additivi: una risposta senza questi campi resta valida. */
+  stato?: StatoStep;
+  /** La frase per il tester (`doc.intent`), se il catalogo la porta. */
+  intento?: string;
   /** L'applicazione a cui appartiene: nome reale, oppure `common`/`generated`. */
   app: string;
   componenti: ComponenteCatalogo[];
@@ -56,12 +63,20 @@ export interface RispostaCatalogo {
 
 export type MotivoCoppia = 'testo-quasi-uguale' | 'stessi-componenti' | 'applicazioni-diverse';
 
+/** Cio' che la riconciliazione porta di ogni lato di una coppia: la vista leggera del motore, senza `usatoIn`. */
+export interface StepPerConfronto {
+  espressione: string;
+  documentato: boolean;
+  app: string;
+  componenti: ComponenteCatalogo[];
+}
+
 export interface CoppiaRiconciliazione {
   id: string;
   motivo: MotivoCoppia;
   spiegazione: string;
-  a: StepCatalogo;
-  b: StepCatalogo;
+  a: StepPerConfronto;
+  b: StepPerConfronto;
   /** true = stesso componente dietro le due frasi (doppione da fondere).
    *  false = componenti diversi (equivoco di denominazione, da distinguere),
    *  oppure applicazioni diverse (`motivo === 'applicazioni-diverse'`: solo

@@ -136,4 +136,15 @@ describe('trovaUsatoIn / costruisciCatalogo', () => {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('ogni step porta il suo stato e, se c\'e\', l\'intento (campi additivi per i filtri della pagina)', () => {
+    const steps: CatalogStep[] = [
+      { ...step('a', 'x.ts:1'), status: 'wanted', doc: { intent: 'Apre il carrello.' } },
+      { ...step('b', 'x.ts:2'), status: 'deprecated' },
+    ];
+    const dati = costruisciCatalogo(steps, '/percorso/che/non/esiste');
+    expect(dati.step[0]).toMatchObject({ stato: 'wanted', intento: 'Apre il carrello.' });
+    expect(dati.step[1]!.stato).toBe('deprecated');
+    expect(dati.step[1]!.intento).toBeUndefined();
+  });
 });

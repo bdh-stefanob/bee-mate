@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScheletroCatalogo, ErroreCatalogo } from './Scheletro';
 import { EtichettaApplicazione } from './EtichettaApplicazione';
+import type { CoppiaArricchita } from '@/lib/catalogo-numeri';
 import type {
   AnteprimaFusione,
   CoppiaRiconciliazione,
@@ -96,7 +97,7 @@ export function SezioneRiconciliazione({ catalogo }: { catalogo: RispostaCatalog
       ) : (
         <ul className="flex flex-col gap-3">
           {coppie.map((coppia) => {
-            const arricchita: CoppiaRiconciliazione & { a: StepCatalogo; b: StepCatalogo } = {
+            const arricchita: CoppiaArricchita = {
               ...coppia,
               a: conUsatoIn(coppia.a),
               b: conUsatoIn(coppia.b),
@@ -243,7 +244,7 @@ async function inviaFusione(da: string, a: string, procediNonostanteDifferenza: 
  * esplicitamente che va bene perdere quello della frase che sparisce — un
  * gesto separato, non lo stesso pulsante "Fondi" di sempre.
  */
-function SchedaDoppione({ coppia, onFuso }: { coppia: CoppiaRiconciliazione; onFuso: () => void }) {
+function SchedaDoppione({ coppia, onFuso }: { coppia: CoppiaArricchita; onFuso: () => void }) {
   const t = useTranslations('Catalogo');
   const [vincente, setVincente] = useState<'a' | 'b' | null>(null);
   const [anteprima, setAnteprima] = useState<AnteprimaFusione | null>(null);
@@ -443,7 +444,7 @@ function SchedaDoppione({ coppia, onFuso }: { coppia: CoppiaRiconciliazione; onF
 }
 
 /** Equivoco di denominazione: componenti diversi. Il gesto e' distinguere, mai fondere. */
-function SchedaEquivoco({ coppia, onRiconciliato }: { coppia: CoppiaRiconciliazione; onRiconciliato: () => void }) {
+function SchedaEquivoco({ coppia, onRiconciliato }: { coppia: CoppiaArricchita; onRiconciliato: () => void }) {
   const t = useTranslations('Catalogo');
   const [lato, setLato] = useState<'a' | 'b' | null>(null);
   const [nuovaFrase, setNuovaFrase] = useState('');
@@ -576,7 +577,7 @@ function SchedaEquivoco({ coppia, onRiconciliato }: { coppia: CoppiaRiconciliazi
  * schermata esiste per evitare. Colore neutro (blu, non ambra/rosso): non e'
  * un problema da sistemare, e' un'informazione.
  */
-function SchedaInformativa({ coppia }: { coppia: CoppiaRiconciliazione }) {
+function SchedaInformativa({ coppia }: { coppia: CoppiaArricchita }) {
   const t = useTranslations('Catalogo');
 
   return (
