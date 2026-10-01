@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { avvia, stato, ferma, operazioneInCorso, azzeraPerTest, usaRegistrazioneEsiti } from '@/lib/registro';
+import { avvia, stato, ferma, operazioneInCorso, azzeraPerTest, usaRegistrazioneEsiti, usaPulizia } from '@/lib/registro';
 import type { ProcessoMinimo } from '@/lib/registro';
 
 function processoFinto(): ProcessoMinimo & { emettiRiga(r: string): void; concludi(c: number): void } {
@@ -280,5 +280,49 @@ describe('gli esiti per scenario a fine prova (la pagina Scenari)', () => {
     avvia('registrazione', { bersaglio: 'x' }, () => reg);
     reg.concludi(0);
     expect(chiamate).toEqual([]);
+  });
+});
+
+describe('la pulizia dello storico a fine esecuzione', () => {
+  const chiamate: string[][] = [];
+  beforeEach(() => {
+    chiamate.length = 0;
+    usaRegistrazioneEsiti(() => {});
+    usaPulizia((inCorso) => {
+      chiamate.push(inCorso);
+    });
+  });
+  afterEach(() => {
+    usaRegistrazioneEsiti(undefined);
+    usaPulizia(undefined);
+  });
+
+  it("gira una volta a fine esecuzione, non all'avvio ne' a ogni lettura", () => {
+    const finto = processoFinto();
+    const e = avvia('test', { bersaglio: 'staging' }, () => finto);
+    stato(e.id);
+    expect(chiamate).toHaveLength(0);
+    finto.concludi(1);
+    expect(chiamate).toHaveLength(1);
+  });
+
+  it("dice cosa e' ancora in corso, e non include la prova appena finita", () => {
+    const lunga = processoFinto();
+    const a = avvia('diagnosi', {}, () => lunga);
+    const corta = processoFinto();
+    const b = avvia('catalogo', {}, () => corta);
+    corta.concludi(0);
+    expect(chiamate[0]).toEqual([a.id]);
+    expect(chiamate[0]).not.toContain(b.id);
+  });
+
+  it('se la pulizia lancia, la prova risulta conclusa come prima', () => {
+    usaPulizia(() => {
+      throw new Error('disco');
+    });
+    const finto = processoFinto();
+    const e = avvia('diagnosi', {}, () => finto);
+    expect(() => finto.concludi(0)).not.toThrow();
+    expect(stato(e.id)!.stato).toBe('conclusa');
   });
 });

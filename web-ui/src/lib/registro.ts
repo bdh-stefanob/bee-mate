@@ -6,6 +6,7 @@ import { ambienteFiglio } from './ambiente-figlio';
 import { rimuoviCodiciAnsi } from './ansi';
 import { rigaDiComando, type NomeComando, type Parametri } from '@/lib/esecuzione';
 import { registraEsitiDiUnaProva, type ProvaConclusa } from './esiti-scenari';
+import { ripulisciStorico } from './pulizia-storico';
 
 export interface ProcessoMinimo {
   onRiga(f: (r: string) => void): void;
@@ -120,6 +121,20 @@ export function usaRegistrazioneEsiti(f: ((prova: ProvaConclusa) => void) | unde
   registraEsiti = f ?? registraEsitiDiUnaProva;
 }
 
+/**
+ * La pulizia dello storico (`reports/cruscotto/`), a fine di ogni esecuzione e
+ * non a ogni lettura. Riceve gli id di cio' che gira ancora: non si cancella.
+ * Sostituibile solo dai test, come `registraEsiti`.
+ */
+let ripulisci: (inCorso: string[]) => void = (inCorso) => {
+  ripulisciStorico(REPO_ROOT, { inCorso });
+};
+
+/** Solo per i test: senza argomento rimette quella vera. */
+export function usaPulizia(f: ((inCorso: string[]) => void) | undefined): void {
+  ripulisci = f ?? ((inCorso) => void ripulisciStorico(REPO_ROOT, { inCorso }));
+}
+
 export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lanciatoreVero): Esecuzione {
   if (LUNGHI.includes(nome)) {
     const occupato = [...esecuzioni.values()].some(
@@ -192,6 +207,13 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
     e.codice = codice;
     e.fine = new Date().toISOString();
     salva(e);
+    // Dopo lo stato e dopo gli esiti: cosi' l'indice che protegge le prove da
+    // tenere e' gia' aggiornato. Un errore qui non cambia niente per la prova.
+    try {
+      ripulisci([...esecuzioni.values()].filter((x) => x.stato === 'in corso').map((x) => x.id));
+    } catch {
+      // Una cartella un po' piu' piena non e' un guasto.
+    }
   });
 
   salva(e);
