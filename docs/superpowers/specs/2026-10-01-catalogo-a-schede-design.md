@@ -760,10 +760,14 @@ scelta con il mouse. Si scrive solo un valore valido.
 la prima resa non puo' sapere la scheda ricordata. Per non mostrare Step e poi
 saltare su un'altra scheda, il pannello **non si disegna finche' la scheda
 iniziale non e' risolta** (un solo ciclo di resa dopo il montaggio; durante, la
-testata e le caselle sono gia' a schermo). Quando la fonte e' (2) l'indirizzo
-viene riscritto con `router.replace` (non `push`): Indietro non deve passare per
-una voce che non e' stata scelta. Quando la fonte e' (1) o (3) non si scrive
-niente nell'indirizzo.
+testata e le caselle sono gia' a schermo). Quando la fonte e' (2) o (3) la
+scheda viene scritta nell'indirizzo con `router.replace` (non `push`): Indietro
+non deve passare per una voce che non e' stata scelta. **Anche per (3)**: lo
+ha mostrato la prova nel browser. Se la voce di cronologia restasse nuda
+(`/catalogo`), Indietro dalla scheda "Da sistemare" tornerebbe a un indirizzo che
+si risolve di nuovo sull'ultima visitata, cioe' "Da sistemare": il tasto
+sembrerebbe rotto. Con `?scheda=step` esplicito in ogni voce, Indietro torna dove
+ci si aspetta. Quando la fonte e' (1) non si scrive niente.
 
 ### Responsive
 
