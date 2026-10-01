@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import type { CatalogStep } from '@/lib/types';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 import {
   GITHUB_NAME_RE,
   branchEnsure,
@@ -79,6 +80,10 @@ async function proposeToFs(
 // ---------------------------------------------------------------------------
 
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ ok: false, error: 'richiesta non ammessa' }, { status: 403 });
+  }
+
   // 1. Read GitHub configuration from headers (token never in body — T-05-03-03)
   const token      = request.headers.get('x-github-token');
   const owner      = request.headers.get('x-github-owner');

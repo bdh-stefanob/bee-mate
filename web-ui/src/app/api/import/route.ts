@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { REPO_ROOT, FEATURES_DIR, safeFeaturePath } from '@/lib/repo';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 /**
  * POST /api/import
@@ -18,6 +19,10 @@ import { REPO_ROOT, FEATURES_DIR, safeFeaturePath } from '@/lib/repo';
  * - T-04-07: timeout 30s su execSync
  */
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ ok: false, error: 'richiesta non ammessa' }, { status: 403 });
+  }
+
   // 1. Leggi il file dal form
   let formData: FormData;
   try {

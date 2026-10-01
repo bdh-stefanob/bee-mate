@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 import { LINGUE, NOME_COOKIE_LINGUA, type Lingua } from '@/i18n/request';
 
 function linguaValida(valore: unknown): valore is Lingua {
@@ -8,6 +9,9 @@ function linguaValida(valore: unknown): valore is Lingua {
 
 /** Cambia la lingua della finestra: un cookie, non un indirizzo diverso. */
 export async function POST(richiesta: Request) {
+  if (daAltraOrigine(richiesta)) {
+    return NextResponse.json({ errore: 'richiesta non ammessa' }, { status: 403 });
+  }
   const corpo = (await richiesta.json().catch(() => null)) as { lingua?: unknown } | null;
   if (!corpo || !linguaValida(corpo.lingua)) {
     return NextResponse.json({ errore: 'lingua non valida' }, { status: 400 });

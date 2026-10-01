@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 interface PushBody {
   content: string;
@@ -25,6 +26,10 @@ interface PushBody {
  *   T-05-03-03: token letto esclusivamente dall'header, mai dal body
  */
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ ok: false, error: 'richiesta non ammessa' }, { status: 403 });
+  }
+
   // 1. Leggere i token dagli header (mai dal body)
   const githubToken  = request.headers.get('x-github-token');
   const githubOwner  = request.headers.get('x-github-owner');

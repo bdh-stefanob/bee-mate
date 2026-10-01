@@ -3,6 +3,7 @@ import * as path from 'path';
 import { NextResponse } from 'next/server';
 import { FEATURES_DIR, safeFeaturePath } from '@/lib/repo';
 import { listFeatures } from '@/lib/features';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 /**
  * GET /api/features
@@ -24,6 +25,9 @@ export async function GET() {
  * Scrive il file .feature su filesystem locale.
  */
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ error: 'richiesta non ammessa' }, { status: 403 });
+  }
   try {
     const { content, filePath } = await request.json() as { content?: string; filePath?: string };
     if (!content || !filePath) {

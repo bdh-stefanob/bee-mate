@@ -3,6 +3,7 @@ import * as path from 'path';
 import { NextResponse } from 'next/server';
 import { FEATURES_DIR, safeFeaturePath, slugify } from '@/lib/repo';
 import { setFeatureTags } from '@/lib/feature-tags';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 /**
  * POST /api/features/move
@@ -23,6 +24,9 @@ import { setFeatureTags } from '@/lib/feature-tags';
  *   7. Ritorna { ok: true, path: toRelPOSIX }
  */
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ error: 'richiesta non ammessa' }, { status: 403 });
+  }
   try {
     const body = await request.json() as { fromPath?: string; app?: string; flow?: string; content?: string };
     const { fromPath, app, flow, content } = body;

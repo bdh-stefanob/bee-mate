@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
 import { FEATURES_DIR } from '@/lib/repo';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 // Estrae il testo di ogni Scenario (dal tag @ticket fino alla riga vuota successiva
 // o al prossimo Scenario/Feature)
@@ -70,6 +71,10 @@ function buildAdfComment(scenarioText: string): object {
 }
 
 export async function POST(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ ok: false, error: 'richiesta non ammessa' }, { status: 403 });
+  }
+
   // 1. Leggere token dagli header
   const jiraUrl   = request.headers.get('x-jira-url');
   const jiraToken = request.headers.get('x-jira-token');

@@ -3,6 +3,7 @@ import * as path from 'path';
 import { NextResponse } from 'next/server';
 import { REPO_ROOT } from '@/lib/repo';
 import type { ParamEnumDef } from '@/lib/types';
+import { daAltraOrigine } from '@/lib/stessa-origine';
 
 interface StepEnumsFile {
   version: number;
@@ -24,6 +25,9 @@ function readEnumsFile(): StepEnumsFile {
  * Upserts the enum entry for the given step expression in step-enums.json.
  */
 export async function PUT(request: Request) {
+  if (daAltraOrigine(request)) {
+    return NextResponse.json({ error: 'richiesta non ammessa' }, { status: 403 });
+  }
   try {
     const { expression, paramEnums } = await request.json() as {
       expression?: string;
