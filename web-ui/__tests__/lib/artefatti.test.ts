@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as path from 'path';
-import { leggiTraccia, leggiPassiTest, riepilogoErrore } from '@/lib/artefatti';
+import * as fs from 'fs';
+import { leggiTraccia, leggiPassiTest, riepilogoErrore, analizzaMessaggi } from '@/lib/artefatti';
 
 const FIXTURES = path.join(__dirname, '..', 'fixtures');
 
@@ -87,5 +88,28 @@ describe('riepilogoErrore', () => {
       '  Pagina attesa : InventoryPage (/inventory.html)\n' +
       '  Indirizzo ora : https://www.saucedemo.com/\n';
     expect(riepilogoErrore(msg).elementoMancante).toBeUndefined();
+  });
+});
+
+describe('analizzaMessaggi: la lettura dei messaggi che serve sia ad Esecuzione sia all\'indice degli esiti', () => {
+  it('sulla stessa fixture di leggiPassiTest da\' gli stessi passi, nello stesso ordine', () => {
+    const analisi = analizzaMessaggi(fs.readFileSync(path.join(FIXTURES, 'messaggi.ndjson'), 'utf-8'));
+    expect(analisi.passi.map((p) => [p.testo, p.stato])).toEqual([
+      ['the user logs in', 'PASSED'],
+      ['the user opens the list', 'FAILED'],
+      ['the user sees the total', 'SKIPPED'],
+    ]);
+  });
+
+  it('un caso senza testCaseFinished risulta non finito', () => {
+    const analisi = analizzaMessaggi(fs.readFileSync(path.join(FIXTURES, 'messaggi.ndjson'), 'utf-8'));
+    expect(analisi.casi).toHaveLength(1);
+    expect(analisi.casi[0].finito).toBe(false);
+    expect(analisi.casi[0].passiPickle).toHaveLength(3);
+  });
+
+  it('un testo senza messaggi, o con righe rotte, non lancia', () => {
+    expect(analizzaMessaggi('').casi).toEqual([]);
+    expect(analizzaMessaggi('non json\n{rotto').casi).toEqual([]);
   });
 });

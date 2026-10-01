@@ -46,9 +46,27 @@ const ESITI: Record<string, Esito> = {
 };
 
 /** Forma minima di un messaggio del formato Cucumber (`.ndjson`) che ci interessa. */
+interface Marca {
+  seconds?: number | string;
+  nanos?: number;
+}
+interface NodoScenario {
+  scenario?: { id?: string; name?: string };
+  rule?: { children?: NodoScenario[] };
+}
 interface MessaggioCucumber {
-  pickle?: { steps?: Array<{ id: string; text?: string }> };
-  testCase?: { testSteps?: Array<{ id: string; pickleStepId?: string }> };
+  source?: { uri?: string; data?: string };
+  gherkinDocument?: { feature?: { children?: NodoScenario[] } };
+  pickle?: {
+    id?: string;
+    uri?: string;
+    name?: string;
+    astNodeIds?: string[];
+    steps?: Array<{ id: string; text?: string }>;
+  };
+  testCase?: { id?: string; pickleId?: string; testSteps?: Array<{ id: string; pickleStepId?: string }> };
+  testCaseStarted?: { id?: string; testCaseId?: string; timestamp?: Marca };
+  testCaseFinished?: { testCaseStartedId?: string; willBeRetried?: boolean; timestamp?: Marca };
   testStepFinished?: {
     testCaseStartedId: string;
     testStepId: string;
@@ -122,56 +140,147 @@ export function riepilogoErrore(messaggioPulito: string): RiepilogoErrore {
   };
 }
 
-export function leggiPassiTest(percorsoMessaggi: string): Array<{
-  testo: string;
-  esito: Esito;
-  messaggio?: string;
-  riepilogo?: RiepilogoErrore;
-  schermata?: string;
-}> {
-  let righe: string[];
-  try {
-    righe = fs.readFileSync(percorsoMessaggi, 'utf-8').split('\n').filter((r) => r.trim());
-  } catch {
-    return [];
-  }
+/**
+ * Un caso di prova: uno scenario (o un esempio di uno Scenario Outline) cosi'
+ * come i messaggi lo raccontano.
+ */
+export interface CasoAnalizzato {
+  /** `testCaseStarted.id`: lo stesso identificativo che lega i passi e gli allegati. */
+  id: string;
+  /** L'`uri` del pickle, com'e' (su Windows ha le barre rovesciate). */
+  uri: string;
+  /**
+   * Il nome della DEFINIZIONE nel `gherkinDocument`, non quello del pickle: per
+   * uno Scenario Outline il pickle sostituisce i segnaposto, e `Login <utente>`
+   * diventerebbe tanti nomi che nessun elenco conosce. Si risale con
+   * `pickle.astNodeIds[0]`; se non si trova resta il nome del pickle.
+   */
+  nome: string;
+  /** I passi dello scenario, in ordine (gli hook non ci sono). */
+  passiPickle: Array<{ id: string; testo: string }>;
+  /** Gli esiti, nell'ordine in cui sono arrivati; gli hook non hanno `pickleStepId`. */
+  passi: Array<{ pickleStepId?: string; stato: string; messaggio?: string }>;
+  inizioMs?: number;
+  fineMs?: number;
+  /** C'e' un `testCaseFinished`: senza, il processo e' stato ucciso a meta'. */
+  finito: boolean;
+  /** Il tentativo e' fallito e Cucumber lo ripete: il suo esito non conta. */
+  ritentato: boolean;
+}
 
+export interface PassoAnalizzato {
+  testo: string;
+  stato: string;
+  /** Il messaggio grezzo, ancora con i codici colore: chi lo mostra lo ripulisce. */
+  messaggio?: string;
+  testCaseStartedId: string;
+}
+
+export interface AnalisiMessaggi {
+  casi: CasoAnalizzato[];
+  /** Il testo dei `.feature` com'erano al lancio, per `uri`. */
+  sorgenti: Map<string, string>;
+  /** Tutti i passi (non gli hook) nell'ordine di fine, come li leggeva `leggiPassiTest`. */
+  passi: PassoAnalizzato[];
+  /** La prima immagine allegata a ciascun caso, come data URI. */
+  schermatePerCaso: Map<string, string>;
+}
+
+function inMillisecondi(m?: Marca): number | undefined {
+  if (!m || m.seconds === undefined) return undefined;
+  const secondi = Number(m.seconds);
+  if (!Number.isFinite(secondi)) return undefined;
+  return secondi * 1000 + Math.round((m.nanos ?? 0) / 1e6);
+}
+
+function raccogliDefinizioni(nodi: NodoScenario[] | undefined, nomi: Map<string, string>): void {
+  for (const nodo of nodi ?? []) {
+    if (nodo.scenario?.id && nodo.scenario.name !== undefined) nomi.set(nodo.scenario.id, nodo.scenario.name);
+    if (nodo.rule) raccogliDefinizioni(nodo.rule.children, nomi);
+  }
+}
+
+/**
+ * Legge i messaggi di Cucumber UNA volta e li restituisce in una forma che
+ * serve a tutti: la schermata Esecuzione (i passi di una prova) e l'indice degli
+ * esiti per scenario. Una fonte sola per leggere il formato, cosi' i due non
+ * possono capire cose diverse dello stesso file.
+ *
+ * Le righe che non sono JSON si saltano (un file troncato si legge fin dove
+ * arriva). Mai un'eccezione: un testo illeggibile da' un'analisi vuota.
+ */
+export function analizzaMessaggi(testo: string): AnalisiMessaggi {
+  const sorgenti = new Map<string, string>();
+  const definizioni = new Map<string, string>();
+  const picklePerId = new Map<string, NonNullable<MessaggioCucumber['pickle']>>();
+  const picklePerCaso = new Map<string, string>(); // testCase.id -> pickle.id
+  const casiPerId = new Map<string, CasoAnalizzato>();
+  const casi: CasoAnalizzato[] = [];
+  const passi: PassoAnalizzato[] = [];
+  const schermatePerCaso = new Map<string, string>();
   // Il testo del passo sta nel pickle; l'esito arriva dopo, con l'id del passo.
   const testoPerId = new Map<string, string>();
-  const passi: Array<{
-    testo: string;
-    esito: Esito;
-    messaggio?: string;
-    riepilogo?: RiepilogoErrore;
-    schermata?: string;
-    testCaseStartedId: string;
-  }> = [];
+  const pickleStepPerTestStep = new Map<string, string>();
 
-  // Gli allegati (screenshot) nascono nell'hook `After`, non nel passo fallito:
-  // l'envelope `attachment` porta il `testStepId` del passo dell'hook, non
-  // quello del passo che e' fallito (verificato su un'esecuzione vera contro
-  // il bersaglio pubblico "demo": l'hook e il passo fallito hanno id diversi).
-  // L'unico identificativo che lega davvero l'allegato al caso di prova e'
-  // `testCaseStartedId`, condiviso da tutti gli step (compresi gli hook) dello
-  // stesso scenario. Si raccolgono qui, per caso di prova, e si assegnano poi
-  // al passo fallito di quello stesso caso.
-  const schermatePerCaso = new Map<string, string>();
-
-  for (const riga of righe) {
+  for (const riga of testo.split('\n')) {
+    if (!riga.trim()) continue;
     let m: MessaggioCucumber;
     try {
       m = JSON.parse(riga) as MessaggioCucumber;
     } catch {
       continue;
     }
-    if (m.pickle?.steps) {
-      for (const s of m.pickle.steps) testoPerId.set(s.id, s.text ?? '');
+    if (m === null || typeof m !== 'object') continue;
+
+    if (m.source?.uri !== undefined && typeof m.source.data === 'string') {
+      sorgenti.set(m.source.uri, m.source.data);
+    }
+    if (m.gherkinDocument) raccogliDefinizioni(m.gherkinDocument.feature?.children, definizioni);
+    if (m.pickle) {
+      if (m.pickle.id) picklePerId.set(m.pickle.id, m.pickle);
+      for (const s of m.pickle.steps ?? []) testoPerId.set(s.id, s.text ?? '');
     }
     if (m.testCase?.testSteps) {
+      if (m.testCase.id && m.testCase.pickleId) picklePerCaso.set(m.testCase.id, m.testCase.pickleId);
       for (const s of m.testCase.testSteps) {
-        if (s.pickleStepId) testoPerId.set(s.id, testoPerId.get(s.pickleStepId) ?? '');
+        if (s.pickleStepId) {
+          testoPerId.set(s.id, testoPerId.get(s.pickleStepId) ?? '');
+          pickleStepPerTestStep.set(s.id, s.pickleStepId);
+        }
       }
     }
+    if (m.testCaseStarted?.id) {
+      const pickle = picklePerId.get(picklePerCaso.get(m.testCaseStarted.testCaseId ?? '') ?? '');
+      const idNodo = pickle?.astNodeIds?.[0];
+      const caso: CasoAnalizzato = {
+        id: m.testCaseStarted.id,
+        uri: pickle?.uri ?? '',
+        nome: (idNodo !== undefined ? definizioni.get(idNodo) : undefined) ?? pickle?.name ?? '',
+        passiPickle: (pickle?.steps ?? []).map((s) => ({ id: s.id, testo: s.text ?? '' })),
+        passi: [],
+        inizioMs: inMillisecondi(m.testCaseStarted.timestamp),
+        finito: false,
+        ritentato: false,
+      };
+      casiPerId.set(caso.id, caso);
+      casi.push(caso);
+    }
+    if (m.testCaseFinished?.testCaseStartedId) {
+      const caso = casiPerId.get(m.testCaseFinished.testCaseStartedId);
+      if (caso) {
+        caso.finito = true;
+        caso.ritentato = m.testCaseFinished.willBeRetried === true;
+        caso.fineMs = inMillisecondi(m.testCaseFinished.timestamp);
+      }
+    }
+    // Gli allegati (screenshot) nascono nell'hook `After`, non nel passo fallito:
+    // l'envelope `attachment` porta il `testStepId` del passo dell'hook, non
+    // quello del passo che e' fallito (verificato su un'esecuzione vera contro
+    // il bersaglio pubblico "demo": l'hook e il passo fallito hanno id diversi).
+    // L'unico identificativo che lega davvero l'allegato al caso di prova e'
+    // `testCaseStartedId`, condiviso da tutti gli step (compresi gli hook) dello
+    // stesso scenario. Si raccolgono qui, per caso di prova, e si assegnano poi
+    // al passo fallito di quello stesso caso.
     if (m.attachment) {
       const { testCaseStartedId, mediaType, body } = m.attachment;
       // Al massimo una schermata per caso di prova: se il passo fallito ne ha
@@ -189,27 +298,55 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
       const id = m.testStepFinished.testStepId;
       const testCaseStartedId = m.testStepFinished.testCaseStartedId;
       const risultato = m.testStepFinished.testStepResult ?? {};
-      const testo = testoPerId.get(id);
+      const messaggio = risultato.message ? String(risultato.message) : undefined;
+      const stato = String(risultato.status ?? '');
+      const testoPasso = testoPerId.get(id);
+      const caso = casiPerId.get(testCaseStartedId);
+      if (caso) {
+        const pickleStepId = pickleStepPerTestStep.get(id);
+        caso.passi.push({
+          ...(pickleStepId ? { pickleStepId } : {}),
+          stato,
+          ...(messaggio ? { messaggio } : {}),
+        });
+      }
       // Gli hook non hanno un testo: non sono passi dello scenario.
-      if (!testo) continue;
-      // Il messaggio grezzo puo' portare i codici colore che Playwright si
-      // mette da solo quando chi lo lancia sembra un terminale a colori: qui
-      // non c'e' un terminale, quindi si puliscono prima che arrivino a
-      // qualunque schermata (finding F1). Il riepilogo si calcola dal testo
-      // gia' pulito, cosi' anche lui non porta escape.
-      const messaggio = risultato.message ? rimuoviCodiciAnsi(String(risultato.message), REPO_ROOT) : undefined;
-      passi.push({
-        testo,
-        esito: ESITI[risultato.status as string] ?? 'saltato',
-        ...(messaggio ? { messaggio, riepilogo: riepilogoErrore(messaggio) } : {}),
-        testCaseStartedId,
-      });
+      if (testoPasso) passi.push({ testo: testoPasso, stato, ...(messaggio ? { messaggio } : {}), testCaseStartedId });
     }
   }
 
-  return passi.map(({ testCaseStartedId, ...passo }) => {
+  return { casi, sorgenti, passi, schermatePerCaso };
+}
+
+export function leggiPassiTest(percorsoMessaggi: string): Array<{
+  testo: string;
+  esito: Esito;
+  messaggio?: string;
+  riepilogo?: RiepilogoErrore;
+  schermata?: string;
+}> {
+  let contenuto: string;
+  try {
+    contenuto = fs.readFileSync(percorsoMessaggi, 'utf-8');
+  } catch {
+    return [];
+  }
+
+  const analisi = analizzaMessaggi(contenuto);
+  return analisi.passi.map((p) => {
+    // Il messaggio grezzo puo' portare i codici colore che Playwright si
+    // mette da solo quando chi lo lancia sembra un terminale a colori: qui
+    // non c'e' un terminale, quindi si puliscono prima che arrivino a
+    // qualunque schermata (finding F1). Il riepilogo si calcola dal testo
+    // gia' pulito, cosi' anche lui non porta escape.
+    const messaggio = p.messaggio ? rimuoviCodiciAnsi(p.messaggio, REPO_ROOT) : undefined;
+    const passo = {
+      testo: p.testo,
+      esito: ESITI[p.stato] ?? ('saltato' as Esito),
+      ...(messaggio ? { messaggio, riepilogo: riepilogoErrore(messaggio) } : {}),
+    };
     if (passo.esito !== 'fallito') return passo;
-    const schermata = schermatePerCaso.get(testCaseStartedId);
+    const schermata = analisi.schermatePerCaso.get(p.testCaseStartedId);
     return schermata ? { ...passo, schermata } : passo;
   });
 }
