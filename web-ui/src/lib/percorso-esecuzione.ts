@@ -30,3 +30,12 @@ export function indirizzoEsecuzione(file: string, riga: number): string | null {
   const percorso = percorsoDiEsecuzione(file, riga);
   return percorso ? `/esecuzione?scenario=${encodeURIComponent(percorso)}` : null;
 }
+
+/**
+ * Dove porta "Vedi la schermata": a Esecuzione, che apre una prova GIA'
+ * conclusa in sola lettura. L'id e' quello che l'indice degli esiti ricorda; il
+ * server lo rivalida comunque (solo minuscole, cifre, trattino).
+ */
+export function indirizzoProva(esecuzione: string): string | null {
+  return /^[a-z0-9-]{1,80}$/.test(esecuzione) ? `/esecuzione?prova=${encodeURIComponent(esecuzione)}` : null;
+}
