@@ -19,7 +19,7 @@ export function StatoVuoto({
 }: {
   icona: LucideIcon;
   titolo: string;
-  testo: string;
+  testo?: string;
   dettaglio?: string;
   azione?: { href: string; etichetta: string };
 }) {
@@ -32,9 +32,11 @@ export function StatoVuoto({
       <p className="font-medium" style={{ color: 'var(--testo)' }}>
         {titolo}
       </p>
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-        {testo}
-      </p>
+      {testo && (
+        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          {testo}
+        </p>
+      )}
       {dettaglio && (
         <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
           {dettaglio}

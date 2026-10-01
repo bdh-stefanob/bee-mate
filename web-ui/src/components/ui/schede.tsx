@@ -106,7 +106,7 @@ function Schede({
               value={s.id}
               disabled={s.disabilitata}
               className={cn(
-                "relative flex min-h-11 flex-1 snap-start items-center justify-center gap-2 whitespace-nowrap px-4 py-2 text-sm",
+                "relative flex min-h-11 flex-1 snap-start items-center justify-center gap-2 whitespace-nowrap px-2 py-2 sm:px-4 text-sm",
                 "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2",
                 "motion-reduce:transition-none",
                 attiva ? "font-semibold" : "font-medium",
@@ -117,7 +117,7 @@ function Schede({
                 outlineColor: "var(--blu)",
               }}
             >
-              {Icona && <Icona size={16} aria-hidden="true" className="shrink-0" />}
+              {Icona && <Icona size={16} aria-hidden="true" className="hidden shrink-0 sm:block" />}
               <span>{s.etichetta}</span>
               {mostraConteggio && (
                 <>

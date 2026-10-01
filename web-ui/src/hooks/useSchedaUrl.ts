@@ -29,9 +29,11 @@ function archivioFinestra(): ArchivioScheda | null {
  * Il server non conosce `localStorage`, quindi senza `?scheda=` la scheda non
  * si puo' sapere alla prima resa: `pronta` e' false finche' non si e' letto
  * l'archivio, e il chiamante non disegna il pannello (cosi' non si vede Step e
- * poi un salto). Quando la fonte e' l'archivio l'indirizzo si riscrive con
- * `replace`, non `push`: Indietro non deve passare per una voce che nessuno ha
- * scelto.
+ * poi un salto). Quando la fonte NON e' l'indirizzo (archivio o predefinita) la
+ * scheda si scrive nell'indirizzo con `replace`, non `push`: Indietro non deve
+ * passare per una voce che nessuno ha scelto, e ogni voce di cronologia deve
+ * avere la sua scheda esplicita (un indirizzo nudo si risolverebbe di nuovo
+ * sull'ultima visitata, e Indietro sembrerebbe rotto).
  *
  * Cambiare scheda aggiunge una voce alla cronologia (Indietro torna alla scheda
  * di prima) e toglie i filtri, che appartengono alla scheda che si lascia.
@@ -65,9 +67,12 @@ export function useSchedaUrl<T extends string>(opzioni: {
   const pronta = urlValido || ricordata !== undefined;
   const { scheda, fonte } = schedaIniziale<T>({ url: daUrl, ricordata, valide, predefinita });
 
-  // Fonte = archivio: si scrive nell'indirizzo, senza aggiungere una voce.
+  // Senza una scheda valida nell'indirizzo (archivio o predefinita) la si scrive
+  // SUBITO, con `replace`: ogni voce di cronologia deve avere la sua scheda
+  // esplicita. Altrimenti Indietro tornerebbe a un indirizzo nudo, che si
+  // risolve di nuovo sull'ultima visitata, e il tasto sembrerebbe rotto.
   useEffect(() => {
-    if (pronta && fonte === 'ricordata') {
+    if (pronta && fonte !== 'indirizzo') {
       router.replace(urlConScheda(percorso, adesso, parametro, scheda), { scroll: false });
     }
   }, [pronta, fonte, scheda, percorso, adesso, parametro, router]);

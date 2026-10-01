@@ -129,3 +129,20 @@ export interface StatoAnnullamentoFusione {
   da?: string;
   a?: string;
 }
+
+/**
+ * L'esito dell'ultima modifica al vocabolario, tenuto dalla scheda (non dalla
+ * coppia: la coppia sparisce appena la lista si rilegge, e con lei il messaggio).
+ */
+export interface EsitoOperazione {
+  tipo: 'fusione' | 'distinzione' | 'annullata' | 'ripristino';
+  da?: string;
+  a?: string;
+  righe?: number;
+  /** false = il catalogo non si e' rigenerato da solo: i numeri potrebbero essere vecchi. */
+  catalogoRigenerato?: boolean;
+  /** Solo la fusione si annulla con un pulsante. */
+  annullabile: boolean;
+  /** Cambia a ogni esito nuovo: e' cio' che riporta il focus sulla striscia. */
+  id: number;
+}
