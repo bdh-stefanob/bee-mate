@@ -1124,6 +1124,7 @@ le funzioni di `piano-modifica` ricevono le radici come parametro, come
 | M8 | **Si'**: dopo lo spegnimento nessun percorso nell'app crea uno scenario senza registrare | B7 |
 | M9 | **Tenere il file** `step-enums.json`, segnato come senza lettori | B7 |
 | M10 | **Si lascia com'e'**: il giro delle proposte (ramo `catalog`, `step-proposals.json`) resta in piedi senza interfaccia | B7 |
+| M11 | **Modalita' di modifica (A), con ingresso diretto** (2026-10-01). Resta il pulsante "Modifica" che apre la modalita' con i comandi accanto a ogni passo (schema di A5): in lettura non si cambia niente per sbaglio. In piu', **in lettura il clic (o Invio) su un passo o sul titolo apre la modifica gia' posizionata li'**, con il fuoco su quel passo. Niente modifica "sul posto" senza modalita': serve sempre "Controlla e salva", e "Annulla modifiche" riporta tutto com'era. Il vecchio editor `(portale)/editor/` non si tocca e non si riusa: esce con N5 | A5, A10, A11 |
 
 ### Le domande come erano poste
 
