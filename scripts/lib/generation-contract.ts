@@ -258,6 +258,13 @@ export interface ResolvedIntent {
   navigatesTo: string | null;
   /** Step di catalogo plausibili, dal piu' al meno. Puo' essere vuoto. */
   candidates: CatalogStep[];
+  /**
+   * Per ogni candidato, nello stesso ordine: da quale classe di prove viene e
+   * quanto somiglia come frase (0-1). Serve al compito per l'assistente e ai
+   * suggerimenti: una prova (stessi componenti) e una stima (formulazione simile)
+   * si mostrano e si misurano in modo diverso.
+   */
+  candidateEvidence?: Array<{ classe: "stessi-componenti" | "formulazione-simile"; similarity: number }>;
 }
 
 // ---------------------------------------------------------------------------

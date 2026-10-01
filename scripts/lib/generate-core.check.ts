@@ -351,6 +351,10 @@ console.log("\n--- rosa dei candidati ---\n");
     rosa[0]?.step.expression,
     "il cliente accede"
   );
+  // Ogni candidato dice a quale classe di prove deve il suo posto: serve ai
+  // suggerimenti, che mostrano una prova e una stima in modo diverso.
+  eq("la rosa dice la classe di ogni candidato", rosa.map((c) => c.classe), ["stessi-componenti", "formulazione-simile"]);
+  truthy("una stima porta la sua somiglianza di frase", (rosa[1]?.similarity ?? 0) >= 0.45, `${rosa[1]?.similarity}`);
 }
 
 {

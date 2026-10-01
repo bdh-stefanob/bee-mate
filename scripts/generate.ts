@@ -50,6 +50,7 @@ import { emitPageObject, emitSteps, emitFeature, type EmitContext } from "./lib/
 import { isRegenerable } from "./lib/render-template";
 import { toComponent } from "./lib/component-naming";
 import { writeBrief, writeNaiveBrief } from "./lib/generate-brief";
+import { costruisciCompito } from "./lib/assistente-compito";
 import type {
   CatalogStep, Component, GeneratedFile, Recording, ScoutResult,
 } from "./lib/generation-contract";
@@ -308,6 +309,14 @@ async function main(): Promise<void> {
           files: files.map((f) => ({ path: f.path, origin: f.origin, template: f.template })),
           skipped,
           gaps,
+          // Per ogni passo, i candidati di catalogo: da qui il cruscotto legge i
+          // suggerimenti. Solo frasi del tester e del catalogo, mai valori o note.
+          compito: costruisciCompito({
+            intents,
+            catalog,
+            generatedAt: ctx.generatedAt,
+            accessoInTesta: Boolean(recording.startedWithSession),
+          }),
         },
         null,
         2

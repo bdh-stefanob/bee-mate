@@ -410,6 +410,7 @@ export function resolveRecording(
       page: pageId.key,
       navigatesTo: endId && endId.key !== pageId.key ? endId.key : null,
       candidates: candidates.map((c) => c.step),
+      candidateEvidence: candidates.map((c) => ({ classe: c.classe, similarity: c.similarity })),
     };
   });
 
@@ -425,6 +426,10 @@ export interface RankedCandidate {
   score: number;
   /** Perche' e' finito nella rosa. Va mostrato: una rosa senza motivi non si discute. */
   why: string[];
+  /** Prova (identita' di componente) o stima (somiglianza di frase): le due classi non si sommano. */
+  classe: "stessi-componenti" | "formulazione-simile";
+  /** Somiglianza di frase con l'etichetta, 0-1: spareggio per le prove, criterio per le stime. */
+  similarity: number;
 }
 
 /**
@@ -511,6 +516,8 @@ export function rankCandidates(
         step,
         score: ANCHORED_BASE + 0.5 * fraction + 0.01 * lexical + (samePage ? 0.01 : 0),
         why,
+        classe: "stessi-componenti",
+        similarity: lexical,
       });
       continue;
     }
@@ -524,7 +531,7 @@ export function rankCandidates(
     if (lexical >= LEXICAL_MIN) {
       const why = [`formulazione simile (${Math.round(lexical * 100)}%)`];
       if (samePage) why.push(`stessa pagina (${step.page})`);
-      similar.push({ step, score: lexical * (ANCHORED_BASE - 0.05), why });
+      similar.push({ step, score: lexical * (ANCHORED_BASE - 0.05), why, classe: "formulazione-simile", similarity: lexical });
     }
   }
 
