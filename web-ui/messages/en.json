@@ -10,6 +10,10 @@
     "languageEnglish": "English",
     "languageItalian": "Italiano",
     "erroreLingua": "Couldn't change the language.",
+    "themeLabel": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
     "environmentLabel": "Environment",
     "environmentNone": "No environment configured"
   },
