@@ -42,3 +42,6 @@ bdd-targets.json
 src/features/generated/
 src/steps/generated/
 src/pages/generated/
+
+# Bozzetti del brainstorming (compagno visivo): locali, non versionati
+.superpowers/
