@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { avvia, stato, ferma, operazioneInCorso, azzeraPerTest } from '@/lib/registro';
 import type { ProcessoMinimo } from '@/lib/registro';
 
@@ -76,7 +76,7 @@ describe('la riga di comando che il registro costruisce davvero', () => {
     const opzione = argomenti.find((a) => a.startsWith('messaggi='));
     expect(opzione).toBeDefined();
     expect(opzione).not.toContain('\\');
-    expect(opzione).toMatch(/^messaggi=reports\/cruscotto\/test-[a-z0-9]+\.ndjson$/);
+    expect(opzione).toMatch(/^messaggi=reports\/cruscotto\/test-[a-z0-9]+-[0-9]+\.ndjson$/);
   });
 });
 
@@ -169,5 +169,41 @@ describe('il registro e\' uno solo, anche se il server carica il modulo piu\' vo
     expect(seconda.stato(e.id)?.stato).toBe('in corso');
     expect(seconda.operazioneInCorso()?.id).toBe(e.id);
     expect(seconda.ferma(e.id)).toBe(true);
+  });
+});
+
+describe('gli id sono unici', () => {
+  // Il difetto che questo caso ferma: l'id era <nome>-<tempo in base 36>, quindi
+  // due avvii nello stesso millisecondo avevano lo stesso id, e la seconda
+  // esecuzione sovrascriveva la prima nel registro e nel suo file su disco.
+  afterEach(() => vi.useRealTimers());
+
+  it('due avvii nello stesso millisecondo hanno id diversi', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-01T10:00:00.000Z'));
+    const a = avvia('diagnosi', {}, () => processoFinto());
+    const b = avvia('diagnosi', {}, () => processoFinto());
+    expect(a.id).not.toBe(b.id);
+    expect(stato(a.id)).toBe(a);
+    expect(stato(b.id)).toBe(b);
+  });
+
+  it("l'id di un test e' un nome di file sicuro (solo lettere, cifre e trattini)", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-01T10:00:00.000Z'));
+    const e = avvia('test', { bersaglio: 'demo' }, () => processoFinto());
+    expect(e.id).toMatch(/^test-[a-z0-9]+-[0-9]+$/);
+  });
+
+  it("l'unicita' vale anche se il server carica il modulo piu' volte", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-01T10:00:00.000Z'));
+    vi.resetModules();
+    const prima = await import('@/lib/registro');
+    const a = prima.avvia('diagnosi', {}, () => processoFinto());
+    vi.resetModules();
+    const seconda = await import('@/lib/registro');
+    const b = seconda.avvia('diagnosi', {}, () => processoFinto());
+    expect(a.id).not.toBe(b.id);
   });
 });

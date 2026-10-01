@@ -53,9 +53,11 @@ const LUNGHI: NomeComando[] = ['registrazione', 'sessione', 'scansione', 'test']
 interface StatoRegistro {
   esecuzioni: Map<string, Esecuzione>;
   processi: Map<string, ProcessoMinimo>;
+  /** Contatore degli avvii: rende unico l'id anche a parita' di millisecondo. */
+  avvii: number;
 }
 const globale = globalThis as unknown as { __bddRegistro?: StatoRegistro };
-const registro = (globale.__bddRegistro ??= { esecuzioni: new Map(), processi: new Map() });
+const registro = (globale.__bddRegistro ??= { esecuzioni: new Map(), processi: new Map(), avvii: 0 });
 const esecuzioni = registro.esecuzioni;
 const processi = registro.processi;
 
@@ -122,7 +124,14 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
   // scrive i suoi esiti in reports/cruscotto/<id>.ndjson, cosi' chi conosce
   // solo l'id (la schermata di Esecuzione) puo' ritrovare il file da solo,
   // senza che la finestra debba mai indicare un percorso.
-  const id = `${nome}-${Date.now().toString(36)}`;
+  // Il contatore e' nello stato condiviso (non in una `let` di modulo): il server
+  // carica questo file piu' volte, e due copie con due contatori darebbero di
+  // nuovo lo stesso id. Due avvii nello stesso millisecondo collidevano, e il
+  // secondo sovrascriveva il primo nel registro e nel suo file su disco.
+  // (`?? 0`: uno stato creato da una versione precedente del modulo, in sviluppo
+  // con il ricaricamento a caldo, non ha ancora il contatore.)
+  registro.avvii = (registro.avvii ?? 0) + 1;
+  const id = `${nome}-${Date.now().toString(36)}-${registro.avvii}`;
   const parametri: Parametri | undefined =
     nome === 'test' && !p?.messaggi
       // Barre in avanti, non `path.join`: questo non e' un percorso da aprire,
