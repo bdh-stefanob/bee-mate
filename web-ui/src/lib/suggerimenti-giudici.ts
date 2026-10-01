@@ -32,7 +32,7 @@ interface Uscita {
   testo: string;
 }
 
-function lancia(radice: string, argomenti: string[], env: NodeJS.ProcessEnv = {}): Promise<Uscita> {
+function lancia(radice: string, argomenti: string[], env: Record<string, string> = {}): Promise<Uscita> {
   return new Promise((resolve) => {
     execFile(
       process.execPath,
