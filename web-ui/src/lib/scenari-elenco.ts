@@ -51,6 +51,10 @@ export interface VoceScenario {
   nome: string;
   riga: number;
   generato: boolean;
+  /** L'impronta del file adesso: la chiave, con il percorso, del testo in cache. */
+  impronta: string;
+  /** Quanti scenari ha il file (con piu' d'uno si evidenzia quello scelto). */
+  scenariNelFile: number;
   /** Il nome della Feature, per la ricerca. */
   feature: string;
   /** Prima cartella sotto src/features/, o `''`. */
@@ -83,6 +87,8 @@ export function costruisciVoci(file: FileConEsiti[], ambiente: string | null): V
         nome: s.nome,
         riga: s.riga,
         generato: f.generato,
+        impronta: f.impronta,
+        scenariNelFile: f.scenari.length,
         feature: f.nome,
         app,
         flusso,

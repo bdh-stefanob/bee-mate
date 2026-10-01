@@ -10,6 +10,7 @@ import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
 import { useAmbiente } from '@/context/AmbienteContext';
 import type { FileScenari } from '@/lib/scenari';
+import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
@@ -302,6 +303,10 @@ function EsecuzioneContenuto() {
       // Comunque vada a finire, l'esecuzione non c'e' piu': niente da
       // riagganciare la prossima volta che si apre questa schermata.
       cancellaRiaggancio(CHIAVE_RIAGGANCIO);
+      // L'esito per scenario e' gia' scritto (il server lo fa prima di dire
+      // "finita"): si rilegge l'elenco ora, cosi' la pagina Scenari ha il dato
+      // nuovo anche se non e' aperta.
+      dopoUnCambioDegliScenari();
       try {
         const dati = JSON.parse(evento.data) as { stato?: StatoEsecuzione; codice?: number | null };
         setStatoCorrente(dati.stato ?? 'conclusa');

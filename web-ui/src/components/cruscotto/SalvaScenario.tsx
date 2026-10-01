@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, FolderInput, Loader2 } from 'lucide-react';
 import type { CodiceErrore, EsitoSalvataggio } from '@/lib/salva-scenario';
+import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 
 interface Cartella {
   app: string;
@@ -101,6 +102,8 @@ export function SalvaScenario({
         setDettagli(corpo.dettagli ?? []);
         return;
       }
+      // Il file si e' spostato da `generated/` al suo posto: l'elenco degli scenari e' cambiato.
+      dopoUnCambioDegliScenari();
       onSalvato(corpo as EsitoSalvataggio);
     } catch {
       setErrore(t('erroreGenerico'));

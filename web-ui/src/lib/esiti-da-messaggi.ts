@@ -183,5 +183,9 @@ export function estraiVoci(testo: string, opzioni: OpzioniEstrazione): VoceEsito
     }
   }
 
-  return [...perChiave.values()].map(({ fineMs: _fineMs, ...voce }) => voce);
+  return [...perChiave.values()].map((v) => {
+    const voce: VoceEsito & { fineMs?: number } = { ...v };
+    delete voce.fineMs;
+    return voce;
+  });
 }

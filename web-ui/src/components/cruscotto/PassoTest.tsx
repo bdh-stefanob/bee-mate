@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, XCircle, MinusCircle, type LucideIcon } from 'lucide-react';
 import type { RiepilogoErrore } from '@/lib/artefatti';
+import { FraseFallimento } from '@/components/cruscotto/FraseFallimento';
 
 export interface Passo {
   testo: string;
@@ -59,25 +60,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
            * oppure la prima riga del messaggio ripulita dai codici colore —
            * mai lo stack per intero come prima cosa (finding F1).
            */}
-          <div
-            className="flex flex-col gap-0.5 text-sm font-medium"
-            style={{ color: 'var(--rosso)' }}
-          >
-            {passo.riepilogo?.elementoMancante ? (
-              <span>{t('paginaGiustaElementoMancante', passo.riepilogo.elementoMancante)}</span>
-            ) : passo.riepilogo?.paginaAttesa || passo.riepilogo?.indirizzoOra ? (
-              <>
-                {passo.riepilogo.paginaAttesa && (
-                  <span>{t('paginaAttesa', { pagina: passo.riepilogo.paginaAttesa })}</span>
-                )}
-                {passo.riepilogo.indirizzoOra && (
-                  <span>{t('indirizzoRaggiunto', { indirizzo: passo.riepilogo.indirizzoOra })}</span>
-                )}
-              </>
-            ) : (
-              <span>{passo.riepilogo?.primaRiga}</span>
-            )}
-          </div>
+          <FraseFallimento riepilogo={passo.riepilogo} />
 
           <details className="text-xs">
             <summary

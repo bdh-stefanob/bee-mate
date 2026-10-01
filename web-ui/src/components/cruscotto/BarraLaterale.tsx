@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ClipboardCheck, CircleDot, PlayCircle, BookOpen } from 'lucide-react';
+import { ClipboardCheck, CircleDot, ListChecks, PlayCircle, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SelettoreLingua } from '@/components/cruscotto/SelettoreLingua';
 import { SelettoreAmbiente } from '@/components/cruscotto/SelettoreAmbiente';
 
 interface Voce {
   href: string;
-  chiaveEtichetta: 'navCheck' | 'navRecord' | 'navRun' | 'navCatalog';
+  chiaveEtichetta: 'navCheck' | 'navRecord' | 'navScenari' | 'navRun' | 'navCatalog';
   Icona: typeof ClipboardCheck;
 }
 
@@ -20,6 +20,7 @@ interface Voce {
 const VOCI: Voce[] = [
   { href: '/controllo', chiaveEtichetta: 'navCheck', Icona: ClipboardCheck },
   { href: '/registra', chiaveEtichetta: 'navRecord', Icona: CircleDot },
+  { href: '/scenari', chiaveEtichetta: 'navScenari', Icona: ListChecks },
   { href: '/esecuzione', chiaveEtichetta: 'navRun', Icona: PlayCircle },
   { href: '/catalogo', chiaveEtichetta: 'navCatalog', Icona: BookOpen },
 ];
