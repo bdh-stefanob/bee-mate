@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { dentroLaCartella } from './percorsi';
+import { MARCATORE } from './marcatore';
 
 /**
  * Dare una casa a uno scenario registrato.
@@ -22,12 +23,8 @@ import { dentroLaCartella } from './percorsi';
  *    un errore e' il guasto che si scopre giorni dopo. Si scrive accanto.
  */
 
-/**
- * La stessa stringa di `GENERATED_MARKER` in `scripts/lib/render-template.ts`.
- * Copiata e non importata: questo modulo vive nell'app, che non compila gli
- * script. Se cambia la', va cambiata qui.
- */
-const MARCATORE = 'generato-da: bdd-generate';
+// Il marcatore sta in `marcatore.ts` (senza `fs`, cosi' lo usano anche le
+// funzioni pure che girano nel browser); qui si riesporta com'e' sempre stato.
 
 const CARTELLA_REGISTRATI = 'generated';
 const NOME_CARTELLA = /^[a-z0-9][a-z0-9-]{0,39}$/;
