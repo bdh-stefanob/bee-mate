@@ -1,6 +1,8 @@
 # Modifica degli scenari nel cruscotto e dismissione del portale — design
 
-> Proposta del 2026-10-01, sotto-progetto 2 di 5. **Non costruita.** Presuppone
+> Proposta del 2026-10-01, sotto-progetto 2 di 5. **Non costruita**; le domande
+> M1-M10 hanno avuto risposta il 2026-10-01 (tabella "Decise" in fondo).
+> Presuppone
 > la pagina Scenari in sola lettura (elenco a sinistra, scenario a destra con
 > Esegui ed Esporta) progettata in
 > `docs/superpowers/specs/2026-10-01-pagina-scenari-design.md`. Qui si progetta
@@ -760,7 +762,7 @@ dalle foglie verso le radici. A ogni commit `tsc`, `npm test` e
 tutto il cruscotto e le sue rotte; `api/lint` (serve al linter del testo
 avanzato), `api/lingua` e `api/download` (con il suo test).
 
-**Se il testo avanzato non entra (domanda M1)**, escono anche: `GherkinEditor`,
+**Se il passo 5 venisse tagliato per tempo (M1 e' si', ma e' l'ultimo)**, escono anche: `GherkinEditor`,
 `gherkin-cm`, `autocomplete`, `catalog-match` e i loro test, le dipendenze
 `@codemirror/*`, `@cucumber/gherkin` e `@cucumber/messages` (se la sintassi si
 controlla altrimenti), `api/lint` e il suo parser, i token `--cm-*` e le regole
@@ -773,7 +775,7 @@ controlla altrimenti), `api/lint` e il suo parser, i token `--cm-*` e le regole
 | `sonner` | **esce** (e' usata solo dalle pagine e da `Providers`) |
 | `@lezer/highlight` | **entra**, dichiarata esplicitamente (e' gia' importata) |
 | `@base-ui/react`, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `next-themes`, `tw-animate-css`, `shadcn` | restano: `button`, `badge`, `tooltip`, `globals.css` e il cruscotto li usano |
-| `@codemirror/*`, `@cucumber/gherkin`, `@cucumber/messages` | restano (testo avanzato e `api/lint`); escono solo se M1 = no |
+| `@codemirror/*`, `@cucumber/gherkin`, `@cucumber/messages` | restano (testo avanzato e `api/lint`); escono solo se il passo 5 viene tagliato |
 
 Il lockfile di `web-ui` e' gia' disallineato (`npm ci` fallisce su una macchina
 pulita: `ROADMAP.md` §4 punto 1). La modifica a `package.json` e la
@@ -792,7 +794,7 @@ a parte, e il passo si chiude con `npm ci` in una cartella pulita.
 | `ROADMAP.md` | §3 (lo schema: "portal"), §4 (nuovo punto), §1 |
 | `docs/QA-FUNZIONALE-AGENTE.md` | §7, le prove U3 e U12 e l'elenco delle pagine del portale |
 | `docs/PRESENTATION.md`, `docs/reviews/2026-09-25-dashboard-walkthrough.md`, `docs/anti-entropy/README.md` (D38 dice "mappa nel portale") | solo i riferimenti; la rassegna del 25 settembre ha F9 e F19 che si chiudono con lo spegnimento: si spuntano |
-| `web-ui/electron-builder.yml` | `productName` (oggi "BDD Catalog"); `appId` e `copyright` si lasciano. **Cambiare il nome sposta `userData`**: ogni macchina dovrebbe riscegliere la cartella del progetto. Va fatto una volta sola, quando U1 sceglie il nome (domanda M7) |
+| `web-ui/electron-builder.yml` | `productName` (oggi "BDD Catalog"): **cambia con questo lavoro (decisione M7), ma e' bloccato finche' U1 non da' il nome nuovo.** Cosa, dove e con quale migrazione: B10. `appId` e `copyright` si lasciano |
 | commenti in codice | `next.config.ts`, `app/layout.tsx`, `BarraLaterale.tsx`, `i18n/request.ts`, `salva-scenario.ts`, `components/cruscotto/catalogo/*` (nominano "il vecchio portale") |
 
 ### B7. Le funzioni che si perdono
@@ -805,7 +807,7 @@ a parte, e il passo si chiude con `npm ci` in una cartella pulita.
 | **Proposta di step `@wanted` dall'editor** (clic sulla frase sottolineata, o "Proponi N step"; scrive `step-proposals.json` sul ramo `catalog` di GitHub) | togliere dall'app; rimandare | e' l'unico percorso dentro l'app verso l'approvazione del team (`CLAUDE.md` regola 2): togliendolo, proporre torna a essere un gesto fuori dall'app (si segna `@wanted` nel catalogo e se ne parla nel rituale, come descrive `README.md` "Step Catalog"). I buchi di una registrazione sono gia' tradotti nella schermata Registra. Se serve, "Chiedi un passo" nel Catalogo e' un lavoro a parte; il ramo `catalog` su GitHub resta com'e' (domanda M10) |
 | **Indice dei tag** (marcatori di pagina `# #TAG`) | togliere | convenzione degli scenari importati; la mappa per componente e per pagina e' gia' nel Catalogo |
 | **Modifica degli enum degli step** (`step-enums.json`) | togliere dall'app; il file resta per ora (domanda M9) | serviva ai menu a tendina dell'editor del portale: nessun altro lo legge |
-| **Cambio tema chiaro/scuro** | togliere l'interruttore; il tema segue il sistema | `next-themes` resta con `enableSystem`: il cruscotto ha gia' i colori scuri (`.dark`). Se un tester lo chiede, un selettore accanto a quello della lingua e' un file (domanda M5) |
+| **Cambio tema chiaro/scuro** | l'interruttore del portale (`ThemeToggle`) muore; **nasce un selettore nella barra laterale**, accanto alla lingua (decisione M5, vedi B9) | il tema non segue solo il sistema: il tester sceglie fra chiaro, scuro e "come il sistema". `next-themes` resta; il cruscotto ha gia' i colori scuri (`.dark`) |
 | **Impostazioni** (token in `localStorage`, identita' dei commit) | togliere | le credenziali degli ambienti sono in Controllo; i token delle integrazioni a riga di comando stanno in `.env` ("Altre variabili" in Controllo). Pulizia dei residui: sotto |
 | **Scrivere uno scenario da zero col catalogo** (editor + StepBrowser + schede) | togliere | e' il metodo vecchio. Chi sa Gherkin ha VS Code e l'estensione; il tester registra. Da dire al proprietario: dopo questo lavoro **nessun percorso nell'app crea uno scenario senza registrare** (domanda M8) |
 | **Bozze dell'editor in `localStorage`** | togliere | sostituite dalla bozza in memoria e dall'Annulla |
@@ -833,6 +835,101 @@ da `web-ui/` (solo due commenti), e `vscode-extension/` legge soltanto
 - `CLAUDE.md` e le regole degli assistenti non nominano il portale: niente da
   cambiare.
 
+### B9. Il selettore del tema (decisione M5)
+
+Il tema chiaro/scuro **non** segue solo il sistema: nella barra laterale, accanto
+al selettore della lingua, c'e' un selettore a tre valori.
+
+- **Dove vive.** `web-ui/src/components/cruscotto/SelettoreTema.tsx`, accanto a
+  `SelettoreLingua.tsx` (che ha gia' la forma giusta: gruppo `role="group"` con
+  etichetta, bottoni con stato attivo, stessi token `--bordo`, `--blu`,
+  `--testo-tenue`). Lo monta `BarraLaterale` sotto la lingua. (La cartella
+  `components/cruscotto/` e' toccata da altri lavori in corso: questa spec dice
+  dove andra', non lo costruisce.)
+- **Tre valori:** "Chiaro" (`light`), "Scuro" (`dark`), "Come il sistema"
+  (`system`). Il valore di partenza e' `system`, come oggi.
+- **Persistenza.** `next-themes` e' gia' nel progetto e `Providers` lo monta cosi'
+  (verificato): `<NextThemesProvider attribute="class" defaultTheme="system"
+  enableSystem>`. La scelta la salva lui in `localStorage` (chiave `theme`), che in
+  Electron sta nel profilo della finestra e resta fra un'apertura e l'altra.
+  Niente rotta e niente cookie nuovi. Il selettore usa `useTheme()`: `theme` e' il
+  valore scelto (anche `system`), non quello risolto (`resolvedTheme`).
+- **Nessun lampo al primo disegno.** `next-themes` mette uno script bloccante
+  nel `<head>` che applica la classe `dark` prima del primo disegno, e il
+  layout radice ha gia' `suppressHydrationWarning` su `<html>`: non si tocca
+  niente di questo. L'unica precauzione e' nel selettore: `useTheme()` non
+  conosce il valore finche' il componente non e' montato, quindi prima del
+  montaggio non si segna nessun bottone come attivo, e si attiva quello vero
+  dopo; altrimenti il server disegna un bottone e il client un altro (errore di
+  idratazione). Lo stato "montato" si ottiene come fa l'attuale `ThemeToggle` del
+  portale (che muore con lui).
+- **Testi** nel namespace `Cruscotto` (`messages/it.json`, `en.json`):
+  `themeLabel`, `themeLight`, `themeDark`, `themeSystem`. Stato = parola e icona,
+  mai solo il colore; area cliccabile almeno 40px.
+- **Cosa non cambia:** i colori scuri (`.dark` in `globals.css`) ci sono gia'.
+- **Come si verifica.** `vitest` non prova i componenti e la scelta e' di
+  `next-themes`: non si ricopia in un modulo puro. A mano, nei due temi e nelle
+  due lingue: le tre scelte funzionano; chiusa e riaperta la finestra la scelta
+  resta; con `scuro` salvato la pagina non si mostra mai chiara nemmeno per un
+  istante (ricarica ripetuta).
+
+### B10. Il nome del prodotto (decisione M7)
+
+**Stato: bloccato.** Il proprietario ha deciso che il nome cambia **con questo
+lavoro**, ma non ha ancora dato il nome nuovo (decisione U1 aperta). Finche' il
+nome non c'e' **non si cambia niente nel codice**: ne' `productName`, ne' i
+testi, ne' i documenti. Cambiare `productName` sposta la cartella `userData` di
+ogni macchina; farlo due volte (un nome provvisorio, poi quello vero) imporrebbe
+due migrazioni a ogni tester.
+
+Quando il nome c'e', in un solo commit:
+
+| Dove | Cosa cambia |
+|---|---|
+| `web-ui/electron-builder.yml` | `productName`. `appId` e `copyright` restano (cambiare l'`appId` e' un'altra migrazione, e non serve) |
+| `web-ui/electron/main.js` | la migrazione di `userData` (sotto) |
+| titolo e testi visibili | `metadata.title` in `app/layout.tsx` e i testi di `messages/*.json` che nominano il prodotto |
+| documenti | `README.md`, `web-ui/README.md`, `docs/USER-GUIDE.md` e `docs/TESTER-DASHBOARD-GUIDE.md`, `docs/OVERVIEW.md` (dove compare il vecchio nome) |
+| pacchetto | il nome dell'installatore e dell'eseguibile che `electron-builder` produce |
+
+**La migrazione di `userData`.** Oggi `userData` e' una cartella col nome del
+prodotto sotto `%APPDATA%`; vi stanno `bdd-settings.json` (la cartella del
+progetto scelta, letta in `main.js` da `settingsPath`), `debug.log` e il profilo
+della finestra (cookie della lingua, `localStorage` compreso il tema). Con un
+nome nuovo Electron ne usa una nuova e vuota: il tester si ritroverebbe senza
+progetto, con lingua e tema di partenza.
+
+Il passo, **prima** di leggere `bdd-settings.json` e prima di `app.whenReady()`:
+
+1. calcolare il percorso della vecchia cartella (sorella della nuova, col nome
+   vecchio, scritto una volta sola in una costante);
+2. se la nuova **non esiste** (o e' vuota) e la vecchia **esiste**: copiarla
+   nella nuova (copia, non spostamento: la vecchia resta come rete di
+   sicurezza) e segnare la migrazione con un file `migrato-dal-nome-vecchio`
+   dentro la nuova, cosi' non si ripete;
+3. se la copia fallisce (file aperto, permessi) non si blocca l'avvio: si parte con
+   la cartella nuova vuota, si scrive nel `debug.log` e si mostra l'avviso;
+4. la vecchia cartella **non si cancella da codice**: lo dice l'avviso, lo decide
+   il tester.
+
+**L'avviso all'utente** (dialogo in italiano come gli altri di `main.js`,
+mostrato una volta):
+
+> L'applicazione ha cambiato nome. Le tue impostazioni sono state copiate
+> nella nuova cartella; la vecchia (col nome precedente) resta dov'e' e puoi
+> eliminarla quando vuoi. Se non trovi piu' il progetto, scegli di nuovo la
+> cartella: succede solo questa volta.
+
+Se la copia non e' riuscita il testo dice invece che il progetto va scelto di
+nuovo. Il dialogo nasce con la migrazione, non prima.
+
+**Come si verifica.** La parte pura (calcolo dei due percorsi, decisione "copiare o
+no" date le due cartelle) si estrae in una funzione senza `electron` e si prova
+con `vitest` su cartelle temporanee: nuova assente e vecchia presente -> copia;
+nuova presente -> niente; vecchia assente -> niente; copia fallita -> non blocca.
+L'avvio vero si prova a mano su una macchina con le impostazioni vecchie.
+**Bloccato da U1: non si inizia prima del nome.**
+
 ## Ordine di lavoro
 
 Passi piccoli, ciascuno annullabile con un `git revert`, con il controllo che
@@ -846,14 +943,18 @@ dice "fatto". Le stime sono a occhio.
 | 3 | **Modifica guidata**: titolo, usa un altro, togli, verifica, rinomina; bozza, controllo, esito, Annulla, "Esegui lo scenario"; `ModificheContext` e `will-prevent-unload`; testi it/en | a mano su uno scenario registrato e salvato, in italiano e in inglese e a 900px: si cambia il titolo, si rinomina un passo usato da due scenari, si salva, si annulla, si riesegue. Percorso con sola tastiera completo | 2 g |
 | 4 | **Sposta ed elimina**, con l'elenco delle conseguenze | si elimina uno scenario che condivide un passo con un altro: il passo resta, la Page Object e' identica byte per byte, l'Annulla ricrea tutto | 1,5 g |
 | 5 | **Testo avanzato**: `EditorTesto`, correzione di `GherkinEditor`, `@lezer/highlight` dichiarato | si scrive una frase sconosciuta: il salvataggio e' bloccato con la frase giusta; il Tab esce dal campo | 1 g |
-| | *Controllo di equivalenza (cancello):* ogni funzione della tabella B7 e' "tenuta" o "tolta" con il consenso del proprietario | domande M1-M10 chiuse | |
+| | *Controllo di equivalenza (cancello):* ogni funzione della tabella B7 e' "tenuta" o "tolta" con il consenso del proprietario | domande M1-M10 chiuse (fatto il 2026-10-01) | |
+| 5b | **Selettore del tema** (B9): `SelettoreTema` accanto a `SelettoreLingua`, testi it/en | a mano: tre scelte, la scelta resta dopo la chiusura della finestra, nessun lampo al primo disegno, in italiano e in inglese | 1/2 g |
 | 6 | **Spegnere** il portale: in `next.config.ts` i vecchi indirizzi (`/portale`, `/editor`, `/features`, `/components`, `/tags`, `/settings`) rimandano a `/scenari` o `/catalogo`; la pulizia di `localStorage` entra nel layout | i vecchi indirizzi non mostrano piu' il portale; il cruscotto e' intatto; si annulla togliendo il blocco | 1/2 g |
 | 7 | **Cancellare** il codice, in quattro commit (B2: pagine e rotte; componenti; librerie e `ui/`; `Providers` e dipendenze) | a ogni commit: `npx tsc --noEmit`, `npm test`, `npm run build` e `npm run lint` in `web-ui`; alla fine l'elenco delle rotte di `next build` non ha nessun indirizzo del portale e `npm ci` funziona in una cartella pulita | 1 g |
-| 8 | **Documenti** (B6) e, se si e' deciso, il nome del prodotto | `grep -ri portale` nei documenti e nel codice di `web-ui` non trova piu' nulla che non sia storia (commit, `.planning/`, `.superpowers/`); `npm run check:all` e `npm run rules:check` alla radice passano | 1/2 g |
+| 8 | **Documenti** (B6) | `grep -ri portale` nei documenti e nel codice di `web-ui` non trova piu' nulla che non sia storia (commit, `.planning/`, `.superpowers/`); `npm run check:all` e `npm run rules:check` alla radice passano | 1/2 g |
+
+Il nome del prodotto (B10) non ha un numero: parte quando U1 da' il nome.
 
 Il minimo per la demo e' fino al passo 3; i passi 4 e 5 si possono rimandare
-senza lasciare niente di rotto. Il passo 5 e' il piu' tagliabile: se M1 e' no,
-sparisce e con lui un blocco di cancellazione in piu' (B4).
+senza lasciare niente di rotto. Il passo 5 e' il piu' tagliabile (M1 e' si', ma per ultimo): se il tempo
+manca si taglia senza rifare niente, e con lui esce un blocco di cancellazione
+in piu' (B4).
 
 ## Rischi
 
@@ -862,14 +963,15 @@ sparisce e con lui un blocco di cancellazione in piu' (B4).
 | **Import incrociati**: un modulo "condiviso" importa uno che muore (`Providers` -> `lib/i18n`, `GherkinToolbar` -> `ui/separator`) | `npx tsc --noEmit` e `npm run build` dopo ogni commit di cancellazione; un passo = un solo strato | si cancella nell'ordine foglie-radici di B2; un commit che non compila si annulla intero |
 | **Test che nominano moduli cancellati** (`catalogo-fixtures.contratto.test.ts` nomina `paramEnums`; `src/lib/github-utils.test.ts` dentro `src/`) | `npm test`, e `tsc` per quello dentro `src/` | si aggiorna il contratto del catalogo prima di togliere il tipo |
 | **Build**: l'output `standalone` cambia e il pacchetto Electron non parte | `npm run build` in `web-ui`; una volta alla fine `npm run electron:build:win` e un avvio a mano | il commit di cancellazione si annulla |
-| **`serverExternalPackages`**: se uno toglie `api/lint` "perche' sembra del portale", il linter dell'editor ricade in silenzio sulle regole manuali e nessuno se ne accorge | un test che importa `api/lint` e ne prova la risposta; lo stesso test elenca come "resta" la rotta | `serverExternalPackages` si cambia solo insieme a M1 |
+| **`serverExternalPackages`**: se uno toglie `api/lint` "perche' sembra del portale", il linter dell'editor ricade in silenzio sulle regole manuali e nessuno se ne accorge | un test che importa `api/lint` e ne prova la risposta; lo stesso test elenca come "resta" la rotta | `serverExternalPackages` si cambia solo insieme al taglio del passo 5 |
 | **Il livello 2 e' lento o non parte** (ts-node compila tutti gli step) | tempo del salvataggio sul repository vero; messaggio "Controllo il test..." che non finisce | limite di tempo e fallimento chiuso: non si salva; si misura prima di P3 e, se supera una decina di secondi, si valuta la modalita' solo-traduzione della diagnosi |
 | **Il repository ha il contenuto nuovo per qualche secondo** durante il controllo vero | `operazioneInCorso()` rifiuta un'esecuzione parallela; un test lo prova | ripristino automatico dall'istantanea |
 | **Windows e i file aperti**: un rename su un file aperto da un altro programma da' `EPERM` | test che simula l'errore a meta' | ripristino dall'istantanea e messaggio con la causa |
 | **Due matcher che divergono** (browser, validatore del pre-commit, Cucumber) | un caso per riga: la stessa frase passata a tutti e tre | il giudice e' Cucumber; il pre-commit resta come ultima rete al commit |
 | **Dipendenza nascosta fra passi** (la Page Object nasce nel primo): la validazione e' verde e il test cade | non si vede dal controllo: per questo "Esegui lo scenario" e' in ogni esito | il pannello lo dice, con il pulsante |
 | **Residui nel profilo di Electron** (token GitHub, bozze) | a mano, con `localStorage` di una finestra di prova | pulizia al primo avvio |
-| **`productName` nuovo = `userData` nuovo**: ogni tester deve riscegliere la cartella del progetto | si vede al primo avvio dopo l'aggiornamento | cambiare il nome una volta, con un avviso (domanda M7) |
+| **`productName` nuovo = `userData` nuovo**: ogni tester deve riscegliere la cartella del progetto | si vede al primo avvio dopo l'aggiornamento | cambiare il nome una volta, con la migrazione e l'avviso di B10 (decisione M7); **non si cambia prima che U1 dia il nome** |
+| **Il tema lampeggia al primo disegno** (pagina chiara, poi scura) | a mano, con tema scuro salvato e ricarica: la pagina non deve mai mostrarsi chiara | `next-themes` inietta lo script bloccante nel `<head>`; non lo si sposta in un effetto (B9) |
 | **Lockfile**: togliere `sonner` e aggiungere `@lezer/highlight` senza riallineare il lockfile rompe `npm ci` | `npm ci` in una cartella pulita al passo 7 | si riallinea insieme al punto 1 della roadmap |
 
 ## Come si verifica
@@ -985,6 +1087,26 @@ le funzioni di `piano-modifica` ricevono le radici come parametro, come
 - **La pagina Scenari in sola lettura**: altra spec.
 
 ## Domande aperte per il proprietario
+
+### Decise (2026-10-01)
+
+| # | Decisione | Dove si riflette |
+|---|---|---|
+| M1 | **Si'**: il testo avanzato entra, per ultimo (P5) | A1, A9, B4, passo 5 |
+| M2 | **Solo "ovunque"**: rinominare un passo vale per tutti gli scenari che lo usano, con elenco e conferma; niente "solo qui" | A2, A3 |
+| M3 | **Si'**: si modificano solo scenari salvati e semplici; i `@non-automatizzato` e quelli in `generated/` no | A2 |
+| M4 | **Solo stessa applicazione** per lo spostamento | A2, A8 |
+| M5 | **Selettore** del tema (chiaro, scuro, come il sistema) accanto alla lingua: **diversa dalla raccomandazione** ("segue il sistema") | B7, B9, passo 5b |
+| M6 | **Si'**: niente push dall'app fino a U2; il lavoro resta nella copia di lavoro | B7 |
+| M7 | **Ora**: il nome del prodotto cambia con questo lavoro, **diversa dalla raccomandazione** ("con U1"). **Bloccato: il nome nuovo non c'e' ancora (U1 aperta) e nel codice non si cambia niente finche' non c'e'** | B6, B10, Rischi |
+| M8 | **Si'**: dopo lo spegnimento nessun percorso nell'app crea uno scenario senza registrare | B7 |
+| M9 | **Tenere il file** `step-enums.json`, segnato come senza lettori | B7 |
+| M10 | **Si lascia com'e'**: il giro delle proposte (ramo `catalog`, `step-proposals.json`) resta in piedi senza interfaccia | B7 |
+
+### Le domande come erano poste
+
+Storico: le raccomandazioni sono quelle originali; per M5 e M7 la decisione le
+ribalta.
 
 | # | Domanda | Opzioni | Raccomandazione |
 |---|---|---|---|
