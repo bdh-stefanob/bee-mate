@@ -366,7 +366,7 @@ function EsecuzioneContenuto() {
     } finally {
       setInLancio(false);
     }
-  }, [ambiente, guardaIlBrowser, senzaSessione, scelta, t]);
+  }, [ambiente, guardaIlBrowser, rallenta, senzaSessione, scelta, t]);
 
   // Stesso meccanismo di Registra (`/api/esegui/[id]/ferma`, gia' testato
   // li'): niente da inventare, solo il pulsante che mancava qui (finding F7).
