@@ -5,6 +5,7 @@ import { REPO_ROOT } from '@/lib/repo';
 import { ambienteFiglio } from './ambiente-figlio';
 import { rimuoviCodiciAnsi } from './ansi';
 import { rigaDiComando, type NomeComando, type Parametri } from '@/lib/esecuzione';
+import { registraEsitiDiUnaProva, type ProvaConclusa } from './esiti-scenari';
 
 export interface ProcessoMinimo {
   onRiga(f: (r: string) => void): void;
@@ -106,6 +107,19 @@ function salva(e: Esecuzione): void {
   }
 }
 
+/**
+ * Cosa fare, a fine di un test, per ricordare come e' andato ogni scenario
+ * (l'indice della pagina Scenari). Si puo' sostituire solo per i test, con
+ * `usaRegistrazioneEsiti`: un modulo-level al posto di un parametro di `avvia`,
+ * cosi' la firma di `avvia` resta quella di sempre.
+ */
+let registraEsiti: (prova: ProvaConclusa) => void = registraEsitiDiUnaProva;
+
+/** Solo per i test: senza argomento rimette quella vera. */
+export function usaRegistrazioneEsiti(f: ((prova: ProvaConclusa) => void) | undefined): void {
+  registraEsiti = f ?? registraEsitiDiUnaProva;
+}
+
 export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lanciatoreVero): Esecuzione {
   if (LUNGHI.includes(nome)) {
     const occupato = [...esecuzioni.values()].some(
@@ -162,6 +176,18 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
   });
   processo.onFine((codice) => {
     if (e.stato === 'interrotta') return;
+    // Gli esiti per scenario si scrivono PRIMA di dire che l'esecuzione e'
+    // finita: l'evento di fine parte appena lo stato non e' piu' "in corso", e
+    // la finestra rilegge subito l'elenco degli scenari. Scritti dopo, la
+    // rilettura vedrebbe l'esito vecchio. Un errore qui non cambia l'esito
+    // dell'esecuzione: lo stato su disco e' un servizio, non un requisito.
+    if (nome === 'test' && parametri?.messaggi) {
+      try {
+        registraEsiti({ id, ambiente: parametri.bersaglio ?? null, messaggi: parametri.messaggi });
+      } catch {
+        // Nessun esito registrato: la pagina Scenari lo dira' ("mai eseguito").
+      }
+    }
     e.stato = codice === 0 ? 'conclusa' : 'fallita';
     e.codice = codice;
     e.fine = new Date().toISOString();

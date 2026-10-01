@@ -292,6 +292,12 @@ describe('assicuraIndice: la ricostruzione dai .ndjson, una volta sola (O6)', ()
     ]);
   });
 
+  it('una prova senza il file dei messaggi non registra niente e non crea un indice a vuoto', () => {
+    const r = radice({ 'shop/order/ordine.feature': FEATURE });
+    registraEsitiDiUnaProva({ id: 'test-x', ambiente: 'staging', messaggi: 'reports/cruscotto/test-x.ndjson' }, r.dir);
+    expect(fs.existsSync(r.indice)).toBe(false);
+  });
+
   it('con un indice corrotto non ricostruisce e non lo tocca: dice illeggibile', () => {
     const r = radice({ 'shop/order/ordine.feature': FEATURE });
     fs.writeFileSync(r.indice, 'corrotto');

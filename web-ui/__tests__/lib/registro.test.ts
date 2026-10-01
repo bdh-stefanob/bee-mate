@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { avvia, stato, ferma, operazioneInCorso, azzeraPerTest } from '@/lib/registro';
+import { avvia, stato, ferma, operazioneInCorso, azzeraPerTest, usaRegistrazioneEsiti } from '@/lib/registro';
 import type { ProcessoMinimo } from '@/lib/registro';
 
 function processoFinto(): ProcessoMinimo & { emettiRiga(r: string): void; concludi(c: number): void } {
@@ -205,5 +205,80 @@ describe('gli id sono unici', () => {
     const seconda = await import('@/lib/registro');
     const b = seconda.avvia('diagnosi', {}, () => processoFinto());
     expect(a.id).not.toBe(b.id);
+  });
+});
+
+describe('gli esiti per scenario a fine prova (la pagina Scenari)', () => {
+  // Il doppio dell'estrazione: si guarda cosa riceve e in che stato e' la prova
+  // mentre lo riceve. Il lanciatore finto c'e' gia'.
+  const chiamate: Array<{ id: string; ambiente: string | null; messaggi: string; statoAllora?: string }> = [];
+
+  beforeEach(() => {
+    chiamate.length = 0;
+    usaRegistrazioneEsiti((prova) => {
+      chiamate.push({ ...prova, statoAllora: stato(prova.id)?.stato });
+    });
+  });
+  afterEach(() => usaRegistrazioneEsiti(undefined));
+
+  it('a fine di un test concluso riceve l\'id, l\'ambiente e i messaggi di quella prova', () => {
+    const finto = processoFinto();
+    const e = avvia('test', { bersaglio: 'staging' }, () => finto);
+    finto.concludi(0);
+    expect(chiamate).toHaveLength(1);
+    expect(chiamate[0]).toMatchObject({ id: e.id, ambiente: 'staging', messaggi: `reports/cruscotto/${e.id}.ndjson` });
+  });
+
+  it('anche un test fallito (rosso) registra: e\' proprio li\' che servono', () => {
+    const finto = processoFinto();
+    avvia('test', { bersaglio: 'staging' }, () => finto);
+    finto.concludi(1);
+    expect(chiamate).toHaveLength(1);
+  });
+
+  it('a fine di un test interrotto l\'indice non cambia: i messaggi sono tagliati', () => {
+    const finto = processoFinto();
+    const e = avvia('test', { bersaglio: 'staging' }, () => finto);
+    ferma(e.id);
+    expect(chiamate).toEqual([]);
+  });
+
+  it('quando l\'indice viene scritto, lo stato della prova e\' ancora "in corso"', () => {
+    // L'ordine che regge "dopo una prova l'esito nuovo c'e' gia'": l'evento di
+    // fine parte appena lo stato non e' piu' "in corso", e la finestra rilegge
+    // subito. Se l'indice si scrivesse dopo, la rilettura vedrebbe quello vecchio.
+    const finto = processoFinto();
+    const e = avvia('test', { bersaglio: 'staging' }, () => finto);
+    finto.concludi(0);
+    expect(chiamate[0].statoAllora).toBe('in corso');
+    expect(stato(e.id)!.stato).toBe('conclusa');
+  });
+
+  it('se la registrazione lancia, la prova risulta comunque conclusa o fallita come prima', () => {
+    usaRegistrazioneEsiti(() => {
+      throw new Error('disco pieno');
+    });
+    const ok = processoFinto();
+    const a = avvia('test', { bersaglio: 'staging' }, () => ok);
+    expect(() => ok.concludi(0)).not.toThrow();
+    expect(stato(a.id)!.stato).toBe('conclusa');
+    expect(stato(a.id)!.fine).toBeDefined();
+
+    const ko = processoFinto();
+    const b = avvia('test', { bersaglio: 'staging' }, () => ko);
+    ko.concludi(1);
+    expect(stato(b.id)!.stato).toBe('fallita');
+  });
+
+  it('un comando che non e\' test non tocca l\'indice', () => {
+    for (const nome of ['diagnosi', 'catalogo'] as const) {
+      const finto = processoFinto();
+      avvia(nome, {}, () => finto);
+      finto.concludi(0);
+    }
+    const reg = processoFinto();
+    avvia('registrazione', { bersaglio: 'x' }, () => reg);
+    reg.concludi(0);
+    expect(chiamate).toEqual([]);
   });
 });

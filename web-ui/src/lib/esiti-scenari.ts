@@ -228,6 +228,9 @@ export interface ProvaConclusa {
 }
 
 export function registraEsitiDiUnaProva(prova: ProvaConclusa, radice: string = REPO_ROOT): void {
+  // Niente messaggi, niente da registrare (e niente indice creato a vuoto): un
+  // processo che muore prima di scrivere il file, o un'esecuzione finta.
+  if (!fs.existsSync(path.join(radice, prova.messaggi))) return;
   const indice = percorsoIndice(radice);
   assicuraIndice(indice, cartellaMessaggi(radice), path.join(radice, 'src', 'features'), [path.basename(prova.messaggi)]);
   const testo = fs.readFileSync(path.join(radice, prova.messaggi), 'utf-8');
