@@ -53,7 +53,7 @@ import type { CatalogStep, StepComponentRef } from './types';
  *    ancora salvate nello stesso limbo, la coincidenza di testo potrebbe
  *    accostare per errore step di prodotti diversi. Si accetta perche' la
  *    schermata mostra sempre l'applicazione di ciascun lato della coppia (vedi
- *    `SezioneRiconciliazione.tsx`): il tester vede "generated" contro un nome
+ *    `SchedaSistemare.tsx`): il tester vede "generated" contro un nome
  *    di app reale e decide lui, invece di scoprirlo dopo aver fuso alla cieca.
  *
  * Per due applicazioni REALI e diverse (nessuna delle due `common`/`generated`)
