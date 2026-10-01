@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "id": "20261001-153000-a1b2",
+  "funzione": "frasi",
+  "sorgente": "registrazione",
+  "variante": "A",
+  "catalogo": { "impronta": "sha256:0000000000000000000000000000000000000000000000000000000000000001", "voci": 6 },
+  "passi": [
+    {
+      "n": 1,
+      "parola": "Given",
+      "etichetta": "Sono dentro",
+      "anche": [],
+      "candidati": [
+        { "voce": "the user is logged in", "classe": "stessi-componenti", "stato": "implemented", "parametri": false }
+      ]
+    },
+    {
+      "n": 2,
+      "parola": "When",
+      "etichetta": "Conferma l'ordine",
+      "anche": [],
+      "candidati": [
+        { "voce": "the user confirms the order", "classe": "stessi-componenti", "stato": "wanted", "parametri": false },
+        { "voce": "the user places the order", "classe": "formulazione-simile", "stato": "wanted", "parametri": false, "somiglianza": 62 }
+      ]
+    },
+    {
+      "n": 3,
+      "parola": "When",
+      "etichetta": "Controllo il totale",
+      "anche": [],
+      "candidati": [
+        { "voce": "the order total is shown", "classe": "formulazione-simile", "stato": "wanted", "parametri": false, "somiglianza": 58 }
+      ]
+    },
+    {
+      "n": 4,
+      "parola": "When",
+      "etichetta": "Apro il carrello",
+      "anche": [],
+      "candidati": []
+    },
+    {
+      "n": 5,
+      "parola": "When",
+      "etichetta": "Inserisco la quantita",
+      "anche": [],
+      "candidati": [
+        { "voce": "the user enters {int} items", "classe": "formulazione-simile", "stato": "wanted", "parametri": true, "somiglianza": 51 }
+      ]
+    }
+  ]
+}

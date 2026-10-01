@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "compito": "20261001-153000-a1b2",
+  "impronta": "sha256:0000000000000000000000000000000000000000000000000000000000000001",
+  "origin": "assistito",
+  "strumento": { "nome": "kiro-ide", "modello": "modello-di-prova", "modelloFissato": true },
+  "proposte": [
+    { "passo": 2, "scelta": "voce", "voce": "the user confirms the order", "perche": "Stessa azione, scritta in altre parole." },
+    { "passo": 3, "scelta": "voce", "voce": "the order total is shown" },
+    { "passo": 4, "scelta": "nessuna", "perche": "Nessun candidato dice questa cosa." }
+  ]
+}
