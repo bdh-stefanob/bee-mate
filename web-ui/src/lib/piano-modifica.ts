@@ -88,6 +88,11 @@ export interface Piano {
   conseguenze: { scenari: ScenarioToccato[] };
   /** Dopo la scrittura il catalogo va rigenerato (cambia una definizione). */
   rigeneraCatalogo: boolean;
+  /**
+   * Rinomina: la frase vecchia e la nuova. Prima di rigenerare il catalogo si toglie la
+   * vecchia voce se e' `wanted` (vedi `catalogo-voci.ts`); annullando, la nuova.
+   */
+  frasi?: { da: string; a: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -256,6 +261,7 @@ function pianificaRinominaPasso(
   const features = scritture.filter((s) => s.categoria === 'feature');
   risultato.featureToccati = features.map((s) => s.rel.replace(/^src\/features\//, ''));
   risultato.rigeneraCatalogo = true;
+  risultato.frasi = { da, a };
   risultato.conseguenze = {
     scenari: features.map((s) => {
       const file = s.rel.replace(/^src\/features\//, '');
@@ -314,6 +320,8 @@ export interface EsitoApplica {
   avvisi: Messaggio[];
   marcatoreTolto: boolean;
   rigeneraCatalogo: boolean;
+  /** Rinomina: la voce `wanted` della frase vecchia va tolta dal catalogo prima di rigenerarlo. */
+  catalogoDaTogliere?: string;
 }
 
 interface Istantanea {
@@ -323,6 +331,8 @@ interface Istantanea {
   file: string;
   stato: 'applicata' | 'annullata';
   rigeneraCatalogo: boolean;
+  /** Rinomina: annullando, la voce della frase nuova va tolta dal catalogo prima di rigenerarlo. */
+  frasiRinomina?: { da: string; a: string };
   files: Array<{ rel: string; prima: string; dopo: string }>;
 }
 
@@ -385,6 +395,7 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
     avvisi: piano.avvisi,
     marcatoreTolto: piano.marcatoreTolto,
     rigeneraCatalogo: piano.rigeneraCatalogo,
+    ...(piano.frasi ? { catalogoDaTogliere: piano.frasi.da } : {}),
   });
   // Niente da scrivere: niente controllo, niente istantanea, e l'Annulla di prima resta.
   if (piano.scritture.length === 0) return finale();
@@ -405,6 +416,7 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
     file: piano.file,
     stato: 'applicata',
     rigeneraCatalogo: piano.rigeneraCatalogo,
+    ...(piano.frasi ? { frasiRinomina: piano.frasi } : {}),
     files: piano.scritture.map((s) => ({ rel: s.rel, prima: s.vecchio, dopo: sha(Buffer.from(s.nuovo, 'utf-8')) })),
   };
   scriviIstantanea(radici, istantanea);
@@ -465,6 +477,8 @@ export interface EsitoAnnulla {
   /** Lo scenario che era aperto, relativo a `src/features/`. */
   file: string;
   rigeneraCatalogo: boolean;
+  /** Dopo l'annullamento di una rinomina: la voce `wanted` della frase nuova va tolta prima di rigenerare. */
+  catalogoDaTogliere?: string;
 }
 
 export async function annulla(radici: RadiciModifica): Promise<EsitoAnnulla> {
@@ -503,5 +517,10 @@ export async function annulla(radici: RadiciModifica): Promise<EsitoAnnulla> {
     throw new ErrorePiano('scrittura', 500, `annullamento non riuscito: ${(e as Error).message}`);
   }
   scriviIstantanea(radici, { ...s, stato: 'annullata' });
-  return { fileToccati: s.files.length, file: s.file, rigeneraCatalogo: s.rigeneraCatalogo };
+  return {
+    fileToccati: s.files.length,
+    file: s.file,
+    rigeneraCatalogo: s.rigeneraCatalogo,
+    ...(s.frasiRinomina ? { catalogoDaTogliere: s.frasiRinomina.a } : {}),
+  };
 }

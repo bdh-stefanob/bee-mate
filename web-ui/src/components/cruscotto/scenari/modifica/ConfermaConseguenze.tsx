@@ -41,7 +41,8 @@ export function ConfermaConseguenze({
           <li key={s.file}>{s.diventaTuo ? t('confermaScenarioTuo', { nome: s.nome }) : t('confermaScenario', { nome: s.nome })}</li>
         ))}
       </ul>
-      <ElencoMessaggi blocchi={[]} avvisi={avvisi} />
+      {/* Solo cio' che riguarda la rinomina (la frase nuova assomiglia a un'altra): gli altri avvisi dello scenario non c'entrano con questa scelta. */}
+      <ElencoMessaggi blocchi={[]} avvisi={avvisi.filter((m) => m.codice === 'simile')} />
       <div className="flex flex-wrap gap-2">
         <Bottone primario onClick={onConferma}>
           {t('conferma')}

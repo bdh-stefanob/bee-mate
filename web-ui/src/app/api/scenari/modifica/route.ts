@@ -6,6 +6,7 @@ import { leggiContenuto } from '@/lib/contenuto-scenario';
 import { conLaSerratura } from '@/lib/serratura-scenari';
 import { operazioneInCorso } from '@/lib/registro';
 import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
+import { togliVoceDalCatalogo } from '@/lib/catalogo-voci';
 import { leggiOperazione, rispostaErrore } from '@/lib/risposte-scenari';
 
 /**
@@ -42,6 +43,8 @@ export async function POST(request: Request) {
   const radici = { repoRoot: REPO_ROOT, featuresDir: FEATURES_DIR };
   try {
     const esito = await conLaSerratura(async () => applica(radici, pianifica(radici, op)));
+    // La frase vecchia non c'e' piu' nel codice: la sua voce `wanted` non va conservata dalla rigenerazione.
+    if (esito.catalogoDaTogliere) togliVoceDalCatalogo(REPO_ROOT, esito.catalogoDaTogliere);
     const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
     return NextResponse.json({
       ok: true,

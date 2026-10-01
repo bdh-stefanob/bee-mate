@@ -252,6 +252,25 @@ describe('POST /api/scenari/modifica', () => {
     expect(leggi('src/pages/shop/home.page.ts')).toBe(PAGINA);
   });
 
+  it('una rinomina di un passo `wanted` toglie la sua vecchia voce dal catalogo prima di rigenerare (se no resta un fantasma); annullando, toglie quella nuova', async () => {
+    const catalogo = JSON.parse(JSON.stringify(CATALOGO)) as typeof CATALOGO;
+    catalogo.steps.find((s) => s.expression === DA)!.status = 'wanted';
+    catalogo.steps.push({ expression: 'a request nobody built', parameters: [], app: 'shop', area: 'order', domain: 'shop', status: 'wanted', sourceRef: '', documented: false });
+    scrivi('step-catalog.json', JSON.stringify(catalogo));
+    const voci = () => (JSON.parse(leggi('step-catalog.json')) as typeof CATALOGO).steps.map((s) => s.expression);
+
+    expect((await modifica(post('/api/scenari/modifica', opRinomina()))).status).toBe(200);
+    expect(voci()).not.toContain(DA);
+    expect(voci()).toContain('a request nobody built'); // le richieste del team non si toccano
+
+    // la rigenerazione (qui finta) ha aggiunto la voce nuova come fa extract-steps con le `wanted`
+    const dopo = JSON.parse(leggi('step-catalog.json')) as typeof CATALOGO;
+    dopo.steps.push({ ...catalogo.steps[2], expression: A });
+    scrivi('step-catalog.json', JSON.stringify(dopo));
+    expect((await annulla(post('/api/scenari/annulla', {}))).status).toBe(200);
+    expect(voci()).not.toContain(A);
+  });
+
   it('una versione vecchia: 409 conflitto, col file com e adesso, e niente scritto', async () => {
     scrivi(`src/features/${FILE}`, `${PAGAMENTO}# di un altro\n`);
     const prima = istantanea();

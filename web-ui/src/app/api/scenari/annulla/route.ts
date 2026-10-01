@@ -6,6 +6,7 @@ import { leggiContenuto } from '@/lib/contenuto-scenario';
 import { conLaSerratura } from '@/lib/serratura-scenari';
 import { operazioneInCorso } from '@/lib/registro';
 import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
+import { togliVoceDalCatalogo } from '@/lib/catalogo-voci';
 import { rispostaErrore } from '@/lib/risposte-scenari';
 
 const radici = () => ({ repoRoot: REPO_ROOT, featuresDir: FEATURES_DIR });
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
   }
   try {
     const esito = await conLaSerratura(() => annulla(radici()));
+    // Annullata una rinomina: la frase nuova non c'e' piu' nel codice (vedi `catalogo-voci.ts`).
+    if (esito.catalogoDaTogliere) togliVoceDalCatalogo(REPO_ROOT, esito.catalogoDaTogliere);
     const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
     // Lo scenario com'e' adesso, cosi' il pannello riparte dal testo di prima.
     let attuale: { testo: string; versione: string } | null = null;
