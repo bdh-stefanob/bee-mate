@@ -21,7 +21,8 @@ import type { Istantanea } from '@/lib/risorsa';
 import { BarraStrumenti, PulsanteFiltro, SelezioneFiltro } from './BarraStrumenti';
 import { ElencoPaginato } from './ElencoPaginato';
 import { RigaComponente, chiaveComponente } from './RigaComponente';
-import { ErroreCatalogo, ScheletroCatalogo } from './Scheletro';
+import { ErroreCatalogoIlleggibile } from './ErroreCatalogoIlleggibile';
+import { ScheletroCatalogo } from './Scheletro';
 import { StatoVuoto } from './StatoVuoto';
 import type { RispostaCatalogo } from './tipi';
 
@@ -86,7 +87,7 @@ export function SchedaComponenti() {
 
       {cat.stato === 'caricamento' && <ScheletroCatalogo etichetta={t('caricamento')} />}
       {cat.stato === 'errore' && (
-        <ErroreCatalogo messaggio={t('erroreCatalogoRiprova')} onRiprova={() => void catalogo.carica()} />
+        <ErroreCatalogoIlleggibile />
       )}
 
       {nessunComponente && (

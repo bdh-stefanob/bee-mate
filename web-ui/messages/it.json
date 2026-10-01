@@ -420,6 +420,8 @@
     "numScenariVai": "Vai agli scenari",
     "numeroNonDisponibile": "non disponibile",
     "erroreCatalogoRiprova": "Non sono riuscito a leggere il catalogo.",
+    "catalogoNonSiLegge": "Il catalogo non si legge. Si può ricostruire: ci vuole qualche decina di secondi.",
+    "catalogoRicostruzione": "Sto ricostruendo il catalogo: ci vuole qualche decina di secondi.",
     "aggiornamentoInCorsoRiga": "Sto aggiornando il catalogo…",
     "riprovaAggiornamento": "Riprova ora",
     "aggiornamentoOccupato": "C'è un'altra operazione in corso: riprova quando finisce.",

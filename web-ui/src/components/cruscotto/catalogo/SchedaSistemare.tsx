@@ -16,7 +16,8 @@ import { BarraStrumenti, SelezioneFiltro } from './BarraStrumenti';
 import { CoppiaDoppione } from './CoppiaDoppione';
 import { CoppiaEquivoco } from './CoppiaEquivoco';
 import { CoppiaDaVerificare, CoppiaSoloDaSapere } from './CoppiaInformativa';
-import { ErroreCatalogo, ScheletroCatalogo } from './Scheletro';
+import { ErroreCatalogoIlleggibile } from './ErroreCatalogoIlleggibile';
+import { ScheletroCatalogo } from './Scheletro';
 import { StatoVuoto } from './StatoVuoto';
 import { StrisciaEsito } from './StrisciaEsito';
 import type { EsitoOperazione, RispostaCatalogo, RispostaRiconciliazione } from './tipi';
@@ -96,10 +97,10 @@ export function SchedaSistemare() {
 
       {caricamento && <ScheletroCatalogo etichetta={t('caricamento')} />}
       {coppie.stato === 'errore' && (
-        <ErroreCatalogo messaggio={t('erroreCatalogoRiprova')} onRiprova={() => void riconciliazione.carica()} />
+        <ErroreCatalogoIlleggibile />
       )}
       {cat.stato === 'errore' && !arricchite && coppie.stato !== 'errore' && (
-        <ErroreCatalogo messaggio={t('erroreCatalogoRiprova')} onRiprova={() => void catalogo.carica()} />
+        <ErroreCatalogoIlleggibile />
       )}
 
       {arricchite && totale === 0 && (

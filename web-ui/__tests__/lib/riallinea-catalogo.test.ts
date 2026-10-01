@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { riallineaCatalogo } from '@/lib/risorse-catalogo';
+import { riallineaCatalogo, rilanciaAggiornamento, statoAggiornamento } from '@/lib/risorse-catalogo';
 
 /** Risposte in sequenza: ogni chiamata a `fetch` prende la successiva. */
 function fetchCon(...stati: number[]) {
@@ -33,5 +33,24 @@ describe('riallineaCatalogo: il comando catalogo dopo Applica/Annulla', () => {
     const f = fetchCon(400, 400, 200);
     expect(await riallineaCatalogo(0)).toBe(false);
     expect(lanci(f)).toBe(2);
+  });
+});
+
+describe('rilanciaAggiornamento: lo stato lo scrive lo script, dopo la partenza', () => {
+  it('non si accontenta della lettura di prima: aspetta di vedere il giro nuovo', async () => {
+    const vecchio = { stato: 'ok', avviatoIl: 'A', concluseIl: 'B' };
+    // La rotta di avvio risponde subito; lo stato cambia solo alla terza lettura.
+    let letture = 0;
+    vi.stubGlobal('fetch', vi.fn(async (rotta: string) => {
+      if (rotta === '/api/catalogo/stato') {
+        letture++;
+        return new Response(JSON.stringify(letture >= 3 ? { stato: 'in-corso', avviatoIl: 'C' } : vecchio), { status: 200 });
+      }
+      return new Response(JSON.stringify({ id: 'x' }), { status: 200 });
+    }));
+    await statoAggiornamento.ricarica(); // lo stato di prima (letture = 1)
+    letture = 0;
+    expect(await rilanciaAggiornamento(0)).toBe(true);
+    expect(statoAggiornamento.istantanea().dati?.stato).toBe('in-corso');
   });
 });

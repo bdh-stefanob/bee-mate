@@ -1,8 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-
 /** Righe che pulsano al posto del contenuto, comune a tutte le sezioni del Catalogo. */
 export function ScheletroCatalogo({ etichetta }: { etichetta: string }) {
   return (
@@ -16,28 +13,6 @@ export function ScheletroCatalogo({ etichetta }: { etichetta: string }) {
           aria-hidden="true"
         />
       ))}
-    </div>
-  );
-}
-
-/**
- * Riquadro d'errore uniforme: la rotta manca o non risponde. Con `onRiprova`
- * ha una via d'uscita (il pulsante); senza, e' solo l'avviso.
- */
-export function ErroreCatalogo({ messaggio, onRiprova }: { messaggio: string; onRiprova?: () => void }) {
-  const t = useTranslations('Catalogo');
-  return (
-    <div
-      role="alert"
-      className="rounded-lg border p-4 text-sm flex flex-wrap items-center gap-3"
-      style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)', color: 'var(--testo)' }}
-    >
-      <span className="flex-1">{messaggio}</span>
-      {onRiprova && (
-        <Button variant="outline" className="min-h-10 h-auto" onClick={onRiprova}>
-          {t('riprova')}
-        </Button>
-      )}
     </div>
   );
 }

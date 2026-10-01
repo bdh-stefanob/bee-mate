@@ -59,16 +59,36 @@ export function ricaricaCatalogoECoppie(): Promise<void[]> {
   return Promise.all([catalogo.ricarica(), riconciliazione.ricarica()]);
 }
 
-/** "Riprova ora": lancia il comando `catalogo` dell'elenco chiuso. true = partito. */
-export async function rilanciaAggiornamento(): Promise<boolean> {
+/** Quante letture, al massimo, per accorgersi che lo script ha scritto il suo stato. */
+const LETTURE_PER_VEDERE_LA_PARTENZA = 20;
+
+/**
+ * "Riprova ora": lancia il comando `catalogo` dell'elenco chiuso. true = partito.
+ *
+ * Lo stato lo scrive lo script, qualche istante DOPO l'avvio: leggerlo subito
+ * darebbe quello di prima, e la pagina — che rilegge a intervalli solo mentre
+ * vede "in corso" — non si accorgerebbe mai del giro nuovo (e non rileggerebbe
+ * il catalogo alla fine). Quindi si rilegge finche' compare un giro nuovo.
+ */
+export async function rilanciaAggiornamento(pausaMs = 500): Promise<boolean> {
   try {
+    const prima = statoAggiornamento.istantanea().dati?.avviatoIl;
     const risposta = await fetch('/api/esegui', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome: 'catalogo' }),
     });
     if (!risposta.ok) return false;
-    await statoAggiornamento.ricarica();
+    for (let i = 0; i < LETTURE_PER_VEDERE_LA_PARTENZA; i++) {
+      await statoAggiornamento.ricarica();
+      const ora = statoAggiornamento.istantanea().dati;
+      if (ora?.stato === 'in-corso' || (ora?.avviatoIl !== undefined && ora.avviatoIl !== prima)) {
+        // Un giro cosi' breve da essere gia' concluso: nessuno ha visto "in corso", quindi rileggere tocca a noi.
+        if (ora.stato !== 'in-corso') void ricaricaCatalogoECoppie();
+        break;
+      }
+      await new Promise((r) => setTimeout(r, pausaMs));
+    }
     return true;
   } catch {
     return false;

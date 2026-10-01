@@ -420,6 +420,8 @@
     "numScenariVai": "Go to the scenarios",
     "numeroNonDisponibile": "not available",
     "erroreCatalogoRiprova": "I couldn't read the catalog.",
+    "catalogoNonSiLegge": "The catalog can't be read. It can be rebuilt: it takes a few dozen seconds.",
+    "catalogoRicostruzione": "Rebuilding the catalog: it takes a few dozen seconds.",
     "aggiornamentoInCorsoRiga": "Updating the catalog…",
     "riprovaAggiornamento": "Try again now",
     "aggiornamentoOccupato": "Another operation is running: try again when it finishes.",
