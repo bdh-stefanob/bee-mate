@@ -653,6 +653,8 @@
     "diventaTuo": "Questo scenario è stato creato da una registrazione. Quando lo modifichi diventa tuo: se registri di nuovo e salvi con lo stesso titolo, il tuo lavoro non viene sovrascritto — il nuovo scenario si salva accanto, con un numero in più.",
     "oraTuo": "Questo scenario ora è tuo: una nuova registrazione con lo stesso titolo non lo sovrascrive.",
     "catalogoNonAggiornato": "L'elenco dei passi non si è aggiornato da solo: aggiornalo dal Catalogo.",
+    "bloccoIntestazione": "Non posso salvare finché non lo sistemi:",
+    "avvisoIntestazione": "Da sapere:",
     "bloccoSconosciuto": "Il passo \"{frase}\" non esiste nel catalogo: il test non partirebbe. Scegli un altro passo.",
     "bloccoAmbiguo": "Il passo \"{frase}\" corrisponde a più passi del catalogo: il test non saprebbe quale usare.",
     "bloccoSintassi": "Il testo non è valido alla riga {riga}.",

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { SelettoreLingua } from '@/components/cruscotto/SelettoreLingua';
 import { SelettoreTema } from '@/components/cruscotto/SelettoreTema';
 import { SelettoreAmbiente } from '@/components/cruscotto/SelettoreAmbiente';
+import { useModifiche } from '@/context/ModificheContext';
 
 interface Voce {
   href: string;
@@ -34,6 +35,10 @@ function VoceNav({
   t,
 }: Voce & { pathname: string | null; t: (chiave: string) => string }) {
   const attivo = pathname === href || pathname?.startsWith(`${href}/`);
+  // Una modifica a uno scenario non salvata: si chiede al tester prima di lasciare la pagina.
+  const { nonSalvate, puoiUscire } = useModifiche();
+  const tm = useTranslations('ModificaScenario');
+  const conPunto = href === '/scenari' && nonSalvate;
   return (
     <li className="flex-1 min-w-0 min-[900px]:flex-none">
       {/*
@@ -44,6 +49,9 @@ function VoceNav({
       <Link
         href={href}
         aria-current={attivo ? 'page' : undefined}
+        onClick={(e) => {
+          if (!puoiUscire(href)) e.preventDefault();
+        }}
         className={cn(
           'flex flex-col min-[900px]:flex-row items-center justify-center min-[900px]:justify-start gap-0.5 min-[900px]:gap-2',
           'min-h-10 px-0.5 min-[900px]:px-3 py-1 min-[900px]:py-0 rounded-md text-xs min-[900px]:text-sm font-medium transition-colors',
@@ -59,6 +67,12 @@ function VoceNav({
       >
         <Icona size={20} aria-hidden="true" />
         <span>{t(chiaveEtichetta)}</span>
+        {conPunto && (
+          <>
+            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ background: 'var(--ambra)' }} />
+            <span className="sr-only min-[900px]:not-sr-only text-xs font-normal">{tm('voceNonSalvate')}</span>
+          </>
+        )}
       </Link>
     </li>
   );

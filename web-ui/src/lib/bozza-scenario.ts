@@ -135,7 +135,10 @@ export function riduci(b: Bozza, a: Azione): Bozza {
     }
 
     case 'chiedi-rinomina':
-      if (b.fase === 'pulita') return { ...b, fase: 'conferma', conferma: 'rinomina', prima: 'pulita', avviso: null };
+      // Dopo un salvataggio il testo e' uguale a quello letto: vale come pulita.
+      if (b.fase === 'pulita' || b.fase === 'salvata') {
+        return { ...b, fase: 'conferma', conferma: 'rinomina', prima: 'pulita', avviso: null };
+      }
       // Da sporca non parte: la rinomina vale per tutto il repository e si applica subito,
       // quindi prima si salva o si scarta quello che c'e'.
       if (b.fase === 'sporca') return { ...b, avviso: 'salva-prima' };

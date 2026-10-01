@@ -24,7 +24,8 @@ import type { Istantanea } from '@/lib/risorsa';
 import type { RispostaScenari } from '@/lib/esiti-tipi';
 import { RiepilogoEsiti } from '@/components/cruscotto/scenari/RiepilogoEsiti';
 import { ElencoScenari } from '@/components/cruscotto/scenari/ElencoScenari';
-import { PannelloScenario } from '@/components/cruscotto/scenari/PannelloScenario';
+import { ModificaScenario } from '@/components/cruscotto/scenari/modifica/ModificaScenario';
+import { useModifiche } from '@/context/ModificheContext';
 import { StatoVuotoScenari } from '@/components/cruscotto/scenari/StatoVuotoScenari';
 import { ScheletroScenari } from '@/components/cruscotto/scenari/ScheletroScenari';
 import {
@@ -112,15 +113,32 @@ function ScenariContenuto() {
     }
   }, [chiaveScelta, larga]);
 
+  const { puoiUscire } = useModifiche();
+
   const suScegli = useCallback(
     (voce: VoceScenario) => {
+      const indirizzo = indirizzoScenario(voce.file, voce.nome);
+      // Con una modifica non salvata si chiede prima al tester cosa farne: il
+      // pannello apre il suo dialogo e, se si sceglie di uscire, naviga lui.
+      if (voce.chiave !== scelta.current.chiave && !puoiUscire(indirizzo)) return;
       // `replace`, non `push`: dopo cinque scelte il tasto Indietro riporta alla
       // pagina da cui si veniva, non allo scenario di prima.
       if (voce.chiave !== scelta.current.chiave) scelta.current.daUtente = true;
       setAnnuncio(t('aperto', { nome: voce.nome }));
-      router.replace(indirizzoScenario(voce.file, voce.nome), { scroll: false });
+      router.replace(indirizzo, { scroll: false });
     },
-    [router, t]
+    [router, t, puoiUscire]
+  );
+
+  // Una modifica e' stata salvata o annullata: l'elenco si rilegge (l'impronta e'
+  // cambiata, quindi "modificato dopo l'ultima prova") e l'indirizzo segue il
+  // nuovo titolo.
+  const alTermine = useCallback(
+    async ({ file, titolo }: { file: string; titolo: string }) => {
+      await scenari.ricarica();
+      router.replace(indirizzoScenario(file, titolo), { scroll: false });
+    },
+    [router]
   );
 
   const intestazione = (
@@ -223,7 +241,13 @@ function ScenariContenuto() {
 
         <div className="min-w-0">
           {voceScelta ? (
-            <PannelloScenario voce={voceScelta} ambiente={ambienteScelto} titoloRef={titoloRef} />
+            <ModificaScenario
+              key={voceScelta.file}
+              voce={voceScelta}
+              ambiente={ambienteScelto}
+              titoloRef={titoloRef}
+              alTermine={alTermine}
+            />
           ) : selezione.tipo === 'non-trovato' ? (
             <section
               aria-label={t('pannelloAria')}

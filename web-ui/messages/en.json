@@ -653,6 +653,8 @@
     "diventaTuo": "This scenario was created from a recording. Once you edit it, it's yours: if you record again and save with the same title, your work isn't overwritten — the new scenario is saved next to it, with a number added.",
     "oraTuo": "This scenario is now yours: a new recording with the same title won't overwrite it.",
     "catalogoNonAggiornato": "The list of steps didn't update by itself: update it from the Catalog.",
+    "bloccoIntestazione": "I can't save until you fix this:",
+    "avvisoIntestazione": "Worth knowing:",
     "bloccoSconosciuto": "The step \"{frase}\" isn't in the catalog: the test wouldn't run. Pick another step.",
     "bloccoAmbiguo": "The step \"{frase}\" matches more than one catalog step: the test wouldn't know which to use.",
     "bloccoSintassi": "The text isn't valid at line {riga}.",

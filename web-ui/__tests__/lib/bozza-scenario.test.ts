@@ -104,6 +104,16 @@ describe('bozza: rinomina, che vale ovunque', () => {
     expect(riduci(b, { tipo: 'conferma' }).fase).toBe('salvataggio');
   });
 
+  it('parte anche subito dopo un salvataggio: il testo e quello letto', () => {
+    const salvata = [
+      { tipo: 'modifica', testo: T1 } as Azione,
+      { tipo: 'controlla' } as Azione,
+      { tipo: 'controllato', blocchi: 0, tocca: false } as Azione,
+      { tipo: 'salvata', testo: T1, versione: 'v1' } as Azione,
+    ].reduce(riduci, pulita());
+    expect(riduci(salvata, { tipo: 'chiedi-rinomina' }).fase).toBe('conferma');
+  });
+
   it('da sporca non parte: dice di salvare o scartare prima', () => {
     const b = riduci(sporca(), { tipo: 'chiedi-rinomina' });
     expect(b.fase).toBe('sporca');

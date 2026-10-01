@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { Eye } from 'lucide-react';
 import { tokenizzaGherkin, type RigaGherkin } from '@/lib/gherkin-lettura';
@@ -20,11 +20,21 @@ export function GherkinLeggibile({
   testo,
   rigaEvidenziata,
   ariaLabel,
+  onRiga,
+  etichettaRiga,
 }: {
   testo: string;
   /** La riga di `Scenario:` da evidenziare quando il file ne ha piu' d'uno. */
   rigaEvidenziata?: number;
   ariaLabel: string;
+  /**
+   * Se c'e', i passi e i titoli (`Feature:`/`Scenario:`) sono cliccabili — e si
+   * raggiungono con Tab, Invio o Spazio — e dicono quale riga e' stata scelta:
+   * e' l'ingresso diretto della modifica. Selezionare del testo per copiarlo non
+   * conta come un clic.
+   */
+  onRiga?: (riga: RigaGherkin) => void;
+  etichettaRiga?: (riga: RigaGherkin) => string;
 }) {
   const t = useTranslations('Scenari');
   const righe = useMemo(() => tokenizzaGherkin(testo), [testo]);
@@ -45,14 +55,41 @@ export function GherkinLeggibile({
     >
       {righe.map((r) => {
         const evidenzia = r.numero === rigaEvidenziata;
+        const cliccabile =
+          onRiga !== undefined &&
+          (r.tipo === 'passo' || (r.tipo === 'intestazione' && (r.parola === 'Feature' || r.parola === 'Scenario' || r.parola === 'Example')));
+        const apri = () => {
+          // Un trascinamento per selezionare il testo non e' una richiesta di modifica.
+          if (typeof window !== 'undefined' && (window.getSelection()?.toString() ?? '') !== '') return;
+          onRiga?.(r);
+        };
         return (
           <div
             key={r.numero}
             ref={evidenzia ? evidenziata : undefined}
-            className="grid grid-cols-[2.75rem_minmax(0,1fr)] [counter-increment:riga] before:select-none before:pr-3 before:text-right before:text-xs before:leading-6 before:text-[color:var(--testo-tenue)] before:content-[counter(riga)]"
+            {...(cliccabile
+              ? {
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-label': etichettaRiga?.(r),
+                  onClick: apri,
+                  onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onRiga?.(r);
+                    }
+                  },
+                }
+              : {})}
+            className={`grid grid-cols-[2.75rem_minmax(0,1fr)] [counter-increment:riga] before:select-none before:pr-3 before:text-right before:text-xs before:leading-6 before:text-[color:var(--testo-tenue)] before:content-[counter(riga)]${
+              cliccabile
+                ? ' cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2'
+                : ''
+            }`}
             style={{
               // La barra segna lo scenario scelto.
               borderLeft: `3px solid ${evidenzia ? 'var(--blu)' : 'transparent'}`,
+              ...(cliccabile ? { outlineColor: 'var(--blu)' } : {}),
             }}
           >
             <div

@@ -12,6 +12,7 @@ import { risorsaTesto } from '@/lib/stato-scenari';
 import { indirizzoEsecuzione } from '@/lib/percorso-esecuzione';
 import type { VoceScenario } from '@/lib/scenari-elenco';
 import type { Istantanea } from '@/lib/risorsa';
+import type { RigaGherkin } from '@/lib/gherkin-lettura';
 
 const CLASSE_AZIONE = `inline-flex min-h-10 ${CLASSE_AZIONE_FLESSIBILE} items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`;
 
@@ -29,11 +30,21 @@ export function PannelloScenario({
   ambiente,
   titoloRef,
   altreAzioni,
+  sostituisciTesto,
+  suRiga,
+  etichettaRiga,
+  nota,
 }: {
   voce: VoceScenario;
   ambiente: string | null;
   titoloRef: Ref<HTMLHeadingElement>;
   altreAzioni?: ReactNode;
+  /** La modifica prende il posto della lettura del testo (la passa `ModificaScenario`). */
+  sostituisciTesto?: ReactNode;
+  /** In lettura, il clic (o Invio) su un passo o sul titolo apre la modifica li' (decisione M11). */
+  suRiga?: (riga: RigaGherkin) => void;
+  etichettaRiga?: (riga: RigaGherkin) => string;
+  nota?: string;
 }) {
   const t = useTranslations('Scenari');
   const indirizzoEsegui = indirizzoEsecuzione(voce.file, voce.riga);
@@ -107,15 +118,23 @@ export function PannelloScenario({
 
       <SchedaEsito stato={voce.stato} ambiente={ambiente} />
 
+      {sostituisciTesto ?? (
       <section aria-label={t('testoTitolo')} className="flex flex-col gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--testo-tenue)' }}>
           {t('testoTitolo')}
         </h3>
+        {nota && testo.dati !== null && (
+          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            {nota}
+          </p>
+        )}
         {testo.dati !== null ? (
           <GherkinLeggibile
             testo={testo.dati}
             ariaLabel={t('testoAria')}
             rigaEvidenziata={voce.scenariNelFile > 1 ? voce.riga : undefined}
+            onRiga={suRiga}
+            etichettaRiga={etichettaRiga}
           />
         ) : testo.stato === 'errore' ? (
           <div className="flex flex-col items-start gap-2 text-sm" role="alert" style={{ color: 'var(--rosso)' }}>
@@ -135,6 +154,7 @@ export function PannelloScenario({
           </p>
         )}
       </section>
+      )}
     </section>
   );
 }
