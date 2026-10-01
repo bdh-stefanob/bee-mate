@@ -260,6 +260,13 @@ the save, with the phrases listed, because Cucumber refuses two definitions of
 the same phrase. Nothing is written until every check has passed. In short,
 the UI test framework builds itself, one saved recording at a time.
 
+**Where you see them, and how they went.** The *Scenarios* screen lists every
+scenario with the outcome of its last run per environment. The outcomes live in
+an index kept on the machine only (it is under the git-ignored reports folder),
+written when a test run ends and rebuilt once from earlier runs the first time.
+Whether an outcome is still valid is decided by a fingerprint of the scenario
+text, so a scenario edited after its last run is shown as such, not as green.
+
 Still missing: the catalog is not refreshed after generating, and Run cannot
 yet pick a whole flow or application.
 

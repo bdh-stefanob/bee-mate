@@ -3,13 +3,14 @@
 _For people who run tests by hand. You do not need to know Gherkin or code,
 and you never need to open a terminal._
 
-The dashboard is the part of the desktop app that opens first. It has three
+The dashboard is the part of the desktop app that opens first. It has four
 entries in the sidebar, one for each thing you do:
 
 | Entry | What it is for |
 |---|---|
 | **Check-up** | know whether your machine is ready, and fix what is missing |
 | **Record** | run your test as always, and get a scenario out of it |
+| **Scenarios** | see what you have recorded, and how each scenario went the last time |
 | **Run** | run the scenario on its own and see how it went |
 
 The sidebar also has:
@@ -112,6 +113,22 @@ Two messages you may see when saving:
 If you leave the screen while recording, the recording is still there when you
 come back. If another operation is already running, the window says so and
 tells you where to watch it: one operation at a time.
+
+---
+
+## Scenarios
+
+The list of everything you have recorded, with how each scenario went the last
+time **on the environment chosen in the sidebar**: passed, failed (and at which
+step it stopped), never run there, or changed since the last run. The three
+numbers at the top count the same states, and each one is also a filter: press
+it to see only those scenarios. A scenario is counted under **to run** when it
+was never run on this environment or its text changed after the last run.
+
+Choose a scenario to read it with colours, press **Run** to open Run with that
+scenario already chosen (it does not start by itself), or **Export** to download
+it. Results are kept on this computer only: a scenario that arrived from a
+colleague shows as never run until you run it here.
 
 ---
 

@@ -34,13 +34,18 @@ function VoceNav({
 }: Voce & { pathname: string | null; t: (chiave: string) => string }) {
   const attivo = pathname === href || pathname?.startsWith(`${href}/`);
   return (
-    <li className="flex-1 min-[900px]:flex-none">
+    <li className="flex-1 min-w-0 min-[900px]:flex-none">
+      {/*
+        * Sotto i 900px la barra e' una riga: con cinque voci l'icona sta sopra
+        * la parola e il testo e' piu' piccolo, altrimenti la riga supera i
+        * 390px e la pagina scorre in orizzontale.
+        */}
       <Link
         href={href}
         aria-current={attivo ? 'page' : undefined}
         className={cn(
-          'flex items-center justify-center min-[900px]:justify-start gap-2',
-          'min-h-10 px-3 rounded-md text-sm font-medium transition-colors',
+          'flex flex-col min-[900px]:flex-row items-center justify-center min-[900px]:justify-start gap-0.5 min-[900px]:gap-2',
+          'min-h-10 px-0.5 min-[900px]:px-3 py-1 min-[900px]:py-0 rounded-md text-xs min-[900px]:text-sm font-medium transition-colors',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
           attivo
             ? 'font-semibold'

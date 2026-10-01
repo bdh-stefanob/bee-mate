@@ -1102,3 +1102,34 @@ successivo.
    `dopoUnCambioDegliScenari()`.
 7. Tolta la sezione dal Catalogo; documenti (`OVERVIEW.md` §6, guida del tester).
 8. Controlli a mano della lista sopra, con gli scenari neutri.
+
+## Stato dell'implementazione (1 ottobre 2026)
+
+Costruito: i casi puri e i loro moduli, l'indice per scenario e ambiente con
+ricostruzione al primo avvio (O6), la scrittura a fine prova prima dello stato
+finale, `GET /api/scenari` esteso, la pagina con tutti gli stati, la voce nella
+barra laterale, `FraseFallimento` condivisa, la sezione tolta dal Catalogo.
+
+Scostamenti dalla spec, dichiarati:
+
+- **Il link "Vedi la schermata" (O7) non c'e'**: l'indice ricorda l'id
+  dell'esecuzione; il passo successivo e' di Esecuzione (aprire una prova
+  conclusa per id) e di F20 (tenere i `.ndjson` dei rossi).
+- `formattaDurata` esiste in `formato-quando.ts` **e** ancora in
+  `esecuzione/page.tsx`: non si e' spostata per non toccare quel file mentre un
+  altro lavoro lo cambia. Da togliere appena possibile.
+- `SCENARIO_VALIDO` e' in `percorso-scenario.ts` **e** in `esecuzione.ts`, per lo
+  stesso motivo; un caso di contratto fallisce se le due copie divergono.
+- `dopoUnCambioDegliScenari()` e' chiamata da Esecuzione (fine prova) e da
+  `SalvaScenario`; **non** da `registra/page.tsx` (`dopoGenerazione`): la pagina
+  rilegge comunque a ogni apertura e al ritorno in primo piano, e si perde solo
+  l'istante di dati vecchi dopo una generazione.
+- Il punto di sostituzione dell'estrazione per i test e' `usaRegistrazioneEsiti`
+  (modulo), non un parametro di `avvia`.
+- La barra laterale, con cinque voci, mette l'icona sopra la parola sotto i
+  900px: in riga le voci superavano i 390px.
+- I controlli a mano della lista sono stati fatti con un browser automatico
+  (Playwright, Chromium) su scenari neutri: vuoto, esiti per ambiente, rosso,
+  modificato, non trovato, tastiera, ricerca, 390/1024/1099/1280 senza
+  scorrimento orizzontale. **Non** fatti: screen reader, colori forzati di
+  Windows, tema scuro, zoom 200%, 1920.
