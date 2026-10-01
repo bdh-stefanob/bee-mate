@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { walkFeatures } from './features';
+import { improntaDiTesto } from './impronta-scenario';
 
 /**
  * Gli scenari che la schermata Esecuzione puo' offrire.
@@ -27,6 +28,11 @@ export interface FileScenari {
   scenari: ScenarioEseguibile[];
   /** Scenari presenti ma solo documentati: non si offrono, si contano. */
   nonAutomatizzati: number;
+  /**
+   * Hash del testo del file (vedi `impronta-scenario.ts`): e' cio' con cui si
+   * decide se un esito salvato e' ancora valido per il file com'e' adesso.
+   */
+  impronta: string;
 }
 
 const TAG_DOCUMENTO = '@non-automatizzato';
@@ -73,15 +79,26 @@ export function leggiScenari(testo: string, file: string): FileScenari {
     generato: file.startsWith(CARTELLA_GENERATI),
     scenari,
     nonAutomatizzati,
+    impronta: improntaDiTesto(testo),
   };
 }
 
+export interface RiepilogoScenari {
+  file: FileScenari[];
+  /** Quanti scenari sono solo descritti, in TUTTI i file (anche quelli senza scenari eseguibili). */
+  soloDescritti: number;
+}
+
 /**
- * Tutti i file con almeno uno scenario eseguibile. I registrati vengono per
- * primi: sono quelli che il tester ha appena prodotto, ed e' li' che guarda.
+ * Tutti i file con almeno uno scenario eseguibile, piu' il conto dei casi solo
+ * descritti: nello stesso passaggio sui file, perche' un file di soli casi
+ * descritti viene scartato dall'elenco e il suo conto andrebbe perso.
+ * I registrati vengono per primi: sono quelli che il tester ha appena
+ * prodotto, ed e' li' che guarda.
  */
-export function elencaScenari(cartella: string): FileScenari[] {
+export function riepilogaScenari(cartella: string): RiepilogoScenari {
   const elenco: FileScenari[] = [];
+  let soloDescritti = 0;
   for (const rel of walkFeatures(cartella)) {
     let testo = '';
     try {
@@ -90,9 +107,13 @@ export function elencaScenari(cartella: string): FileScenari[] {
       continue;
     }
     const f = leggiScenari(testo, rel);
+    soloDescritti += f.nonAutomatizzati;
     if (f.scenari.length > 0) elenco.push(f);
   }
-  return elenco.sort(
-    (a, b) => Number(b.generato) - Number(a.generato) || a.file.localeCompare(b.file)
-  );
+  elenco.sort((a, b) => Number(b.generato) - Number(a.generato) || a.file.localeCompare(b.file));
+  return { file: elenco, soloDescritti };
+}
+
+export function elencaScenari(cartella: string): FileScenari[] {
+  return riepilogaScenari(cartella).file;
 }

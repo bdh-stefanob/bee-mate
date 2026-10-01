@@ -2,7 +2,8 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { elencaScenari, leggiScenari } from '@/lib/scenari';
+import { elencaScenari, leggiScenari, riepilogaScenari } from '@/lib/scenari';
+import { improntaDiTesto } from '@/lib/impronta-scenario';
 
 let tmp: string | null = null;
 afterEach(() => {
@@ -79,5 +80,44 @@ describe('elencaScenari', () => {
 
   it('una cartella che non esiste da\' un elenco vuoto, non un errore', () => {
     expect(elencaScenari('/non/esiste/proprio')).toEqual([]);
+  });
+});
+
+describe('riepilogaScenari', () => {
+  it('conta come soloDescritti anche i casi dei file che non hanno nessuno scenario eseguibile', () => {
+    const radice = albero({
+      'a/doc.feature': '@non-automatizzato\nFeature: Doc\n  Scenario: x\n  Scenario: y\n',
+      'a/misto.feature': 'Feature: Misto\n  @non-automatizzato\n  Scenario: solo scritto\n  Scenario: vero\n',
+    });
+    const r = riepilogaScenari(radice);
+    expect(r.file.map((f) => f.file)).toEqual(['a/misto.feature']);
+    expect(r.soloDescritti).toBe(3);
+  });
+
+  it('elencaScenari da\' lo stesso elenco di riepilogaScenari', () => {
+    const radice = albero({ 'a/vero.feature': 'Feature: Vero\n  Scenario: y\n' });
+    expect(elencaScenari(radice)).toEqual(riepilogaScenari(radice).file);
+  });
+
+  it('una cartella che non esiste da\' zero e zero, non un errore', () => {
+    expect(riepilogaScenari('/non/esiste/proprio')).toEqual({ file: [], soloDescritti: 0 });
+  });
+
+  it('ogni file porta la sua impronta, quella del testo letto', () => {
+    const testo = 'Feature: Vero\n  Scenario: y\n';
+    const radice = albero({ 'a/vero.feature': testo });
+    expect(riepilogaScenari(radice).file[0].impronta).toBe(improntaDiTesto(testo));
+  });
+});
+
+describe('improntaDiTesto', () => {
+  it('e\' uguale con fine riga CRLF e LF, e diversa se cambia una parola', () => {
+    const lf = 'Feature: A\n  Scenario: uno\n    Given x\n';
+    expect(improntaDiTesto(lf.replace(/\n/g, '\r\n'))).toBe(improntaDiTesto(lf));
+    expect(improntaDiTesto(lf.replace('uno', 'due'))).not.toBe(improntaDiTesto(lf));
+  });
+
+  it('sono 16 caratteri esadecimali', () => {
+    expect(improntaDiTesto('x')).toMatch(/^[0-9a-f]{16}$/);
   });
 });
