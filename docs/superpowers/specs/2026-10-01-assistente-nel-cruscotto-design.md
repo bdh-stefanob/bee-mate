@@ -973,6 +973,28 @@ La fetta 1 dipende da una cosa gia' in roadmap: finche' il **riuso di una defini
 esistente** non e' costruito (`ROADMAP.md` §4, punto 3), le voci gia' realizzate
 compaiono disabilitate. Non la blocca: la limita, e lo dice.
 
+### Fetta 0: esito delle sonde (2026-10-01)
+
+Eseguite le sole sonde che non richiedono un assistente ne' la rete. Ogni esito e'
+quello che si e' visto, non quello che ci si aspettava.
+
+| Sonda | Esito |
+|---|---|
+| Cucumber regge uno scenario fuori da `src/` (serve alla difesa 4 del copione)? | **Si'.** `BDD_PATHS=reports/collaudo/prova/x.feature` con `--dry-run`, glue da `src/steps/**`: 1 scenario, 2 passi, nessuno indefinito, uscita 0. Non serve il tag `@da-copione`: basta che `outRoot` punti fuori da `src/`. Il catalogo non lo vede, perche' i percorsi di default sono `src/features/**` |
+| Una riga di commento nel `.feature` (`# frase del tester: ...`, `# origine-frasi: ...`) rompe qualcosa? | **No.** Gherkin la accetta (stessa prova), e `isRegenerable` cerca il marcatore con `includes` su tutto il file: un commento in piu' non lo sposta ne' lo toglie |
+| Gli agenti Kiro di oggi dichiarano il modello? | **No.** Ne' `bdd-generate.json` ne' `bdd-authoring.json` hanno un campo `model`: oggi il modello lo sceglie Kiro (F20). `bdd-propose` dovra' dichiararlo (fetta 2) |
+| `kiro-cli` e' sul PATH di questa macchina? | **No** (`where kiro-cli kiro q` non trova niente). Questa non e' la macchina aziendale: **non dice nulla** sulla macchina che conta |
+| Il catalogo di questa macchina | 2 voci, **entrambe `implemented`**, nessuna `@wanted`, nessuna con componenti; `src/features/` non esiste. Conseguenza: qui il riquadro delle regole non ha mai niente di **applicabile** (le voci realizzate sono disabilitate, rischio 3), e quindi non compare. E' il comportamento voluto |
+| `brief.md` manda valori digitati e note? | **Si'**, per costruzione: `generate-brief.ts` scrive `con "<valore>"` per ogni gesto non segreto e la sezione "Note lasciate mentre registrava". Il compito nuovo (variante A) non li legge |
+
+Da fare sulla macchina con Kiro (non eseguibili qui):
+
+- **P10(1)** `kiro-cli chat --no-interactive` con un agente a solo `fs_read` risponde sullo stdout?
+- **P10(2)** l'agente nell'IDE puo' scrivere nella cartella del compito, con approvazione?
+- **P10(3)** il modello si fissa, e quale compare?
+- **Q-A1**: la risposta aziendale (vedi "Non decisa").
+- **L'inizio dell'insieme d'oro**: lo etichettano le persone (Q-A4, ancora aperta); la fetta 1 fornisce il formato e il calcolo, con un esempio finto.
+
 ### Cosa non costruire
 
 - Una **chat libera** nel cruscotto, o un campo dove scrivere un'istruzione: e'
