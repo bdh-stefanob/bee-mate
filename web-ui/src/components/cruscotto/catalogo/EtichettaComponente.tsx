@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
+import { nomeLeggibilePagina } from '@/lib/nome-pagina';
 import type { ComponenteCatalogo } from './tipi';
 
 /**
@@ -20,7 +21,7 @@ export function EtichettaComponente({ componente, conPagina = false }: { compone
   return (
     <Badge variant="secondary" className="h-auto min-h-5 whitespace-normal text-left">
       {ruolo(componente.role)} &laquo;{componente.name}&raquo;
-      {conPagina && componente.page ? ` · ${t('paginaDi', { pagina: componente.page })}` : ''}
+      {conPagina && componente.page ? ` · ${t('paginaDi', { pagina: nomeLeggibilePagina(componente.page) })}` : ''}
     </Badge>
   );
 }

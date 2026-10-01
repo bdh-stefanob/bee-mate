@@ -35,6 +35,8 @@ export const RigaStep = memo(function RigaStep({
   onCommuta: (espressione: string) => void;
 }) {
   const t = useTranslations('Catalogo');
+  // Il nome della classe resta solo qui, dietro "Dettagli tecnici": in vista c'e' il nome leggibile.
+  const classiPagina = [...new Set(step.componenti.map((c) => c.page).filter((p): p is string => Boolean(p)))];
   const idDettaglio = useId();
   const Chevron = aperto ? ChevronDown : ChevronRight;
   const stato = step.stato ? ICONA_STATO[step.stato] : null;
@@ -135,6 +137,11 @@ export const RigaStep = memo(function RigaStep({
               >
                 {t('dettagliTecnici')}
               </summary>
+              {classiPagina.length > 0 && (
+                <p className="font-mono text-xs" style={{ color: 'var(--testo-tenue)' }}>
+                  {t('classiDellePagine', { nomi: classiPagina.join(', ') })}
+                </p>
+              )}
               {step.comportamento.chiamate ? (
                 <ol className="flex list-inside list-decimal flex-col gap-0.5">
                   {step.comportamento.chiamate.map((c, i) => (

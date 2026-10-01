@@ -494,6 +494,7 @@
     "scenarioInFlusso": "{scenario} · {app} / {flusso}",
     "nScenari": "{n, plural, one {# scenario} other {# scenari}}",
     "paginaDi": "pagina {pagina}",
+    "classiDellePagine": "Classi delle pagine: {nomi}",
     "vuotoStepTitolo": "Il catalogo è ancora vuoto",
     "vuotoStepTesto": "Gli step compaiono quando registri una sessione e salvi lo scenario.",
     "suggerimentoPartenza": "Il catalogo cresce da solo: ogni scenario che salvi aggiunge i suoi step.",

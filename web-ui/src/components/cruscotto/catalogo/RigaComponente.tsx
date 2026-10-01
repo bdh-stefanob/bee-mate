@@ -7,6 +7,7 @@ import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { scenariDelComponente } from '@/lib/catalogo-numeri';
 import { urlCatalogo } from '@/lib/catalogo-url';
 import { percorsoScenario } from '@/lib/percorso-scenario';
+import { nomeLeggibilePagina, nomiLeggibiliPagine } from '@/lib/nome-pagina';
 import { EtichettaApplicazione } from './EtichettaApplicazione';
 import { useNomeRuolo } from './EtichettaComponente';
 import type { ComponenteConStep, StepCatalogo } from './tipi';
@@ -55,11 +56,11 @@ export const RigaComponente = memo(function RigaComponente({
           {componente.pagineAmbigue ? (
             <span className="flex items-start gap-1 text-sm" style={{ color: 'var(--testo)' }}>
               <AlertTriangle size={14} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
-              {t('paginaAmbigua', { pagine: componente.pagineAmbigue.join(', ') })}
+              {t('paginaAmbigua', { pagine: nomiLeggibiliPagine(componente.pagineAmbigue) })}
             </span>
           ) : (
             <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-              {componente.page ?? '—'}
+              {componente.page ? nomeLeggibilePagina(componente.page) : '—'}
             </span>
           )}
           <span className="flex flex-wrap gap-1">
