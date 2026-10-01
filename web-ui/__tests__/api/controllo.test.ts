@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { interpreta } from '@/lib/controllo';
+import { interpreta, diagnosiNonRiuscita } from '@/lib/controllo';
 
 describe('controllo della macchina', () => {
   it('una voce che manca porta con se\' il rimedio', () => {
@@ -187,5 +187,15 @@ describe('ambiente con variabili mancanti (F3)', () => {
 
   it('e\' un\'attenzione, non un blocco: "pronto" non cambia', () => {
     expect(interpreta({ voci: [voce] }).pronto).toBe(true);
+  });
+});
+
+describe('la diagnosi che non riesce a girare', () => {
+  it('risponde con una voce che lo dice, non con un errore', () => {
+    const r = diagnosiNonRiuscita();
+    expect(r.pronto).toBe(false);
+    expect(r.voci).toHaveLength(1);
+    expect(r.voci[0].chiaveDettaglio).toBe('diagnosi.generale.nonRiuscita');
+    expect(r.voci[0].esito).toBe('manca');
   });
 });

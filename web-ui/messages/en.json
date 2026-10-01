@@ -312,6 +312,10 @@
     "copiaComandoAria": "Copy the command for {nome}: {comando}"
   },
   "diagnosi": {
+    "generale": {
+      "nome": "Machine check",
+      "nonRiuscita": "the check could not run — try again in a moment; if it keeps happening, a configuration file cannot be read"
+    },
     "browser": {
       "nome": "Playwright browser",
       "scaricato": "downloaded",
@@ -340,6 +344,9 @@
       "registraAccessoQui": "Register a sign-in in the Environments section below.",
       "daCompletare": "{daCompletare} to complete when needed",
       "variabiliMancanti": "{ambienti}: missing variables {variabili} — sign-in will fail",
+      "nessunoUtilizzabileVariabili": "{totale} configured, but none is usable yet — {ambienti}: missing variables {variabili}",
+      "accessoNonRegistratoVariabili": "{pronti} of {totale} configured — sign-in not recorded yet; {ambienti}: missing variables {variabili}",
+      "illeggibile": "the file {file} cannot be read — put it back as it was, or save it again as UTF-8",
       "completaQui": "Fill in the missing credentials on that environment's row, in the Environments section below.",
       "conSessione": "{conSessione} with a saved session",
       "conSessioneVecchie": "{conSessione} with a saved session, of which {vecchie} older than 12 hours",
@@ -362,6 +369,7 @@
     "catalogo": {
       "nome": "Catalog",
       "assente": "missing",
+      "illeggibile": "the file {file} cannot be read — it can be rebuilt",
       "riepilogo": "{steps} steps, {ancorati} anchored to frontend components",
       "nessunAncoraggio": "no anchoring: the candidate shortlist will rely on wording alone"
     }

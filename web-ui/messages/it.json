@@ -312,6 +312,10 @@
     "copiaComandoAria": "Copia il comando per {nome}: {comando}"
   },
   "diagnosi": {
+    "generale": {
+      "nome": "Controllo della macchina",
+      "nonRiuscita": "il controllo non è riuscito a girare — riprova tra un momento; se si ripete, qualcosa nei file di configurazione non si legge"
+    },
     "browser": {
       "nome": "Browser di Playwright",
       "scaricato": "scaricato",
@@ -340,6 +344,9 @@
       "registraAccessoQui": "Registra un accesso nella sezione Ambienti qui sotto.",
       "daCompletare": "{daCompletare} da completare quando serve",
       "variabiliMancanti": "{ambienti}: mancano le variabili {variabili} — l'accesso non riuscirà",
+      "nessunoUtilizzabileVariabili": "{totale} configurati, ma nessuno è ancora utilizzabile — {ambienti}: mancano le variabili {variabili}",
+      "accessoNonRegistratoVariabili": "{pronti} su {totale} configurati — accesso non ancora registrato; {ambienti}: mancano le variabili {variabili}",
+      "illeggibile": "il file {file} non si legge — rimettilo com'era, oppure salvalo di nuovo come UTF-8",
       "completaQui": "Compila le credenziali mancanti nella riga di quell'ambiente, nella sezione Ambienti qui sotto.",
       "conSessione": "{conSessione} con sessione salvata",
       "conSessioneVecchie": "{conSessione} con sessione salvata, di cui {vecchie} più vecchie di 12 ore",
@@ -362,6 +369,7 @@
     "catalogo": {
       "nome": "Catalogo",
       "assente": "assente",
+      "illeggibile": "il file {file} non si legge — si può ricostruire",
       "riepilogo": "{steps} step, {ancorati} ancorati a componenti di frontend",
       "nessunAncoraggio": "nessun ancoraggio: la rosa dei candidati si reggerà solo sul lessico"
     }

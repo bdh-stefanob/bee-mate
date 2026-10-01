@@ -52,6 +52,11 @@ export const dizionarioDiagnosi: DizionarioScript = {
     "diagnosi.ambienti.accessoNonRegistrato": "{pronti} su {totale} configurati — accesso non ancora registrato",
     "diagnosi.ambienti.daCompletare": "{daCompletare} da completare quando serve",
     "diagnosi.ambienti.variabiliMancanti": "{ambienti}: mancano le variabili {variabili} — l'accesso non riuscira'",
+    "diagnosi.ambienti.nessunoUtilizzabileVariabili":
+      "{totale} configurati, ma nessuno e' ancora utilizzabile — {ambienti}: mancano le variabili {variabili}",
+    "diagnosi.ambienti.accessoNonRegistratoVariabili":
+      "{pronti} su {totale} configurati — accesso non ancora registrato; {ambienti}: mancano le variabili {variabili}",
+    "diagnosi.ambienti.illeggibile": "il file {file} non si legge — rimettilo com'era, oppure salvalo di nuovo come UTF-8",
     "diagnosi.ambienti.conSessione": "{conSessione} con sessione salvata",
     "diagnosi.ambienti.conSessioneVecchie":
       "{conSessione} con sessione salvata, di cui {vecchie} piu' vecchie di 12 ore",
@@ -67,6 +72,7 @@ export const dizionarioDiagnosi: DizionarioScript = {
 
     // Catalogo
     "diagnosi.catalogo.assente": "assente",
+    "diagnosi.catalogo.illeggibile": "il file {file} non si legge — si puo' ricostruire",
     "diagnosi.catalogo.riepilogo": "{steps} step, {ancorati} ancorati a componenti di frontend",
     "diagnosi.catalogo.nessunAncoraggio": "nessun ancoraggio: la rosa dei candidati si reggera' solo sul lessico",
 
@@ -118,6 +124,11 @@ export const dizionarioDiagnosi: DizionarioScript = {
     "diagnosi.ambienti.accessoNonRegistrato": "{pronti} of {totale} configured — sign-in not recorded yet",
     "diagnosi.ambienti.daCompletare": "{daCompletare} to complete when needed",
     "diagnosi.ambienti.variabiliMancanti": "{ambienti}: missing variables {variabili} — sign-in will fail",
+    "diagnosi.ambienti.nessunoUtilizzabileVariabili":
+      "{totale} configured, but none is usable yet — {ambienti}: missing variables {variabili}",
+    "diagnosi.ambienti.accessoNonRegistratoVariabili":
+      "{pronti} of {totale} configured — sign-in not recorded yet; {ambienti}: missing variables {variabili}",
+    "diagnosi.ambienti.illeggibile": "the file {file} cannot be read — put it back as it was, or save it again as UTF-8",
     "diagnosi.ambienti.conSessione": "{conSessione} with a saved session",
     "diagnosi.ambienti.conSessioneVecchie":
       "{conSessione} with a saved session, {vecchie} of which older than 12 hours",
@@ -133,6 +144,7 @@ export const dizionarioDiagnosi: DizionarioScript = {
 
     // Catalog
     "diagnosi.catalogo.assente": "missing",
+    "diagnosi.catalogo.illeggibile": "the file {file} cannot be read — it can be rebuilt",
     "diagnosi.catalogo.riepilogo": "{steps} steps, {ancorati} anchored to frontend components",
     "diagnosi.catalogo.nessunAncoraggio": "no anchoring: the candidate shortlist will rest on wording alone",
 

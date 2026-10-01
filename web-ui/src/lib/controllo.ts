@@ -83,3 +83,20 @@ export function interpreta(grezzo: { voci: VoceDiagnosiGrezza[] }) {
   const essenziali = voci.filter((v) => !v.avanzata);
   return { pronto: essenziali.every((v) => v.esito !== 'manca' || v.daUso), voci };
 }
+/**
+ * (F6) Quando la diagnosi non riesce proprio a girare (il programma cade, il
+ * tempo scade), la prima schermata non puo' essere un errore: risponde lo
+ * stesso, con una voce che lo dice e invita a riprovare. Mai un 500: su una
+ * macchina nuova e' la prima cosa che si vede.
+ */
+export function diagnosiNonRiuscita() {
+  return interpreta({
+    voci: [
+      {
+        chiaveNome: 'diagnosi.generale.nome',
+        esito: 'manca',
+        chiaveDettaglio: 'diagnosi.generale.nonRiuscita',
+      },
+    ],
+  });
+}

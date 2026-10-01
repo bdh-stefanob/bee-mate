@@ -46,8 +46,13 @@ import {
 import { hasFlag } from "./lib/args";
 import { linguaCorrente, traduci } from "./lib/i18n";
 import { dizionarioDiagnosi } from "./lib/i18n-diagnosi";
+import { FileNonLeggibile, leggiJson } from "./lib/leggi-json";
 
-loadEnv();
+try {
+  loadEnv();
+} catch {
+  /* un .env illeggibile non deve fermare la diagnosi: le variabili risulteranno mancanti */
+}
 
 type Esito = "ok" | "avviso" | "manca";
 
@@ -98,6 +103,11 @@ interface Voce {
    * rosso.
    */
   daUso?: boolean;
+  /**
+   * (F6) C'e' qualcosa da fare anche senza un comando da lanciare: un file che non si
+   * legge. Senza questo, il referto per persone direbbe "tutto a posto" accanto a un guasto.
+   */
+  richiedeAzione?: boolean;
 }
 
 const voci: Voce[] = [];
@@ -210,8 +220,26 @@ function sulPath(comando: string): boolean {
 // ---------------------------------------------------------------------------
 
 {
-  const targets = loadTargets();
-  if (targets.length === 0) {
+  // (F6) Il file degli ambienti lo puo' aver salvato una persona a mano: se non
+  // si legge (rotto, o un tipo di file che non ci si aspetta) la diagnosi
+  // risponde lo stesso, col NOME del file, invece di cadere a meta'.
+  let targets: ReturnType<typeof loadTargets> = [];
+  let attese = new Map<string, string[]>();
+  let illeggibile: string | null = null;
+  try {
+    targets = loadTargets();
+    attese = requiredVars();
+  } catch (e) {
+    illeggibile = e instanceof FileNonLeggibile ? e.file : "bdd-targets.json";
+  }
+  if (illeggibile) {
+    aggiungi({
+      esito: "manca",
+      chiaveNome: "diagnosi.ambienti.nome",
+      dettaglio: [{ chiave: "diagnosi.ambienti.illeggibile", dati: { file: illeggibile } }],
+      richiedeAzione: true,
+    });
+  } else if (targets.length === 0) {
     aggiungi({
       esito: "manca",
       chiaveNome: "diagnosi.ambienti.nome",
@@ -225,7 +253,6 @@ function sulPath(comando: string): boolean {
     // e nessuna variabile mancante. E' la stessa domanda che gia' si fa la
     // schermata di controllo per decidere se mostrare "Accedi adesso" (vedi
     // `prontoPerAccesso` in `SezioneAmbienti.tsx`).
-    const attese = requiredVars();
     const pronti = targets.filter(
       (tg) => tg.url && (attese.get(tg.name) ?? []).every((v) => process.env[v])
     );
@@ -247,7 +274,11 @@ function sulPath(comando: string): boolean {
         variabili: [...new Set(incompleti.flatMap((i) => i.variabili))].join(", "),
       },
     };
-    const righeVariabiliMancanti = incompleti.length > 0 ? [dettaglioVariabiliMancanti] : [];
+    // (F6) L'uscita JSON porta solo la PRIMA riga di dettaglio: nei due rami
+    // sotto i nomi non possono stare in una seconda riga, o la finestra non li
+    // vedrebbe. Quando ci sono, la prima riga e' la sua variante che li porta
+    // dentro (stesso contratto: chiave + dati, nomi mai valori).
+    const datiNomi = dettaglioVariabiliMancanti.dati ?? {};
 
     if (pronti.length === 0) {
       // Configurati ma nessuno utilizzabile: e' esattamente cio' che blocca
@@ -257,8 +288,9 @@ function sulPath(comando: string): boolean {
         esito: "manca",
         chiaveNome: "diagnosi.ambienti.nome",
         dettaglio: [
-          { chiave: "diagnosi.ambienti.nessunoUtilizzabile", dati: { totale: targets.length } },
-          ...righeVariabiliMancanti,
+          incompleti.length > 0
+            ? { chiave: "diagnosi.ambienti.nessunoUtilizzabileVariabili", dati: { totale: targets.length, ...datiNomi } }
+            : { chiave: "diagnosi.ambienti.nessunoUtilizzabile", dati: { totale: targets.length } },
           dettaglioSessione,
         ],
         rimedio: "npm run targets",
@@ -275,8 +307,12 @@ function sulPath(comando: string): boolean {
         esito: "avviso",
         chiaveNome: "diagnosi.ambienti.nome",
         dettaglio: [
-          { chiave: "diagnosi.ambienti.accessoNonRegistrato", dati: { pronti: pronti.length, totale: targets.length } },
-          ...righeVariabiliMancanti,
+          incompleti.length > 0
+            ? {
+                chiave: "diagnosi.ambienti.accessoNonRegistratoVariabili",
+                dati: { pronti: pronti.length, totale: targets.length, ...datiNomi },
+              }
+            : { chiave: "diagnosi.ambienti.accessoNonRegistrato", dati: { pronti: pronti.length, totale: targets.length } },
         ],
         chiaveDallaFinestra: "diagnosi.ambienti.registraAccessoQui",
       });
@@ -356,7 +392,7 @@ function sulPath(comando: string): boolean {
   // lo dichiara; saperlo prima evita di generare e poi chiedersi cosa non torna.
   const conUrl = file.filter((f) => {
     try {
-      const r = JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8")) as {
+      const r = leggiJson(path.join(dir, f)) as {
         intents?: Array<{ pageUrl?: string; steps?: Array<{ url?: string }> }>;
       };
       return (r.intents ?? []).some((i) => i.pageUrl ?? (i.steps ?? []).some((s) => s.url));
@@ -395,6 +431,16 @@ function sulPath(comando: string): boolean {
   );
 }
 
+/** Il catalogo si apre e ha la forma di un catalogo? Mai un'eccezione: e' una domanda. */
+function catalogoLeggibile(file: string): boolean {
+  try {
+    const c = leggiJson<unknown>(file);
+    return typeof c === "object" && c !== null && !Array.isArray(c);
+  } catch {
+    return false;
+  }
+}
+
 {
   const f = "step-catalog.json";
   if (!fs.existsSync(f)) {
@@ -407,10 +453,19 @@ function sulPath(comando: string): boolean {
       // niente, quindi va nella sezione avanzata come Assistente e Agenti.
       avanzata: true,
     });
+  } else if (!catalogoLeggibile(f)) {
+    // (F6) Rovinato (o salvato a mano in un modo che non si legge): la diagnosi
+    // risponde lo stesso, e il rimedio e' lo stesso di "assente" — si ricostruisce.
+    aggiungi({
+      esito: "avviso",
+      chiaveNome: "diagnosi.catalogo.nome",
+      dettaglio: [{ chiave: "diagnosi.catalogo.illeggibile", dati: { file: f } }],
+      rimedio: "npm run catalog",
+      avanzata: true,
+    });
   } else {
-    const steps = (JSON.parse(fs.readFileSync(f, "utf-8")) as {
-      steps?: Array<{ components?: unknown[] }>;
-    }).steps ?? [];
+    const grezzo = leggiJson<{ steps?: Array<{ components?: unknown[] }> }>(f).steps;
+    const steps = Array.isArray(grezzo) ? grezzo : [];
     const ancorati = steps.filter((s) => (s.components?.length ?? 0) > 0).length;
 
     // L'ancoraggio ai componenti e' il segnale piu' forte per proporre un
@@ -503,12 +558,12 @@ for (const v of voci) {
 // come rumore e stampare "tutto a posto" sarebbe la bugia piu' costosa che
 // questo comando possa dire: manderebbe avanti chi ha ancora un passo indietro
 // da recuperare, e il conto si paga tre comandi dopo.
-const daFare = voci.filter((v) => v.rimedio);
+const daFare = voci.filter((v) => v.rimedio || v.richiedeAzione);
 const primo = daFare[0];
 
 console.log(`  ${t("diagnosi.prossimaCosa.titolo")}\n`);
 if (primo) {
-  console.log(`    ${primo.rimedio}`);
+  if (primo.rimedio) console.log(`    ${primo.rimedio}`);
   console.log(
     `\n    ${t("diagnosi.prossimaCosa.motivo", {
       titolo: t(primo.chiaveNome),
@@ -517,7 +572,7 @@ if (primo) {
   );
   if (daFare.length > 1) {
     console.log(`\n    ${t("diagnosi.prossimaCosa.restano", { n: daFare.length - 1 })}`);
-    for (const v of daFare.slice(1)) console.log(`      ${v.rimedio}`);
+    for (const v of daFare.slice(1)) console.log(`      ${v.rimedio ?? t(v.dettaglio[0].chiave, v.dettaglio[0].dati)}`);
   }
 } else {
   console.log(`    ${t("diagnosi.tuttoApposto.titolo")}`);

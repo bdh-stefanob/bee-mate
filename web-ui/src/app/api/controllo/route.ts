@@ -3,7 +3,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { REPO_ROOT } from '@/lib/repo';
 import { rigaDiComando } from '@/lib/esecuzione';
-import { interpreta } from '@/lib/controllo';
+import { interpreta, diagnosiNonRiuscita } from '@/lib/controllo';
 import { ambienteFiglio } from '@/lib/ambiente-figlio';
 
 // Asincrono, non `execFileSync`: la diagnosi dura quasi un secondo, e una chiamata
@@ -30,9 +30,7 @@ export async function GET() {
     // L'errore vero va detto da qualche parte: senza, un guasto come quello
     // della shell resta muto anche nei log, e si cerca al buio.
     console.error('diagnosi non riuscita:', errore);
-    return NextResponse.json(
-      { pronto: false, voci: [], errore: 'la diagnosi non e\' riuscita a girare' },
-      { status: 500 }
-    );
+    // (F6) Mai un 500: la prima schermata di una macchina nuova dice cosa succede, non un errore.
+    return NextResponse.json(diagnosiNonRiuscita());
   }
 }
