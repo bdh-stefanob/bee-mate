@@ -14,6 +14,10 @@ describe('idDelFile', () => {
   it('riconosce i file che il registro scrive', () => {
     expect(idDelFile('test-muo7kv2k-3.json')).toEqual({ id: 'test-muo7kv2k-3', tipo: 'test' });
     expect(idDelFile('test-muo7kv2k.ndjson')).toEqual({ id: 'test-muo7kv2k', tipo: 'test' });
+    // Il rapporto HTML di una prova (~1 MB) e' dell'esecuzione come gli altri due.
+    // Un id di sole lettere e' un id (e' successo: catalogo-munydlet).
+    expect(idDelFile('catalogo-munydlet.json')).toEqual({ id: 'catalogo-munydlet', tipo: 'catalogo' });
+    expect(idDelFile('test-muo7kv2k-3.html')).toEqual({ id: 'test-muo7kv2k-3', tipo: 'test' });
     expect(idDelFile('installa-browser-muo7kv2k-2.json')).toEqual({ id: 'installa-browser-muo7kv2k-2', tipo: 'installa-browser' });
   });
 

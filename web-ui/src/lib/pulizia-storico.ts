@@ -5,7 +5,8 @@ import { leggiEsiti, percorsoIndice } from './esiti-scenari';
 
 /**
  * La pulizia di `reports/cruscotto/`, dove ogni esecuzione lascia uno stato
- * (`<id>.json`) e, per i test, i messaggi con le schermate (`<id>.ndjson`).
+ * (`<id>.json`) e, per i test, i messaggi con le schermate (`<id>.ndjson`) e il
+ * rapporto HTML (`<id>.html`, circa 1 MB a prova).
  * Senza una regola la cartella cresce senza limite (oggi: ~1400 file).
  *
  * LA REGOLA
@@ -26,7 +27,7 @@ import { leggiEsiti, percorsoIndice } from './esiti-scenari';
  *
  * LA SICUREZZA
  * Si toccano solo file che hanno la forma esatta di un'esecuzione
- * (`<tipo>-<8 caratteri di base 36 con almeno una cifra>[-<n>].json|ndjson`,
+ * (`<tipo>-<8 caratteri di base 36>[-<n>].json|ndjson|html`,
  * tipo fra quelli noti). `catalogo-stato.json`, `generazione-manifesto.json`,
  * `catalogo-messages.ndjson` e qualunque altro file non sono esecuzioni e non
  * si toccano mai. Senza indice leggibile non si cancella niente: non si sa
@@ -39,13 +40,16 @@ const TIPI: NomeComando[] = [
   'installa-browser', 'sincronizza-regole', 'catalogo',
 ];
 
+/** Parole di otto lettere che compaiono in nomi di file fissi della cartella (non sono id). */
+const NOMI_FISSI = ['messages'];
+
 export interface FileStorico {
   nome: string;
   mtimeMs: number;
   byte: number;
 }
 
-const FORMA = /^([a-z]+(?:-[a-z]+)*)-([0-9a-z]{8})(?:-(\d+))?\.(json|ndjson)$/;
+const FORMA = /^([a-z]+(?:-[a-z]+)*)-([0-9a-z]{8})(?:-(\d+))?\.(json|ndjson|html)$/;
 
 /** L'id e il tipo dell'esecuzione a cui un file appartiene, o `null` se non e' di un'esecuzione. */
 export function idDelFile(nome: string): { id: string; tipo: string } | null {
@@ -53,9 +57,10 @@ export function idDelFile(nome: string): { id: string; tipo: string } | null {
   if (!m) return null;
   const [, tipo, marca, numero] = m;
   if (!TIPI.includes(tipo as NomeComando)) return null;
-  // Un id nasce da `Date.now().toString(36)`: oggi contiene sempre una cifra.
-  // E' cio' che lascia fuori un nome come `catalogo-messages`.
-  if (!/[0-9]/.test(marca)) return null;
+  // Un id nasce da `Date.now().toString(36)`: otto caratteri (fino al 2058), e
+  // puo' non contenere nemmeno una cifra. Un nome fisso lungo otto come
+  // `catalogo-messages` ha la stessa forma: lo si esclude per nome.
+  if (NOMI_FISSI.includes(marca)) return null;
   return { id: numero ? `${tipo}-${marca}-${numero}` : `${tipo}-${marca}`, tipo };
 }
 
