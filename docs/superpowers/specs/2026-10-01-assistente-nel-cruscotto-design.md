@@ -1,8 +1,10 @@
 # L'assistente nel cruscotto — design
 
-> Proposta del 2026-10-01, **non ancora approvata**. Sotto-progetto 5 di 5 della
-> richiesta "come aggiungere Kiro e l'AI al prodotto". Nessun codice, nessun
-> messaggio, nessuna configurazione e' stato toccato scrivendo questo file.
+> Proposta del 2026-10-01. Sotto-progetto 5 di 5 della richiesta "come aggiungere
+> Kiro e l'AI al prodotto". Il proprietario ha deciso, il 2026-10-01, sette delle
+> dieci domande (vedi "Domande per il proprietario"); **Q-A1 (dati verso un
+> modello) non e' decisa ed e' aziendale: blocca le fette che usano un modello**.
+> Le fette 0 e 1 e la fetta C non usano modelli.
 
 ## Stato (2026-10-01)
 
@@ -665,24 +667,51 @@ Il recorder accetta un file di azioni al posto di una persona:
   misura contando le regressioni del recorder che il caso prende prima dell'uso.
 - **Costo (stima).** 1,5-2 giorni.
 - **Come si evita che diventi un modo per scrivere test senza averli eseguiti.**
-  Quattro difese, **tutte** necessarie, perche' ognuna da sola ha un buco:
-  1. *Provenienza nella traccia.* `Recording.origine: "persona" | "copione"` e
-     l'impronta del copione. Il generatore la riporta nel manifesto e in una
-     riga del `.feature`.
-  2. *Solo ambienti di collaudo.* Un ambiente dichiara `collaudo: true` nel suo
-     blocco; un copione contro un ambiente senza quel segno viene rifiutato. Il
-     solo ambiente con quel segno, per ora, e' il negozio di prova pubblico.
-     **Mai** un ambiente aziendale.
-  3. *Il salvataggio rifiuta.* La rotta di salvataggio rifiuta una registrazione
-     `copione` con un codice proprio: puo' essere generata ed eseguita, **non
-     entra in `src/features/<app>/`**.
-  4. *Non sporca il catalogo.* Le step generate hanno `@wanted` e finiscono nel
-     catalogo quando si lancia `npm run catalog`: per un copione la generazione
-     scrive altrove. Il generatore accetta gia' un `out` (`outRoot`, default
-     `src`): si indirizza a `reports/collaudo/<nome>/`. **Da verificare** che
-     Cucumber regga una radice fuori da `src/` (`cucumber.js` carica
+  Quattro difese, **tutte** necessarie, perche' ognuna da sola ha un buco. Dopo la
+  decisione del proprietario del 2026-10-01 (Q-A7: **anche** un ambiente aziendale
+  di collaudo) la seconda difesa cambia, la terza diventa piu' importante, e le
+  altre restano; se ne aggiunge una quinta sui dati:
+  1. *Provenienza nella traccia* (invariata). `Recording.origine: "persona" |
+     "copione"` e l'impronta del copione. Il generatore la riporta nel manifesto e
+     in una riga del `.feature`.
+  2. *Solo ambienti di collaudo* (cambia). Un ambiente dichiara `collaudo: true`
+     nel suo blocco di `bdd-targets.json` (il file gitignorato: la dichiarazione la
+     scrive **la persona che conosce l'ambiente**, mai il copione e mai il codice).
+     Un copione contro un ambiente senza quel segno viene rifiutato. Il segno non
+     e' presunto da nessun nome o indirizzo. Per l'ambiente pubblico di prova
+     (`demo`) il segno sta nell'esempio `bdd-targets.example.json`; per un ambiente
+     aziendale lo mette chi lo amministra, **sapendo** che non e' produzione. **Mai
+     produzione**: se un ambiente ha `collaudo: true` e `produzione: true` il
+     rifiuto e' immediato, e un ambiente senza nessuno dei due segni e' trattato come
+     "non di collaudo". Limite onesto: un controllo di codice non puo' sapere se
+     l'indirizzo scritto e' davvero di collaudo; la difesa e' la dichiarazione
+     scritta, tracciata nella traccia (nome dell'ambiente e impronta del suo blocco,
+     mai l'indirizzo), e la responsabilita' e' di chi la scrive.
+  3. *Il salvataggio rifiuta* (invariata, e ora **decisiva**). La rotta di
+     salvataggio rifiuta una registrazione `copione` con un codice proprio: puo'
+     essere generata ed eseguita, **non entra in `src/features/<app>/`**. Con un
+     ambiente aziendale di collaudo il caso peggiore non e' piu' lo scenario
+     "finto" contro un negozio di prova: e' uno scenario scritto da un modello che
+     descrive un'applicazione vera e finisce nel repository con nomi veri. Questa
+     difesa lo impedisce, e **non si allenta** per nessun ambiente.
+  4. *Non sporca il catalogo* (invariata). Le step generate hanno `@wanted` e
+     finiscono nel catalogo quando si lancia `npm run catalog`: per un copione la
+     generazione scrive altrove. Il generatore accetta gia' un `out` (`outRoot`,
+     default `src`): si indirizza a `reports/collaudo/<nome>/`. **Da verificare**
+     che Cucumber regga una radice fuori da `src/` (`cucumber.js` carica
      `src/steps/**`, e `BDD_PATHS` sceglie i percorsi); se no, tag `@da-copione`
      escluso dal catalogo e dal salvataggio. Si decide con un caso, non a occhio.
+  5. *I dati su un ambiente aziendale* (nuova, conseguenza di Q-A7). Un copione
+     contro un ambiente di collaudo aziendale **crea e legge dati di collaudo veri**:
+     i valori digitati sono scritti nel copione da chi lo scrive, quindi non devono
+     mai essere dati reali di persone ne' credenziali (le credenziali restano
+     `${VARIABILE}` da `.env`, come per l'accesso). Registrazione, dizionari e
+     tracce restano in `reports/` (gitignorato); **nessuna di queste cose entra nel
+     compito per l'assistente** (la tabella dei dati della sezione 1 non cambia).
+     Il copione puo' essere scritto da un modello: per questo i suoi valori sono
+     sempre di prova, e l'esecuzione contro un ambiente che non e' quello pubblico
+     parte solo dopo che una persona ha letto il copione e ha confermato nella
+     finestra (nessun avvio non presidiato contro un ambiente aziendale).
 - **Cosa non e'.** Non e' un corpus per misurare il valore dell'assistente: i
   copioni li scrive un modello, e misurare un modello su scenari scritti da un
   modello non dice niente sulle persone. Serve a provare la **catena**.
@@ -710,7 +739,8 @@ Un agente si collega al browser (porta di debug) e lo pilota liberamente.
 ### Raccomandazione
 
 **(a) si', in parallelo alle fette dell'assistente** (non ne dipende, e ci da' un
-test del recorder). **(b) no.** E se si volesse far provare la catena **a Kiro**
+test del recorder), anche contro un ambiente aziendale di collaudo dichiarato
+(decisione Q-A7), con il salvataggio nel repository sempre rifiutato. **(b) no.** E se si volesse far provare la catena **a Kiro**
 in solitaria: oggi non e' affidabile (F24); la strada che regge e' un agente
 che pilota il cruscotto da fuori (Claude Code, o una persona con Kiro IDE), non
 Kiro non presidiato.
@@ -785,8 +815,8 @@ non e' deterministico, e la stabilita' e' una misura.
 
 ### Il criterio di ingresso
 
-Le soglie sono **proposte** del progettista: il proprietario le conferma o le
-cambia **prima della prima misura**, e dopo non si cambiano (si scrive adesso,
+Le soglie sono state **confermate dal proprietario il 2026-10-01** (Q-A3), **prima**
+della prima misura, e dopo non si cambiano (si scrive adesso,
 perche' scriverlo dopo non conta niente: `07-assistente.md`).
 
 1. **Sicurezza.** P >= 0,90 e A >= 0,80 per il braccio scelto.
@@ -858,7 +888,7 @@ se manca una chiave.
 
 ```
 +-------------------------------------------------------------------------+
-| (i) Frasi del catalogo                                         [?] Aiuto |
+| (i) Suggerimenti                                               [?] Aiuto |
 |     3 dei tuoi 7 passi possono usare una frase gia' nel catalogo.        |
 |     Suggerimenti di: Regole del catalogo                                 |
 +-------------------------------------------------------------------------+
@@ -1073,20 +1103,32 @@ fatta la sezione 2 dichiara il beneficio come **ipotesi**.
 - **Un modello locale**, finche' non c'e' un modello approvato.
 - **La scelta del nome del prodotto** (U1) e la distribuzione (U3, U4).
 
-## Domande aperte per il proprietario
+## Domande per il proprietario
+
+### Decise (proprietario, 2026-10-01)
+
+| # | Domanda | Decisione | Effetto sul testo |
+|---|---|---|---|
+| Q-A2 | Chi usa il primo trasporto (fetta 2)? | **La persona tecnica usa il primo passaggio** (passaggio di mano). Il tester ha un pulsante solo con la fetta 4, se e quando vale la pena | Sezione 3, raccomandazione |
+| Q-A3 | Le soglie del criterio di ingresso | **Confermate**: 0,90 (precisione) · 0,80 (astensione) · +0,15 (copertura sopra le regole) · 0,80 (stabilita'). Da qui non si cambiano senza una decisione scritta | Sezione 6: non sono piu' proposte |
+| Q-A5 | Quale modello si fissa | **Il modello piu' capace fra quelli approvati**; cambiarlo e' una nuova misura | Sezione 6, "La trappola da non ripetere" |
+| Q-A7 | I copioni possono mirare a un ambiente aziendale non di produzione? | **Si': anche un ambiente aziendale di COLLAUDO**, non solo quello pubblico (diverso dalla raccomandazione) | Sezione 5(a): le difese riviste e una quinta sui dati; il rifiuto al salvataggio resta |
+| Q-A8 | La frase originale del tester resta come commento nel `.feature` e alimenta gli alias? | **Si'**: commento `# frase del tester: ...` e variante nota per il rituale (l'alias entra solo per decisione delle persone) | Sezione 4 |
+| Q-A9 | Il nome del riquadro | **"Suggerimenti"**, con l'etichetta di chi ha suggerito dentro ("Regole del catalogo" o "Assistente") | Sezione 7 |
+| Q-A10 | Si fa P8 prima della fetta 2? | **P8 insieme alla prima fetta con il modello** (fetta 2) | Sezione 6 |
+
+### Non decisa (blocca)
+
+| # | Domanda | Stato |
+|---|---|---|
+| **Q-A1** | Il fornitore del modello raggiunto tramite Kiro e' **dentro** il perimetro "nessun dato dell'applicazione fuori dalla macchina"? | **Non decisa. Il proprietario non l'ha confermata esplicitamente ed e' una decisione AZIENDALE**: serve la conferma scritta di chi ha titolo in azienda. **Blocca tutte le fette che mandano dati a un modello** (2, 3 con i bracci assistente, 4, 5, 6). Le fette 0 (parte senza assistente), 1 e C non ne dipendono. Opzioni: (1) si', con il perimetro minimo della sezione 1 e conferma scritta; (2) si' solo per frasi del catalogo e della wiki, mai etichette delle registrazioni; (3) no: nessun modello, restano solo le fette 1 e C. Raccomandazione invariata: (1) con la conferma scritta; la pratica attuale con `brief.md` espone di piu' del compito nuovo |
+
+### Ancora aperte (nessuna risposta)
 
 | # | Domanda | Opzioni | Raccomandazione |
 |---|---|---|---|
-| **Q-A1** | Il fornitore del modello raggiunto tramite Kiro e' **dentro** il perimetro "nessun dato dell'applicazione fuori dalla macchina"? Oggi la regola di `ROADMAP.md` §5 e la pratica (si incolla `brief.md`, che contiene anche valori digitati) non coincidono | (1) si', con il perimetro minimo della sezione 1 e una conferma scritta di chi ha titolo in azienda; (2) si' solo per frasi del catalogo e della wiki, **mai** etichette delle registrazioni; (3) no: nessun modello, e restano solo le fette 1 e C | (1), con la conferma scritta. Le fette 2+ non partono senza. Ammettere anche che la pratica attuale con `brief.md` espone di piu' del compito nuovo |
-| Q-A2 | Chi usa il primo trasporto (fetta 2)? | la persona tecnica che oggi lo fa a mano / il tester | La persona tecnica. Il tester ha un'esperienza da un pulsante solo con la fetta 4, **se** e quando vale la pena |
-| Q-A3 | Le soglie del criterio di ingresso (sezione 6): 0,90 · 0,80 · 0,15 · 0,80 | confermarle / cambiarle | Confermarle o cambiarle **ora**, prima di vedere un numero; cambiarle dopo e' un modo di truccare il confronto |
 | Q-A4 | Chi etichetta l'insieme d'oro, e chi e' la seconda persona | la persona tecnica + un tester di un'altra area / solo la persona tecnica | Due persone, di aree diverse: il metro non puo' essere piu' soggettivo del compito |
-| Q-A5 | Quale modello si fissa, e chi decide quando cambiarlo | il piu' capace fra quelli approvati / il piu' economico | Il piu' capace fra gli approvati **per la misura**; cambiarlo e' una nuova misura, e lo decide chi ha scritto la soglia |
 | Q-A6 | Il consumo di quota del piano Kiro gia' in uso: chi lo amministra, e c'e' un limite? Non lo so | chiedere / ignorare | Chiedere, prima della fetta 2. "Nessuna licenza nuova" non e' "nessun consumo" |
-| Q-A7 | I copioni (fetta C) possono mirare a un ambiente aziendale non di produzione? | solo l'ambiente pubblico di prova / anche un ambiente aziendale di collaudo | Solo l'ambiente pubblico. Un copione su un ambiente vero produce scenari che nessuno ha eseguito, dentro un'applicazione vera |
-| Q-A8 | La frase originale del tester resta come commento nel `.feature` e alimenta gli alias del rituale? | si' / no (si perde) | Si': e' la variante nota che il rituale chiedeva (D14); l'alias entra solo per decisione delle persone |
-| Q-A9 | Il nome, per il tester, del riquadro e di cio' che propone | "Suggerimenti" / "Assistente" | "Suggerimenti" per il riquadro, con l'etichetta di chi ha suggerito dentro: "Regole del catalogo" o "Assistente". Chiamare "assistente" un riquadro che nella fetta 1 non ha modelli sarebbe una promessa che non regge |
-| Q-A10 | Si fa P8 prima della fetta 2? | prima / insieme / dopo | Insieme: condividono il metodo e il modello fissato. P8 da' un'indicazione anche sull'agente: se le regole non cambiano nulla su un compito vincolato, `bdd-propose` puo' essere piu' scarno |
 
 ## Decisioni da registrare in `docs/anti-entropy/README.md` se la specifica passa
 
@@ -1098,4 +1140,4 @@ Proposte, non scritte: la tabella delle decisioni non e' stata toccata.
 | D42 | Il cruscotto parla all'assistente con un **contratto di file** (compito, proposta, esito), indipendente dal fornitore; il primo trasporto e' il passaggio di mano | F24: l'esecuzione non presidiata non e' affidabile; il passaggio di mano regge anche dove `fs_write` non va |
 | D43 | La prima fetta **non contiene AI**: stesso riquadro, stesso formato, candidati scelti dalle regole | costruisce giudici, annulla e metro **prima** di spendere per il modello; e' il braccio di controllo del confronto |
 | D44 | Una funzione AI entra solo se supera un criterio **scritto prima** della misura, a modello fissato, contro la regola deterministica | P8 e F20: senza metro e senza modello fissato non si misura l'assistente, si misurano le impressioni |
-| D45 | Un copione di registrazione **non entra mai nel repository**: serve a provare la catena, solo su ambienti di collaudo | uno scenario che nessuno ha eseguito a mano e' il contrario di Specification by Demonstration (D9) |
+| D45 | Un copione di registrazione **non entra mai nel repository**: serve a provare la catena, solo su ambienti **dichiarati di collaudo** (anche aziendali, mai produzione) | uno scenario che nessuno ha eseguito a mano e' il contrario di Specification by Demonstration (D9) |
