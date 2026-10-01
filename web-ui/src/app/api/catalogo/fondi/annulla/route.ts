@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     // tornati com'erano, che e' cio' che conta per il tester.
   }
 
-  const catalogoRigenerato = tentaRigenerazioneCatalogo();
+  const catalogoRigenerato = await tentaRigenerazioneCatalogo();
 
   return NextResponse.json({
     ok: true,

@@ -1,4 +1,5 @@
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import { REPO_ROOT } from './repo';
 
 /**
@@ -17,17 +18,24 @@ const NODE = process.execPath;
 const TS_NODE = 'node_modules/ts-node/dist/bin.js';
 const CUCUMBER_CLI = 'node_modules/@cucumber/cucumber/bin/cucumber-js';
 
-export function tentaRigenerazioneCatalogo(): boolean {
+// Asincrono, non `execFileSync`: le tre fasi durano circa 6 s (quasi tutto costo
+// di avvio), e una chiamata sincrona teneva fermo il server per tutto quel tempo.
+// Le fasi restano in fila, ognuna usa l'uscita della precedente: a non bloccare
+// e' il server, non l'ordine.
+export type LanciaFile = (
+  eseguibile: string,
+  argomenti: string[],
+  opzioni: { cwd: string; timeout: number }
+) => Promise<unknown>;
+
+const lanciaFileReale: LanciaFile = promisify(execFile);
+
+export async function tentaRigenerazioneCatalogo(lancia: LanciaFile = lanciaFileReale): Promise<boolean> {
+  const opzioni = { cwd: REPO_ROOT, timeout: 60000 };
   try {
-    execFileSync(NODE, [CUCUMBER_CLI, '--dry-run', '--format', 'message:cucumber-messages.ndjson'], {
-      cwd: REPO_ROOT,
-      timeout: 60000,
-    });
-    execFileSync(NODE, [TS_NODE, 'scripts/extract-steps.ts', 'cucumber-messages.ndjson'], {
-      cwd: REPO_ROOT,
-      timeout: 60000,
-    });
-    execFileSync(NODE, [TS_NODE, 'scripts/render-markdown.ts'], { cwd: REPO_ROOT, timeout: 60000 });
+    await lancia(NODE, [CUCUMBER_CLI, '--dry-run', '--format', 'message:cucumber-messages.ndjson'], opzioni);
+    await lancia(NODE, [TS_NODE, 'scripts/extract-steps.ts', 'cucumber-messages.ndjson'], opzioni);
+    await lancia(NODE, [TS_NODE, 'scripts/render-markdown.ts'], opzioni);
     return true;
   } catch (err) {
     console.error('rigenerazione del catalogo non riuscita dopo la riscrittura:', err);

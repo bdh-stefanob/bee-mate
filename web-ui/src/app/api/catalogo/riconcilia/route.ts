@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     fs.writeFileSync(percorso, testo, 'utf-8');
   }
 
-  const catalogoRigenerato = tentaRigenerazioneCatalogo();
+  const catalogoRigenerato = await tentaRigenerazioneCatalogo();
 
   return NextResponse.json({
     ok: true,

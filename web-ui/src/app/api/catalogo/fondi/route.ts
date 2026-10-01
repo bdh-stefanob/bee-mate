@@ -371,7 +371,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ errore: 'scrittura_fallita_ripristinata' }, { status: 500 });
   }
 
-  const catalogoRigenerato = tentaRigenerazioneCatalogo();
+  const catalogoRigenerato = await tentaRigenerazioneCatalogo();
 
   return NextResponse.json({
     ok: true,
