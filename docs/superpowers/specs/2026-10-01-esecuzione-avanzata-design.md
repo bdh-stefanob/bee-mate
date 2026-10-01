@@ -15,23 +15,31 @@
 | Un solo lucchetto: `registrazione`, `sessione`, `scansione` e `test` sono nell'elenco `LUNGHI`, e `avvia()` rifiuta se una qualunque e' in corso. Nessuna coda | `web-ui/src/lib/registro.ts` |
 | `operazioneInCorso()` restituisce una sola operazione (il primo risultato, "l'unico possibile") | `registro.ts` |
 | Lo stato sta in `globalThis.__bddRegistro`: memoria del processo server | `registro.ts` |
-| L'id e' `<nome>-<tempo in base 36>`: due lanci nello stesso millisecondo avrebbero lo stesso id | `registro.ts` |
-| `Parametri.scenario` e' **una** stringa, validata da una regex a valore singolo | `web-ui/src/lib/esecuzione.ts` |
+| ~~L'id era `<nome>-<tempo in base 36>`: due lanci nello stesso millisecondo collidevano~~ **Corretto (S0, 1/10/2026)**: `<nome>-<tempo>-<n>`, con un contatore nello stato condiviso | `registro.ts` |
+| ~~`Parametri.scenario` e' **una** stringa~~ **Fatto (S0)**: `Parametri.scenari: string[]` (1-100 voci, validate), e `scenario` resta identico finche' la schermata lo usa | `web-ui/src/lib/esecuzione.ts` |
 | Lo script sa gia' ricevere **piu'** percorsi (`args.slice(1)` filtrato) e li passa a Cucumber in `BDD_PATHS`, separati da `;` | `scripts/test-bersaglio.ts` |
-| Un processo Cucumber per run, lanciato con `execFileSync`: se la finestra uccide il processo `test-bersaglio`, **non e' verificato** che muoia anche Cucumber con i suoi browser (su Windows `kill()` non termina l'albero) | `registro.ts`, `test-bersaglio.ts` |
-| Nessuna impostazione `parallel`; il report HTML scrive su un file **fisso** `reports/cucumber-report.html` | `cucumber.js` |
+| Un processo Cucumber per run, lanciato con `execFileSync`. ~~Non verificato~~ **Verificato (S0, 1/10/2026, Windows 11, Node 24, browser nascosto): se la finestra uccide `test-bersaglio`, muoiono anche Cucumber e tutti i browser, entro mezzo secondo. Nessun orfano** (§3, Interrompi) | `registro.ts`, `test-bersaglio.ts` |
+| Nessuna impostazione `parallel` (resta cosi': `paralleli=N` e' la fetta S4). ~~Il report HTML scriveva su un file fisso~~ **Fatto (S0)**: `BDD_HTML`, e `test-bersaglio` lo mette accanto ai messaggi | `cucumber.js`, `scripts/lib/lancio-test.ts` |
 | `AMBIENTE = ambiente()` e' una costante di modulo, risolta una volta per processo da `BDD_TARGET`. Ogni scenario apre browser, contesto e pagina propri e li chiude in `After`. Nessun `BeforeAll`/`AfterAll` nel repository | `src/support/world.ts`, `hooks.ts` |
 | Un ambiente = un file di sessione = una ricetta di login. Nessun concetto di piu' utenti per ambiente | `scripts/lib/targets.ts` |
 | Gli esiti si leggono dal flusso di messaggi `.ndjson`, ma `leggiPassiTest` li restituisce **piatti**: nessun raggruppamento per scenario | `web-ui/src/lib/artefatti.ts` |
 | La schermata ha un solo flusso SSE e un solo polling dei passi, e ricorda **un** id in `sessionStorage` | `esecuzione/page.tsx`, `riaggancio-client.ts` |
 | L'ambiente e' uno per tutta la finestra (barra laterale) | `AmbienteContext.tsx` |
 
-Due cose che questa bozza **non** ha potuto leggere: la spec della pagina
+Una cosa che questa bozza **non** ha potuto leggere: la spec della pagina
 "Scenari" (`2026-10-01-pagina-scenari-design.md`) non esiste ancora nel
 repository, quindi il contratto verso di lei (§5) e' una **richiesta**, non un
-fatto; e il comportamento di Cucumber 10.9 su `--parallel`, sull'ordine dei
-percorsi e su due righe dello stesso file sono noti dalla documentazione ma
-vanno **provati** con i controlli di §9 prima di fidarsene.
+fatto.
+
+**Le ipotesi su Cucumber 10.9 sono state provate il 1/10/2026 (fetta S0)**, ognuna
+con un controllo che gira in `npm run check:all`: l'**ordine** dei percorsi e' quello
+dato; **due righe dello stesso file** girano una volta ciascuna (nell'ordine del
+file); un **file intero piu' una sua riga** esegue solo la riga (l'opposto di cio'
+che la prima bozza supponeva: il lanciatore ora tiene l'intero); il **fail-fast**
+lascia gli scenari restanti `SKIPPED` nel flusso; **`--parallel` con il formatter
+`message`** da' ogni scenario una volta sola. L'esito, con i dettagli, e' nei punti
+dove ognuna e' usata (§1, §2, §3). Provate con un browser nascosto e senza rete:
+non su una macchina aziendale.
 
 ## Il vocabolario di questa spec
 
@@ -71,10 +79,13 @@ toccare l'elenco chiuso.
 - `web-ui/src/lib/esecuzione.ts`: `Parametri.scenario?: string` diventa
   `scenari?: string[]`. Validazione: ogni voce con la regex di oggi (quindi mai
   `;`, mai `..`), da 1 a **100** voci (stima: 100 percorsi da ~60 caratteri sono
-  ~6 KB, sotto il limite di riga di Windows), nessun duplicato. Se un file
-  compare intero **e** con una riga, resta solo l'intero. Quando due righe dello
-  stesso file sono scelte, vedi "Da provare" sotto. Il vecchio `scenario` si
-  toglie, non si tiene: l'unico chiamante e' la schermata.
+  ~6 KB, sotto il limite di riga di Windows), nessun duplicato (un errore che nomina la voce). Se un file
+  compare intero **e** con una riga, resta solo l'intero: **provato su Cucumber
+  10.9** che dati `a.feature` e `a.feature:3` esegue SOLO la riga 3, senza errore,
+  quindi il lanciatore tiene l'intero e scarta le righe di quel file. Due righe
+  dello stesso file restano due voci (vedi "Verifiche" sotto). **Fatto in S0.**
+  Il vecchio `scenario` si tiene finche' la schermata lo usa (i due insieme sono un
+  errore) e si toglie quando la schermata passa alla lista.
 - `scripts/test-bersaglio.ts`: gia' accetta piu' percorsi posizionali; nessuna
   opzione nuova per questa capacita'.
 - `web-ui/src/lib/artefatti.ts`: nuova `leggiScenariTest(percorso)`, che
@@ -133,10 +144,12 @@ E' una scelta del tester, con un'impostazione di fabbrica sensata.
   silenzia (vedi `lezioni.md`: un avviso che sbaglia insegna a ignorare gli
   avvisi), ma il totale dice "5 falliti su 5", che si legge come un'unica
   notizia.
-- **Due righe dello stesso file** (`x.feature:3` e `x.feature:9`): non e'
-  verificato se Cucumber le esegue una volta ciascuna o le fonde. Da provare
-  (§9). Se serve, il lanciatore le fonde nella forma `x.feature:3:9`, che e' la
-  forma di Cucumber, prima di passarle.
+- **Due righe dello stesso file** (`x.feature:3` e `x.feature:9`): **provato** (S0,
+  `percorsi-cucumber.check.ts`): Cucumber ne esegue una ciascuna, non le fonde e
+  non le duplica; la stessa riga due volte gira una volta sola. Il lanciatore
+  **non** le fonde in `x.feature:3:9`. Una cosa da sapere: l'ordine **dentro** un
+  file e' quello del file, non quello della lista (`x:9, x:3` esegue prima la 3).
+- **Un file intero piu' una sua riga**: provato, esegue solo la riga (vedi sopra).
 
 ### Come si verifica
 
@@ -220,10 +233,11 @@ proprie (`/api/suite`), con la loro validazione, fuori da `/api/esegui`.
 Con piu' percorsi, Cucumber li esegue in ordine definito: e' cio' che rende
 utile una suite ordinata. In parallelo (§3) l'ordine non c'e'. Quindi una suite
 ordinata gira con **un** worker, e la schermata disabilita "in parallelo" con la
-frase che dice perche'. Che Cucumber rispetti davvero l'ordine dei percorsi dati
-non e' verificato: e' il primo caso di §9, scritto prima del codice (due file in
-ordine inverso rispetto all'alfabeto; l'ordine di `testCaseStarted` nel flusso
-deve seguire la lista).
+frase che dice perche'. Che Cucumber rispetti l'ordine dei percorsi dati
+e' **provato** (S0, 1/10/2026, Cucumber 10.9, sia in dry-run sia con un browser
+vero): z, a, b parte come z, a, b e b, z, a come b, z, a, non in ordine
+alfabetico (`percorsi-cucumber.check.ts`, `cucumber-parallelo.check.ts`). Il
+limite: l'ordine e' quello **dei file**; dentro un file e' quello del file.
 
 ### Cosa cambia nel codice
 
@@ -297,14 +311,24 @@ const MAX_TEST_CONTEMPORANEI = 3; // costante nel codice: stima, da misurare
   `scenari` (cio' che e' stato chiesto) e `lancio` (l'id che raggruppa le
   corsie partite insieme). Mai valori di credenziali: solo nomi di ambiente e
   percorsi. Serve alla pagina Scenari (§5).
-- **Interrompi**: oggi `ferma(id)` fa `figlio.kill()`. Su Windows questo non
-  termina i processi figli, e `test-bersaglio` lancia Cucumber con
-  `execFileSync`: **e' plausibile**, ma non verificato, che un Interrompi lasci
-  Cucumber e i suoi browser in vita. Con una corsia e' un fastidio, con tre e'
-  una macchina che si pianta. La prima fetta (§6) lo verifica; se e' vero, il
-  registro termina l'albero con una chiamata interna a `taskkill` con
-  argomenti in lista, **senza shell** (stesso principio di
-  `lanciatoreVero`), e solo sul pid che il registro stesso ha avviato.
+- **Interrompi**: oggi `ferma(id)` fa `figlio.kill()`. Il timore era che su
+  Windows `kill()` lasciasse orfani Cucumber e i suoi browser. **Verificato in S0
+  (1/10/2026): non succede.** Riprodotto con il lanciatore vero (`spawn` senza
+  shell, come `registro.ts`) su `test-bersaglio` contro l'ambiente `demo` con il
+  browser nascosto: quando compare il browser, l'albero e' il processo, Cucumber e
+  quattro processi `chrome-headless-shell`; dopo `kill()` nessuno e' vivo, a 0,8 s
+  e per i 14 secondi seguenti. Il motivo e' di Node, non nostro: su Windows libuv
+  mette ogni figlio in un *job* del padre con "termina tutto alla chiusura del
+  job", e i discendenti ci restano. Controprova: un figlio avviato `detached`
+  sopravvive, quindi il metodo sa vedere un orfano. **Non serve `taskkill`.** Il
+  caso `web-ui/__tests__/lib/interrompi.test.ts` tiene d'occhio la proprieta'
+  (padre che aspetta un figlio con `execFileSync`, terminato, il figlio muore) e,
+  se mai cadesse, la correzione resta quella prevista: `taskkill /T /F /PID` con
+  `execFile` e argomenti in lista, senza shell, sul solo pid avviato dal registro.
+  **Non verificato**: il browser *visibile* (`vedi`, non provato per non aprire
+  finestre sul desktop) e la macchina aziendale (antivirus, un Node dentro un altro
+  job). Per la prova generale: dopo "Interrompi tutto", niente `node.exe` ne'
+  `chrome` rimasti in Gestione attivita'.
   "Interrompi tutto" chiama `ferma` su ogni corsia del lancio.
 - **Riaggancio lato client**: `sessionStorage` ricorda una **lista** di id
   (le corsie del lancio) invece di uno. All'apertura la schermata legge
@@ -314,11 +338,11 @@ const MAX_TEST_CONTEMPORANEI = 3; // costante nel codice: stima, da misurare
   (legge il `.ndjson`), ma lo scrive comunque. Si rende configurabile:
   `cucumber.js` legge `BDD_HTML` (assente: il file di oggi, quindi chi lancia a
   mano non nota niente), e `test-bersaglio.ts`, quando riceve `messaggi=`, mette
-  `BDD_HTML` accanto al `.ndjson` (`reports/cruscotto/<id>.html`). Che il
-  formatter di `cucumber.js` si **sommi** a `--format message:...` della riga di
-  comando e' gia' il comportamento che il codice sfrutta (i percorsi si sommano
-  allo stesso modo, e il `.ndjson` esce insieme all'HTML): il caso di §9 lo
-  prova per il nuovo `BDD_HTML`.
+  `BDD_HTML` accanto al `.ndjson` (`reports/cruscotto/<id>.html`). **Fatto in S0**
+  (`scripts/lib/lancio-test.ts`, controllato in `percorsi-cucumber.check.ts`):
+  con `BDD_HTML` il report esce dove si e' chiesto e quello di sempre non si
+  tocca; senza, resta il nome di oggi. Il formatter `html` di `cucumber.js` si
+  somma a `--format message:...` (provato: escono entrambi).
 
 **Connessioni della finestra.** Un browser su HTTP/1.1 tiene al piu' sei
 connessioni per origine, e un flusso SSE ne tiene una per tutta la sua durata.
@@ -352,9 +376,19 @@ blocca senza dire perche'. Quindi:
 - La schermata non cambia struttura: una corsia, con un selettore
   "Quanti alla volta" (1 di fabbrica). Il lettore raggruppato di §1 e'
   **indispensabile** qui, perche' i messaggi dei worker si mescolano.
-- **Che il formatter `message` funzioni con `--parallel`** e' noto dalla
-  documentazione di Cucumber, non da una prova su questo repository: e' un caso
-  di §9.
+- **Che il formatter `message` funzioni con `--parallel`** e' **provato** (S0,
+  1/10/2026, `cucumber-parallelo.check.ts`, browser vero nascosto, Cucumber 10.9):
+  con `--parallel 2` e cinque scenari ogni scenario parte e finisce una volta
+  sola, con gli stessi passi e lo stesso numero di messaggi della serie. I
+  messaggi di scenari diversi **si mescolano** (un rosso finisce prima di uno
+  partito prima), quindi il lettore raggruppato per `testCaseStartedId` resta
+  indispensabile. Un'avvertenza: con scenari di pochi decimi di secondo il
+  parallelo e' piu' *lento* della serie (5,1 s contro 4,0 s, il costo di avviare i
+  worker): il guadagno e' per scenari lunghi, e va misurato su quelli veri.
+- **Fail-fast** e' **provato** (stesso controllo): dopo il primo rosso gli
+  scenari che restano compaiono comunque nel flusso, con ogni passo `SKIPPED`
+  (non spariscono, non passano), e il processo esce con un errore. E' la forma
+  che la schermata mostrera' come "saltato".
 
 ### Risorse della macchina
 
@@ -749,6 +783,13 @@ fetta **SU**, e prima della demo.
 | **S4** Parallelo in corsia | `paralleli=N` (1-4), selettore "Quanti alla volta", avviso sull'account | Solo dopo S1, perche' serve il lettore raggruppato | 1,5 | S1 |
 | **S5** Piu' di due corsie | Tetto portato a 3 **dopo la misura** (Q3), endpoint `GET /api/lanci/<id>` a polling unico, cache di lettura dei file, lancio "tutto o niente", misura di CPU e RAM | Va misurata prima di alzare il tetto | 1,5 | S3, S1 |
 
+**Stato di S0 (1/10/2026): fatta.** Id unici, `scenari: string[]`, `BDD_HTML`, le
+cinque ipotesi su Cucumber provate, Interrompi verificato (nessun orfano, quindi
+nessuna correzione). **Non toccato di proposito**: il lucchetto del registro
+(`LUNGHI`, una operazione alla volta) resta com'e', perche' ogni modifica alla sua
+struttura (`PERSONA`, il tetto, `operazioniInCorso()`) e' parte di S3 e cambia cio'
+che l'utente vede o puo' fare.
+
 La vecchia S6 "Duplica ambiente" **decade**: con le utenze nell'ambiente il suo
 lavoro lo fa "Aggiungi utenza" dentro SU.
 
@@ -876,14 +917,19 @@ avviare qualunque processo; un `bersaglio` con `x && del *` resta rifiutato.
 
 ### Controlli in `scripts/lib/*.check.ts`, agganciati a `npm run check:all`
 
-- **`percorsi-cucumber.check.ts`** (estensione, dry-run, senza browser):
-  1. l'**ordine** di `BDD_PATHS` con due file e' l'ordine di esecuzione (letto da
-     `testCaseStarted` nel flusso);
-  2. due righe dello stesso file: una esecuzione ciascuna, o la forma fusa;
+- **`percorsi-cucumber.check.ts`** (estesa in S0, dry-run, senza browser, **fatto**):
+  1. l'**ordine** di `BDD_PATHS` con piu' file e' l'ordine di esecuzione (letto da
+     `testCaseStarted` nel flusso): confermato;
+  2. due righe dello stesso file: una esecuzione ciascuna, nell'ordine del file:
+     confermato (la forma fusa non serve); un file intero piu' una sua riga: solo
+     la riga;
   3. `BDD_HTML` cambia il percorso del report e senza di lui resta quello di
-     oggi, e il `.ndjson` esce lo stesso;
-  4. `BDD_PARALLEL=2` con il formatter `message`: il flusso contiene tutti gli
-     scenari una volta sola.
+     oggi: confermato; e cio' che `test-bersaglio` passa a Cucumber (funzioni
+     pure di `lancio-test.ts`).
+- **`cucumber-parallelo.check.ts`** (nuovo in S0, **fatto**, browser vero nascosto,
+  nessuna rete; senza browser dice "NON VERIFICATO"): fail-fast (gli scenari
+  restanti sono `SKIPPED`), `--parallel 2` con il formatter `message` (ogni
+  scenario una volta sola, stessi passi della serie), ordine con un browser vero.
 - **`corsie.check.ts`** (nuovo, con un browser vero contro un'applicazione
   finta, sul modello di `accesso.check.ts`): due contesti con due file di
   sessione diversi aperti insieme; ognuno mostra **la propria** utenza. Prova
