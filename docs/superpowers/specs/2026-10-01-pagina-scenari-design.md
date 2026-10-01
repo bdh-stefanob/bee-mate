@@ -139,13 +139,14 @@ Un titolo, una riga di riepilogo, poi due zone: l'elenco e lo scenario.
 +--------------------------------+
 ```
 
-Le due colonne scattano dal breakpoint **900px** della finestra, lo stesso della
-barra laterale (`min-[900px]:`), scritto in una sola costante di classe. Il
-numero e' una decisione del proprietario, ma l'aritmetica lo mette in
-discussione: a 900px il contenuto e' largo 612px, e con l'elenco a 260px allo
-scenario ne restano 336. Domanda aperta O1.
+Le due colonne scattano dal breakpoint **1100px** della finestra
+(`min-[1100px]:`), scritto in una sola costante di classe (decisione O1: a 900px
+il contenuto e' largo 612px, e con l'elenco a 260px allo scenario ne restano 336,
+troppo poco per il Gherkin; a 1100px sono 812 e lo scenario ne ha 500). La barra
+laterale resta a 900px: fra 900 e 1099px c'e' la barra a sinistra e la pagina a
+una colonna.
 
-Larghezze, da 900px in su: elenco `minmax(260px, 340px)`, scenario il resto, a
+Larghezze, da 1100px in su: elenco `minmax(260px, 340px)`, scenario il resto, a
 sinistra in `position: sticky` con altezza propria e scorrimento interno, cosi'
 l'elenco non si perde quando il testo dello scenario e' lungo. Contenuto con
 `max-w-screen-xl`, come il Catalogo.
@@ -190,15 +191,19 @@ mai automatizzati) si aggiunge una riga sotto: "Altri 3 casi sono solo descritti
 e non si possono eseguire." Spiega perche' una cartella piena di `.feature` non
 compare. Quel numero viene dalla rotta (`soloDescritti`, vedi "I dati").
 
-**4. Elenco con uno scenario scelto.** E' la figura sopra. Su schermo largo, se
+**4. Elenco con uno scenario scelto.** E' la figura sopra. Su schermo largo (da 1100px), se
 la pagina si apre senza indicazioni, e' scelto **il primo scenario dell'elenco
 visibile** (in alto c'e' il gruppo "Non ancora salvati" se esiste: e' quello che
 il tester ha appena prodotto). Su schermo stretto non si sceglie niente da soli:
 la pagina mostra solo l'elenco.
 
 **5. Scenario mai eseguito.** Nell'elenco: icona cerchio tratteggiato (grigio),
-"Mai eseguito". Nel pannello, la scheda dell'esito dice **"Mai eseguito su questo
-computer"**, e sotto "Premi Esegui per provarlo." L'espressione "su questo
+"Mai eseguito". Nel pannello, la scheda dell'esito dice **"Mai eseguito su
+`<ambiente>`"** (l'ambiente scelto nella barra laterale; O5), e sotto "Premi
+Esegui per provarlo." Se lo scenario e' stato provato su un altro ambiente la
+scheda lo dice ("E' stato provato su `<altro>`: superato, ieri"), senza contarlo
+come esito dell'ambiente scelto; se l'unica prova e' di un ambiente sconosciuto
+(indice ricostruito, O6) dice "ambiente sconosciuto". L'espressione "su questo
 computer" non e' decorativa: uno scenario versionato arrivato con un `git pull`
 e' "mai eseguito" qui anche se un collega l'ha provato cento volte (vedi
 "Limiti dichiarati").
@@ -253,7 +258,8 @@ saremmo nel danno peggiore del metodo, un numero sbagliato con l'aria giusta.
 
 ### Riepilogo e filtro per esito
 
-Tre contatori in una riga, ognuno **un pulsante a due stati** (`aria-pressed`):
+Tre contatori in una riga, calcolati **per l'ambiente scelto nella barra
+laterale** (O5: cambiando ambiente cambiano i numeri), ognuno **un pulsante a due stati** (`aria-pressed`):
 **superati**, **non superati**, **da eseguire**. Ognuno ha icona, numero e
 parola. Premendone uno, l'elenco mostra solo quegli scenari (premendolo di
 nuovo, tutti). I contatori contano **tutti** gli scenari, anche quelli che la
@@ -369,14 +375,14 @@ diverse (spunta, croce, cerchio tratteggiato, orologio).
 
 | Larghezza finestra | Disposizione |
 |---|---|
-| >= 900px (O1: si propone 1100px) | due colonne: elenco a sinistra, scenario a destra |
-| < 900px | una colonna: contatori, ricerca, elenco, **poi** scenario |
+| >= 1100px (O1) | due colonne: elenco a sinistra, scenario a destra |
+| < 1100px | una colonna: contatori, ricerca, elenco, **poi** scenario |
 
 Sotto la soglia: l'elenco ha altezza massima `40vh` e scorre da se', cosi' non
 spinge lo scenario fuori dallo schermo; i contatori vanno a capo; Esegui ed
 Esporta occupano meta' riga ciascuno. Il testo Gherkin va a capo (`pre-wrap`,
 `overflow-wrap: anywhere`): **nessuno scorrimento orizzontale**, nemmeno per un
-passo lungo. Provato a 390, 768, 899, 900, 1024, 1280, 1920, e a zoom 200%.
+passo lungo. Provato a 390, 768, 899, 900, 1024, 1099, 1100, 1280, 1920, e a zoom 200%.
 
 ### Il testo Gherkin
 
@@ -467,7 +473,10 @@ interface FileScenari {            // c'era gia': due campi in piu'
   scenari: Array<{
     nome: string;
     riga: number;
-    ultimoEsito: UltimoEsito | null;   // null = mai eseguito su questo computer
+    /** Uno per ambiente su cui e' stato provato, il piu' recente per primo.
+     *  Vuoto = mai eseguito su questo computer. La pagina sceglie quello
+     *  dell'ambiente corrente con `esitoPerAmbiente` (O5). */
+    esiti: UltimoEsito[];
   }>;
 }
 
@@ -475,7 +484,8 @@ interface UltimoEsito {
   esito: 'passato' | 'fallito';
   quando: string;                  // ISO, la fine dello scenario
   durataMs: number;
-  ambiente: string;                // il nome dell'ambiente su cui giro'
+  ambiente: string | null;         // il nome dell'ambiente su cui giro'; null = sconosciuto (ricostruito, O6)
+  esecuzione: string;              // l'id dell'esecuzione: serve al futuro "Vedi la schermata" (O7)
   aggiornato: boolean;             // false = il testo e' cambiato dopo quella prova
   passoFallito?: {                 // solo se esito = 'fallito'
     numero: number;                // 1-based, fra i passi dello scenario
@@ -540,11 +550,19 @@ si contiene facendo estrarre l'indice dalla stessa lettura dei messaggi che
 usa Esecuzione (una sola funzione, vedi "Componenti"), e rendendo l'indice
 **scartabile**: perderlo costa "mai eseguito", mai un numero sbagliato.
 
-**Niente ricostruzione dei vecchi `.ndjson`** al primo avvio (O6): non ci sono
-scenari salvati su questo ramo, quelli di prima del 24 settembre non hanno i
-messaggi, e riempire l'indice con prove di scenari che hanno cambiato posto
-produce voci orfane. Un indice che parte vuoto e' onesto: "mai eseguito su questo
-computer".
+**Ricostruzione dai vecchi `.ndjson` al primo avvio** (O6, decisione del
+proprietario; la raccomandazione era di non farla). Quando
+`reports/esiti-scenari.json` **non esiste**, lo si crea leggendo i
+`reports/cruscotto/test-*.ndjson` che ci sono, **una volta sola**: dopo, il file
+esiste (anche con zero voci) e non si ripete. Con la stessa funzione di
+estrazione di A, quindi una fonte sola. E' robusta per costruzione: una riga che
+non e' JSON, un file troncato (casi senza `testCaseFinished`), un file illeggibile,
+uno scenario il cui file e' stato spostato o cancellato (si scarta alla fusione,
+perche' non esiste piu' sotto `src/features/`): si saltano, mai un errore. Le
+prove di prima del 24 settembre non hanno i messaggi e non producono niente.
+**L'ambiente non c'e'** ne' nei `.ndjson` ne' nei vecchi `<id>.json`: le voci
+ricostruite hanno `ambiente: null` ("sconosciuto") e non si inventa. Non
+contano come esito di nessun ambiente (vedi O6 nella tabella delle decisioni).
 
 ### Cosa si salva, e quando
 
@@ -564,8 +582,8 @@ una pulizia per numero potrebbe portarselo via. E' gia' coperto da `.gitignore`
       "esito": "fallito",
       "quando": "2026-09-30T14:36:53.739Z",
       "durataMs": 10992,
-      "ambiente": "staging",
-      "esecuzione": "test-muo7kv2k",
+      "ambiente": "staging",          // null se ricostruito dai vecchi .ndjson
+      "esecuzione": "test-muo7kv2k",  // serve al futuro "Vedi la schermata" (O7)
       "impronta": "9f2c1e7a40b3d518",
       "passoFallito": { "numero": 3, "totale": 6, "testo": "il cliente aggiunge Maglia blu al carrello", "motivo": "errore", "riepilogo": { "primaRiga": "...", "paginaAttesa": "...", "indirizzoOra": "..." } }
     }
@@ -573,7 +591,10 @@ una pulizia per numero potrebbe portarselo via. E' gia' coperto da `.gitignore`
 }
 ```
 
-**Chiave di una voce:** `file` + `nome`. Con `file` normalizzato: il
+**Chiave di una voce:** `file` + `nome` + `ambiente` (O5: lo stesso scenario
+provato su due ambienti ha due voci, e la piu' recente per ciascuno sostituisce
+la precedente; `ambiente` puo' essere `null`, e `null` e' una chiave a se').
+Con `file` normalizzato: il
 `pickle.uri` dei messaggi arriva come `src\features\shop\order\x.feature` su
 Windows; si porta a barre in avanti e si toglie il prefisso `src/features/`, per
 coincidere con `FileScenari.file`. Il `nome` e' quello della **definizione**
@@ -711,11 +732,15 @@ crescita al posto di un rischio.
 - **Solo l'ultima prova**, non una storia. Trend, "quante volte e' stato rosso
   questo mese" sono un altro lavoro (ROADMAP §5: niente cruscotti di esecuzione
   su misura).
-- **Un esito per scenario, qualunque ambiente.** Lo scenario provato su
-  `staging` e poi su `produzione` ha l'esito dell'ultima delle due, e la scheda
-  dice quale (`ambiente`). Vedi O5.
+- **Un esito per scenario e per ambiente** (O5). La pagina mostra quello
+  dell'ambiente scelto nella barra laterale; se per quell'ambiente non c'e', lo
+  dice e indica se esiste su un altro.
+- **Le prove ricostruite non hanno ambiente** (O6): sono informazione, non
+  esito di un ambiente.
 - **Nessun dettaglio dell'errore oltre alla frase**: lo screenshot e i dettagli
-  tecnici restano nell'esecuzione e nei suoi file, che F20 puo' pulire. Vedi O7.
+  tecnici restano nell'esecuzione e nei suoi file, che F20 puo' pulire. L'indice
+  ricorda l'id dell'esecuzione; **il link "Vedi la schermata" e' un passo
+  successivo dichiarato** (O7), non costruito in questa fetta.
 
 ## Componenti e file
 
@@ -874,6 +899,8 @@ Cucumber minimi scritti nei test, con `shop`/`order`.
 - *un esito nuovo sostituisce quello dello stesso scenario e lascia gli altri.*
 - *un esito con `quando` piu' vecchio non sostituisce uno piu' recente.*
 - *le voci di un file che non esiste piu' si scartano alla scrittura.*
+- *lo stesso scenario su due ambienti: due voci, e un esito nuovo su uno non tocca l'altro* (O5).
+- *la ricostruzione dai `.ndjson` si fa una volta sola (il file esiste dopo, anche con zero voci), salta righe non JSON, file troncati e scenari il cui file non c'e' piu', e scrive `ambiente: null`* (O6).
 - *dopo la scrittura non resta un file temporaneo* (atomicita').
 - *`unisciEsiti`: `aggiornato` e' vero solo se l'impronta coincide; uno scenario rinominato o in un file spostato risulta `ultimoEsito: null`; una voce orfana non compare.*
 
@@ -903,6 +930,7 @@ passano dopo l'estrazione, il comportamento non e' cambiato.
 - *dopo la ricerca i gruppi senza scenari spariscono.*
 - *`riepiloga`: verdi, rossi, da eseguire; un esito non aggiornato conta fra i da eseguire; la somma e' sempre il totale, anche con ricerca attiva.*
 - *il filtro per esito e la ricerca si compongono.*
+- *`esitoPerAmbiente`: l'esito dell'ambiente scelto; se manca, "mai eseguito su quell'ambiente" con l'indicazione di un altro ambiente (o "sconosciuto") dove esiste; un esito di ambiente sconosciuto non conta mai per l'ambiente scelto; i contatori cambiano con l'ambiente* (O5).
 - *`risolviSelezione`: file + titolo → quello scenario; titolo inesistente in un file che c'e' → il primo del file; file inesistente → "non trovato"; senza parametri → il primo se la pagina e' larga, nessuno se e' stretta.*
 - *`prossimoIndice`: giu' e su, Home e Fine; ai capi non gira; salta le intestazioni.*
 
@@ -972,8 +1000,8 @@ passo che fallisce di proposito.
    opzioni con gruppo e stato ("superato", non solo il colore); scegliere annuncia
    "Aperto: ...".
 9. **Larghezze.** 390, 768, 899, 900, 1024, 1280, 1920 e zoom 200%: nessuno
-   scorrimento orizzontale della pagina, aree cliccabili >= 40px, a 899 elenco
-   sopra e scenario sotto; a 900-1099 lo scenario resta leggibile (O1).
+   scorrimento orizzontale della pagina, aree cliccabili >= 40px, fino a 1099
+   elenco sopra e scenario sotto; a 1100 le due colonne reggono (O1).
 10. **Tema scuro** e **colori forzati** di Windows: le icone si distinguono per
     forma, il contrasto regge (verifica con gli strumenti del browser).
 11. **Verifiche a meta' passo.** Uno scenario registrato con una verifica durante
@@ -1021,9 +1049,28 @@ passo che fallisce di proposito.
 
 ## Domande aperte
 
-Per il proprietario. Ognuna ha una raccomandazione; nessuna blocca l'inizio dei
-lavori, ma O1 e O2 conviene scioglierle prima di scrivere il layout e i
-contatori.
+### Decise (proprietario, 1 ottobre 2026)
+
+Il resto del documento e' stato allineato a queste decisioni. Dove una decisione
+si discosta dalla raccomandazione (O5, O6, O7) la tabella dice cosa cambia.
+
+| # | Decisione | Cosa cambia nel documento |
+|---|---|---|
+| O1 | **(b)** due colonne da **1100px**. | Responsive e struttura: la soglia e' `min-[1100px]:`, in una sola costante di classe. Fra 900 e 1099px la barra laterale c'e' e il contenuto e' a una colonna. |
+| O2 | **(a)** tre contatori: superati, non superati, da eseguire (mai eseguiti + modificati). | Nessuno. |
+| O3 | **(a)** Esegui apre Esecuzione con lo scenario preselezionato; non avvia. | Nessuno. |
+| O4 | **(a)** solo l'ultima prova. | Nessuno. |
+| O5 | **(b)** l'esito e' per coppia **scenario + ambiente** (non la raccomandazione). | L'indice tiene una voce per ogni ambiente; `GET /api/scenari` restituisce per ogni scenario `esiti: UltimoEsito[]` (uno per ambiente, il piu' recente per primo) e la pagina sceglie quello dell'ambiente della barra laterale con la funzione pura `esitoPerAmbiente`. Se per quell'ambiente non c'e', dice "mai eseguito su `<ambiente>`" e se esiste su un altro lo indica. I contatori contano rispetto all'ambiente scelto: cambiare ambiente cambia i numeri, ed e' voluto. Chiave di una voce: `file` + `nome` + `ambiente`. |
+| O6 | **(b)** al primo avvio l'indice si **ricostruisce** dai `.ndjson` gia' in `reports/cruscotto/`, una volta sola. | Sezione "Dove si legge l'esito" e "Cosa si salva": la ricostruzione e' robusta (righe non JSON, file troncati, casi senza `testCaseFinished`, scenari spostati o cancellati: si saltano, mai un errore). Si fa quando `reports/esiti-scenari.json` non esiste, e subito dopo il file esiste (anche con zero voci): non si ripete. **Ambiente:** ne' i `.ndjson` ne' i vecchi `<id>.json` dicono su quale ambiente girarono, e non lo si inventa: le voci ricostruite hanno `ambiente: null`, la pagina le chiama "ambiente sconosciuto", **non** le conta fra gli esiti di nessun ambiente (un verde dell'ambiente sbagliato sarebbe un numero giusto-in-apparenza) e le mostra solo come informazione ("ultima prova su un ambiente sconosciuto"). Le prove nuove portano sempre l'ambiente. |
+| O7 | **(b)** per un rosso passato, il link "Vedi la schermata". | In questa fetta si costruisce **il dato**: ogni voce ricorda `esecuzione` (l'id), e `UltimoEsito.esecuzione` lo espone. Il **link resta un passo successivo dichiarato**: Esecuzione oggi non sa aprire un'esecuzione conclusa per id, e F20 deve tenere i `.ndjson` dei rossi. Nessun pulsante inattivo nel frattempo. |
+| O8 | **(a)** gli scenari registrati e non salvati compaiono in un gruppo in cima. | Nessuno. |
+| O9 | **(a)** i contatori sono anche filtri. | Nessuno. |
+
+### Le domande, come erano
+
+Per il proprietario. Ognuna aveva una raccomandazione; il testo sotto e' lo
+storico del ragionamento e **non e' piu' normativo** dove la tabella sopra dice
+altro.
 
 | # | Domanda | Opzioni | Raccomandazione |
 |---|---|---|---|
