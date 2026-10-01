@@ -1,19 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { REPO_ROOT } from '@/lib/repo';
 import { derivaLogin, type RegistrazioneGrezza } from '@/lib/derivazione-login';
 
-const REGISTRAZIONE_VERA = path.join(
-  REPO_ROOT,
-  'reports',
-  'recordings',
-  'www.saucedemo.com-2026-09-07T08-44-31-218Z.json'
-);
+const REGISTRAZIONE_FINTA = path.join(__dirname, '..', 'fixtures', 'registrazione-login.json');
 
 describe('derivaLogin: dal blocco grezzo di una registrazione al blocco login', () => {
-  it('deriva login su una registrazione vera (sito pubblico di pratica)', () => {
-    const registrazione = JSON.parse(fs.readFileSync(REGISTRAZIONE_VERA, 'utf-8')) as RegistrazioneGrezza;
+  it('deriva login su una registrazione di prova (sito inventato)', () => {
+    const registrazione = JSON.parse(fs.readFileSync(REGISTRAZIONE_FINTA, 'utf-8')) as RegistrazioneGrezza;
     const risultato = derivaLogin(registrazione, 'demo');
 
     expect(risultato).not.toBeNull();
@@ -23,16 +17,16 @@ describe('derivaLogin: dal blocco grezzo di una registrazione al blocco login', 
       { click: { role: 'button', name: 'Login' } },
     ]);
     expect(risultato!.variabili).toEqual(['DEMO_USER', 'DEMO_PASS']);
-    // readyWhen: la registrazione visita anche /inventory.html dopo la partenza su "/".
-    expect(risultato!.readyWhen).toBe('/inventory.html');
+    // readyWhen: la registrazione visita anche /area-riservata.html dopo la partenza su "/".
+    expect(risultato!.readyWhen).toBe('/area-riservata.html');
 
-    // Nessun valore digitato deve comparire nel risultato: ne' "standard_user"
-    // (il nome utente vero, salvato in chiaro nella registrazione), ne' un
+    // Nessun valore digitato deve comparire nel risultato: ne' "utente_finto"
+    // (il nome utente, salvato in chiaro nella registrazione), ne' un
     // qualunque frammento della password (che il registratore non salva mai,
     // ma la prova va fatta comunque sul risultato finale).
     const serializzato = JSON.stringify(risultato);
-    expect(serializzato).not.toMatch(/standard_user/);
-    expect(serializzato).not.toMatch(/secret_sauce/);
+    expect(serializzato).not.toMatch(/utente_finto/);
+    expect(serializzato).not.toMatch(/segreto_finto/);
     expect(serializzato).not.toMatch(/<password>/);
   });
 
