@@ -83,7 +83,7 @@ export function BarraStrumenti({
           value={testo}
           onChange={(e) => setTesto(e.target.value)}
           placeholder={segnaposto}
-          className="min-h-10 w-full rounded-md border pl-9 pr-3 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="min-h-10 w-full rounded-md border pl-9 pr-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         />
       </div>
@@ -120,7 +120,7 @@ export function PulsanteFiltro({
       aria-pressed={attivo}
       onClick={onClick}
       className={cn(
-        'inline-flex min-h-10 items-center gap-1.5 rounded-md border px-3 text-sm outline-none',
+        'inline-flex min-h-10 items-center gap-1.5 rounded-md border px-3 text-sm',
         'focus-visible:outline-2 focus-visible:outline-offset-2',
         attivo && 'font-semibold'
       )}
@@ -159,7 +159,7 @@ export function SelezioneFiltro({
         id={id}
         value={valore}
         onChange={(e) => onCambia(e.target.value)}
-        className="min-h-10 rounded-md border px-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="min-h-10 rounded-md border px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
       >
         {opzioni.map((o) => (

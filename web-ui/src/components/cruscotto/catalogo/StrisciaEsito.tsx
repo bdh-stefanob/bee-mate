@@ -70,7 +70,7 @@ export function StrisciaEsito({
       ref={ref}
       role="status"
       tabIndex={-1}
-      className="flex flex-col gap-2 rounded-lg border p-3 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="flex flex-col gap-2 rounded-lg border p-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ borderColor: 'var(--verde)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
     >
       <div className="flex flex-wrap items-start gap-2">

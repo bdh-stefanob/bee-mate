@@ -46,7 +46,7 @@ export const RigaStep = memo(function RigaStep({
         onClick={() => onCommuta(step.espressione)}
         aria-expanded={aperto}
         aria-controls={idDettaglio}
-        className="flex w-full min-h-10 items-start gap-2 px-3 py-2 text-left outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
+        className="flex w-full min-h-10 items-start gap-2 px-3 py-2 text-left focus-visible:outline-2 focus-visible:-outline-offset-2"
         style={{ outlineColor: 'var(--blu)' }}
       >
         <Chevron size={16} aria-hidden="true" className="mt-1 shrink-0" style={{ color: 'var(--testo-tenue)' }} />
@@ -130,7 +130,7 @@ export const RigaStep = memo(function RigaStep({
           {step.comportamento && (
             <details>
               <summary
-                className="min-h-10 cursor-pointer py-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="min-h-10 cursor-pointer py-2 focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ color: 'var(--testo-tenue)', outlineColor: 'var(--blu)' }}
               >
                 {t('dettagliTecnici')}

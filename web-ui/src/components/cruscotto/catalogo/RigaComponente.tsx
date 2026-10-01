@@ -44,7 +44,7 @@ export const RigaComponente = memo(function RigaComponente({
         onClick={() => onCommuta(chiave)}
         aria-expanded={aperto}
         aria-controls={idDettaglio}
-        className="flex w-full min-h-10 items-start gap-2 px-3 py-2 text-left outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
+        className="flex w-full min-h-10 items-start gap-2 px-3 py-2 text-left focus-visible:outline-2 focus-visible:-outline-offset-2"
         style={{ outlineColor: 'var(--blu)' }}
       >
         <Chevron size={16} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--testo-tenue)' }} />
@@ -84,7 +84,7 @@ export const RigaComponente = memo(function RigaComponente({
                 <li key={espressione}>
                   <Link
                     href={urlCatalogo({ scheda: 'step', q: espressione })}
-                    className="inline-flex min-h-10 items-center break-words font-mono text-xs underline underline-offset-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="inline-flex min-h-10 items-center break-words font-mono text-xs underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ color: 'var(--blu)', outlineColor: 'var(--blu)' }}
                     aria-label={t('vediLaFrase', { frase: espressione })}
                   >

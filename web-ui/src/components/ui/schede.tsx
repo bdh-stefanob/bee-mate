@@ -107,7 +107,7 @@ function Schede({
               disabled={s.disabilitata}
               className={cn(
                 "relative flex min-h-11 flex-1 snap-start items-center justify-center gap-2 whitespace-nowrap px-2 py-2 sm:px-4 text-sm",
-                "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2",
+                "focus-visible:outline-2 focus-visible:-outline-offset-2",
                 "motion-reduce:transition-none",
                 attiva ? "font-semibold" : "font-medium",
                 "disabled:opacity-50"
@@ -154,7 +154,7 @@ function Schede({
           key={s.id}
           value={s.id}
           keepMounted={mantieniMontate}
-          className="pt-4 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
+          className="pt-4 focus-visible:outline-2 focus-visible:-outline-offset-2"
           style={{ outlineColor: "var(--blu)" }}
         >
           {mantieniMontate || s.id === valore ? pannello(s.id) : null}

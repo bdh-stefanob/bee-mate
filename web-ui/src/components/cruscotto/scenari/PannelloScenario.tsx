@@ -49,7 +49,7 @@ export function PannelloScenario({
           id={idTitolo}
           ref={titoloRef}
           tabIndex={-1}
-          className="text-lg font-semibold break-words focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="text-lg font-semibold break-words focus:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {voce.nome}

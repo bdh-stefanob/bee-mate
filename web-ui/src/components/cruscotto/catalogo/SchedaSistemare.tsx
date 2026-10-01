@@ -191,7 +191,7 @@ function GruppoDiCoppie({
         aria-expanded={aperto}
         aria-controls={id}
         onClick={() => setAperto((a) => !a)}
-        className="flex min-h-10 w-full items-center gap-2 rounded-md px-1 text-left outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="flex min-h-10 w-full items-center gap-2 rounded-md px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ outlineColor: 'var(--blu)' }}
       >
         <Chevron size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} />

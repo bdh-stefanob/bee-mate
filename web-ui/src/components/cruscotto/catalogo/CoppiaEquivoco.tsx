@@ -95,7 +95,7 @@ export function CoppiaEquivoco({
             type="text"
             value={nuovaFrase}
             onChange={(e) => setNuovaFrase(e.target.value)}
-            className="min-h-10 rounded-md border px-3 font-mono text-xs outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 rounded-md border px-3 font-mono text-xs focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           />
           <div className="rounded-md border p-3 text-sm" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>

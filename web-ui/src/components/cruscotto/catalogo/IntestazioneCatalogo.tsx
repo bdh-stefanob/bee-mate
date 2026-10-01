@@ -139,7 +139,7 @@ function Casella({
       <Link
         href={href}
         aria-busy={stato === 'caricamento'}
-        className="flex h-full min-h-32 flex-col gap-1 rounded-lg border p-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="flex h-full min-h-32 flex-col gap-1 rounded-lg border p-4 focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{
           borderColor: attenzione ? 'var(--ambra)' : 'var(--bordo)',
           background: 'var(--superficie)',
