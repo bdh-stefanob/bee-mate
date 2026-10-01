@@ -41,7 +41,8 @@ export type CodiceApplicazione =
   | 'nessuna-scelta' | 'passo-sconosciuto' | 'scelte-incoerenti' | 'voce-non-candidata'
   | 'voce-non-proposta' | 'non-applicabile' | 'gia-uguale' | 'stessa-voce' | 'collisione'
   | 'frase-con-parametri' | 'frase-non-trovata' | 'definizione-multipla' | 'file-a-mano'
-  | 'file-non-trovato' | 'niente-da-annullare' | 'gia-salvato' | 'modificato-a-mano';
+  | 'file-non-trovato' | 'niente-da-annullare' | 'gia-salvato' | 'modificato-a-mano'
+  | 'scaduta' | 'id-non-valido' | 'compito-non-trovato';
 
 export class ErroreApplicazione extends Error {
   /** Cio' che la persona deve vedere per rimediare: frasi, motivi. Mai percorsi assoluti. */
