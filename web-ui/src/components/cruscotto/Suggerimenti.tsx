@@ -166,7 +166,7 @@ export function Suggerimenti() {
 
   const scelteFatte = risposta.stato === 'pronte' ? risposta.righe.filter((r) => scelte[r.passo] === 'catalogo').length : 0;
   const applicate = risposta.stato === 'applicate';
-  const conteggio = risposta.stato === 'pronte' ? risposta.applicabili : risposta.stato === 'applicate' ? risposta.usate : 0;
+  const conteggio = risposta.stato === 'pronte' ? risposta.applicabili : 0;
   const idRiepilogo = `${idBase}-riepilogo`;
 
   return (
@@ -212,7 +212,7 @@ export function Suggerimenti() {
             <ChevronDown size={18} aria-hidden="true" className="shrink-0 transition-transform group-open:rotate-180" />
             <span>{t('titolo')}</span>
             <span className="font-normal" style={{ color: 'var(--testo-tenue)' }}>
-              {applicate ? t('applicate', { n: conteggio }) : t('riepilogo', { n: conteggio })}
+              {applicate ? null : t('riepilogo', { n: conteggio })}
             </span>
           </summary>
 
@@ -221,9 +221,11 @@ export function Suggerimenti() {
               <Info size={16} aria-hidden="true" className="shrink-0" />
               {t('suggeritoDa', { chi: risposta.stato === 'pronte' && risposta.origin === 'assistito' ? t('chiAssistente') : t('chiRegole') })}
             </p>
-            <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-              {t('aiuto')}
-            </p>
+            {!applicate && (
+              <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+                {t('aiuto')}
+              </p>
+            )}
 
             {risposta.stato === 'pronte' && (
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
