@@ -99,10 +99,12 @@ describe('fusione di una coppia vera (stessi componenti, stesso comportamento)',
   });
 
   it('con due comportamenti diversi rifiuta (409) finche\' il tester non conferma, e non scrive niente', async () => {
-    const diverso = leggi(STEPS_REL).replace(
-      `"${A}", async function () {\n  await shop.add();`,
-      `"${A}", async function () {\n  await shop.addAndOpenCart();`
-    );
+    // La fixture puo' arrivare con CRLF (git su Windows): la sostituzione non
+    // deve dipendere dal fine riga, altrimenti il corpo resta uguale e si fonde.
+    const originale = leggi(STEPS_REL);
+    const inizio = originale.indexOf(`"${A}", async function () {`);
+    const diverso = originale.slice(0, inizio) + originale.slice(inizio).replace('shop.add();', 'shop.addAndOpenCart();');
+    expect(diverso).not.toBe(originale);
     fs.writeFileSync(path.join(RADICE, STEPS_REL), diverso);
     const prima = hashTutti();
     const res = await fondi(post('/api/catalogo/fondi', { da: DA, a: A }));
