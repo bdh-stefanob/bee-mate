@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
-import { percorsoDiEsecuzione, SCENARIO_VALIDO, indirizzoEsecuzione } from '@/lib/percorso-scenario';
+import { percorsoDiEsecuzione, SCENARIO_VALIDO, indirizzoEsecuzione } from '@/lib/percorso-esecuzione';
 import { rigaDiComando } from '@/lib/esecuzione';
 
 describe('percorsoDiEsecuzione: il percorso che Esecuzione accetta, o null', () => {
@@ -54,14 +52,6 @@ describe('indirizzoEsecuzione', () => {
 });
 
 describe('SCENARIO_VALIDO', () => {
-  it('contratto: e\' scritta uguale in esecuzione.ts (due copie non devono divergere in silenzio)', () => {
-    // `esecuzione.ts` e' un modulo del server, toccato da altri lavori: la
-    // regola non si importa da li' ne' li' si sposta, ma se una delle due copie
-    // cambia da sola questo caso lo dice.
-    const sorgente = fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'lib', 'esecuzione.ts'), 'utf-8');
-    expect(sorgente).toContain(`const SCENARIO_VALIDO = ${SCENARIO_VALIDO.toString()};`);
-  });
-
   it('e\' una sola regola, quella che Esecuzione usa', () => {
     expect(SCENARIO_VALIDO.test('src/features/a/b.feature:3')).toBe(true);
     expect(SCENARIO_VALIDO.test('src/features/a/b.feature')).toBe(true);

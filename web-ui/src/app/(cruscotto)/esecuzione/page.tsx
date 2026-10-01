@@ -11,6 +11,7 @@ import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/ria
 import { useAmbiente } from '@/context/AmbienteContext';
 import type { FileScenari } from '@/lib/scenari';
 import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
+import { formattaDurata, type Traduttore } from '@/lib/formato-quando';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
@@ -45,32 +46,11 @@ function conta(passi: Passo[]): Record<Passo['esito'], number> {
   return conteggio;
 }
 
-type Traduttore = (chiave: string, valori?: Record<string, number | string>) => string;
-
 function formattaRiepilogo(passi: Passo[], t: Traduttore): string {
   const conteggio = conta(passi);
   return (['passato', 'fallito', 'saltato'] as const)
     .map((esito) => t(CHIAVE_ESITO[esito], { n: conteggio[esito] }))
     .join(', ');
-}
-
-/**
- * Sotto il minuto un numero di secondi con un decimale basta e si legge a
- * colpo d'occhio; sopra il minuto, minuti e secondi separati sono piu'
- * leggibili di "127.3 s". Il separatore decimale segue la lingua scelta
- * (virgola in italiano, punto in inglese): un numero scritto alla rovescia
- * per chi legge si nota subito, anche in mezzo a una frase che per il resto
- * e' tradotta bene.
- */
-function formattaDurata(ms: number, locale: string, t: Traduttore): string {
-  const secondiTotali = ms / 1000;
-  if (secondiTotali < 60) {
-    const s = secondiTotali.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    return t('durataSecondi', { s });
-  }
-  const minuti = Math.floor(secondiTotali / 60);
-  const secondi = Math.floor(secondiTotali % 60);
-  return t('durataMinutiSecondi', { m: minuti, s: String(secondi).padStart(2, '0') });
 }
 
 /**

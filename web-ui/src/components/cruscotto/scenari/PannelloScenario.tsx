@@ -9,7 +9,7 @@ import { SchedaEsito } from './SchedaEsito';
 import { CLASSE_AZIONE_FLESSIBILE } from './layout';
 import { useRisorsa } from '@/hooks/useRisorsa';
 import { risorsaTesto } from '@/lib/stato-scenari';
-import { indirizzoEsecuzione } from '@/lib/percorso-scenario';
+import { indirizzoEsecuzione } from '@/lib/percorso-esecuzione';
 import type { VoceScenario } from '@/lib/scenari-elenco';
 import type { Istantanea } from '@/lib/risorsa';
 

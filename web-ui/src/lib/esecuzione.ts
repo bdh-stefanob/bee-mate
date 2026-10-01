@@ -1,3 +1,5 @@
+import { SCENARIO_VALIDO } from './percorso-esecuzione';
+
 /**
  * L'elenco CHIUSO dei comandi che la finestra puo' chiedere.
  *
@@ -94,14 +96,9 @@ function percorsoDi(valore: string | undefined, etichetta: string): string {
 }
 
 /**
- * Uno scenario da eseguire: un `.feature` dentro `src/features/`, con la riga
- * facoltativa. Stesso criterio dei percorsi di artefatto: si dice cosa e'
- * ammesso — lettere, cifre, `._-/` — invece di cosa e' vietato, e la riga e'
- * un numero da 1 in su, uno solo. Tutto il resto arriverebbe a Cucumber come
- * un argomento che nessuno ha scelto.
+ * Uno scenario da eseguire: la regola (`SCENARIO_VALIDO`) e' in
+ * `percorso-esecuzione.ts`, una definizione sola.
  */
-const SCENARIO_VALIDO = /^src\/features\/[A-Za-z0-9._\/-]{1,200}\.feature(:[1-9][0-9]{0,5})?$/;
-
 function scenarioDi(valore: unknown): string {
   if (typeof valore !== 'string' || valore.includes('..') || valore.includes('//') || !SCENARIO_VALIDO.test(valore)) {
     throw new Error(`scenario non valido: ${JSON.stringify(valore)}`);
