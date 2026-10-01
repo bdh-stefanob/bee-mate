@@ -995,6 +995,50 @@ Da fare sulla macchina con Kiro (non eseguibili qui):
 - **Q-A1**: la risposta aziendale (vedi "Non decisa").
 - **L'inizio dell'insieme d'oro**: lo etichettano le persone (Q-A4, ancora aperta); la fetta 1 fornisce il formato e il calcolo, con un esempio finto.
 
+### Fetta 1: cosa e' stato costruito, e dove la spec e' stata precisata (2026-10-01)
+
+Costruito, senza modello e senza rete: il contratto (compito e proposta, validatore a due
+livelli, `origin` per file e per riga), il proponente a regole, l'applicazione
+tutto-o-niente con istantanea e annullamento, il riquadro "Suggerimenti" in Registra,
+e la misura del braccio R su un insieme d'oro. Dove il testo lasciava una scelta:
+
+- **Una contraddizione, risolta nel verso piu' severo.** La sezione 4 dice che una
+  risposta incollata in un blocco di codice con testo attorno si estrae e il resto si
+  scarta; la sezione 9 dice che quel caso e' **rifiutato**. Il validatore rifiuta
+  (`testo-attorno`): e' il punto in cui un testo che imita istruzioni cercherebbe di
+  entrare, e rifiutare si verifica piu' facilmente che filtrare. Se si preferisse
+  estrarre, e' una riga di `validaPropostaTesto`.
+- **Il compito viaggia nel manifesto** della generazione (`compito`), scritto da
+  `generate.ts` con `costruisciCompito`; il cruscotto lo rilegge e lo scrive, uguale, in
+  `reports/assistente/<id>/compito.json` accanto alla proposta e all'esito. Nessun
+  comando nuovo nell'elenco chiuso: le rotte (`/api/suggerimenti`, `/applica`,
+  `/annulla`) chiamano funzioni di libreria. `esegui` cambia solo perche' il catalogo si
+  riallinea dopo un'applicazione, con il comando `catalogo` che c'era gia'.
+- **Il riquadro compare solo se almeno una riga e' applicabile.** Candidati gia'
+  realizzati, con parametri, deprecati o con caratteri che spezzerebbero una stringa del
+  codice (`"`, `'`, `\`, `` ` ``, `$`) si mostrano solo dentro un riquadro che ha anche
+  qualcosa da offrire. Sul catalogo di questa macchina (due voci realizzate) il riquadro
+  non compare mai: e' voluto.
+- **I giudici.** `tsc` sull'intero progetto; la prova a vuoto di Cucumber sul solo
+  scenario, letta dal riepilogo (esce con 0 anche con passi indefiniti); il validatore
+  ristretto **alle frasi appena entrate** (devono essere espressioni del catalogo, parola
+  per parola). Il validatore intero non si usa come giudice: boccerebbe sempre uno
+  scenario appena generato, perche' le frasi del tester non sono ancora nel catalogo.
+  Un `tsc` rosso gia' prima delle scelte fa ripristinare comunque: e' prudenza, non
+  attribuzione di colpa.
+- **Due passi con la stessa frase** diventano un passo solo nel compito (`anche`), e si
+  riscrivono insieme. Due passi su frasi diverse che puntano alla stessa voce, o una voce
+  uguale alla frase di un altro passo, sono rifiutati: definirebbero due volte la stessa
+  frase.
+- **Origine.** Con le regole il file resta `deterministico` (nel manifesto e nella riga
+  `# origine-frasi:` accanto al marcatore); passerebbe a `assistito` solo con una proposta
+  `assistito`. Nell'esito, ogni riga ha la sua: `deterministico`, `assistito`, `persona`.
+- **Misura.** `npm run misura:suggerimenti <insieme.json>`: precisione, copertura,
+  astensione, richiamo della rosa, falsi accetti, accordo fra i due giudici, con intervalli
+  di Wilson. Un denominatore zero da' `n/d`, mai 0 o 1. L'insieme d'oro vero lo etichettano
+  le persone (Q-A4); quello in `test-fixtures/assistente/` e' finto e dichiarato tale. Il
+  criterio d'ingresso con le soglie confermate e' in `criterioDiIngresso`.
+
 ### Cosa non costruire
 
 - Una **chat libera** nel cruscotto, o un campo dove scrivere un'istruzione: e'
