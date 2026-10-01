@@ -22,7 +22,8 @@ export async function GET() {
 /**
  * POST /api/features
  * Body: { content: string, filePath: string }  (filePath relativo a src/features/)
- * Scrive il file .feature su filesystem locale.
+ * Scrive il file .feature su filesystem locale. Risponde { ok, path } con lo
+ * stesso percorso ricevuto, relativo a src/features/.
  */
 export async function POST(request: Request) {
   if (daAltraOrigine(request)) {
@@ -42,7 +43,10 @@ export async function POST(request: Request) {
     fs.mkdirSync(path.dirname(resolved), { recursive: true });
     fs.writeFileSync(resolved, content, 'utf-8');
 
-    const rel = path.relative(path.resolve(FEATURES_DIR, '..', '..'), resolved).replace(/\\/g, '/');
+    // Relativo a src/features/, come quello ricevuto: il chiamante lo rimanda
+    // cosi' com'e' al salvataggio dopo (con la radice davanti finirebbe in una
+    // cartella annidata, o nel ramo "sposta" con un file sorgente inesistente).
+    const rel = path.relative(FEATURES_DIR, resolved).replace(/\\/g, '/');
     return NextResponse.json({ ok: true, path: rel });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

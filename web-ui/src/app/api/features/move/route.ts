@@ -21,7 +21,7 @@ import { daAltraOrigine } from '@/lib/stessa-origine';
  *   4. Usa content (se fornito) o legge dal disco; riscrive i tag @app @flow (setFeatureTags)
  *   5. Crea directory destinazione, scrive file, rimuove sorgente se diversa
  *   6. Pulisce cartelle vuote risalendo da dirname(src) verso FEATURES_DIR
- *   7. Ritorna { ok: true, path: toRelPOSIX }
+ *   7. Ritorna { ok: true, path: toRelPOSIX } — relativo a src/features/
  */
 export async function POST(request: Request) {
   if (daAltraOrigine(request)) {
@@ -109,9 +109,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Calcola path relativo POSIX (come fa /api/features)
+    // Percorso relativo a src/features/ (come quello ricevuto in fromPath e
+    // come quello di /api/features): si puo' rimandare com'e'.
     const toRelPOSIX = path
-      .relative(path.resolve(FEATURES_DIR, '..', '..'), dest)
+      .relative(FEATURES_DIR, dest)
       .replace(/\\/g, '/');
 
     return NextResponse.json({ ok: true, path: toRelPOSIX });
