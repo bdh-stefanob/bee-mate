@@ -1,0 +1,7 @@
+@shop @cart
+Feature: Cart
+
+  Scenario: Add one item
+    Given the user opens the shop
+    When the user adds the item
+    Then the cart shows 1 item

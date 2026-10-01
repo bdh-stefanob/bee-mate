@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-09-08T00:00:00.000Z",
+  "totalSteps": 2,
+  "steps": [
+    {
+      "expression": "the user adds the item",
+      "keyword": "When",
+      "parameters": [],
+      "sourceRef": "src\\steps\\shop\\cart\\cart.steps.ts:4",
+      "status": "implemented",
+      "components": [{ "role": "button", "name": "Add to cart", "page": "ShopPage" }]
+    },
+    {
+      "expression": "the user puts the item in the cart",
+      "keyword": "When",
+      "parameters": [],
+      "sourceRef": "src\\steps\\shop\\cart\\cart.steps.ts:10",
+      "status": "implemented",
+      "components": [{ "role": "button", "name": "Add to cart", "page": "ShopPage" }]
+    }
+  ]
+}
