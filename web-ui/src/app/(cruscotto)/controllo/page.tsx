@@ -1,18 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { VoceControllo } from '@/components/cruscotto/VoceControllo';
-import type { VoceDiagnosi } from '@/lib/controllo';
 import { SezioneAmbienti } from '@/components/cruscotto/SezioneAmbienti';
+import { useRisorsa } from '@/hooks/useRisorsa';
+import { diagnosi, dopoUnaModifica, type Diagnosi } from '@/lib/stato-controllo';
+import type { Istantanea } from '@/lib/risorsa';
 
-interface RispostaControllo {
-  pronto: boolean;
-  voci: VoceDiagnosi[];
-}
-
-type StatoPagina = 'caricamento' | 'errore' | 'pronto';
+const tutta = (i: Istantanea<Diagnosi>): Istantanea<Diagnosi> => i;
+const riprova = (): void => void diagnosi.carica();
 
 /** Righe che pulsano al posto del contenuto: uno scheletro, non una rotella sola. */
 function ScheletroControllo() {
@@ -139,58 +137,43 @@ function ConfiguraCredenziale() {
 
 export default function ControlloPage() {
   const t = useTranslations('Controllo');
-  const [stato, setStato] = useState<StatoPagina>('caricamento');
-  const [dati, setDati] = useState<RispostaControllo | null>(null);
-  // Una diagnosi rifatta dopo una modifica (un ambiente aggiunto, un rimedio
-  // lanciato) non svuota la pagina: le voci di prima restano, segnate come in
-  // aggiornamento, finche' non arrivano le nuove. Svuotarla ogni volta faceva
-  // sparire per un secondo proprio la riga su cui il tester stava lavorando.
-  const [aggiornando, setAggiornando] = useState(false);
-  const giaCaricato = useRef(false);
+  // La diagnosi vive fuori dalla pagina (`lib/stato-controllo.ts`). Una
+  // rilettura dopo una modifica (un ambiente aggiunto, un rimedio lanciato) non
+  // svuota la pagina: le voci di prima restano, segnate come in aggiornamento,
+  // finche' non arrivano le nuove — e quelle che non sono cambiate non si
+  // ridisegnano nemmeno. Tornando su questa schermata si ritrova subito
+  // l'ultima diagnosi, invece dello scheletro.
+  const { stato, dati, aggiornando } = useRisorsa(diagnosi, tutta);
 
-  const carica = useCallback(async () => {
-    if (giaCaricato.current) setAggiornando(true);
-    else setStato('caricamento');
-    try {
-      const risposta = await fetch('/api/controllo');
-      const corpo = (await risposta.json()) as RispostaControllo;
-      if (!risposta.ok) {
-        // Con delle voci gia' a schermo, un aggiornamento fallito le lascia li':
-        // meglio lo stato di un momento fa che una pagina rossa senza niente.
-        if (!giaCaricato.current) setStato('errore');
-        return;
-      }
-      setDati(corpo);
-      setStato('pronto');
-      giaCaricato.current = true;
-    } catch {
-      if (!giaCaricato.current) setStato('errore');
-    } finally {
-      setAggiornando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    carica();
-  }, [carica]);
-
-  // Le voci "avanzate" riguardano chi ha costruito lo strumento (l'assistente
-  // da riga di comando, gli agenti che sincronizzano le regole): un tester non
-  // ne ha bisogno per lavorare, quindi non contano per "pronto" e stanno in
-  // una sezione a parte, richiudibile.
-  const essenziali = dati ? dati.voci.filter((v) => !v.avanzata) : [];
-  const avanzate = dati ? dati.voci.filter((v) => v.avanzata) : [];
-  // Due conteggi separati, e non e' pignoleria: prima ce n'era uno solo che
-  // sommava le mancanze agli avvisi, mentre il verdetto "pronto" guardava solo
-  // le mancanze. Cosi' la riga in cima mostrava una spunta verde accanto alla
-  // scritta "mancano 2 cose" — l'icona diceva una cosa e le parole un'altra.
-  const mancanti = essenziali.filter((v) => v.esito === 'manca' && !v.daUso).length;
-  // (F11) Cio' che nasce usando l'applicazione non e' un guasto: un riquadro
-  // neutro con l'avanzamento, non un rosso.
-  const daUso = essenziali.filter((v) => v.daUso);
-  const daUsoFatte = daUso.filter((v) => v.esito !== 'manca').length;
-  const perIniziare = daUso.length > 0 && daUsoFatte < daUso.length;
-  const daGuardare = essenziali.filter((v) => v.esito === 'attenzione').length;
+  // Tutto cio' che segue e' DERIVATO dalle voci: si calcola, non si tiene in
+  // uno stato a parte, e si ricalcola solo quando le voci cambiano davvero.
+  const riepilogo = useMemo(() => {
+    const voci = dati?.voci ?? [];
+    // Le voci "avanzate" riguardano chi ha costruito lo strumento (l'assistente
+    // da riga di comando, gli agenti che sincronizzano le regole): un tester non
+    // ne ha bisogno per lavorare, quindi non contano per "pronto" e stanno in
+    // una sezione a parte, richiudibile.
+    const essenziali = voci.filter((v) => !v.avanzata);
+    const avanzate = voci.filter((v) => v.avanzata);
+    // (F11) Cio' che nasce usando l'applicazione non e' un guasto: un riquadro
+    // neutro con l'avanzamento, non un rosso.
+    const daUso = essenziali.filter((v) => v.daUso);
+    const daUsoFatte = daUso.filter((v) => v.esito !== 'manca').length;
+    return {
+      essenziali,
+      avanzate,
+      // Due conteggi separati, e non e' pignoleria: prima ce n'era uno solo che
+      // sommava le mancanze agli avvisi, mentre il verdetto "pronto" guardava solo
+      // le mancanze. Cosi' la riga in cima mostrava una spunta verde accanto alla
+      // scritta "mancano 2 cose" — l'icona diceva una cosa e le parole un'altra.
+      mancanti: essenziali.filter((v) => v.esito === 'manca' && !v.daUso).length,
+      daGuardare: essenziali.filter((v) => v.esito === 'attenzione').length,
+      daUsoTotale: daUso.length,
+      daUsoFatte,
+      perIniziare: daUso.length > 0 && daUsoFatte < daUso.length,
+    };
+  }, [dati]);
+  const { essenziali, avanzate, mancanti, daGuardare, daUsoTotale, daUsoFatte, perIniziare } = riepilogo;
 
   return (
     <div className="flex max-w-3xl flex-col gap-4">
@@ -212,7 +195,7 @@ export default function ControlloPage() {
           </p>
           <button
             type="button"
-            onClick={carica}
+            onClick={riprova}
             className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
@@ -243,13 +226,13 @@ export default function ControlloPage() {
               : daGuardare > 0
                 ? t('statoDaGuardare', { daGuardare })
                 : perIniziare
-                  ? t('statoPerIniziare', { fatte: daUsoFatte, totale: daUso.length })
+                  ? t('statoPerIniziare', { fatte: daUsoFatte, totale: daUsoTotale })
                   : t('statoPronto')}
           </div>
 
           <ul className="flex flex-col gap-2">
             {essenziali.map((voce) => (
-              <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={carica} />
+              <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={dopoUnaModifica} />
             ))}
           </ul>
 
@@ -263,7 +246,7 @@ export default function ControlloPage() {
               </summary>
               <ul className="flex flex-col gap-2 p-3 pt-0">
                 {avanzate.map((voce) => (
-                  <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={carica} />
+                  <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={dopoUnaModifica} />
                 ))}
               </ul>
             </details>
@@ -273,7 +256,7 @@ export default function ControlloPage() {
 
       {/* Ambienti e credenziali non dipendono dalla diagnosi: si mostrano subito,
           invece di aspettare quasi un secondo che la macchina sia stata controllata. */}
-      <SezioneAmbienti onCambiato={carica} />
+      <SezioneAmbienti />
 
       <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
         <summary

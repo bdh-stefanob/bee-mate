@@ -154,6 +154,11 @@ but a tester would not understand it without help · **P3** polish.
   now wired to the same notification the write path already triggered
   (`onCambiato`) one hop further. Unit test:
   `web-ui/__tests__/lib/eventi-ambienti.test.ts`.
+  Superseded 2026-10-01: the pub/sub is gone. The sidebar and `SezioneAmbienti`
+  now read the same external store (`web-ui/src/lib/stato-controllo.ts`, built
+  on `lib/risorsa.ts` + `hooks/useRisorsa.ts`), so there is one read of
+  `/api/configurazione` instead of two kept in sync by a notification. Unit
+  test: `web-ui/__tests__/lib/risorsa.test.ts`.
 - [x] done
 
 ### F4 (P2) — An environment is "ready" before anyone has signed in

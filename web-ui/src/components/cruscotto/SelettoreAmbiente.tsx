@@ -1,14 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Server } from 'lucide-react';
 import { useAmbiente } from '@/context/AmbienteContext';
-import { suAmbientiCambiati } from '@/lib/eventi-ambienti';
+import { useRisorsa } from '@/hooks/useRisorsa';
+import { configurazione, type Configurazione } from '@/lib/stato-controllo';
+import type { Istantanea } from '@/lib/risorsa';
 
-interface RispostaConfigurazione {
-  bersagli?: string[];
-}
+const NESSUNO: string[] = [];
+// Solo i nomi: la barra laterale non si ridisegna quando di un ambiente cambia
+// l'indirizzo o una credenziale, ne' mentre l'elenco si sta rileggendo.
+const soloNomi = (i: Istantanea<Configurazione>): string[] => i.dati?.bersagli ?? NESSUNO;
 
 /**
  * Su quale ambiente si sta lavorando: una sola scelta, valida per tutta la
@@ -22,50 +25,19 @@ interface RispostaConfigurazione {
 export function SelettoreAmbiente() {
   const t = useTranslations('Cruscotto');
   const { ambiente, impostaAmbiente } = useAmbiente();
-  const [ambienti, setAmbienti] = useState<string[]>([]);
-  // L'ambiente attuale si legge da un riferimento: se `carica` dipendesse da
-  // `ambiente`, la scelta automatica del primo ambiente la ricreerebbe, l'effetto
-  // ripartirebbe e l'elenco verrebbe richiesto una seconda volta per niente.
-  const ambienteRef = useRef(ambiente);
-  ambienteRef.current = ambiente;
+  // F3: l'elenco e' lo stesso che mostra la sezione Ambienti della schermata
+  // Controllo (`lib/stato-controllo.ts`): aggiungere o eliminare un ambiente
+  // la' lo cambia anche qui, senza una seconda lettura e senza ricaricare.
+  const ambienti = useRisorsa(configurazione, soloNomi);
 
-  // F3: prima si leggeva /api/configurazione una volta sola, all'apertura
-  // della finestra. Aggiungere o eliminare un ambiente nella schermata
-  // Check-up non cambiava questo elenco finche' non si ricaricava — Registra
-  // ed Esecuzione, che leggono l'ambiente scelto da qui, restavano indietro
-  // con loro. Ora si ricarica anche a ogni notifica di `eventi-ambienti`.
-  const carica = useCallback(
-    async (attivo: () => boolean) => {
-      try {
-        const risposta = await fetch('/api/configurazione');
-        const d = (await risposta.json()) as RispostaConfigurazione;
-        if (!attivo()) return;
-        const elenco = d.bersagli ?? [];
-        setAmbienti(elenco);
-        // Nessun ambiente scelto ancora (prima apertura), o quello scelto non
-        // esiste piu' (cancellato dalla sezione Ambienti): si ricade sul
-        // primo dell'elenco, mai su un nome che non corrisponde piu' a niente.
-        if (elenco.length > 0 && !elenco.includes(ambienteRef.current)) {
-          impostaAmbiente(elenco[0]);
-        }
-      } catch {
-        if (attivo()) setAmbienti([]);
-      }
-    },
-    [impostaAmbiente]
-  );
-
+  // Nessun ambiente scelto ancora (prima apertura), o quello scelto non
+  // esiste piu' (cancellato dalla sezione Ambienti): si ricade sul primo
+  // dell'elenco, mai su un nome che non corrisponde piu' a niente.
   useEffect(() => {
-    let attivo = true;
-    void carica(() => attivo);
-    const disiscriviti = suAmbientiCambiati(() => {
-      void carica(() => attivo);
-    });
-    return () => {
-      attivo = false;
-      disiscriviti();
-    };
-  }, [carica]);
+    if (ambienti.length > 0 && !ambienti.includes(ambiente)) {
+      impostaAmbiente(ambienti[0]);
+    }
+  }, [ambienti, ambiente, impostaAmbiente]);
 
   return (
     <div className="flex flex-col gap-1 p-2">

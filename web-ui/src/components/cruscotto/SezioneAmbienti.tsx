@@ -1,26 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Pencil, Plus, Trash2, XCircle } from 'lucide-react';
-import { notificaAmbientiCambiati } from '@/lib/eventi-ambienti';
+import { useRisorsa } from '@/hooks/useRisorsa';
+import { configurazione, dopoUnaModifica, type AmbienteVisibile, type Configurazione } from '@/lib/stato-controllo';
+import type { Istantanea } from '@/lib/risorsa';
 
-export interface AmbienteVisibile {
-  nome: string;
-  url: string;
-  /** Ha gia' un blocco di accesso (scritto a mano o derivato da una registrazione)? */
-  haLogin?: boolean;
-  /** I nomi ${VAR} che questo ambiente referenzia (url compreso). Mai i valori. */
-  variabiliRichieste?: string[];
-  /** Il sottoinsieme di sopra che non e' ancora in .env. Mai i valori. */
-  variabiliMancanti?: string[];
-  /** C'e' gia' un file di sessione salvato su disco per questo ambiente? */
-  haSessione?: boolean;
-}
+export type { AmbienteVisibile };
 
-interface RispostaAmbienti {
-  ambienti?: AmbienteVisibile[];
-}
+const NESSUN_AMBIENTE: AmbienteVisibile[] = [];
+const soloAmbienti = (i: Istantanea<Configurazione>): AmbienteVisibile[] => i.dati?.ambienti ?? NESSUN_AMBIENTE;
 
 interface RispostaEsegui {
   id?: string;
@@ -548,8 +538,12 @@ function ModificaIndirizzo({
 /**
  * Una riga dell'elenco Ambienti, con il pulsante che avvia una sessione di
  * accesso manuale per quell'ambiente e ne segue l'esito.
+ *
+ * `memo`: un ambiente che non e' cambiato arriva con lo stesso oggetto di prima
+ * e `onSessioneConclusa` e' una funzione di modulo, quindi modificare una riga
+ * non ridisegna le altre — ne' chiude un modulo aperto in un'altra.
  */
-function RigaAmbiente({
+const RigaAmbiente = memo(function RigaAmbiente({
   ambiente,
   onSessioneConclusa,
 }: {
@@ -783,38 +777,20 @@ function RigaAmbiente({
       )}
     </li>
   );
-}
+});
 
 /**
- * Sezione Ambienti della schermata di controllo: elenca gli ambienti già
- * configurati con il loro indirizzo, permette di aggiungerne uno nuovo (o di
- * correggere l'indirizzo di uno esistente) e, per ciascuno, avvia una
- * sessione di accesso manuale — la sola parte del login che questa finestra
- * costruisce: i passi di accesso automatico restano un lavoro da preparare a
- * mano nel file degli ambienti.
+ * Il modulo "Aggiungi ambiente". E' un componente a se' perche' il suo stato
+ * cambia a ogni tasto: quando stava nella sezione, ogni lettera digitata
+ * ridisegnava l'intero elenco degli ambienti.
  */
-export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
+function AggiungiAmbiente() {
   const t = useTranslations('Ambienti');
-  const [ambienti, setAmbienti] = useState<AmbienteVisibile[]>([]);
   const [nome, setNome] = useState('');
   const [url, setUrl] = useState('');
   const [inCorso, setInCorso] = useState(false);
   const [messaggio, setMessaggio] = useState<{ ok: boolean; testo: string } | null>(null);
   const [irraggiungibile, setIrraggiungibile] = useState<MotivoIrraggiungibile | null>(null);
-
-  const carica = useCallback(async () => {
-    try {
-      const risposta = await fetch('/api/configurazione');
-      const corpo = (await risposta.json()) as RispostaAmbienti;
-      setAmbienti(corpo.ambienti ?? []);
-    } catch {
-      setAmbienti([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    void carica();
-  }, [carica]);
 
   async function aggiungi(comunque: boolean) {
     // Questo form scrive con la stessa rotta di "Modifica indirizzo": un nome
@@ -822,11 +798,14 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
     // comodo per correggersi al volo, ma silenzioso — chi vuole aggiungerne
     // uno nuovo e sbaglia a digitare un nome gia' preso sovrascriverebbe un
     // indirizzo senza saperlo. Un'unica conferma esplicita basta a distinguere
-    // le due intenzioni.
-    // "Salva comunque" arriva dopo che questa conferma e' gia' stata data.
+    // le due intenzioni. "Salva comunque" arriva dopo che e' gia' stata data.
+    //
+    // L'elenco si legge qui, al momento dell'invio, e non con un'iscrizione:
+    // al modulo serve solo adesso, non a ogni suo cambiamento.
+    const esistenti = configurazione.istantanea().dati?.ambienti ?? [];
     if (
       !comunque &&
-      ambienti.some((a) => a.nome === nome) &&
+      esistenti.some((a) => a.nome === nome) &&
       !window.confirm(t('confermaSovrascritturaIndirizzo', { nome }))
     ) {
       return;
@@ -845,11 +824,7 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
         setIrraggiungibile(null);
         setNome('');
         setUrl('');
-        await carica();
-        onCambiato?.();
-        // F3: la barra laterale (SelettoreAmbiente) vive in un altro
-        // sottoalbero e non rileggerebbe mai l'elenco da sola.
-        notificaAmbientiCambiati();
+        dopoUnaModifica();
       } else if (corpo.irraggiungibile) {
         setIrraggiungibile(corpo.motivo ?? 'altro');
       } else {
@@ -862,42 +837,8 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
     }
   }
 
-  const sessioneConclusa = useCallback(() => {
-    void carica();
-    onCambiato?.();
-    // F3: copre eliminazione, modifica indirizzo, accesso registrato e
-    // credenziali salvate — ogni caso in cui l'elenco puo' essere cambiato
-    // da qui, non solo l'aggiunta.
-    notificaAmbientiCambiati();
-  }, [carica, onCambiato]);
-
   return (
-    <section
-      className="flex flex-col gap-3 rounded-lg border p-4"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
-      aria-labelledby="ambienti-titolo"
-    >
-      <div>
-        <h2 id="ambienti-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
-          {t('titolo')}
-        </h2>
-        <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
-          {t('descrizione')}
-        </p>
-      </div>
-
-      {ambienti.length > 0 ? (
-        <ul className="flex flex-col gap-2">
-          {ambienti.map((a) => (
-            <RigaAmbiente key={a.nome} ambiente={a} onSessioneConclusa={sessioneConclusa} />
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-          {t('nessunoConfigurato')}
-        </p>
-      )}
-
+    <>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -964,6 +905,50 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
           {messaggio.testo}
         </p>
       )}
+    </>
+  );
+}
+
+/**
+ * Sezione Ambienti della schermata di controllo: elenca gli ambienti già
+ * configurati con il loro indirizzo, permette di aggiungerne uno nuovo (o di
+ * correggere l'indirizzo di uno esistente) e, per ciascuno, avvia una
+ * sessione di accesso manuale — la sola parte del login che questa finestra
+ * costruisce: i passi di accesso automatico restano un lavoro da preparare a
+ * mano nel file degli ambienti.
+ */
+export function SezioneAmbienti() {
+  const t = useTranslations('Ambienti');
+  const ambienti = useRisorsa(configurazione, soloAmbienti);
+
+  return (
+    <section
+      className="flex flex-col gap-3 rounded-lg border p-4"
+      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      aria-labelledby="ambienti-titolo"
+    >
+      <div>
+        <h2 id="ambienti-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
+          {t('titolo')}
+        </h2>
+        <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          {t('descrizione')}
+        </p>
+      </div>
+
+      {ambienti.length > 0 ? (
+        <ul className="flex flex-col gap-2">
+          {ambienti.map((a) => (
+            <RigaAmbiente key={a.nome} ambiente={a} onSessioneConclusa={dopoUnaModifica} />
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          {t('nessunoConfigurato')}
+        </p>
+      )}
+
+      <AggiungiAmbiente />
     </section>
   );
 }

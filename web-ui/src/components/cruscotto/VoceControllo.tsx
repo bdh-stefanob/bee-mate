@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, Check, CheckCircle2, Copy, Loader2, Play, Square, XCircle } from 'lucide-react';
 import { comeComandoEseguibile } from '@/lib/rimedi';
@@ -30,8 +30,14 @@ const ASPETTO: Record<VoceDiagnosi['esito'], { Icona: typeof CheckCircle2; color
   manca: { Icona: XCircle, colore: 'var(--rosso)' },
 };
 
-/** Una riga di stato della diagnosi, con l'eventuale rimedio nella stessa riga. */
-export function VoceControllo({ voce, onRimediato }: Props) {
+/**
+ * Una riga di stato della diagnosi, con l'eventuale rimedio nella stessa riga.
+ *
+ * `memo`: la diagnosi si rilegge a ogni modifica, ma una voce che non e'
+ * cambiata arriva con lo stesso oggetto di prima (`lib/risorsa.ts`) e non si
+ * ridisegna. Conta soprattutto per una riga con un rimedio in corso.
+ */
+export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: Props) {
   const t = useTranslations();
   const tv = useTranslations('VoceControllo');
   const { Icona, colore } = ASPETTO[voce.esito];
@@ -215,4 +221,4 @@ export function VoceControllo({ voce, onRimediato }: Props) {
       )}
     </li>
   );
-}
+});
