@@ -102,32 +102,6 @@ function normalizza(testo: string): string {
   return testo.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-/** Distanza di Levenshtein, programmazione dinamica iterativa: nessuna dipendenza esterna. */
-function distanza(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  const riga = new Array(n + 1);
-  for (let j = 0; j <= n; j++) riga[j] = j;
-  for (let i = 1; i <= m; i++) {
-    let precedenteDiagonale = riga[0];
-    riga[0] = i;
-    for (let j = 1; j <= n; j++) {
-      const temp = riga[j];
-      const costo = a[i - 1] === b[j - 1] ? 0 : 1;
-      riga[j] = Math.min(riga[j] + 1, riga[j - 1] + 1, precedenteDiagonale + costo);
-      precedenteDiagonale = temp;
-    }
-  }
-  return riga[n];
-}
-
-/** 1 = identiche, 0 = nulla in comune. */
-function somiglianza(a: string, b: string): number {
-  const lunghezzaMax = Math.max(a.length, b.length);
-  if (lunghezzaMax === 0) return 1;
-  return 1 - distanza(a, b) / lunghezzaMax;
-}
-
 /**
  * Soglia scelta sui dati veri del catalogo (2026-09-25, 8 step): la coppia
  * voluta (differenza di sola maiuscola) ha somiglianza 1.00; la coppia piu'
@@ -142,26 +116,128 @@ function chiaveComponente(c: StepComponentRef): string {
   return `${c.page ?? ''}\u0000${c.role}\u0000${c.name}`;
 }
 
-/**
- * Stesso insieme di componenti? `false` anche quando uno dei due (o entrambi)
- * non ha ancora un componente dichiarato: l'assenza non e' un'uguaglianza, e'
- * uno stato onesto diverso (vedi `component-impact.ts`) che non si deve
- * confondere con "coincidono".
- */
-function stessiComponenti(a: StepComponentRef[] | undefined, b: StepComponentRef[] | undefined): boolean {
-  if (!a || !b || a.length === 0 || b.length === 0) return false;
-  if (a.length !== b.length) return false;
-  const insiemeA = new Set(a.map(chiaveComponente));
-  const insiemeB = new Set(b.map(chiaveComponente));
-  if (insiemeA.size !== insiemeB.size) return false;
-  for (const k of insiemeA) {
-    if (!insiemeB.has(k)) return false;
-  }
-  return true;
-}
-
 function vista(s: CatalogStep): StepPerConfronto {
   return { espressione: s.expression, componenti: s.components ?? [], documentato: s.documented, app: s.app };
+}
+
+/**
+ * Firma dell'insieme di componenti: due step hanno la stessa firma se e solo se
+ * hanno lo stesso numero di componenti dichiarati e lo stesso insieme di chiavi
+ * (e' esattamente la regola di prima, `stessiComponenti`). `null` = nessun
+ * componente dichiarato: l'assenza non e' mai un'uguaglianza, e non si confonde
+ * con "coincidono" (vedi `component-impact.ts`). Calcolata una volta per step,
+ * evita di ricostruire due Set a ogni coppia.
+ */
+function firmaComponenti(componenti: StepComponentRef[] | undefined): string | null {
+  if (!componenti || componenti.length === 0) return null;
+  const chiavi = [...new Set(componenti.map(chiaveComponente))].sort();
+  return `${componenti.length}\u0001${chiavi.join('\u0002')}`;
+}
+
+/**
+ * Il testo e' abbastanza simile da superare la soglia? Stesso verdetto di
+ * `1 - distanza / lunghezzaMax >= SOGLIA_SOMIGLIANZA`, ma senza pagare una
+ * distanza di Levenshtein intera quando si vede prima che la coppia non puo'
+ * passare:
+ *
+ *  1. Scarto per lunghezza: la distanza e' almeno la differenza di lunghezza,
+ *     quindi `1 - |la - lb| / max` e' un limite alto della somiglianza vera. Se
+ *     gia' quello e' sotto soglia, la coppia non puo' superarla.
+ *  2. Conteggio dei caratteri: la distanza e' almeno il maggiore fra caratteri in
+ *     eccesso e caratteri mancanti (vedi `limiteInferioreDistanza`).
+ *  3. Distanza con tetto: oltre `(1 - soglia) * max` modifiche la coppia e'
+ *     persa; il calcolo si ferma appena una riga intera supera il tetto.
+ *
+ * Quando la distanza viene calcolata e' esatta, e la decisione finale usa la
+ * stessa formula di prima: nessuna differenza di arrotondamento.
+ */
+function testoMoltoSimile(a: string, b: string, ha: Uint16Array, hb: Uint16Array): boolean {
+  const lunghezzaMax = Math.max(a.length, b.length);
+  if (lunghezzaMax === 0) return true;
+  if (1 - Math.abs(a.length - b.length) / lunghezzaMax < SOGLIA_SOMIGLIANZA) return false;
+  const tetto = Math.floor((1 - SOGLIA_SOMIGLIANZA) * lunghezzaMax) + 1;
+  if (limiteInferioreDistanza(ha, hb) > tetto) return false;
+  const d = distanzaConTetto(a, b, tetto);
+  if (d > tetto) return false;
+  return 1 - d / lunghezzaMax >= SOGLIA_SOMIGLIANZA;
+}
+
+const BUCKET = 64;
+
+/** Quante volte compare ciascun carattere (caratteri diversi possono condividere un contenitore: il limite sotto resta valido). */
+function istogramma(testo: string): Uint16Array {
+  const h = new Uint16Array(BUCKET);
+  for (let i = 0; i < testo.length; i++) h[testo.charCodeAt(i) & (BUCKET - 1)]!++;
+  return h;
+}
+
+/**
+ * Limite inferiore della distanza: ogni modifica toglie al piu' un carattere di
+ * troppo e ne aggiunge al piu' uno mancante, quindi la distanza e' almeno il
+ * maggiore fra caratteri in eccesso e caratteri mancanti. Costa BUCKET passi,
+ * indipendente dalla lunghezza.
+ */
+function limiteInferioreDistanza(ha: Uint16Array, hb: Uint16Array): number {
+  let eccesso = 0;
+  let mancanti = 0;
+  for (let k = 0; k < BUCKET; k++) {
+    const d = ha[k]! - hb[k]!;
+    if (d > 0) eccesso += d;
+    else mancanti -= d;
+  }
+  return eccesso > mancanti ? eccesso : mancanti;
+}
+
+let bufferPrecedente = new Int32Array(256);
+let bufferCorrente = new Int32Array(256);
+
+/**
+ * Distanza di Levenshtein, programmazione dinamica iterativa, nessuna
+ * dipendenza esterna. Esatta fino a `tetto`; oltre restituisce `tetto + 1`.
+ *
+ * Calcola solo la fascia di larghezza `2 * tetto + 1` attorno alla diagonale:
+ * una cella a piu' di `tetto` dalla diagonale costa gia' piu' di `tetto`
+ * modifiche, quindi non puo' far parte di una distanza entro il tetto. Il costo
+ * per coppia e' cosi' lunghezza x tetto invece di lunghezza x lunghezza, e si
+ * ferma appena una riga intera supera il tetto.
+ */
+function distanzaConTetto(a: string, b: string, tetto: number): number {
+  const m = a.length;
+  const n = b.length;
+  if (Math.abs(m - n) > tetto) return tetto + 1;
+  const oltre = tetto + 1;
+  if (bufferPrecedente.length < n + 2) {
+    bufferPrecedente = new Int32Array(n + 2);
+    bufferCorrente = new Int32Array(n + 2);
+  }
+  let precedente = bufferPrecedente;
+  let corrente = bufferCorrente;
+  for (let j = 0; j <= n; j++) precedente[j] = j <= tetto ? j : oltre;
+  for (let i = 1; i <= m; i++) {
+    const da = Math.max(1, i - tetto);
+    const fino = Math.min(n, i + tetto);
+    corrente[da - 1] = da === 1 ? Math.min(i, oltre) : oltre;
+    if (fino < n) corrente[fino + 1] = oltre;
+    const carattere = a.charCodeAt(i - 1);
+    let minimoRiga = oltre;
+    for (let j = da; j <= fino; j++) {
+      const costo = carattere === b.charCodeAt(j - 1) ? 0 : 1;
+      let v = precedente[j - 1]! + costo;
+      const sopra = precedente[j]! + 1;
+      if (sopra < v) v = sopra;
+      const sinistra = corrente[j - 1]! + 1;
+      if (sinistra < v) v = sinistra;
+      if (v > oltre) v = oltre;
+      corrente[j] = v;
+      if (v < minimoRiga) minimoRiga = v;
+    }
+    // Il minimo di una riga non scende mai nelle righe successive.
+    if (minimoRiga > tetto) return oltre;
+    const scambio = precedente;
+    precedente = corrente;
+    corrente = scambio;
+  }
+  return Math.min(precedente[n]!, oltre);
 }
 
 /**
@@ -169,9 +245,18 @@ function vista(s: CatalogStep): StepPerConfronto {
  *
  * Non confronta uno step con se stesso e non produce coppie duplicate
  * (a,b)/(b,a): ogni coppia non ordinata compare una sola volta.
+ *
+ * Il ciclo resta su tutte le coppie (cosi' l'ordine del risultato e' quello di
+ * sempre, e le coppie "stessi-componenti" non dipendono dal testo), ma ogni
+ * coppia costa poco: testo normalizzato e firma dei componenti si calcolano una
+ * volta per step, e Levenshtein parte solo se la lunghezza non esclude gia' la
+ * somiglianza.
  */
 export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconciliazione[] {
   const coppie: CoppiaRiconciliazione[] = [];
+  const normalizzati = steps.map((s) => normalizza(s.expression));
+  const firme = steps.map((s) => firmaComponenti(s.components));
+  const istogrammi = normalizzati.map(istogramma);
 
   for (let i = 0; i < steps.length; i++) {
     for (let j = i + 1; j < steps.length; j++) {
@@ -179,10 +264,9 @@ export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconcilia
       const b = steps[j];
       if (a.expression === b.expression) continue;
 
-      const normA = normalizza(a.expression);
-      const normB = normalizza(b.expression);
-      const testoIdentico = normA === normB;
-      const testoMoltoSimile = !testoIdentico && somiglianza(normA, normB) >= SOGLIA_SOMIGLIANZA;
+      const normA = normalizzati[i]!;
+      const normB = normalizzati[j]!;
+      const testoSimile = normA === normB || testoMoltoSimile(normA, normB, istogrammi[i]!, istogrammi[j]!);
 
       if (!stessoAmbito(a.app, b.app)) {
         // Applicazioni diverse, nessuna delle due common/generated: mai
@@ -190,7 +274,7 @@ export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconcilia
         // confronto per componente non si fa nemmeno — troppo rumoroso fra
         // prodotti diversi — ma il testo molto simile resta un'informazione
         // onesta da mostrare.
-        if (testoIdentico || testoMoltoSimile) {
+        if (testoSimile) {
           coppie.push({
             id: `${a.expression}||${b.expression}`,
             motivo: 'applicazioni-diverse',
@@ -203,13 +287,13 @@ export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconcilia
         continue;
       }
 
-      const uguali = stessiComponenti(a.components, b.components);
+      const uguali = firme[i] !== null && firme[i] === firme[j];
 
-      if (!testoIdentico && !testoMoltoSimile && !uguali) continue;
+      if (!testoSimile && !uguali) continue;
 
       const entrambiAncorati = Boolean(a.components?.length) && Boolean(b.components?.length);
 
-      if (testoIdentico || testoMoltoSimile) {
+      if (testoSimile) {
         coppie.push({
           id: `${a.expression}||${b.expression}`,
           motivo: 'testo-quasi-uguale',
