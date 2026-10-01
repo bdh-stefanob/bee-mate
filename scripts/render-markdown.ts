@@ -10,6 +10,7 @@
  */
 
 import * as fs from "fs";
+import { leggiJson } from "./lib/leggi-json";
 
 interface StepDoc {
   intent?: string;
@@ -54,7 +55,7 @@ interface CatalogStep {
   documented: boolean;
 }
 
-const catalog = JSON.parse(fs.readFileSync("step-catalog.json", "utf-8"));
+const catalog = leggiJson<{ steps: CatalogStep[]; generatedAt?: string; totalSteps?: number }>("step-catalog.json");
 const steps: CatalogStep[] = catalog.steps;
 
 const byDomain = new Map<string, CatalogStep[]>();

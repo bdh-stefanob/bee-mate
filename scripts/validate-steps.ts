@@ -17,6 +17,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { execSync } from "child_process";
+import { leggiJson } from "./lib/leggi-json";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors step-catalog.json shape)
@@ -146,7 +147,7 @@ function loadCatalog(): StepCatalog | null {
     }
   }
   try {
-    return JSON.parse(fs.readFileSync(catalogPath, "utf-8")) as StepCatalog;
+    return leggiJson(catalogPath) as StepCatalog;
   } catch {
     console.error("❌  Failed to parse step-catalog.json. Skipping step validation.");
     return null;

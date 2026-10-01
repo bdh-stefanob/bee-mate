@@ -47,6 +47,7 @@ import * as path from "path";
 import { scoreGherkin, scoreSteps, scorePages, toTable, toReferto, type RunResult } from "./lib/benchmark";
 import type { CatalogStep, Component, ScoutResult } from "./lib/generation-contract";
 import { argValue, hasFlag } from "./lib/args";
+import { leggiJson } from "./lib/leggi-json";
 
 const OUT = path.join("reports", "benchmark");
 
@@ -72,7 +73,7 @@ function readAll(dir: string, ext: string): string[] {
 
 function loadCatalog(file: string): CatalogStep[] {
   if (!fs.existsSync(file)) return [];
-  return (JSON.parse(fs.readFileSync(file, "utf-8")) as { steps?: CatalogStep[] }).steps ?? [];
+  return (leggiJson(file) as { steps?: CatalogStep[] }).steps ?? [];
 }
 
 function loadComponents(dir: string): Component[] {
@@ -80,7 +81,7 @@ function loadComponents(dir: string): Component[] {
   return fs
     .readdirSync(dir)
     .filter((f) => f.endsWith(".json"))
-    .flatMap((f) => (JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8")) as ScoutResult).components);
+    .flatMap((f) => (leggiJson(path.join(dir, f)) as ScoutResult).components);
 }
 
 /** Il compilatore. Non e' un parere: o compila o no. */
@@ -173,7 +174,7 @@ function main(): void {
     const runs = fs
       .readdirSync(OUT)
       .filter((f) => f.endsWith(".json"))
-      .map((f) => JSON.parse(fs.readFileSync(path.join(OUT, f), "utf-8")) as RunResult);
+      .map((f) => leggiJson(path.join(OUT, f)) as RunResult);
 
     if (runs.length === 0) {
       console.log(`\nNessuna esecuzione salvata in ${OUT}.\n`);

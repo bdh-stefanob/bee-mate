@@ -4,6 +4,7 @@ import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import type { CatalogStep } from '@/lib/types';
 import { individuaCoppie } from '@/lib/riconciliazione';
+import { leggiJson } from '@/lib/file-json';
 
 /**
  * GET /api/catalogo/riconciliazione
@@ -15,7 +16,7 @@ import { individuaCoppie } from '@/lib/riconciliazione';
 export async function GET() {
   try {
     const catalogoPath = path.join(REPO_ROOT, 'step-catalog.json');
-    const dati = JSON.parse(fs.readFileSync(catalogoPath, 'utf-8')) as { steps: CatalogStep[] };
+    const dati = leggiJson(catalogoPath) as { steps: CatalogStep[] };
     return NextResponse.json({ coppie: individuaCoppie(dati.steps) });
   } catch (err) {
     console.error('riconciliazione non disponibile:', err);

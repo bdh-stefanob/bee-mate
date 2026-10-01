@@ -4,6 +4,7 @@ import { dentroLaCartellaSuDisco } from './percorsi-disco';
 import { walkFeatures } from './features';
 import type { CatalogStep } from './types';
 import { riscriviScenario, riscriviDefinizione, haParametri, RiscritturaNonSupportata } from './riscrittura-step';
+import { leggiJson } from '@/lib/file-json';
 
 /**
  * rinomina-passo.ts
@@ -63,7 +64,7 @@ function rifiuto(stato: number, errore: string): PianoRinomina {
 
 function leggiCatalogo(repoRoot: string): CatalogStep[] {
   const p = path.join(repoRoot, 'step-catalog.json');
-  return (JSON.parse(fs.readFileSync(p, 'utf-8')) as { steps: CatalogStep[] }).steps;
+  return (leggiJson(p) as { steps: CatalogStep[] }).steps;
 }
 
 /**

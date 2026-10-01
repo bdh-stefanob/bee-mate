@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execFile } from 'child_process';
 import type { EsitoGiudice, Giudici } from './suggerimenti-applica';
+import { leggiJson } from '@/lib/file-json';
 
 /**
  * I tre giudici che non sono pareri, applicati a uno scenario appena riscritto
@@ -66,7 +67,7 @@ export function validatoreFrasi(nuoveFrasi: readonly string[], espressioni: read
 
 function espressioniDelCatalogo(radice: string): string[] {
   try {
-    const json = JSON.parse(fs.readFileSync(path.join(radice, 'step-catalog.json'), 'utf-8')) as { steps?: Array<{ expression?: string }> };
+    const json = leggiJson(path.join(radice, 'step-catalog.json')) as { steps?: Array<{ expression?: string }> };
     return (json.steps ?? []).map((s) => s.expression ?? '').filter(Boolean);
   } catch {
     return [];

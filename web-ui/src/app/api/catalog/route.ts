@@ -4,6 +4,7 @@ import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import type { CatalogStep, ParamEnumDef } from '@/lib/types';
 import { getFileContent, GITHUB_NAME_RE, sanitizeError } from '@/lib/github-utils';
+import { leggiJson } from '@/lib/file-json';
 
 interface StepEnumsFile {
   version: number;
@@ -17,11 +18,11 @@ interface StepEnumsFile {
  */
 function loadFromFs(): { totalSteps: number; steps: CatalogStep[] } {
   const catalogPath = path.join(REPO_ROOT, 'step-catalog.json');
-  const data = JSON.parse(fs.readFileSync(catalogPath, 'utf-8')) as { steps: CatalogStep[] };
+  const data = leggiJson(catalogPath) as { steps: CatalogStep[] };
 
   const enumsPath = path.join(REPO_ROOT, 'step-enums.json');
   if (fs.existsSync(enumsPath)) {
-    const enums: StepEnumsFile = JSON.parse(fs.readFileSync(enumsPath, 'utf-8'));
+    const enums: StepEnumsFile = leggiJson(enumsPath);
     const enumMap = new Map(enums.enums.map(e => [e.expression, e.paramEnums]));
     const depsMap = new Map(enums.dependencies.map(d => [d.expression, d.requires]));
 

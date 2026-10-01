@@ -4,12 +4,13 @@ import { FEATURES_DIR, REPO_ROOT } from '@/lib/repo';
 import { dentroLaCartellaSuDisco } from '@/lib/percorsi-disco';
 import type { CatalogStep } from '@/lib/types';
 import { fileDiDefinizioneUsati, importPagineUsate, costruisciEsportazione, type FileEsportato } from '@/lib/esportazione';
+import { leggiJson } from '@/lib/file-json';
 
 const CARTELLA_SRC = path.join(REPO_ROOT, 'src');
 
 function leggiCatalogo(): CatalogStep[] {
   const p = path.join(REPO_ROOT, 'step-catalog.json');
-  return (JSON.parse(fs.readFileSync(p, 'utf-8')) as { steps: CatalogStep[] }).steps;
+  return (leggiJson(p) as { steps: CatalogStep[] }).steps;
 }
 
 /** Vedi la stessa risoluzione in `api/catalogo/riconcilia`: `sourceRef` -> percorso dentro `src/`. */

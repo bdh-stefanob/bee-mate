@@ -11,6 +11,7 @@ import {
   putContents,
   sanitizeError,
 } from '@/lib/github-utils';
+import { leggiJson } from '@/lib/file-json';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -46,7 +47,7 @@ async function proposeToFs(
   area: string,
 ): Promise<{ added: number; skipped: number }> {
   const catalogPath = path.join(REPO_ROOT, 'step-catalog.json');
-  const catalog: CatalogFile = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+  const catalog: CatalogFile = leggiJson(catalogPath);
 
   const existing = new Set(catalog.steps.map(s => s.expression));
   let added = 0;

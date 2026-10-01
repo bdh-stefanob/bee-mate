@@ -29,6 +29,7 @@
 import { spawnSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import { leggiJson } from "./lib/leggi-json";
 
 const NODE = process.execPath;
 const TS_NODE = path.join("node_modules", "ts-node", "dist", "bin.js");
@@ -90,7 +91,7 @@ function main(): void {
     ]);
     passo("3. Proiezione in STEP_CATALOG.md...", NODE, [TS_NODE, path.join("scripts", "render-markdown.ts")]);
 
-    const catalogo = JSON.parse(fs.readFileSync("step-catalog.json", "utf-8")) as { totalSteps?: number };
+    const catalogo = leggiJson("step-catalog.json") as { totalSteps?: number };
     scriviStato({
       stato: "ok",
       avviatoIl,

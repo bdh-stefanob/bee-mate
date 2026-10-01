@@ -9,6 +9,7 @@
  */
 
 import * as fs from "fs";
+import { leggiTesto } from "./leggi-json";
 
 // ---------------------------------------------------------------------------
 // Env
@@ -17,7 +18,7 @@ import * as fs from "fs";
 /** Carica .env senza dipendenze. Le variabili gia' presenti nell'ambiente vincono. */
 export function loadEnv(envPath = ".env"): void {
   if (!fs.existsSync(envPath)) return;
-  const raw = fs.readFileSync(envPath, "utf-8");
+  const raw = leggiTesto(envPath);
   for (const line of raw.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;

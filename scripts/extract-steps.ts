@@ -20,6 +20,7 @@
 
 import * as fs from "fs";
 import { conservaRichieste } from "./lib/catalog-merge";
+import { leggiJson } from "./lib/leggi-json";
 
 /**
  * Un componente di frontend dichiarato con `@component` sopra uno step.
@@ -226,7 +227,7 @@ steps.sort((a, b) =>
  */
 function precedenti(): CatalogStep[] {
   try {
-    const vecchio = JSON.parse(fs.readFileSync("step-catalog.json", "utf-8")) as {
+    const vecchio = leggiJson("step-catalog.json") as {
       steps?: CatalogStep[];
     };
     return vecchio.steps ?? [];

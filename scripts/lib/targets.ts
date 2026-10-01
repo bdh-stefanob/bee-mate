@@ -32,6 +32,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { FileNonLeggibile, leggiJson } from "./leggi-json";
 import type { Locator, Page } from "@playwright/test";
 
 /**
@@ -121,6 +122,14 @@ export interface Target {
 const CONFIG = "bdd-targets.json";
 const EXAMPLE = "bdd-targets.example.json";
 
+/** (F6) Il file degli ambienti e' un elenco nome -> ambiente: un array, un numero o `null` non lo sono. */
+function comeElenco(file: string, contenuto: unknown): object {
+  if (typeof contenuto !== "object" || contenuto === null || Array.isArray(contenuto)) {
+    throw new FileNonLeggibile(path.basename(file), "non e' un elenco di ambienti");
+  }
+  return contenuto;
+}
+
 /** Risolve i riferimenti `${VAR}` con le variabili d'ambiente. */
 export function expand(value: string): string {
   return value.replace(/\$\{([A-Z0-9_]+)\}/g, (_, name: string) => process.env[name] ?? "");
@@ -143,7 +152,7 @@ export function requiredVars(file = CONFIG): Map<string, string[]> {
   const out = new Map<string, string[]>();
   if (!fs.existsSync(file)) return out;
 
-  const json = JSON.parse(fs.readFileSync(file, "utf-8")) as Record<string, unknown>;
+  const json = comeElenco(file, leggiJson(file)) as Record<string, unknown>;
   for (const [name, target] of Object.entries(json)) {
     if (name.startsWith("_")) continue; // le righe di commento del file d'esempio
     const found = [...JSON.stringify(target).matchAll(/\$\{([A-Z0-9_]+)\}/g)].map((m) => m[1]!);
@@ -183,22 +192,25 @@ export function ambientiIncompleti(
 
 export function loadTargets(file = CONFIG): Target[] {
   if (!fs.existsSync(file)) return [];
-  const json = JSON.parse(fs.readFileSync(file, "utf-8")) as Record<string, Partial<Target>>;
+  const json = comeElenco(file, leggiJson(file)) as Record<string, Partial<Target>>;
 
   return Object.entries(json)
     // Le chiavi che iniziano per _ sono le righe di commento del file d'esempio:
     // chi lo copia tale e quale non deve ritrovarsi un bersaglio "_commento"
     // senza URL, e un messaggio d'errore che parla di una cosa che non esiste.
     .filter(([name]) => !name.startsWith("_"))
-    .map(([name, t]) => ({
-    name,
-    url: expand(t.url ?? ""),
-    ...(t.readyWhen ? { readyWhen: t.readyWhen } : {}),
-    // Default sensato: una sessione per bersaglio, sotto reports/.
-    session: t.session ?? path.join("reports", "sessions", `${name}.json`),
-    ...(t.hint ? { hint: t.hint } : {}),
-    ...(t.login ? { login: t.login as LoginRecipe } : {}),
-  }));
+    .map(([name, voce]) => {
+      const t = (voce ?? {}) as Partial<Target>; // un ambiente `null` nel file non deve far cadere tutto
+      return {
+        name,
+        url: expand(t.url ?? ""),
+        ...(t.readyWhen ? { readyWhen: t.readyWhen } : {}),
+        // Default sensato: una sessione per bersaglio, sotto reports/.
+        session: t.session ?? path.join("reports", "sessions", `${name}.json`),
+        ...(t.hint ? { hint: t.hint } : {}),
+        ...(t.login ? { login: t.login as LoginRecipe } : {}),
+      };
+    });
 }
 
 /**

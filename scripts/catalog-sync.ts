@@ -41,6 +41,7 @@ import { normalizeSteps, normalizeStepLine } from "./lib/normalize";
 import { clusterSteps, type Cluster, type ClusterInput } from "./lib/cluster";
 import { electGold, margin, type Candidate, type ScoredCandidate } from "./lib/gold";
 import { argValue } from "./lib/args";
+import { leggiJson } from "./lib/leggi-json";
 
 // ---------------------------------------------------------------------------
 // Catalogo
@@ -75,7 +76,7 @@ interface CatalogEntry {
  */
 function indexCatalog(catalogPath: string): CatalogEntry[] {
   if (!fs.existsSync(catalogPath)) return [];
-  const json = JSON.parse(fs.readFileSync(catalogPath, "utf-8")) as { steps?: CatalogStep[] };
+  const json = leggiJson(catalogPath) as { steps?: CatalogStep[] };
   const steps = json.steps ?? [];
 
   return steps.map((step) => {

@@ -10,6 +10,7 @@ import { riscriviScenario, haParametri } from '@/lib/riscrittura-step';
 import { estraiDefinizione, rimuoviDefinizione, corpiEquivalenti, FusioneNonSupportata } from '@/lib/fusione-step';
 import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
 import { percorsoDefinizione as risolviPercorsoDefinizione, cartellaSrcDiRepo } from '@/lib/percorso-definizione';
+import { leggiJson } from '@/lib/file-json';
 
 /**
  * POST /api/catalogo/fondi — GET /api/catalogo/fondi (anteprima)
@@ -47,7 +48,7 @@ import { percorsoDefinizione as risolviPercorsoDefinizione, cartellaSrcDiRepo } 
 
 function leggiCatalogo(): CatalogStep[] {
   const p = path.join(REPO_ROOT, 'step-catalog.json');
-  return (JSON.parse(fs.readFileSync(p, 'utf-8')) as { steps: CatalogStep[] }).steps;
+  return (leggiJson(p) as { steps: CatalogStep[] }).steps;
 }
 
 const CARTELLA_SRC = cartellaSrcDiRepo(REPO_ROOT);

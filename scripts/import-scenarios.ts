@@ -18,6 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+import { leggiJson } from './lib/leggi-json';
 
 // ---------------------------------------------------------------------------
 // Interfacce interne
@@ -287,7 +288,7 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
   const catalogPath = path.join(process.cwd(), 'step-catalog.json');
   if (fs.existsSync(catalogPath)) {
     try {
-      catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8')) as Catalog;
+      catalog = leggiJson(catalogPath) as Catalog;
     } catch {
       console.warn('Warning: impossibile leggere step-catalog.json — procedo senza deduplicazione.');
     }

@@ -4,6 +4,7 @@ import * as path from 'path';
 import { FEATURES_DIR, REPO_ROOT } from '@/lib/repo';
 import { walkFeatures } from '@/lib/features';
 import { cartelleDalCatalogo } from '@/lib/salva-scenario';
+import { leggiJson } from '@/lib/file-json';
 
 /**
  * GET /api/scenari/cartelle
@@ -16,7 +17,7 @@ import { cartelleDalCatalogo } from '@/lib/salva-scenario';
 export async function GET() {
   const voci: Array<{ app?: string; area?: string }> = [];
   try {
-    const catalogo = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'step-catalog.json'), 'utf-8')) as {
+    const catalogo = leggiJson(path.join(REPO_ROOT, 'step-catalog.json')) as {
       steps?: Array<{ app?: string; area?: string }>;
     };
     voci.push(...(catalogo.steps ?? []));
