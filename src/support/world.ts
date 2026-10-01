@@ -9,7 +9,9 @@ import { Browser, BrowserContext, Page } from "@playwright/test";
 import { avviaBrowser } from "../../scripts/lib/browser";
 import { aspettaPresenza } from "./presenza";
 import { loadEnv } from "../../scripts/lib/atlassian";
-import { resolveTarget, hasSession, sessionAgeHours, passwordDelBersaglio } from "../../scripts/lib/targets";
+import {
+  resolveTarget, hasSession, sessionAgeHours, passwordDelBersaglio, type Target,
+} from "../../scripts/lib/targets";
 
 // Una sola implementazione del lettore di .env in tutto il progetto: due copie
 // divergono, e la seconda si scopre il giorno in cui una variabile viene letta
@@ -144,6 +146,16 @@ export class CustomWorld extends World {
   async expectTextVisible(text: string, ms = 10_000): Promise<void> {
     // Non solo il testo: vedi presenza.ts.
     await aspettaPresenza(this.page, text, ms);
+  }
+
+  /**
+   * L'ambiente nominato su cui si sta eseguendo, con il suo accesso registrato.
+   * `undefined` con un indirizzo diretto (`BASE_URL`): li' non c'e' nessun
+   * ambiente a cui chiedere come si entra.
+   */
+  ambienteCorrente(): Target | undefined {
+    const nome = process.env["BDD_TARGET"];
+    return nome ? resolveTarget(nome) : undefined;
   }
 
   /**

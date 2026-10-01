@@ -270,9 +270,10 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
   // un sintomo che non assomiglia per niente alla causa, e che porterebbe a
   // cercare il problema nel recorder.
   const sessionAge = sessionAgeHours(target);
+  const conSessione = hasSession(target);
   const context: BrowserContext = await browser.newContext({
     viewport: null,
-    ...(hasSession(target) ? { storageState: target.session } : {}),
+    ...(conSessione ? { storageState: target.session } : {}),
   });
   if (sessionAge !== null) {
     console.log(
@@ -447,6 +448,10 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
         unlabelled,
       },
       intents,
+      // Chi genera lo scenario deve sapere che l'accesso non e' fra i passi:
+      // senza, il test partirebbe da una pagina che si vede solo da autenticati.
+      ...(conSessione ? { startedWithSession: true } : {}),
+      ...(/^https?:\/\//i.test(target.name) || target.name === "(url diretto)" ? {} : { target: target.name }),
     },
     dizionari,
   };

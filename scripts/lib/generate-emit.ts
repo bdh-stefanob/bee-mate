@@ -34,6 +34,16 @@ import type {
  */
 export const VERIFY_STEP = "the page shows {string}";
 
+/**
+ * Il passo di accesso, messo in testa a uno scenario registrato a partire da
+ * una sessione salvata. Definito una volta in src/steps/common/accesso.steps.ts.
+ *
+ * Senza, lo scenario comincia da una pagina che si vede solo da autenticati:
+ * gira finche' la sessione sulla macchina e' valida e cade al primo passo
+ * appena scade — con un "elemento non trovato" che non nomina la causa.
+ */
+export const LOGIN_STEP = "the user is logged in";
+
 export interface EmitContext {
   intents: ResolvedIntent[];
   pages: PageIdentity[];
@@ -47,6 +57,8 @@ export interface EmitContext {
   slug: string;
   /** Cartella radice del codice, di solito "src". */
   outRoot: string;
+  /** La registrazione e' partita gia' autenticata: lo scenario dichiara l'accesso. */
+  startedWithSession?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -453,8 +465,13 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
 
   // `And` dopo il primo passo dello stesso tipo: tre `Then` di fila si leggono
   // come tre verifiche indipendenti, e sono invece un solo esito osservato.
+  if (ctx.startedWithSession) lines.push(`Given ${LOGIN_STEP}`);
+
   ctx.intents.forEach((intent, i) => {
-    lines.push(`${keywordOf(i)} ${phraseOf(intent)}`);
+    // Con l'accesso in testa, il primo passo del tester non e' piu' il primo
+    // `Given`: lo segue.
+    const keyword = i === 0 && ctx.startedWithSession ? "And" : keywordOf(i);
+    lines.push(`${keyword} ${phraseOf(intent)}`);
     // Le verifiche a meta' del passo stanno dentro lo step, nel punto giusto; qui si
     // vedono come commento, perche' chi legge lo scenario sappia che ci sono.
     for (const a of intent.assertions.filter((x) => verificaNelPasso(x, intent))) {

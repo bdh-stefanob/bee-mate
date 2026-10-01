@@ -34,30 +34,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { loadEnv } from "./lib/atlassian";
 import {
-  resolveTarget, sessionAgeHours, expand,
-  type Target, type LoginLocator, type LoginRecipe,
+  resolveTarget, sessionAgeHours, expand, locatorDi, descriviLocator,
+  type Target, type LoginRecipe,
 } from "./lib/targets";
 import { argValue, positionals } from "./lib/args";
 
 loadEnv();
-
-/** Costruisce il locator dai dati del bersaglio. Ruolo+nome per primo. */
-function locate(
-  page: import("@playwright/test").Page,
-  l: LoginLocator
-): import("@playwright/test").Locator {
-  if (l.role && l.name) {
-    return page.getByRole(l.role as Parameters<typeof page.getByRole>[0], { name: l.name });
-  }
-  if (l.selector) return page.locator(l.selector);
-  if (l.name) return page.getByText(l.name);
-  throw new Error(`Locator incompleto: ${JSON.stringify(l)}`);
-}
-
-function describe(l: LoginLocator): string {
-  if (l.role && l.name) return `${l.role} "${l.name}"`;
-  return l.selector ?? l.name ?? "?";
-}
 
 /**
  * Esegue i passi di login dichiarati, **senza mai fermare tutto**.
@@ -77,9 +59,9 @@ async function runLogin(
   // I banner di consenso sono tolleranti per definizione: spesso non ci sono,
   // e la loro assenza non e' un problema da segnalare.
   for (const d of recipe.dismiss ?? []) {
-    await locate(page, d)
+    await locatorDi(page, d)
       .click({ timeout: 4000 })
-      .then(() => console.log(`    chiuso: ${describe(d)}`))
+      .then(() => console.log(`    chiuso: ${descriviLocator(d)}`))
       .catch(() => { /* non c'era */ });
   }
 
@@ -90,21 +72,21 @@ async function runLogin(
       if (step.fill) {
         const value = expand(step.value ?? "");
         if (!value) {
-          console.log(`    ${n} SALTATO ${describe(step.fill)}: il valore e' vuoto.`);
+          console.log(`    ${n} SALTATO ${descriviLocator(step.fill)}: il valore e' vuoto.`);
           console.log(`       Se usa \${VARIABILE}, controlla che sia in .env`);
           continue;
         }
-        await locate(page, step.fill).fill(value, { timeout: 10000 });
+        await locatorDi(page, step.fill).fill(value, { timeout: 10000 });
         // Mai stampare il valore: sono credenziali.
-        console.log(`    ${n} compilato ${describe(step.fill)}`);
+        console.log(`    ${n} compilato ${descriviLocator(step.fill)}`);
         done++;
       } else if (step.click) {
-        await locate(page, step.click).click({ timeout: 10000 });
-        console.log(`    ${n} premuto ${describe(step.click)}`);
+        await locatorDi(page, step.click).click({ timeout: 10000 });
+        console.log(`    ${n} premuto ${descriviLocator(step.click)}`);
         done++;
       }
     } catch (err) {
-      console.log(`    ${n} NON RIUSCITO su ${describe(step.fill ?? step.click ?? {})}`);
+      console.log(`    ${n} NON RIUSCITO su ${descriviLocator(step.fill ?? step.click ?? {})}`);
       console.log(`       ${(err as Error).message.split("\n")[0]}`);
       console.log(`       Prosegui a mano nel browser: da qui in poi fa lo stesso.`);
     }

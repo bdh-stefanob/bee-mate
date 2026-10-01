@@ -32,6 +32,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import type { Locator, Page } from "@playwright/test";
 
 /**
  * Come raggiungere un elemento durante il login.
@@ -46,6 +47,29 @@ export interface LoginLocator {
   role?: string;
   name?: string;
   selector?: string;
+}
+
+/**
+ * Il locator di un elemento dell'accesso. Ruolo+nome per primo.
+ *
+ * Una regola sola per chi esegue l'accesso: la sessione manuale
+ * (`scripts/session.ts`) e la Page Object che lo rifa' dentro a un test
+ * (`src/pages/common/accesso.page.ts`). Due copie avrebbero finito per trovare
+ * due elementi diversi a partire dallo stesso blocco `login`.
+ */
+export function locatorDi(page: Page, l: LoginLocator): Locator {
+  if (l.role && l.name) {
+    return page.getByRole(l.role as Parameters<Page["getByRole"]>[0], { name: l.name });
+  }
+  if (l.selector) return page.locator(l.selector);
+  if (l.name) return page.getByText(l.name);
+  throw new Error(`Locator incompleto: ${JSON.stringify(l)}`);
+}
+
+/** Come si nomina quell'elemento in un messaggio. */
+export function descriviLocator(l: LoginLocator): string {
+  if (l.role && l.name) return `${l.role} "${l.name}"`;
+  return l.selector ?? l.name ?? "?";
 }
 
 export interface LoginStep {

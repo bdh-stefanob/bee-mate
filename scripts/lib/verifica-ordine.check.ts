@@ -137,6 +137,21 @@ console.log("\n--- il generatore la rispetta ---\n");
   const vecchia = { ...intento, assertions: [{ role: "button", name: "Cart, 1 items" }] };
   const f2 = emitFeature({ ...ctx, intents: [vecchia] }, "ordine").contents;
   eq("senza posizione, tutto come prima: un Then in fondo", f2.includes('Then the page shows "Cart, 1 items"'), true);
+
+  // Registrata a partire da una sessione salvata: l'accesso non e' fra i passi
+  // del tester, quindi lo scenario lo dichiara in testa.
+  const righe = (testo: string): string[] =>
+    testo.split(/\r?\n/).map((r) => r.trim()).filter((r) => /^(Given|When|Then|And) /.test(r));
+  const secondo = { ...intento, label: "the user checks the receipt", assertions: [] };
+  const conSessione = righe(emitFeature({ ...ctx, intents: [intento, secondo], startedWithSession: true }, "ordine").contents);
+  eq("partita da una sessione: lo scenario comincia con l'accesso", conSessione[0], "Given the user is logged in");
+  eq("e il primo passo del tester lo segue", conSessione[1], "And the user completes the order");
+  eq("gli altri passi restano When", conSessione.includes("When the user checks the receipt"), true);
+  const senzaSessione = righe(emitFeature({ ...ctx, intents: [intento, secondo] }, "ordine").contents);
+  eq("senza sessione, nessun passo di accesso", senzaSessione.some((r) => r.includes("logged in")), false);
+  eq("e il primo passo del tester resta il Given", senzaSessione[0], "Given the user completes the order");
+  const glue = emitSteps({ ...ctx, startedWithSession: true }, [carrello], new Map([[carrello.key, new Map([[c1, "clickCheckout"], [c2, "clickFinish"]])]]) as never).contents;
+  eq("la glue generata non definisce il passo di accesso: vive in common", glue.includes("logged in"), false);
 }
 
 console.log(failures === 0 ? `\nTutti i controlli OK.` : `\n${failures} controlli FALLITI`);

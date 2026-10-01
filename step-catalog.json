@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-30T15:03:40.426Z",
-  "totalSteps": 1,
-  "documentedSteps": 1,
+  "generatedAt": "2026-10-01T08:56:03.110Z",
+  "totalSteps": 2,
+  "documentedSteps": 2,
   "undocumentedSteps": 0,
   "steps": [
     {
@@ -19,6 +19,20 @@
           "atteso": "Il nome accessibile, o il testo, dell'elemento."
         },
         "intent": "Verifica che un elemento atteso sia visibile sulla pagina."
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user is logged in",
+      "parameters": [],
+      "app": "common",
+      "area": "common",
+      "domain": "common",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\common\\accesso.steps.ts:18",
+      "doc": {
+        "params": {},
+        "intent": "L'utente e' dentro l'applicazione: con una sessione valida non fa"
       },
       "documented": true
     }

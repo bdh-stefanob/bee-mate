@@ -54,6 +54,7 @@ import type {
   CatalogStep, Component, GeneratedFile, Recording, ScoutResult,
 } from "./lib/generation-contract";
 import { argValue, hasFlag, positionals } from "./lib/args";
+import { loadTargets } from "./lib/targets";
 
 const RECORDINGS = path.join("reports", "recordings");
 const DEFAULT_SCOUT = path.join("reports", "scout");
@@ -179,6 +180,7 @@ async function main(): Promise<void> {
     generatedAt: new Date().toISOString(),
     slug,
     outRoot,
+    ...(recording.startedWithSession ? { startedWithSession: true } : {}),
   };
 
   // ── Page Object, una per pagina toccata ─────────────────────────────────
@@ -248,6 +250,30 @@ async function main(): Promise<void> {
     if (alsoNaive) {
       writeNaiveBrief(path.join(briefDir, "brief-naive.md"), recording, recordingPath);
       console.log(`   + ${path.join(briefDir, "brief-naive.md")}   (termine di paragone)`);
+    }
+  }
+
+  // ── L'accesso che lo scenario presuppone ────────────────────────────────
+  if (recording.startedWithSession) {
+    const ambiente = recording.target ? loadTargets().find((t) => t.name === recording.target) : undefined;
+    console.log(
+      `
+  ACCESSO
+
+` +
+        `   La registrazione e' partita da una sessione salvata: lo scenario comincia con
+` +
+        `   "Given the user is logged in".`
+    );
+    if (!ambiente?.login) {
+      console.log(
+        `
+   ATTENZIONE: ${recording.target ? `l'ambiente "${recording.target}"` : "questo indirizzo"} non ha un accesso registrato.
+` +
+          `   Lo scenario gira solo finche' c'e' una sessione valida. Per farlo partire
+` +
+          `   anche da un browser pulito: «Registra l'accesso» nel Controllo.`
+      );
     }
   }
 

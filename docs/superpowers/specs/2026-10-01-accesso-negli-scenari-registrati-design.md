@@ -2,6 +2,19 @@
 
 > Specifica approvata il 2026-10-01 (D1, D2, D3 confermate come proposte).
 
+## Stato (2026-10-01)
+
+**Costruito.** Una differenza rispetto a quanto scritto sotto: `assicuraAccesso`
+vive in `src/actions/accesso.actions.ts` e lo step la chiama direttamente,
+invece di stare in `src/support/` dietro a un metodo del World. E' il layer
+giusto per un'intenzione di business (step → action → page); il World espone
+solo `ambienteCorrente()`.
+
+Provato su saucedemo (ambiente `demo`): lo scenario generato e' verde con la
+sessione e con `BDD_NO_SESSION=1`; lo stesso scenario senza il passo di accesso
+cade al primo passo da un browser pulito. Controlli: `npm run check:accesso`
+(browser vero contro un'applicazione finta) e `npm run check:ordine`.
+
 ## Il problema
 
 Una registrazione fatta su un ambiente con la **sessione salvata** comincia gia'

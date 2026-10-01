@@ -115,6 +115,14 @@ export interface Recording {
   summary: { intents: number; steps: number; assertions: number; unlabelled: number };
   intents: Intent[];
   /**
+   * Il browser e' stato aperto con una sessione salvata: la registrazione
+   * comincia gia' dentro l'applicazione, e l'accesso non e' fra i suoi passi.
+   * Assente nelle registrazioni vecchie: vale `false`.
+   */
+  startedWithSession?: boolean;
+  /** Il nome dell'ambiente, se si e' partiti da un ambiente nominato e non da un indirizzo. */
+  target?: string;
+  /**
    * Come sono stati nominati i passi a fine sessione. Assente se il tester ha
    * chiuso tutto con la barra.
    *
