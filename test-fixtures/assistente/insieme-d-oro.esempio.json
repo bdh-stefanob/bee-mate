@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "nome": "esempio finto, dodici passi: serve a provare il calcolo, non a misurare niente",
+  "esempio": true,
+  "passi": [
+    { "id": "p01", "fonte": "registrazione", "registrazione": "A", "etichetta": "Passo uno",
+      "candidati": [{ "voce": "X1", "classe": "stessi-componenti" }], "oro": "X1" },
+    { "id": "p02", "fonte": "registrazione", "registrazione": "A", "etichetta": "Passo due",
+      "candidati": [{ "voce": "Y1", "classe": "stessi-componenti" }, { "voce": "Y2", "classe": "formulazione-simile", "somiglianza": 60 }], "oro": "Y2" },
+    { "id": "p03", "fonte": "registrazione", "registrazione": "A", "etichetta": "Passo tre",
+      "candidati": [{ "voce": "Z1", "classe": "formulazione-simile", "somiglianza": 70 }], "oro": "Z1", "secondoGiudizio": "Z1" },
+    { "id": "p04", "fonte": "registrazione", "registrazione": "B", "etichetta": "Passo quattro",
+      "candidati": [{ "voce": "W1", "classe": "formulazione-simile", "somiglianza": 50 }], "oro": null },
+    { "id": "p05", "fonte": "registrazione", "registrazione": "B", "etichetta": "Passo cinque",
+      "candidati": [], "oro": null, "secondoGiudizio": null },
+    { "id": "p06", "fonte": "registrazione", "registrazione": "B", "etichetta": "Passo sei",
+      "candidati": [{ "voce": "V1", "classe": "stessi-componenti" }], "oro": null },
+    { "id": "p07", "fonte": "registrazione", "registrazione": "C", "etichetta": "Passo sette",
+      "candidati": [{ "voce": "U1", "classe": "formulazione-simile", "somiglianza": 80 }, { "voce": "U2", "classe": "formulazione-simile", "somiglianza": 55 }], "oro": "U2" },
+    { "id": "p08", "fonte": "wiki", "etichetta": "Passo otto",
+      "candidati": [{ "voce": "T1", "classe": "formulazione-simile", "somiglianza": 65 }], "oro": "T1" },
+    { "id": "p09", "fonte": "wiki", "etichetta": "Passo nove",
+      "candidati": [], "oro": "S1" },
+    { "id": "p10", "fonte": "wiki", "etichetta": "Passo dieci",
+      "candidati": [{ "voce": "R1", "classe": "formulazione-simile", "somiglianza": 48 }], "oro": null },
+    { "id": "p11", "fonte": "wiki", "etichetta": "Passo undici",
+      "candidati": [], "oro": null },
+    { "id": "p12", "fonte": "wiki", "etichetta": "Passo dodici",
+      "candidati": [{ "voce": "Q1", "classe": "stessi-componenti" }], "oro": "Q1", "secondoGiudizio": "Q2" }
+  ]
+}
