@@ -67,7 +67,8 @@ export function azzeraPerTest(): void {
   processi.clear();
 }
 
-const lanciatoreVero: Lanciatore = (eseguibile, argomenti, opzioni) => {
+/** Esportato solo perche' un caso possa provare cosa succede ai processi figli alla terminazione. */
+export const lanciatoreVero: Lanciatore = (eseguibile, argomenti, opzioni) => {
   // Niente `shell`, ed e' il punto.
   //
   // Serviva perche' su Windows `npx` e' uno script e senza shell non parte. Ma
