@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, ChevronDown, Info, Loader2, Undo2 } from 'lucide-react';
 import type { RigaVista } from '@/lib/suggerimenti-regole';
 import type { Origin } from '@/lib/suggerimenti-contratto';
+import { riallineaCatalogo } from '@/lib/risorse-catalogo';
+import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 
 type Risposta =
   | { stato: 'nessuno' }
@@ -27,19 +29,6 @@ const CODICI_CON_MESSAGGIO = new Set([
 
 const STILE_BOTTONE_PIENO = { background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' } as const;
 const STILE_BOTTONE_VUOTO = { borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' } as const;
-/**
- * Le frasi dello scenario sono cambiate: il catalogo si riallinea da solo, con lo
- * stesso comando che parte dopo "Genera il test". Se non parte, il catalogo resta
- * quello di prima e la schermata Catalogo lo dice.
- */
-function riallineaCatalogo(): void {
-  fetch('/api/esegui', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: 'catalogo' }),
-  }).catch(() => {});
-}
-
 const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 /**
@@ -62,6 +51,8 @@ export function Suggerimenti() {
   const [lavoro, setLavoro] = useState<'applico' | 'annullo' | null>(null);
   const [avviso, setAvviso] = useState<Avviso | null>(null);
   const [aperto, setAperto] = useState(false);
+  // Il catalogo non si e' potuto riallineare subito: lo si dice, niente errore muto.
+  const [catalogoInRitardo, setCatalogoInRitardo] = useState(false);
   const riepilogoRef = useRef<HTMLParagraphElement | null>(null);
 
   const carica = useCallback(async () => {
@@ -79,6 +70,17 @@ export function Suggerimenti() {
   useEffect(() => {
     void carica();
   }, [carica]);
+
+  /**
+   * Le frasi dello scenario sono cambiate: la pagina Scenari si rilegge e il
+   * catalogo si riallinea, con lo stesso comando che parte dopo "Genera il
+   * test". La rilettura del Catalogo la fa la sua pagina (a ogni apertura e al
+   * termine dell'aggiornamento).
+   */
+  const dopoUnaModifica = useCallback(async () => {
+    dopoUnCambioDegliScenari();
+    setCatalogoInRitardo(!(await riallineaCatalogo()));
+  }, []);
 
   const applica = useCallback(async () => {
     if (risposta.stato !== 'pronte' || lavoro) return;
@@ -102,7 +104,7 @@ export function Suggerimenti() {
         setAvviso({ tipo: 'applicate', n: corpo.usate ?? elenco.length });
         // Si apre da solo: ora il pulsante utile e' "Annulla le modifiche".
         setAperto(true);
-        riallineaCatalogo();
+        void dopoUnaModifica();
         setScelte({});
       } else if (res.ok && corpo.esito === 'rifiutato-dai-giudici') {
         setAvviso({ tipo: 'rifiutate', giudice: corpo.giudici?.find((g) => !g.ok)?.nome ?? '' });
@@ -118,7 +120,7 @@ export function Suggerimenti() {
       // screen reader non resta su un pulsante che non c'e' piu'.
       setTimeout(() => riepilogoRef.current?.focus(), 0);
     }
-  }, [risposta, scelte, lavoro]);
+  }, [risposta, scelte, lavoro, dopoUnaModifica]);
 
   const annulla = useCallback(async () => {
     if (risposta.stato !== 'applicate' || lavoro) return;
@@ -131,7 +133,7 @@ export function Suggerimenti() {
       });
       if (res.ok) {
         setAvviso({ tipo: 'annullate' });
-        riallineaCatalogo();
+        void dopoUnaModifica();
         await carica();
       } else {
         const corpo = (await res.json()) as { codice?: string; dettagli?: string[] };
@@ -143,7 +145,7 @@ export function Suggerimenti() {
       setLavoro(null);
       setTimeout(() => riepilogoRef.current?.focus(), 0);
     }
-  }, [risposta, lavoro, carica]);
+  }, [risposta, lavoro, carica, dopoUnaModifica]);
 
   const testoAvviso = (a: Avviso): string => {
     switch (a.tipo) {
@@ -195,6 +197,12 @@ export function Suggerimenti() {
           </>
         )}
       </p>
+      {catalogoInRitardo && (avviso?.tipo === 'applicate' || avviso?.tipo === 'annullate') && (
+        <p className="m-0 flex items-start gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+          <span>{t('catalogoInRitardo')}</span>
+        </p>
+      )}
       {avviso?.tipo === 'errore' && avviso.dettagli.length > 0 && (
         <ul className="m-0 list-disc pl-8 text-xs" style={{ color: 'var(--testo-tenue)' }} aria-label={t('dettagliTitolo')}>
           {avviso.dettagli.map((d) => (

@@ -556,6 +556,7 @@
     "nota": "You can undo until you save. Saving without using the suggestions is perfectly fine.",
     "applicate": "{n, plural, one {You used # catalog phrase.} other {You used # catalog phrases.}} You can undo until you save.",
     "annullate": "I put your phrases back as they were.",
+    "catalogoInRitardo": "The catalog will update at the next save: another job is running right now.",
     "rifiutate": "The changes did not pass the checks and were undone: {quale}. Nothing has changed.",
     "giudice": {
       "tsc": "the test could no longer be built",

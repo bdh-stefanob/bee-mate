@@ -556,6 +556,7 @@
     "nota": "Puoi annullare finché non salvi. Salvare senza usare i suggerimenti va benissimo.",
     "applicate": "{n, plural, one {Hai usato # frase del catalogo.} other {Hai usato # frasi del catalogo.}} Puoi annullare finché non salvi.",
     "annullate": "Ho rimesso le tue frasi com'erano.",
+    "catalogoInRitardo": "Il catalogo si aggiornerà al prossimo salvataggio: ora un altro lavoro è in corso.",
     "rifiutate": "Le modifiche non passavano i controlli e sono state annullate: {quale}. Nulla è cambiato.",
     "giudice": {
       "tsc": "il test non si poteva più costruire",

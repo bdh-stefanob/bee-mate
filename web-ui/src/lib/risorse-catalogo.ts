@@ -74,3 +74,14 @@ export async function rilanciaAggiornamento(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Dopo "Applica" o "Annulla" dei suggerimenti: rilancia l'aggiornamento del
+ * catalogo. Se un altro comando e' in corso la rotta rifiuta (400): si riprova
+ * UNA volta dopo `attesaMs`, poi si dice false e chi chiama lo spiega al tester.
+ */
+export async function riallineaCatalogo(attesaMs = 3000): Promise<boolean> {
+  if (await rilanciaAggiornamento()) return true;
+  await new Promise((r) => setTimeout(r, attesaMs));
+  return rilanciaAggiornamento();
+}

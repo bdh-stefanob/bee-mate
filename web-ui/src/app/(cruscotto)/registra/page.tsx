@@ -15,6 +15,7 @@ import { useAmbiente } from '@/context/AmbienteContext';
 import { SalvaScenario } from '@/components/cruscotto/SalvaScenario';
 import { Suggerimenti } from '@/components/cruscotto/Suggerimenti';
 import type { EsitoSalvataggio } from '@/lib/salva-scenario';
+import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 import { rilevaCausaFallimento, type CausaFallimento } from '@/lib/diagnosi-fallimento';
 
 /** Quante righe finali tenere per il fallimento che non ha una causa nota: solo per mostrarle, non per capirne di piu' di quanto sappiamo davvero. */
@@ -112,6 +113,8 @@ export default function RegistraPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome: 'catalogo' }),
     }).catch(() => {});
+    // Gli scenari sono appena cambiati: la pagina Scenari si rilegge da sola.
+    dopoUnCambioDegliScenari();
     setFase({ tipo: 'salva', titolo: titoloPropostoRef.current });
   }, []);
 
