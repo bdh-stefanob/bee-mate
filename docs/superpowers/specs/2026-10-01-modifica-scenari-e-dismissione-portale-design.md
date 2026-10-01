@@ -85,33 +85,55 @@ un difetto nuovo.
 
 **Difetti da correggere se si riusano le rotte del portale**
 
-- (a) `POST /api/features` e `POST /api/features/move` non hanno
-  `daAltraOrigine`. Un'altra scheda del browser puo' scrivere o spostare
-  `.feature`: `request.json()` legge il corpo a prescindere dal tipo di
-  contenuto, quindi un modulo `text/plain` basta.
-- (b) `POST /api/features` accetta `filePath` relativo a `src/features/` e
-  restituisce un percorso relativo alla radice (`src/features/...`). Il
-  chiamante lo rimette in `filePath` e al salvataggio dopo prende il ramo
-  "sposta".
-- (c) **Nuovo.** `setFeatureTags` sostituisce l'intera riga dei tag con
-  `@app @flow`. Perde `@generato` (con cui la schermata Esecuzione trova gli
-  scenari registrati) e `@non-automatizzato` (uno scenario-documento
-  spostato diventerebbe un test che fallisce). Se la prima riga non vuota e' il
-  commento del marcatore, la riga dei tag esistente non viene riconosciuta e se
-  ne aggiunge una seconda. Letto dal codice: il caso va scritto come test
-  prima di decidere (vedi "Come si verifica").
+- (a) **Chiuso (passo 0, 2026-10-01).** `POST /api/features` e
+  `POST /api/features/move` non avevano `daAltraOrigine`, e nemmeno le altre
+  sei rotte di scrittura elencate sotto. Un'altra scheda del browser poteva
+  scrivere o spostare `.feature`: `request.json()` legge il corpo a prescindere
+  dal tipo di contenuto, quindi un modulo `text/plain` bastava. Ora hanno la
+  guardia, con un test parametrico (`__tests__/api/guardia-origine.test.ts`:
+  altra origine e `same-site` -> 403 e niente scritto; `same-origin` passa).
+- (b) **Chiuso (2026-10-01), ed era peggio di cosi' descritto.**
+  `POST /api/features` accettava `filePath` relativo a `src/features/` e
+  restituiva un percorso relativo alla radice (`src/features/...`), e lo stesso
+  faceva `POST /api/features/move`. Provato con un test: rimandando il percorso
+  restituito alla stessa rotta il file finiva in
+  `src/features/src/features/...` (un duplicato annidato), e rimandandolo a
+  `move` come `fromPath` la risposta era 404, non un "sposta" riuscito. Ora
+  entrambe rispondono con un percorso relativo a `src/features/`, rimandabile
+  com'e' (`__tests__/api/features-percorsi.test.ts`, con l'andata e ritorno). I
+  chiamanti del portale (editor, pagina Features, importazione) tengono il
+  percorso restituito nel loro stato e non ne aggiungono prefissi: non hanno
+  richiesto modifiche. Il formato e' lo stesso dell'elenco `GET /api/features`,
+  con cui i tab confrontano `filePath`.
+- (c) **Provato in parte, e corretto.** `setFeatureTags` (provato con
+  `__tests__/lib/feature-tags.test.ts`, visto fallire):
+  - con i tag in prima riga **perdeva** `@non-automatizzato`, `@generato` e
+    ogni altro tag (sostituiva l'intera riga con `@app @flow`): vero;
+  - con il commento del marcatore in testa (il formato dei file salvati dal
+    cruscotto) **non riconosceva** la riga dei tag e ne aggiungeva una seconda:
+    vero, ma qui `@generato` sopravviveva, nella riga vecchia, che pero' teneva
+    il flusso vecchio (due righe, due flussi);
+  - applicarla due volte non era idempotente (stesso difetto);
+  - `getFeatureTags` leggeva la prima riga che inizia con `@` ovunque nel file
+    (anche i tag di uno scenario) e trattava `@generato` come app.
+  Corretta: la riga dei tag e' quella sopra `Feature:` (saltando righe vuote e
+  commenti), si sostituiscono solo i due tag di posizionamento (i primi due non
+  riservati) e ogni altro tag resta; i tag riservati sono `@generato`,
+  `@da-rivedere`, `@non-automatizzato`, `@wanted`, `@ticket:...`. Il modulo
+  resta comunque fra quelli che muoiono con il portale (B2): la correzione serve
+  finche' il portale e' acceso.
 
 **Decisione: le rotte del portale non si riusano.** `POST /api/scenari/...`
 (sotto) nasce con la guardia, con percorsi sempre relativi a `src/features/` e
 con i tag preservati (`trasforma` di `salva-scenario.ts`, che antepone i tag
 mancanti e lascia gli altri). I difetti (a)-(c) spariscono con le rotte che
-li hanno. Resta il periodo in cui il portale e' ancora acceso: li' si mette
-subito la guardia (passo 0), perche' e' un buco reale e costa una riga a rotta.
+li hanno. Nel periodo in cui il portale e' ancora acceso sono gia' corretti (il
+passo 0 e' fatto), perche' erano buchi reali e costavano una riga a rotta.
 
-**Rotte di scrittura oggi senza guardia:** `catalog/propose`, `enums`,
-`features`, `features/move`, `github/push`, `import`, `jira/sync` (tutte del
-portale) e `lingua` (resta). `lint` e' di sola lettura nei fatti. Spegnere il
-portale toglie sette buchi su otto.
+**Rotte di scrittura che erano senza guardia, ora protette:** `catalog/propose`,
+`enums`, `features`, `features/move`, `github/push`, `import`, `jira/sync`
+(tutte del portale) e `lingua` (resta). `lint` e' di sola lettura nei fatti.
+Spegnere il portale toglie sette rotte su otto.
 
 ## Parte A — Modifica degli scenari
 
@@ -937,7 +959,7 @@ dice "fatto". Le stime sono a occhio.
 
 | # | Passo | Fatto quando | Stima |
 |---|---|---|---|
-| 0 | **Guardia stessa-origine** alle otto rotte di scrittura che non l'hanno | per ognuna c'e' un test "altra origine -> 403, niente scritto"; il portale salva ancora (stessa origine) | 1/2 g |
+| 0 | **Guardia stessa-origine** alle otto rotte di scrittura che non l'hanno (**fatto il 2026-10-01**, con la correzione dei percorsi (b) e dei tag (c)) | per ognuna c'e' un test "altra origine -> 403, niente scritto"; il portale salva ancora (stessa origine) | 1/2 g |
 | 1 | **Fondamenta**, senza interfaccia: `modifica-scenario`, `piano-modifica`, `convalida-scenario`, `rinomina-passo` (estratta da `riconcilia`, con test di caratterizzazione scritto prima), `bozza-scenario` | tutti i casi di "Come si verifica" per questi moduli passano; `npx tsc --noEmit` pulito | 2 g |
 | 2 | **Rotte**: `contenuto`, `anteprima`, `modifica`, `annulla`; guardia a ogni `POST`; serratura anche in `salva` | i test di `scenari-modifica.test.ts` passano; nessuna risposta contiene un percorso assoluto; andata e ritorno dei percorsi verificata | 1 g |
 | 3 | **Modifica guidata**: titolo, usa un altro, togli, verifica, rinomina; bozza, controllo, esito, Annulla, "Esegui lo scenario"; `ModificheContext` e `will-prevent-unload`; testi it/en | a mano su uno scenario registrato e salvato, in italiano e in inglese e a 900px: si cambia il titolo, si rinomina un passo usato da due scenari, si salva, si annulla, si riesegue. Percorso con sola tastiera completo | 2 g |
