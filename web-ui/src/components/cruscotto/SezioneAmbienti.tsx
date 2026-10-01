@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Pencil, Plus, Trash2, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Pencil, Plus, Trash2, XCircle } from 'lucide-react';
 import { notificaAmbientiCambiati } from '@/lib/eventi-ambienti';
 
 export interface AmbienteVisibile {
@@ -346,6 +346,63 @@ function RegistraAccesso({
   );
 }
 
+type MotivoIrraggiungibile = 'dns' | 'rifiutata' | 'tempo' | 'certificato' | 'altro';
+
+interface RispostaSalvataggio {
+  scritto?: boolean;
+  errore?: string;
+  /** La rotta ha provato l'indirizzo e non ha risposto nessuno: non ha scritto. */
+  irraggiungibile?: boolean;
+  motivo?: MotivoIrraggiungibile;
+}
+
+/**
+ * L'avviso del preflight: l'indirizzo non risponde, con il motivo detto in
+ * parole e il modo di salvarlo lo stesso. Non e' un errore rosso: un ambiente
+ * dietro una VPN spenta e' un caso legittimo, e la scelta resta al tester.
+ */
+function AvvisoIrraggiungibile({
+  motivo,
+  inCorso,
+  onSalvaComunque,
+}: {
+  motivo: MotivoIrraggiungibile;
+  inCorso: boolean;
+  onSalvaComunque: () => void;
+}) {
+  const t = useTranslations('Ambienti');
+  const testi: Record<MotivoIrraggiungibile, string> = {
+    dns: t('irraggiungibileDns'),
+    rifiutata: t('irraggiungibileRifiutata'),
+    tempo: t('irraggiungibileTempo'),
+    certificato: t('irraggiungibileCertificato'),
+    altro: t('irraggiungibileAltro'),
+  };
+  return (
+    <div
+      role="alert"
+      className="flex min-w-0 flex-col items-start gap-2 rounded-md border p-2 text-sm"
+      style={{ borderColor: 'var(--ambra)', color: 'var(--testo)' }}
+    >
+      <p className="flex items-start gap-1.5 break-words">
+        <AlertTriangle size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} aria-hidden="true" />
+        <span>
+          {testi[motivo]} {t('irraggiungibileNonSalvato')}
+        </span>
+      </p>
+      <button
+        type="button"
+        onClick={onSalvaComunque}
+        disabled={inCorso}
+        className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+      >
+        {inCorso ? t('salvando') : t('salvaComunque')}
+      </button>
+    </div>
+  );
+}
+
 type StatoModificaIndirizzo = 'inattivo' | 'salvo' | 'errore';
 
 /**
@@ -372,22 +429,26 @@ function ModificaIndirizzo({
   const [url, setUrl] = useState(ambiente.url);
   const [stato, setStato] = useState<StatoModificaIndirizzo>('inattivo');
   const [messaggioErrore, setMessaggioErrore] = useState('');
+  const [irraggiungibile, setIrraggiungibile] = useState<MotivoIrraggiungibile | null>(null);
 
-  async function salva(evento: React.FormEvent) {
-    evento.preventDefault();
+  async function salva(comunque: boolean) {
     setStato('salvo');
     setMessaggioErrore('');
     try {
       const risposta = await fetch('/api/configurazione/ambienti', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: ambiente.nome, url }),
+        body: JSON.stringify({ nome: ambiente.nome, url, ...(comunque ? { comunque: true } : {}) }),
       });
-      const corpo = (await risposta.json()) as { scritto?: boolean; errore?: string };
+      const corpo = (await risposta.json()) as RispostaSalvataggio;
       if (risposta.ok && corpo.scritto) {
         setAperto(false);
         setStato('inattivo');
+        setIrraggiungibile(null);
         onSalvato();
+      } else if (corpo.irraggiungibile) {
+        setStato('inattivo');
+        setIrraggiungibile(corpo.motivo ?? 'altro');
       } else {
         setStato('errore');
         setMessaggioErrore(corpo.errore ?? t('erroreAggiornareIndirizzo'));
@@ -406,6 +467,7 @@ function ModificaIndirizzo({
           setUrl(ambiente.url);
           setStato('inattivo');
           setMessaggioErrore('');
+          setIrraggiungibile(null);
           setAperto(true);
         }}
         aria-label={t('modificaIndirizzoAria', { nome: ambiente.nome })}
@@ -420,7 +482,10 @@ function ModificaIndirizzo({
 
   return (
     <form
-      onSubmit={(e) => void salva(e)}
+      onSubmit={(e) => {
+        e.preventDefault();
+        void salva(false);
+      }}
       className="flex min-w-0 flex-1 flex-col gap-2 rounded-md border p-2"
       style={{ borderColor: 'var(--bordo)' }}
     >
@@ -434,7 +499,11 @@ function ModificaIndirizzo({
         <input
           id={`url-${ambiente.nome}`}
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            // L'avviso parlava dell'indirizzo di prima: su uno nuovo si riprova.
+            setIrraggiungibile(null);
+          }}
           placeholder={t('placeholderIndirizzo')}
           className="min-h-10 min-w-0 flex-1 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
@@ -452,7 +521,7 @@ function ModificaIndirizzo({
         </button>
         <button
           type="button"
-          onClick={() => { setAperto(false); setStato('inattivo'); setMessaggioErrore(''); }}
+          onClick={() => { setAperto(false); setStato('inattivo'); setMessaggioErrore(''); setIrraggiungibile(null); }}
           className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
@@ -465,6 +534,13 @@ function ModificaIndirizzo({
           </span>
         )}
       </div>
+      {irraggiungibile && (
+        <AvvisoIrraggiungibile
+          motivo={irraggiungibile}
+          inCorso={stato === 'salvo'}
+          onSalvaComunque={() => void salva(true)}
+        />
+      )}
     </form>
   );
 }
@@ -724,6 +800,7 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
   const [url, setUrl] = useState('');
   const [inCorso, setInCorso] = useState(false);
   const [messaggio, setMessaggio] = useState<{ ok: boolean; testo: string } | null>(null);
+  const [irraggiungibile, setIrraggiungibile] = useState<MotivoIrraggiungibile | null>(null);
 
   const carica = useCallback(async () => {
     try {
@@ -739,15 +816,19 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
     void carica();
   }, [carica]);
 
-  async function aggiungi(evento: React.FormEvent) {
-    evento.preventDefault();
+  async function aggiungi(comunque: boolean) {
     // Questo form scrive con la stessa rotta di "Modifica indirizzo": un nome
     // gia' in elenco non crea un duplicato, aggiorna quello esistente. E'
     // comodo per correggersi al volo, ma silenzioso — chi vuole aggiungerne
     // uno nuovo e sbaglia a digitare un nome gia' preso sovrascriverebbe un
     // indirizzo senza saperlo. Un'unica conferma esplicita basta a distinguere
     // le due intenzioni.
-    if (ambienti.some((a) => a.nome === nome) && !window.confirm(t('confermaSovrascritturaIndirizzo', { nome }))) {
+    // "Salva comunque" arriva dopo che questa conferma e' gia' stata data.
+    if (
+      !comunque &&
+      ambienti.some((a) => a.nome === nome) &&
+      !window.confirm(t('confermaSovrascritturaIndirizzo', { nome }))
+    ) {
       return;
     }
     setInCorso(true);
@@ -756,11 +837,12 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
       const risposta = await fetch('/api/configurazione/ambienti', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, url }),
+        body: JSON.stringify({ nome, url, ...(comunque ? { comunque: true } : {}) }),
       });
-      const corpo = (await risposta.json()) as { scritto?: boolean; errore?: string };
+      const corpo = (await risposta.json()) as RispostaSalvataggio;
       if (risposta.ok && corpo.scritto) {
         setMessaggio({ ok: true, testo: t('ambienteSalvato') });
+        setIrraggiungibile(null);
         setNome('');
         setUrl('');
         await carica();
@@ -768,6 +850,8 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
         // F3: la barra laterale (SelettoreAmbiente) vive in un altro
         // sottoalbero e non rileggerebbe mai l'elenco da sola.
         notificaAmbientiCambiati();
+      } else if (corpo.irraggiungibile) {
+        setIrraggiungibile(corpo.motivo ?? 'altro');
       } else {
         setMessaggio({ ok: false, testo: corpo.errore ?? t('nonSalvato') });
       }
@@ -814,7 +898,12 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
         </p>
       )}
 
-      <form onSubmit={aggiungi} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void aggiungi(false);
+        }}
+        className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="ambiente-nome" className="text-sm" style={{ color: 'var(--testo)' }}>
             {t('nomeAmbiente')}
@@ -822,7 +911,10 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
           <input
             id="ambiente-nome"
             value={nome}
-            onChange={(e) => setNome(e.target.value)}
+            onChange={(e) => {
+              setNome(e.target.value);
+              setIrraggiungibile(null);
+            }}
             placeholder={t('placeholderNome')}
             className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
@@ -838,7 +930,10 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
           <input
             id="ambiente-url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setIrraggiungibile(null);
+            }}
             placeholder={t('placeholderIndirizzo')}
             className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
@@ -854,6 +949,14 @@ export function SezioneAmbienti({ onCambiato }: { onCambiato?: () => void }) {
           {inCorso ? t('salvando') : t('aggiungi')}
         </button>
       </form>
+
+      {irraggiungibile && (
+        <AvvisoIrraggiungibile
+          motivo={irraggiungibile}
+          inCorso={inCorso}
+          onSalvaComunque={() => void aggiungi(true)}
+        />
+      )}
 
       {messaggio && (
         <p role="status" className="flex items-center gap-1.5 text-sm" style={{ color: messaggio.ok ? 'var(--verde)' : 'var(--rosso)' }}>

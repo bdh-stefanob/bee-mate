@@ -4,8 +4,11 @@ import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import { scriviBersaglio, rimuoviBersaglio, percorsoSessionePerEliminazione } from '@/lib/configurazione';
 import { daAltraOrigine } from '@/lib/stessa-origine';
+import { preflightAmbiente } from '@/lib/preflight-ambiente';
+import { loadEnv } from '../../../../../../scripts/lib/atlassian';
 
 const TARGETS_PATH = path.join(REPO_ROOT, 'bdd-targets.json');
+const ENV_PATH = path.join(REPO_ROOT, '.env');
 
 /**
  * POST /api/configurazione/ambienti
@@ -22,6 +25,12 @@ const TARGETS_PATH = path.join(REPO_ROOT, 'bdd-targets.json');
  * e questa rotta non lo permette: il nome vive anche nelle sessioni salvate e
  * nelle registrazioni, e la finestra lo dice esplicitamente invece di farlo
  * intuire.
+ *
+ * PRIMA DI SCRIVERE, SI PROVA L'INDIRIZZO (vedi lib/preflight-ambiente.ts). Se
+ * non risponde nessuno la rotta non scrive e risponde 409 con il motivo: la
+ * finestra lo mostra accanto al campo e offre "Salva comunque", che rimanda la
+ * stessa richiesta con `comunque: true`. Un ambiente dietro una VPN spenta
+ * resta cosi' aggiungibile, ma un refuso non passa piu' in silenzio.
  */
 export async function POST(request: Request) {
   // Questa rotta scrive nel file degli ambienti: stessa guardia delle altre
@@ -32,11 +41,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = (await request.json()) as { nome?: unknown; url?: unknown };
-    const { nome, url } = body;
+    const body = (await request.json()) as { nome?: unknown; url?: unknown; comunque?: unknown };
+    const { nome, url, comunque } = body;
 
     if (typeof nome !== 'string' || typeof url !== 'string') {
       return NextResponse.json({ errore: 'nome e indirizzo devono essere testo' }, { status: 400 });
+    }
+    if (comunque !== undefined && typeof comunque !== 'boolean') {
+      return NextResponse.json({ errore: '"comunque" deve essere vero o falso' }, { status: 400 });
     }
 
     const contenutoAttuale = fs.existsSync(TARGETS_PATH) ? fs.readFileSync(TARGETS_PATH, 'utf-8') : '';
@@ -49,6 +61,19 @@ export async function POST(request: Request) {
       // l'indirizzo con credenziali non le ripete: e' gia' sicuro da restituire.
       const message = err instanceof Error ? err.message : 'errore di validazione';
       return NextResponse.json({ errore: message }, { status: 400 });
+    }
+
+    // Dopo la validazione, cosi' un indirizzo malformato riceve il suo errore
+    // e non si prova mai a raggiungere qualcosa che non e' un indirizzo web.
+    if (!comunque) {
+      loadEnv(ENV_PATH);
+      const preflight = await preflightAmbiente(url);
+      if (preflight.esito === 'irraggiungibile') {
+        return NextResponse.json(
+          { errore: 'a questo indirizzo non risponde nessuno', irraggiungibile: true, motivo: preflight.motivo },
+          { status: 409 }
+        );
+      }
     }
 
     fs.writeFileSync(TARGETS_PATH, nuovoContenuto, 'utf-8');
