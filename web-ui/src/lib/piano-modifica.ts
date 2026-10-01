@@ -305,6 +305,8 @@ export interface OpzioniApplica {
 }
 
 export interface EsitoApplica {
+  /** Lo scenario aperto com'e' adesso (senza marcatore, coi fine riga del file): diventa il nuovo "letto" della bozza. */
+  testo: string;
   /** L'impronta dello scenario aperto dopo la modifica. */
   versione: string;
   fileToccati: number;
@@ -376,6 +378,7 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
     throw new ErrorePiano('bloccato', 400, 'la modifica non passa il controllo', { dettagli: piano.blocchi });
   }
   const finale = (): EsitoApplica => ({
+    testo: piano.testoAperto,
     versione: improntaDiTesto(piano.testoAperto),
     fileToccati: piano.scritture.length,
     scenari: piano.conseguenze.scenari,

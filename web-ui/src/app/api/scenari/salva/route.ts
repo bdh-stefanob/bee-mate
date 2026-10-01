@@ -5,6 +5,7 @@ import { FEATURES_DIR, REPO_ROOT } from '@/lib/repo';
 import { ErroreSalvataggio, pianificaScenario, scriviScenario } from '@/lib/salva-scenario';
 import { pianificaGlue, scriviGlue } from '@/lib/salva-glue';
 import { daAltraOrigine } from '@/lib/stessa-origine';
+import { serraturaPresa } from '@/lib/serratura-scenari';
 
 /**
  * Lo stesso manifesto che la schermata Registra fa scrivere alla generazione.
@@ -27,6 +28,12 @@ const MANIFESTO = path.join('reports', 'cruscotto', 'generazione-manifesto.json'
 export async function POST(request: Request) {
   if (daAltraOrigine(request)) {
     return NextResponse.json({ errore: 'richiesta non ammessa' }, { status: 403 });
+  }
+
+  // Una modifica degli scenari sta scrivendo nelle stesse cartelle: non ci si
+  // pesta (la stessa serratura di `/api/scenari/modifica`).
+  if (serraturaPresa()) {
+    return NextResponse.json({ errore: 'operazione in corso', codice: 'operazione-in-corso' }, { status: 409 });
   }
 
   let corpo: { app?: unknown; flusso?: unknown; titolo?: unknown };
