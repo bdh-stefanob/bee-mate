@@ -1,7 +1,9 @@
 # Esecuzione avanzata — design
 
-> Bozza del 2026-10-01, da approvare. Sotto-progetto 4 di 5. Non costruisce
-> niente: dice cosa significano quattro capacita' (lanci multipli, scenari in
+> Bozza del 2026-10-01, **con le decisioni del proprietario del 2026-10-01**
+> (§11: dieci domande decise, tre fuori dalla raccomandazione iniziale: utenze
+> nell'ambiente subito, demo su un'applicazione aziendale, finestre affiancate in
+> automatico). Sotto-progetto 4 di 5. Dice cosa significano quattro capacita' (lanci multipli, scenari in
 > serie, lanci in parallelo, parallelo con utenze diverse), quale scegliere, in
 > che ordine consegnarle e come provarle. Le stime in giorni sono **stime**, non
 > misure: nessuna e' stata provata su una macchina.
@@ -203,7 +205,7 @@ si dichiara come tale.
 ```
 
 Il nome segue `BERSAGLIO_VALIDO` (stessa regola degli ambienti). Che sia
-versionato e' una decisione da prendere (domanda Q2).
+versionato e' **deciso** (Q2 = a, 1/10/2026).
 
 ### Come resta dentro l'elenco chiuso
 
@@ -278,7 +280,7 @@ const MAX_TEST_CONTEMPORANEI = 3; // costante nel codice: stima, da misurare
   messaggio che dice il numero ("ci sono gia' tre test in corso: e' il massimo
   su questa macchina").
 - Due corsie sullo **stesso** ambiente: consentite, con un avviso nella
-  schermata (domanda Q4). E' la strada (i) a mano, e il rischio e' quello
+  schermata (Q4 = b, deciso). E' la strada (i) a mano, e il rischio e' quello
   dichiarato sotto.
 
 **Gli altri punti del registro:**
@@ -366,18 +368,74 @@ misura e' un passo della prova manuale finale (§9).
 
 ### "Guarda il browser" con N finestre
 
-Le finestre si aprono sovrapposte e il tester non sa quale sia di quale
-corsia. Tre gradi:
+> **Decisione del proprietario, 1/10/2026 (Q7 = b):** con "Guarda il browser" le
+> finestre si affiancano in **automatico**. Non e' la raccomandazione della prima
+> bozza (a mano, per non cambiare il viewport): si progetta cosi', e si
+> dichiarano i limiti.
 
-1. **Niente di nuovo** (demo): si dispongono a mano (tasto Windows con le
-   frecce) e il titolo del pannello nella finestra dice quale ambiente e'.
-2. **Pausa fra le azioni** (`rallenta=`, c'e' gia'): serve comunque, perche' due
-   finestre veloci non si seguono.
-3. **Posizione automatica**, una variabile `BDD_FINESTRA` con posizione e
-   dimensione, per affiancarle. Tocca `avviaBrowser` e, per far valere la
-   dimensione della finestra, rinuncia al viewport fisso: **cambia il layout
-   che il test vede**, quindi solo per "Guarda il browser" e dichiarato nella
-   frase. Fuori dalla demo (domanda Q7).
+Senza far niente le finestre si aprono sovrapposte, e il tester non sa quale sia
+di quale corsia. Il rimedio e' dire al browser **dove** stare e **quanto** essere
+grande, al lancio.
+
+**Come.**
+
+- La finestra (la schermata nel browser del tester) conosce lo schermo:
+  `window.screen.availWidth` e `availHeight` (l'area utile, senza la barra delle
+  applicazioni). Li manda come due interi tipizzati, `schermo` (larghezza e
+  altezza), validati dal server: interi da 640 a 7680 e da 480 a 4320. Il server
+  non puo' saperlo da solo senza interrogare il sistema operativo.
+- Il server calcola, dal numero di corsie `N` del lancio e dall'indice `i`, una
+  griglia con `ceil(sqrt(N))` colonne: la corsia `i` riceve `x`, `y`, larghezza e
+  altezza della sua cella. Con due corsie, due colonne a tutta altezza.
+- Il risultato arriva a `test-bersaglio.ts` in forma nuda, come opzione
+  `finestra=x,y,larghezza,altezza` (quattro interi validati, mai una stringa
+  libera), che lo mette in `BDD_FINESTRA`. Mai trattini via npm.
+- `world.ts` lo legge **solo se** `HEADED=1` e lo passa a `avviaBrowser` come
+  argomenti del browser `--window-position=x,y` e `--window-size=l,a`. Con
+  `HEADED` assente (browser nascosto) `BDD_FINESTRA` non ha nessun effetto.
+
+**Cio' che cambia per il test, e va detto.**
+
+- **Il viewport.** Oggi il contesto non dichiara un viewport, quindi vale il
+  predefinito di Playwright (1280x720). Perche' la dimensione della finestra
+  valga, il contesto deve usare `viewport: null` (la pagina prende la misura
+  reale della finestra). Un'applicazione con layout reattivo puo' allora
+  mostrare un'altra disposizione, **e uno scenario verde nascosto puo' diventare
+  rosso affiancato**, o viceversa. E' il motivo per cui la regola e' *solo* con
+  "Guarda il browser" e la frase accanto all'interruttore lo dice. L'esito di un
+  lancio nascosto resta quello di sempre, ed e' quello che fa fede.
+- **`--start-maximized`.** Oggi lo usano la registrazione (`record.ts`) e la
+  sessione (`session.ts`), con `viewport: null`: li' la finestra deve riempire
+  lo schermo, e **non si toccano**. I test non lo usano. Se i due fossero mai
+  combinati, la finestra massimizzata vincerebbe sulla posizione: per questo
+  `finestra` non si applica mai a `registrazione`, `sessione` e `scansione`, e
+  un caso di test lo controlla.
+- **Troppo strette.** Con piu' di due corsie su uno schermo di 1920 px le celle
+  sono sotto gli 800 px e molte applicazioni passano al layout per telefono.
+  Sotto un limite (Q13, proposta 800 px di larghezza) le finestre **non si
+  affiancano**: si sovrappongono con uno scarto di 40 px per corsia, e il
+  viewport resta quello di sempre. Meglio una finestra che copre l'altra che un
+  test che vede un'altra applicazione.
+
+**Limiti, dichiarati e non provati** (le misure vere si fanno sullo schermo
+della demo):
+
+- **Scala di Windows** (125 %, 150 %): `--window-size` e' in pixel logici del
+  browser, `screen.availWidth` in pixel CSS; i due coincidono di norma, ma una
+  scala diversa fra monitor puo' farli divergere di qualche punto.
+- **Piu' monitor**: `window.screen` e' il monitor su cui sta la schermata del
+  tester, non necessariamente quello su cui l'utente guarda i test.
+- **Il contorno della finestra** (bordi, barra del titolo e delle schede del
+  browser, circa 85 px in altezza) si sottrae al viewport: la pagina vede meno di
+  `altezza`. Lo scarto non e' compensato.
+- **Un solo motore**: vale per Chromium, il solo che il progetto lancia.
+- Non e' **posizionamento a prova di sistema operativo**: se il browser ignora la
+  posizione (capita con alcune impostazioni di Windows), le finestre si
+  sovrappongono, e `rallenta` e il nome nel pannello restano il rimedio.
+
+Il resto dei gradi di prima resta: la **pausa fra le azioni** (`rallenta=`, c'e'
+gia') serve comunque, perche' due finestre veloci non si seguono, e il titolo del
+pannello dice quale ambiente e utenza e'.
 
 ### Come si mostra a schermo
 
@@ -400,127 +458,251 @@ appartiene alla pagina Scenari.
 
 ## 4. Parallelo con utenze diverse (il caso della demo)
 
-### Il vincolo
+> **Decisione del proprietario, 1/10/2026 (Q5 = b):** il modello "piu' utenti
+> dentro un ambiente" si costruisce **subito**. Non e' la raccomandazione della
+> prima bozza (che era "un ambiente per utenza, il modello solo se serve"): la
+> sezione e' riscritta di conseguenza. L'approccio "un ambiente per utenza" resta
+> utilizzabile oggi, senza codice, ed e' il **piano B** della demo (§4.7).
 
-Un ambiente = una sessione = un utente (`Target` in `targets.ts`: un campo
-`session`, un blocco `login`). Oggi un secondo utente e' un secondo ambiente nel
-file `bdd-targets.json`.
+### 4.1 Il vincolo, e cosa cambia
 
-### Tre approcci
+Oggi un ambiente = una sessione = un utente (`Target` in `targets.ts`: un campo
+`session`, un blocco `login`). Un secondo utente e' un secondo ambiente nel file
+`bdd-targets.json`. Dopo questo lavoro un ambiente ha **un elenco di utenze**, e
+una corsia ne sceglie una. Tre approcci erano sul tavolo:
 
-| | A. Un ambiente per utenza | B. Modello "utenze" nell'ambiente | C. Tag `@utente:nome` sullo scenario |
+| | A. Un ambiente per utenza | **B. Utenze nell'ambiente (scelto)** | C. Tag `@utente:nome` |
 |---|---|---|---|
-| Forma | `demo-utente-a`, `demo-utente-b`, ognuno con la sua sessione e il suo login | `utenti: { "utente-a": { sessione, login }, ... }` e una variabile `BDD_UTENTE` | Lo scenario dichiara chi e' |
-| Modello nuovo | **Quasi nessuno** | Si, in piu' punti | Richiede B |
-| Credenziali | In `.env`, scritte dal Controllo come `${VAR}` nella riga dell'ambiente | Idem, ma una coppia per utente | Idem |
-| Registrare l'accesso | Il Controllo lo fa **gia'** per ambiente: "Registra l'accesso" e "Accedi adesso" | Da estendere: quale utente? | Idem B |
-| Cosa vede il tester | L'elenco ambienti si allunga e si sporca (`demo`, `demo-utente-a`, `demo-utente-b`) | Un ambiente con un selettore di utente | Niente: lo decide lo scenario |
-| Costo (stima) | ~0 di codice, qualche minuto di configurazione | 4-6 giorni | Costo di B piu' un hook |
+| Forma | `demo-utente-a`, `demo-utente-b` | `utenti: { a: { sessione, login }, b: {...} }` e `BDD_UTENTE` | Lo scenario dichiara chi e' |
+| Cosa vede il tester | L'elenco ambienti si allunga e si sporca | Un ambiente con un selettore di utenza | Niente |
+| Costo (stima) | ~0 di codice | 4,5-5,5 giorni (§4.8) | Costo di B piu' un hook |
 
-**Perche' C non e' un'alternativa a B ma uno strato sopra B.** Un tag
-`@utente:nome` deve risolversi in qualcosa: o in un ambiente (e allora lo
-scenario nomina un ambiente che esiste solo su questa macchina, cioe' si lega a
-un posto), o in un'utenza di B. In piu', la scelta dell'utente appartiene al
-**lancio**, non allo scenario: lo stesso scenario "aggiungi al carrello" e'
-buono per l'utente A e per l'utente B, ed e' proprio quello che la demo vuole
-mostrare. L'eccezione e' lo scenario che e' *per un ruolo* ("l'amministratore
-vede il pannello"), e per quello e' pronto lo strumento giusto: la decisione D2
-della spec dell'accesso (`the user is logged in as {string}`), da prendere
-**insieme** a B, non prima.
+C non e' un'alternativa ma uno strato sopra B, e resta **fuori**: la scelta
+dell'utenza appartiene al **lancio**, non allo scenario (lo stesso scenario
+"aggiungi al carrello" e' buono per l'utenza A e per la B, ed e' quello che la
+demo vuole mostrare). L'eccezione, lo scenario *per un ruolo*, ha il suo
+strumento (§4.6).
 
-**Raccomandazione: A adesso, B solo quando serve davvero.** "Serve davvero"
-vuol dire: un'applicazione con tre o piu' ruoli da provare, oppure un elenco di
-ambienti che i tester non riescono piu' a leggere. Il momento per deciderlo sono
-le prove sul campo (P4 in `docs/anti-entropy/10-prove-sul-campo.md`), non una
-demo. Per tenere A sopportabile:
+### 4.2 La forma in `bdd-targets.json`
 
-- una convenzione di nome (`<ambiente>-<utenza>`), scritta nella guida;
-- (fetta S6) un pulsante **Duplica ambiente** nel Controllo: copia indirizzo e
-  segnale di pronto, lascia vuoti login e sessione, e il tester registra l'accesso
-  della nuova utenza. Mezza giornata, stima.
+```json
+"demo": {
+  "url": "https://...",
+  "readyWhen": "/inventario",
+  "utenti": {
+    "a": { "sessione": "reports/sessions/demo.a.json",
+           "login": { "steps": [ { "fill": {"role":"textbox","name":"Utente"}, "value": "${DEMO_A_USER}" },
+                                 { "fill": {"role":"textbox","name":"Password"}, "value": "${DEMO_A_PASS}" },
+                                 { "click": {"role":"button","name":"Accedi"} } ] } },
+    "b": { "sessione": "reports/sessions/demo.b.json",
+           "login": { "steps": [ ... "${DEMO_B_USER}" ... "${DEMO_B_PASS}" ... ] } }
+  },
+  "utenteDiFabbrica": "a"
+}
+```
 
-### Credenziali, sessioni, MFA
+- Il nome di un'utenza segue `BERSAGLIO_VALIDO` (stessa regola degli ambienti,
+  una regola sola). Il nome e' il suo identificativo ovunque: parametro,
+  variabile, nome del file di sessione, pannello di corsia.
+- `utenteDiFabbrica` e' facoltativo: se manca, la **prima** utenza dichiarata.
+  Serve a chi lancia a mano senza dire niente.
+- **`utenti` e i campi di un utente solo (`session`, `login`) sono alternativi.**
+  Un ambiente che li ha entrambi e' un errore con un messaggio che dice di
+  sceglierne uno: due fonti per la stessa cosa divergono in silenzio.
+- La sessione di un'utenza ha di fabbrica il nome
+  `reports/sessions/<ambiente>.<utenza>.json`; per un ambiente a un utente solo
+  resta `reports/sessions/<ambiente>.json`, come oggi.
+- `resolveTarget(nome, utente?)` restituisce un `Target` **appiattito**: `session`
+  e `login` sono quelli dell'utenza scelta, in piu' `utente` (il nome). Tutto cio'
+  che sta a valle (`hasSession`, `sessionAgeHours`, `loginCredentials`, la Page
+  Object dell'accesso) legge gli stessi campi di oggi e **non cambia**.
 
-- **Dove stanno**: solo in `.env`, riferite come `${VARIABILE}` nel blocco
-  `login` dell'ambiente (`bdd-targets.json`, gitignorato). Questo lavoro non
+### 4.3 Compatibilita' con gli ambienti a un solo utente
+
+Devono continuare a funzionare **identici**, senza toccare il file:
+
+- un ambiente senza `utenti` si comporta come oggi: `resolveTarget('demo')` da'
+  lo stesso `Target` di prima (caso di test: un file di esempio degli ambienti di
+  oggi, risolto prima e dopo, e il risultato e' uguale);
+- `utente` assente o vuoto = l'utenza di fabbrica; per un ambiente senza `utenti`
+  e' l'unica utenza implicita e **non ha nome**;
+- `utente=x` su un ambiente senza `utenti` e' un errore chiaro ("l'ambiente
+  non ha utenze"), non un'utenza ignorata;
+- `BDD_UTENTE` assente = come oggi.
+
+### 4.4 Come una corsia sceglie l'utenza
+
+- **Parametro tipizzato** `Parametri.utente?: string`, validato con
+  `BERSAGLIO_VALIDO`, valido per i comandi che usano una sessione: `test`,
+  `sessione`, `registrazione`, `scansione`. Nell'elenco chiuso non nasce nessun
+  nome nuovo.
+- **Opzione nuda** `utente=b` (mai trattini, mai via npm): `npm run test:bersaglio
+  demo generati utente=b`. Un caso di test controlla che nessun argomento
+  cominci con un trattino.
+- **Variabile `BDD_UTENTE`**: `test-bersaglio.ts` la imposta nell'ambiente di
+  Cucumber insieme a `BDD_TARGET`; `ambiente()` in `world.ts` la passa a
+  `resolveTarget`. E' la stessa strada di `BDD_TARGET`: una variabile per
+  processo, quindi **una corsia = un ambiente = un'utenza**.
+- **Il nome non esiste nell'ambiente**: `test-bersaglio.ts` lo controlla **prima**
+  di lanciare Cucumber e dice quali utenze ci sono (come fa oggi per i bersagli).
+  Lo stesso controllo lo fa il server prima di avviare una corsia, cosi' un
+  lancio "tutto o niente" (§3) non parte a meta'.
+- **La corsia e' una coppia (ambiente, utenza)**. Il record su disco guadagna il
+  campo `utente` accanto a `bersaglio`, e il pannello di corsia mostra
+  "ambiente / utenza". Mai una credenziale, mai un percorso di file.
+- Due corsie con la **stessa** coppia: e' il caso Q4 (consentito con avviso). Due
+  corsie con lo stesso ambiente e utenze **diverse** non hanno l'avviso sui dati
+  dello stesso account, ma conservano quello sulle risorse.
+
+### 4.5 Credenziali, sessioni, MFA
+
+- **Dove stanno**: solo in `.env`, riferite come `${VARIABILE}` nel blocco `login`
+  di **ciascuna** utenza (`bdd-targets.json`, gitignorato). Convenzione dei nomi:
+  `<AMBIENTE>_<UTENZA>_USER` e `<AMBIENTE>_<UTENZA>_PASS`. Questo lavoro non
   introduce un solo valore nei file versionati, ne' una password nella finestra
   oltre ai campi mascherati del Controllo che esistono gia'.
-- **Come si registra l'accesso di ogni utenza**: dal Controllo, una volta per
-  ambiente, con "Registra l'accesso" (la ricetta) e "Accedi adesso" (la
-  sessione). Due utenze, due volte.
-- **MFA e SSO**: l'automatismo non blocca mai e finisce a mano (`targets.ts`).
-  Con la sessione valida non c'e' nessuna MFA da fare, e per questo la
-  sessione di **ciascuna** utenza si rinnova prima della demo. Se la sessione e'
-  scaduta e l'accesso richiede la MFA, il passo di accesso comune lo dice con il
+- **Come si registra l'accesso di ogni utenza, dal Controllo**: la riga di un
+  ambiente con piu' utenze si apre in una riga per utenza, ognuna con i suoi
+  "Registra l'accesso" (la ricetta) e "Accedi adesso" (la sessione) e la **sua**
+  eta' della sessione. I due pulsanti portano `utente` nel parametro e scrivono
+  nel blocco di quell'utenza. Un pulsante **"Aggiungi utenza"** (sostituisce il
+  "Duplica ambiente" della prima bozza, che non serve piu') crea un'utenza vuota
+  nell'ambiente e dice quali variabili di `.env` le servono.
+- **MFA e SSO**: l'accesso automatico non blocca mai e finisce a mano
+  (`targets.ts`). Con la sessione valida non c'e' MFA da fare, e per questo la
+  sessione di **ciascuna** utenza si rinnova **prima** della demo. Se la sessione
+  e' scaduta e l'accesso richiede la MFA, il passo di accesso comune lo dice con il
   messaggio della spec dell'accesso, e la corsia diventa rossa: non e' un guasto
-  del lancio parallelo. Un SSO che ammette una sola sessione per utente e'
-  il motivo per cui le utenze **devono** essere diverse.
-- **Cosa vede il tester**: nel pannello di ogni corsia il nome dell'ambiente
-  (che nel caso A e' anche il nome dell'utenza). Mai una credenziale, mai un
-  percorso di file.
+  del parallelo. Un SSO che ammette una sola sessione attiva per utente e' il
+  motivo per cui le utenze **devono** essere diverse.
+- **Un'applicazione aziendale e' proprio il caso in cui la MFA o l'SSO bloccano il
+  login automatico**: vedi i rischi in §4.7. Per quelle utenze la sessione si
+  fa a mano (Accedi adesso) e il blocco `login` puo' mancare del tutto.
 
-### La versione minima per una demo
+### 4.6 Il legame con il passo di accesso (decisione D2)
 
-**Obiettivo**: mostrare "due scenari che girano insieme con due utenti
-diversi", sul sito pubblico di pratica gia' usato come ambiente `demo` (mai
-un'applicazione aziendale su un palco: dati e MFA).
+La spec `2026-10-01-accesso-negli-scenari-registrati-design.md` lasciava aperta
+D2: la frase `the user is logged in`, o con il ruolo `the user is logged in as
+{string}` "se un giorno un ambiente avra' piu' di un utente". Quel giorno e'
+questo. Proposta di questa bozza (da confermare, e si costruisce **con** le
+utenze, non prima):
 
-**Cosa si costruisce** (e' la fetta S0 piu' la S3 di §6, ridotta a due corsie):
+- **`the user is logged in`** resta, ed e' quella che la generazione scrive:
+  esegue l'accesso con l'utenza che la **corsia** ha scelto (`BDD_UTENTE`, o
+  quella di fabbrica). Gli scenari registrati finora e quelli futuri non
+  nominano nessuna persona: lo stesso scenario gira con l'utenza A e con la B.
+- **`the user is logged in as {string}`** si aggiunge per lo scenario *per un
+  ruolo* (l'amministratore vede il pannello): il nome e' quello di un'utenza
+  dell'ambiente, e **vince** su `BDD_UTENTE` per quello scenario. Se l'ambiente di
+  lancio non ha quell'utenza, lo scenario diventa rosso con un messaggio che dice
+  quali ci sono: non cade su un'altra in silenzio.
+- La Page Object dell'accesso non cambia struttura: riceve il `Target` gia'
+  appiattito. Il passo con `as` costruisce quello giusto con
+  `resolveTarget(ambiente, nome)` dentro il World.
+- `STEP_CATALOG.md` si rigenera con `npm run catalog`; il passo nuovo non si
+  scrive a mano. Per la regola del progetto, il passo nuovo nasce `@wanted` e
+  l'implementazione aspetta l'approvazione del team: **il proprietario ha gia'
+  deciso il modello, la frase la approva il team.**
+
+### 4.7 Il caso della demo: un'applicazione aziendale
+
+> **Decisione del proprietario, 1/10/2026 (Q6 = b):** la demo in parallelo gira su
+> un'**applicazione aziendale**, non sul sito pubblico di pratica. Non e' la
+> raccomandazione della prima bozza ("mai un'applicazione aziendale su un palco:
+> dati e MFA"): i rischi che la raccomandazione evitava restano tutti, e adesso
+> vanno gestiti uno per uno.
+
+**Obiettivo**: mostrare "due scenari che girano insieme con due utenze diverse"
+sull'applicazione vera, sulla macchina aziendale.
+
+**I rischi, e cosa si fa per ciascuno**
+
+| Rischio | Cosa succede | Come si tiene a bada |
+|---|---|---|
+| **MFA o SSO** che il login automatico non passa | La corsia parte, trova la pagina di accesso o il codice da inserire, e diventa rossa davanti al pubblico | **Sessioni salvate per ogni utenza prima della demo**, fatte a mano con "Accedi adesso". Il passo di accesso comune non deve mai dover rifare il login in sala |
+| **Scadenza delle sessioni** | Una sessione valida ieri non lo e' piu' oggi (durata decisa dall'applicazione, non da noi) | La sessione si rinnova **la mattina stessa**, si legge l'eta' dal Controllo, e **in apertura si lancia ogni corsia da sola** prima del pubblico. La durata vera si scopre con la prova generale: non si suppone |
+| **Dati reali che due utenti possono pestarsi** | Due utenze che toccano lo stesso record, un ordine modificato da due parti, rossi che non c'entrano con i nostri scenari. Peggio: si modifica un dato vero | Scenari **di sola lettura** o su dati di prova dichiarati; due utenze che non condividono nulla (da verificare, prima, con chi gestisce l'applicazione); nessuno scenario che cancelli o invii. La scelta degli scenari della demo la approva chi conosce l'applicazione |
+| **Dati reali su uno schermo proiettato** | Dati personali o importi sul palco, nelle schermate catturate dei passi falliti e nel video | Utenze e dati di prova **senza dati personali**, scelti prima; i passi falliti mostrano la schermata catturata: provare anche un rosso nella prova generale per vedere cosa finisce a schermo. Il video di riserva, se contiene dati reali, resta sulla macchina aziendale |
+| **Rete aziendale** | Proxy, VPN, un firewall che tarda, un limite di richieste per utente o per indirizzo, un antivirus che rallenta due browser che partono insieme. Timeout (`BDD_TIMEOUT` 60 s) dove sul sito pubblico non c'erano | Prova generale **sulla stessa macchina, sulla stessa rete, alla stessa ora** della demo. Se serve, `rallenta` e un tetto basso di corsie |
+| **Piu' sessioni dello stesso utente non ammesse** | La seconda disconnette la prima | E' il motivo per cui le utenze devono essere due persone diverse per l'applicazione. Si verifica nella prova generale, non si assume |
+| **Un nome aziendale finisce nel repository** | Un indirizzo, un'utenza o un nome di prodotto in un commit | Tutto in `bdd-targets.json` e `.env` (gitignorati). Documenti ed esempi dicono "l'applicazione clinica", mai un nome |
+
+**Prova generale obbligatoria sulla macchina aziendale**, non sul portatile di
+sviluppo, il giorno prima e **ripetuta la mattina**: la "Prova manuale finale" di
+§9, con questi passi in piu': misurare la durata vera delle sessioni, provare un
+rosso per vedere cosa compare a schermo, provare a lanciare con la rete nelle
+condizioni di sala (Wi-Fi o cavo, VPN), e registrare il video di riserva.
+Nessuna demo si tiene se la prova generale non e' passata **su quella macchina**.
+
+**Cosa si costruisce** (fette S0, S3, SU, S8 di §6):
 
 1. **Registro**: `PERSONA` contro `test`, fino a due test contemporanei, id
    unici, `operazioniInCorso()`. Casi di test scritti prima.
-2. **Report per corsia**: `BDD_HTML` (due righe in `cucumber.js` e
-   `test-bersaglio.ts`).
-3. **Contratto `scenari: string[]`** nel validatore (la UI, per ora, ne manda
-   uno per corsia): cosi' la schermata non va riscritta quando arrivano i
-   lanci multipli.
-4. **Schermata**: la riga "scenario + ambiente" si puo' ripetere (al massimo
-   due), un solo pulsante "Lancia", due pannelli affiancati, "Interrompi" per
-   corsia e "Interrompi tutto". Il corpo di oggi della pagina diventa un
-   componente di corsia, usato una o due volte.
-5. **Ambienti**: `demo-utente-a` e `demo-utente-b` creati **dal Controllo**
-   (nessun codice), ognuno con login e sessione registrati.
-6. **Due scenari salvati**, registrati dalla sessione, con il passo di accesso
-   comune.
-7. **Prova generale** (§9), con la sessione di ciascuna utenza rinnovata il
-   giorno prima.
+2. **Report per corsia**: `BDD_HTML`.
+3. **Contratto `scenari: string[]`** nel validatore.
+4. **Utenze nell'ambiente** (§4.2-4.6): `utente`, `BDD_UTENTE`, il Controllo per
+   utenza, il passo `as {string}`.
+5. **Finestre affiancate** (§3, "Guarda il browser").
+6. **Schermata**: la riga "scenario + ambiente + utenza" si puo' ripetere (al
+   massimo due), un solo pulsante "Lancia", due pannelli affiancati,
+   "Interrompi" per corsia e "Interrompi tutto".
+7. **Preparazione**: le due utenze dell'applicazione aziendale, le sessioni, due
+   scenari salvati (con il passo di accesso comune), la prova generale.
 
-**Cosa NON si costruisce**: modello a utenze (B), tag (C), `paralleli=N`, suite,
-scelta multipla, endpoint aggregato, posizione automatica delle finestre,
-Duplica ambiente. Tutto questo e' utile e sta in §6, ma dopo.
-
-**Costo onesto (stima): da 3 a 5 giorni, centro 4**, cioe' le fette di §6: S0
-(id unici, report per corsia, contratto `scenari`, verifica dell'Interrompi:
-1), S3 (registro con i suoi casi, 1; schermata a due corsie nelle due lingue,
-1,5) e la preparazione (ambienti, scenari, prova generale: 0,5). Il rischio che
-sposta la stima verso 5 e' l'Interrompi (se Cucumber resta orfano) e il
-Controllo che, per la seconda utenza, chiede piu' tentativi del previsto. Il tempo di calendario conta: la demo e' a meta'
-ottobre, quindi questa e' la fetta da fare per prima.
-
-**Un dettaglio da non dare per scontato**: sul sito pubblico di pratica le
-utenze di prova sono piu' d'una con la stessa password, ma alcune hanno
-difetti voluti. Se ne scelgono due **senza** difetti (altrimenti uno degli
-scenari "fallisce" sul palco, e non per colpa nostra). Come si distingue a
-schermo chi e' dentro: un segno dell'applicazione (un nome mostrato, o un
-cookie leggibile dal controllo di §9). Si trova in prova generale; se
-l'applicazione non ne ha, si sceglie un'altra applicazione di pratica, non si
-finge.
+**Cosa NON si costruisce**: tag (C), `paralleli=N`, suite, scelta multipla,
+endpoint aggregato, uno scenario con due attori.
 
 **Piano B se sul palco qualcosa si rompe**, in ordine di rinuncia:
 
-1. **Una delle due sessioni e' scaduta** (si vede dal Controllo, che mostra l'eta'
-   della sessione): "Accedi adesso" sull'utenza, due minuti, si rilancia.
-   Il giorno stesso, in apertura, si lancia **ogni corsia da sola** prima del
-   pubblico.
+1. **Una sessione e' scaduta** (il Controllo mostra l'eta' di ciascuna): "Accedi
+   adesso" sull'utenza, due minuti, si rilancia. In apertura si e' gia'
+   lanciata ogni corsia da sola.
 2. **Le due finestre si sovrappongono o la macchina rallenta**: si lancia **senza**
-   "Guarda il browser": restano i due pannelli di risultato, che sono la cosa
-   importante.
-3. **Il parallelo si pianta**: si lancia la prima corsia, poi la seconda, **con lo
-   stesso schermo**, dicendolo ("qui girano insieme, adesso li facciamo uno
-   dopo l'altro"). Funziona oggi, senza niente di nuovo.
-4. **Nulla funziona**: il video della prova generale, registrato in anticipo
-   (`PRESENTATION.md` prevede gia' un video di riserva per l'atto del
-   Registra).
+   "Guarda il browser": restano i due pannelli di risultato, la cosa importante.
+3. **Il parallelo si pianta**: prima corsia, poi la seconda, con lo stesso schermo,
+   dicendolo ("qui girano insieme, adesso li facciamo uno dopo l'altro"). Funziona
+   oggi, senza niente di nuovo.
+4. **Le utenze nell'ambiente non sono pronte in tempo**: due **ambienti**
+   (`app-a`, `app-b`, approccio A) con la stessa applicazione. Si fa oggi dal
+   Controllo, senza codice. Non e' un ripiego da nascondere: e' il motivo per cui
+   il modello B si puo' consegnare in fette senza mettere a rischio la data.
+5. **L'applicazione aziendale non risponde o la rete cede**: la **stessa demo sul
+   sito pubblico di pratica** (`demo`, con due utenze di prova **senza** difetti
+   voluti, altrimenti uno scenario "fallisce" sul palco non per colpa nostra). Si
+   prepara in anticipo e si prova una volta: e' lo stesso codice con un altro
+   ambiente.
+6. **Nulla funziona**: il video della prova generale, registrato in anticipo
+   (`PRESENTATION.md` prevede gia' un video di riserva per l'atto del Registra).
+
+Come si distingue a schermo chi e' dentro: un segno dell'applicazione (un nome
+mostrato, un riquadro "utente" nell'intestazione). Si trova nella prova generale;
+se non c'e', si dice, non si finge.
+
+### 4.8 La stima, rifatta (e' una stima)
+
+La prima bozza dava **4 giorni** (3-5) per la demo, con il modello a utenze
+escluso. Con B e con un'applicazione aziendale la stima cambia. **Sono stime,
+non misure: nessuna fetta e' stata provata.**
+
+| Voce | Giorni (stima) |
+|---|---|
+| S0 fondamenta (id unici, `scenari`, `BDD_HTML`, verifiche Cucumber, Interrompi) | 1 |
+| S3 due corsie (registro, schermata a due pannelli, riaggancio) | 2,5 |
+| **SU utenze nell'ambiente**: `targets.ts` (forma, risoluzione, compatibilita'), `session.ts`/`record.ts`/`test-bersaglio.ts`/`world.ts` e `utente`: 2 · passo di accesso `as {string}` e catalogo: 0,5 · Controllo per utenza e "Aggiungi utenza" nelle due lingue: 1,5-2 · generazione e controlli: 0,5-1 | 4,5-5,5 (centro 5) |
+| S8 finestre affiancate (§3) | 1 |
+| Preparazione: utenze, sessioni, scenari, prova generale **sulla macchina aziendale** con la durata vera delle sessioni, video | 1,5 |
+| **Totale per la demo** | **circa 11 (da 9,5 a 12,5)** |
+
+Sono quasi **tre volte** la stima di prima, per due motivi: il modello B (da zero
+a circa cinque giorni) e la prova generale vera. Il rischio che sposta la stima
+verso l'alto e' il Controllo (la seconda utenza chiede piu' tentativi del
+previsto) e l'applicazione aziendale (MFA, durata delle sessioni, rete), che si
+scoprono solo provandola. **La demo e' a meta' ottobre: dal 1/10 sono circa dieci
+giorni lavorativi, quindi il percorso completo e' al limite.** Per questo il
+piano B n. 4 (due ambienti) non e' un dettaglio: se SU non e' fusa in tempo, la
+demo si fa con la stessa schermata e due ambienti, e SU arriva dopo. L'ordine
+delle fette (§6) mette SU **dopo** S3 proprio perche' S3 da sola gia' consente la
+demo con due ambienti.
 
 ## 5. Piu' corsie e pagina Scenari: cosa serve da lei
 
@@ -550,30 +732,44 @@ chiedo, e mi fermo qui:
 ## 6. Ordine di consegna
 
 Fette piccole, ognuna utile da sola e verificabile. L'ordine **non** e' quello
-di costo crescente delle quattro capacita': e' quello che porta alla demo per
-prima. Le giornate sono stime.
+di costo crescente delle capacita': e' quello che porta alla demo per prima. Le
+giornate sono **stime**, rifatte il 1/10/2026 dopo le decisioni del proprietario
+(§11): le utenze nell'ambiente non sono piu' "solo se deciso" (era S7), sono la
+fetta **SU**, e prima della demo.
 
 | Fetta | Cosa | Perche' sta li' | Stima | Dipende da |
 |---|---|---|---|---|
-| **S0** Fondamenta | Id unici; `BDD_HTML`; `scenari: string[]` validato (la UI ne manda uno); verifica e, se serve, correzione dell'Interrompi che lascia orfani | Senza queste, qualunque cosa dopo e' costruita su un difetto | 1 | spec dell'accesso (costruita) |
-| **S3** Due corsie | Registro con `PERSONA` e fino a due test; `operazioniInCorso()`; schermata a due pannelli; riaggancio con lista | **E' il cuore della demo** | 2,5 | S0 |
-| **Demo** Preparazione | Ambienti `demo-utente-*`, scenari, prova generale, video di riserva | Non e' codice, ma e' tempo | 0,5 | S3 |
-| **S1** Lanci multipli | Scelta multipla, gruppi come scorciatoia, `leggiScenariTest`, totale, "Vai al primo fallito", interruttore "Fermati al primo fallito" (`fermati`) | E' la capacita' piu' economica e la piu' usata | 2 | S0; **pagina Scenari** per il punto "Esegui i selezionati", ma si consegna anche senza |
-| **S2** Suite | `src/suites/`, `/api/suite`, scelta nella schermata, disabilita il parallelo | Poco codice, vale molto per chi ripete le stesse prove | 1 | S1 |
+| **S0** Fondamenta | Id unici; `BDD_HTML`; `scenari: string[]` validato (la UI ne manda uno); verifica delle ipotesi su Cucumber (§9); verifica e, se serve, correzione dell'Interrompi che lascia orfani | Senza queste, qualunque cosa dopo e' costruita su un difetto | 1 | spec dell'accesso (costruita) |
+| **S3** Due corsie | Registro con `PERSONA` e fino a due test; `operazioniInCorso()`; schermata a due pannelli; riaggancio con lista | **E' il cuore della demo**, e da sola consente la demo con due ambienti (piano B) | 2,5 | S0 |
+| **SU** Utenze nell'ambiente | `utenti` in `targets.ts` e compatibilita'; `utente`/`BDD_UTENTE` in `session.ts`, `record.ts`, `scout.ts`, `test-bersaglio.ts`, `world.ts`; `Parametri.utente`; il passo `the user is logged in as {string}` (D2) e il catalogo; il Controllo per utenza e "Aggiungi utenza"; generazione | Q5 = b: il modello vero, subito. Va **dopo** S3 perche' la demo non si ferma se SU slitta | 4,5-5,5 | S0; D2 della spec dell'accesso |
+| **S8** Finestre affiancate | `finestra=` e `schermo=`, `world.ts` (posizione, dimensione, viewport), calcolo dal numero di corsie (§3) | Q7 = b: la demo con "Guarda il browser" | 1 | S3 |
+| **Demo** Preparazione | Le due utenze **dell'applicazione aziendale**, sessioni, scenari, prova generale sulla macchina aziendale, video di riserva | Non e' codice, ma e' tempo, e la prova generale non si salta (§4.7) | 1,5 | S3 (con due ambienti) oppure SU (con le utenze) |
+| **S1** Lanci multipli | Scelta multipla, gruppi come scorciatoia, `leggiScenariTest`, totale, "Vai al primo fallito", interruttore "Fermati al primo fallito" (`fermati`) | E' la capacita' piu' economica e la piu' usata | 2 | S0; **pagina Scenari** per "Esegui i selezionati", ma si consegna anche senza |
+| **S2** Suite | `src/suites/` versionato (Q2 = a), `/api/suite`, scelta nella schermata, disabilita il parallelo | Poco codice, vale molto per chi ripete le stesse prove | 1 | S1 |
 | **S4** Parallelo in corsia | `paralleli=N` (1-4), selettore "Quanti alla volta", avviso sull'account | Solo dopo S1, perche' serve il lettore raggruppato | 1,5 | S1 |
-| **S5** Piu' di due corsie | Tetto portato a 3, endpoint `GET /api/lanci/<id>` a polling unico, cache di lettura dei file, lancio "tutto o niente", misura di CPU e RAM | Va misurata prima di alzare il tetto | 1,5 | S3, S1 |
-| **S6** Duplica ambiente | Pulsante nel Controllo | Toglie lo sporco dell'approccio A | 0,5 | -- |
-| **S7** Utenze nell'ambiente (B) | **Solo se deciso** (Q5): `targets.ts`, `session.ts`, `record.ts`, `test-bersaglio.ts`, `world.ts`, accesso, derivazione del login, Controllo, generazione | Il modello vero, quando A non basta | 4-6 | decisione D2 della spec dell'accesso, prove sul campo |
+| **S5** Piu' di due corsie | Tetto portato a 3 **dopo la misura** (Q3), endpoint `GET /api/lanci/<id>` a polling unico, cache di lettura dei file, lancio "tutto o niente", misura di CPU e RAM | Va misurata prima di alzare il tetto | 1,5 | S3, S1 |
 
-**Percorso per la demo**: S0 + S3 + Demo, circa 4 giorni (3-5). **Capacita'
-complete senza B**: circa 10 giorni (stima: somma delle fette S0-S6, preparazione
-esclusa), in sette fette ognuna fusa da sola.
+La vecchia S6 "Duplica ambiente" **decade**: con le utenze nell'ambiente il suo
+lavoro lo fa "Aggiungi utenza" dentro SU.
+
+**Percorso per la demo**: S0 + S3 + SU + S8 + Demo, circa **11 giorni (9,5-12,5,
+stima)**, contro i 4 della prima bozza (§4.8). **Capacita' complete**: circa
+**17 giorni** (stima: somma di S0-S8 piu' la preparazione), in nove fette ognuna
+fusa da sola. La demo e' a meta' ottobre: il percorso e' al limite, e il piano B
+con due ambienti (§4.7) e' cio' che tiene la data.
 
 Ogni fetta chiude con il giro del progetto: `npx tsc --noEmit`,
-`npm run check:all`, `npm run rules:check` nella radice; `npm test` e
-`npm run build` in `web-ui`.
+`npm run check:all`, `npm run rules:check`, `npm run test:dry` nella radice;
+`npx tsc --noEmit`, `npx vitest run` e `npm run build` in `web-ui`.
 
 ## 7. Sicurezza e vincoli del progetto
+
+- **Nuovi parametri tipizzati** (dopo le decisioni del 1/10): `utente` (un nome
+  che passa `BERSAGLIO_VALIDO` **e** esiste nell'ambiente), `schermo` (due interi
+  nei limiti di §3) e, calcolato dal server, `finestra` (quattro interi). Mai una
+  stringa libera. Opzioni nude: `utente=b`, `finestra=0,0,960,1040`.
+- **Le credenziali delle utenze** stanno solo in `.env`, riferite come `${VAR}`;
+  il record su disco e il pannello portano il **nome** dell'utenza, mai un valore.
 
 - **L'elenco dei comandi resta chiuso.** Non nasce nessun nome nuovo in
   `NomeComando`: tutto passa dal comando `test`. Una suite, un gruppo, una
@@ -604,7 +800,7 @@ Ogni fetta chiude con il giro del progetto: `npx tsc --noEmit`,
   pianificazione.
 - **Nessun dato dell'applicazione fuori dalla macchina**: i `.ndjson` e gli
   HTML stanno in `reports/`, gitignorato. Le suite in `src/suites/` contengono
-  solo percorsi di scenari salvati (domanda Q2).
+  solo percorsi di scenari salvati (Q2 = a, deciso).
 
 ## 8. Perche' non una schermata nuova
 
@@ -655,6 +851,26 @@ si riscrivono: non si cancellano):
 `lib/suite.test.ts` (S2): un percorso fuori da `src/features/`, un duplicato, un
 nome non valido, un file mancante (segnalato per nome, senza cadere).
 
+Utenze (fetta SU), `lib/esecuzione.test.ts`, `scripts/lib/targets.check.ts`,
+`scripts/lib/accesso.check.ts`:
+- un file di ambienti **a un utente solo** (la forma di oggi) risolto dal codice
+  nuovo da' lo stesso `Target` di prima;
+- un ambiente con `utenti`: `resolveTarget(nome, 'b')` restituisce sessione e
+  login di `b`; senza nome, l'utenza di fabbrica (o la prima);
+- `utenti` insieme a `session` o `login` dell'ambiente: errore che dice di
+  sceglierne uno; `utente` inesistente: errore che elenca quelle che ci sono;
+  `utente` su un ambiente senza `utenti`: errore;
+- `utente=b` in forma nuda, nessun argomento con i trattini, `x && del *`
+  rifiutato;
+- il passo `as {string}` con un'utenza inesistente: rosso con l'elenco, mai
+  un'altra utenza in silenzio;
+- due `Target` di utenze diverse non condividono il file di sessione.
+
+Finestre (fetta S8), `lib/esecuzione.test.ts`: `finestra` = quattro interi,
+mai un trattino, rifiutata fuori dai limiti; non si applica a `registrazione`,
+`sessione`, `scansione`; il calcolo della griglia per 1, 2, 3 e 4 corsie, e il
+ripiego "sovrapposte con scarto" sotto il limite di larghezza.
+
 `api/esegui.test.ts`: un lancio con corsie oltre il tetto e' rifiutato prima di
 avviare qualunque processo; un `bersaglio` con `x && del *` resta rifiutato.
 
@@ -676,10 +892,12 @@ avviare qualunque processo; un `bersaglio` con `x && del *` resta rifiutato.
 
 ### Prova manuale finale
 
-Sulla macchina della demo, con il sito pubblico di pratica:
+Sulla **macchina della demo, sulla sua rete**, con l'applicazione aziendale
+(Q6 = b; il sito pubblico di pratica e' il piano B, §4.7). Con le utenze
+nell'ambiente (§4):
 
-1. Dal Controllo: `demo-utente-a` e `demo-utente-b`, accesso registrato e
-   sessione fatta per entrambi.
+1. Dal Controllo: le due utenze dell'ambiente, accesso registrato e sessione
+   fatta per entrambe. Annotare la **durata vera** della sessione di ciascuna.
 2. Registrare e salvare due scenari diversi, con il passo di accesso comune.
 3. Lanciare ogni corsia **da sola**: verde.
 4. Lanciare **insieme**, con "Guarda il browser" e `rallenta` a 500: due
@@ -695,6 +913,12 @@ Sulla macchina della demo, con il sito pubblico di pratica:
    decidere il tetto.
 9. Ripetere dal passo 3 con un secondo utente umano guardando lo schermo, senza
    dare spiegazioni (e' la prova P4 applicata a questa schermata).
+10. Con "Guarda il browser": le finestre si affiancano da sole (§3)? Lo schermo
+    della demo, la scala di Windows e il secondo monitor, se c'e'. Lo **stesso**
+    scenario affiancato e nascosto da' lo stesso esito?
+11. Provare **un rosso apposta** e guardare cosa compare a schermo: nessun dato
+    personale nelle schermate catturate.
+12. Ripetere il giro **la mattina della demo**, con le sessioni rinnovate.
 
 ## 10. Fuori da questo lavoro
 
@@ -712,17 +936,42 @@ Sulla macchina della demo, con il sito pubblico di pratica:
 - **Credenziali nel gestore del sistema** (gia' dichiarato nella spec del
   cruscotto).
 
-## 11. Domande aperte per il proprietario
+## 11. Decisioni e domande
 
-| # | Domanda | Opzioni | Raccomandazione |
+
+### Decise (proprietario, 1/10/2026)
+
+Dieci domande, tutte decise. Tre (Q5, Q6, Q7) **non** seguono la raccomandazione
+della prima bozza: il testo di questa spec e' stato allineato (§3, §4, §6, §9).
+
+| # | Domanda | Decisione | Segue la raccomandazione? | Dove si vede |
+|---|---|---|---|---|
+| Q1 | Se uno scenario fallisce in una lista | **(c)** sceglie il tester, con un interruttore; di fabbrica continua | si' | §1 |
+| Q2 | Dove vivono le suite | **(a)** `src/suites/`, versionate | si' | §2 |
+| Q3 | Quanti test contemporanei al massimo | **2** per la demo, **3 dopo una misura** (costante nel codice) | si' | §3, S5 |
+| Q4 | Due corsie sullo stesso ambiente | **(b)** consentite, con un avviso | si' | §3, §4.4 |
+| Q5 | Utenze: A o B | **(b)** il modello "piu' utenti dentro un ambiente" **subito** | **no**: la raccomandazione era (a) | §4, fetta SU |
+| Q6 | Su quale applicazione gira la demo | **(b)** un'**applicazione aziendale** | **no**: la raccomandazione era (a), il sito pubblico | §4.7 |
+| Q7 | Finestre affiancate in "Guarda il browser" | **(b)** posizione **automatica** | **no**: la raccomandazione era (a), a mano | §3, fetta S8 |
+| Q8 | `paralleli=N` dentro una corsia | **(b)** si', spento di fabbrica, con l'avviso sull'account | si' | §3, S4 |
+| Q9 | Un test e una registrazione insieme | **(a)** vietato, come oggi | si' | §3 |
+| Q10 | Chi pulisce `reports/cruscotto/` | **(a)** la pagina Scenari | si' | §5 |
+
+**Cosa e' cambiato per le tre che deviano dalla raccomandazione:**
+
+- **Q5**: il lavoro sale da "un ambiente per utenza, a costo zero" a circa cinque
+  giorni di modello. Ne e' conseguenza il piano B della demo (due ambienti, che
+  funzionano oggi) e la fine di "Duplica ambiente".
+- **Q6**: la demo porta i rischi che la raccomandazione evitava (MFA e SSO, sessioni
+  che scadono, dati reali, rete aziendale), e una prova generale **obbligatoria**
+  sulla macchina aziendale. La stima passa da 4 a circa 11 giorni, insieme a Q5.
+- **Q7**: il viewport del test **cambia** quando le finestre si affiancano. E' un
+  compromesso dichiarato, con i suoi limiti, in §3.
+
+### Aperte, nate da queste decisioni
+
+| # | Domanda | Per chi | Proposta |
 |---|---|---|---|
-| Q1 | Se uno scenario fallisce in una lista, che si fa | (a) continua sempre; (b) si ferma sempre; (c) scelta del tester con interruttore | **(c)**, interruttore spento: continua |
-| Q2 | Dove vivono le suite | (a) `src/suites/` versionato; (b) `reports/` locale; (c) tag nei `.feature` | **(a)**: contengono solo percorsi di scenari gia' versionati, e devono viaggiare |
-| Q3 | Quanti test contemporanei al massimo | 2 (demo), 3, 4 | **2 per la demo, 3 dopo la misura di S5**; e' una costante |
-| Q4 | Due corsie sullo stesso ambiente insieme | (a) vietato; (b) consentito con avviso; (c) consentito | **(b)**: e' la strada del parallelo veloce, a rischio dichiarato |
-| Q5 | Utenze: A o B | (a) A ora, B se serve; (b) B ora | **(a)**; B si decide dopo le prove sul campo, insieme alla D2 dell'accesso (`as {string}`) |
-| Q6 | Su quale applicazione gira la demo | (a) sito pubblico di pratica; (b) un'applicazione aziendale | **(a)**: nessuna MFA, nessun dato reale, due utenze di prova |
-| Q7 | Finestre affiancate in "Guarda il browser" | (a) a mano; (b) posizione automatica (cambia il viewport) | **(a)** per la demo; (b) solo se i tester la chiedono |
-| Q8 | `paralleli=N` dentro una corsia | (a) mai; (b) si', spento di fabbrica, con l'avviso sull'account; (c) si', acceso | **(b)** |
-| Q9 | Un test e una registrazione insieme | (a) vietato, come oggi; (b) consentito | **(a)**: si contendono schermo e sessione |
-| Q10 | Chi pulisce `reports/cruscotto/` | (a) la pagina Scenari; (b) un lavoro a parte; (c) nessuno | **(a)**, con tetto sul numero di esecuzioni conservate |
+| Q11 | La frase del passo con il ruolo: `the user is logged in as {string}` (§4.6) | il team (regola dei passi nuovi: `@wanted`, approvazione prima di implementare) | si' alla frase; senza il nome resta l'utenza della corsia |
+| Q12 | Quali due utenze e quali due scenari della demo, sull'applicazione aziendale: di sola lettura, senza dati personali, con utenze che non condividono dati | chi conosce l'applicazione | da decidere **prima** di SU, perche' decide cosa si registra |
+| Q13 | Il limite di larghezza sotto cui le finestre non si affiancano ma si sovrappongono con scarto (§3) | il proprietario, dopo averlo visto su uno schermo vero | 800 px, da regolare in prova generale |
