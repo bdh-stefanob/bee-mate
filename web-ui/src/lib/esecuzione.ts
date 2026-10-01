@@ -24,6 +24,12 @@ export interface Parametri {
    */
   scenario?: string;
   /**
+   * Piu' scenari insieme, nell'ordine dato: da 1 a 100 voci, ognuna con la regola
+   * di `scenario`. Una lista con una voce sola e `scenario` sono la stessa cosa;
+   * i due insieme sono un errore. Cucumber li esegue in quest'ordine.
+   */
+  scenari?: string[];
+  /**
    * Millisecondi di pausa fra un'azione e l'altra, per chi guarda il browser.
    * Un numero intero, mai una riga: vale solo con `vedi`.
    */
@@ -103,6 +109,49 @@ function scenarioDi(valore: unknown): string {
   return valore;
 }
 
+/** Una lista piu' lunga non e' una scelta, e la riga di comando di Windows ha un limite. */
+const SCENARI_MASSIMO = 100;
+
+/**
+ * La lista di scenari da eseguire, validata e normalizzata. `undefined` se la
+ * richiesta non sceglie niente (tutti gli scenari registrati).
+ *
+ * - vuota, troppo lunga, o con una voce non valida: errore — mai "nessun
+ *   percorso", che per Cucumber vuol dire tutti;
+ * - la stessa voce due volte: errore che la nomina;
+ * - un file intero e una sua riga: resta solo l'intero. Cucumber, dati
+ *   `a.feature` e `a.feature:3`, esegue SOLO la riga (verificato in
+ *   `percorsi-cucumber.check.ts`): chi ha scelto il file intero otterrebbe uno
+ *   scenario e nessun errore;
+ * - due righe dello stesso file restano due voci: Cucumber le esegue una volta
+ *   ciascuna, nell'ordine del file.
+ */
+function scenariDi(p?: Parametri): string[] | undefined {
+  if (p?.scenari === undefined) {
+    return p?.scenario !== undefined ? [scenarioDi(p.scenario)] : undefined;
+  }
+  if (p.scenario !== undefined) {
+    throw new Error('scenario e scenari insieme: se ne sceglie uno solo');
+  }
+  const lista: unknown = p.scenari;
+  if (!Array.isArray(lista)) {
+    throw new Error(`scenari non validi: serve una lista, non ${JSON.stringify(lista)}`);
+  }
+  if (lista.length === 0) throw new Error("scenari: la lista e' vuota, serve almeno uno scenario");
+  if (lista.length > SCENARI_MASSIMO) {
+    throw new Error(`scenari: al massimo ${SCENARI_MASSIMO} voci, ricevute ${lista.length}`);
+  }
+  const voci = lista.map(scenarioDi);
+  const visti = new Set<string>();
+  for (const v of voci) {
+    if (visti.has(v)) throw new Error(`scenario doppio nella lista: ${v}`);
+    visti.add(v);
+  }
+  const fileDi = (v: string): string => (v.includes(':') ? v.slice(0, v.lastIndexOf(':')) : v);
+  const interi = new Set(voci.filter((v) => !v.includes(':')));
+  return voci.filter((v) => !v.includes(':') || !interi.has(fileDi(v)));
+}
+
 /**
  * Gli eseguibili si chiamano per percorso, non per nome.
  *
@@ -155,8 +204,7 @@ export function rigaDiComando(
       return script('generate.ts', `manifest=${percorsoDi(p?.manifesto, 'manifesto')}`);
     case 'test': {
       // Senza una scelta, gli scenari usciti dalle registrazioni, come prima.
-      const cosa = p?.scenario !== undefined ? scenarioDi(p.scenario) : 'generati';
-      const argomenti = [bersaglioDi(p), cosa];
+      const argomenti = [bersaglioDi(p), ...(scenariDi(p) ?? ['generati'])];
       if (p?.vedi) argomenti.push('vedi');
       const rallenta = rallentaDi(p);
       if (p?.vedi && rallenta > 0) argomenti.push(`rallenta=${rallenta}`);

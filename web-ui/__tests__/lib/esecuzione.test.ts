@@ -188,6 +188,111 @@ describe('la velocita\' con cui si guarda il browser', () => {
   });
 });
 
+describe('una lista di scenari scelta dalla finestra', () => {
+  const A = 'src/features/app/flusso/a.feature';
+  const B = 'src/features/app/flusso/b.feature';
+  const dopoIlBersaglio = (argomenti: string[]) => argomenti.slice(3); // [ts-node, script, bersaglio, ...]
+
+  it('due scenari sono due argomenti separati, nell\'ordine dato, e nessuno comincia con un trattino', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro', scenari: [B, A] });
+    expect(r.argomenti).toEqual([
+      'node_modules/ts-node/dist/bin.js', 'scripts/test-bersaglio.ts', 'lavoro', B, A,
+    ]);
+    expect(r.argomenti.some((x) => x.startsWith('-'))).toBe(false);
+    expect(r.argomenti).not.toContain('generati');
+  });
+
+  it('un solo scenario in lista e\' come lo scenario singolo di prima', () => {
+    const lista = rigaDiComando('test', { bersaglio: 'lavoro', scenari: [A] });
+    const singolo = rigaDiComando('test', { bersaglio: 'lavoro', scenario: A });
+    expect(lista.argomenti).toEqual(singolo.argomenti);
+  });
+
+  it('lo scenario singolo continua a funzionare identico', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro', scenario: A, vedi: true });
+    expect(dopoIlBersaglio(r.argomenti)).toEqual([A, 'vedi']);
+  });
+
+  it('le opzioni si accodano dopo tutti gli scenari', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro', scenari: [A, B], vedi: true, rallenta: 300, messaggi: 'reports/cruscotto/x.ndjson' });
+    expect(dopoIlBersaglio(r.argomenti)).toEqual([A, B, 'vedi', 'rallenta=300', 'messaggi=reports/cruscotto/x.ndjson']);
+  });
+
+  it('una lista vuota e\' un errore, non "tutti gli scenari registrati"', () => {
+    // Il difetto che questo caso ferma: una lista vuota in silenzio poteva
+    // diventare "nessun percorso", cioe' tutti gli scenari — l'opposto di
+    // "non ho scelto niente".
+    expect(() => rigaDiComando('test', { bersaglio: 'x', scenari: [] })).toThrow(/scenari.*vuota/);
+  });
+
+  it('piu\' di cento voci sono un errore, cento passano', () => {
+    const voci = (n: number) => Array.from({ length: n }, (_, i) => `src/features/app/f${i}.feature`);
+    expect(rigaDiComando('test', { bersaglio: 'x', scenari: voci(100) }).argomenti.length).toBe(3 + 100);
+    expect(() => rigaDiComando('test', { bersaglio: 'x', scenari: voci(101) })).toThrow(/al massimo 100/);
+  });
+
+  it('una voce non valida rifiuta tutta la lista, e dice quale', () => {
+    for (const veleno of [
+      'src/features/x.feature;src/features/y.feature',
+      'src/features/../../etc/passwd.feature',
+      'src/features/x y.feature',
+      'src/features/x.feature & del *',
+      'src/steps/x.steps.ts',
+      'src/features/x.feature:0',
+      'vedi',
+      '',
+    ]) {
+      expect(
+        () => rigaDiComando('test', { bersaglio: 'x', scenari: [A, veleno] }),
+        JSON.stringify(veleno)
+      ).toThrow(/scenario non valido/);
+    }
+  });
+
+  it('una voce che non e\' una stringa e una lista che non e\' una lista sono rifiutate', () => {
+    for (const cattivo of [[A, 42], [A, null], [[A]], 'src/features/a.feature', { 0: A }]) {
+      expect(
+        () => rigaDiComando('test', { bersaglio: 'x', scenari: cattivo as unknown as string[] }),
+        JSON.stringify(cattivo)
+      ).toThrow(/scenar/);
+    }
+  });
+
+  it('scenario e scenari insieme sono ambigui: errore', () => {
+    expect(() => rigaDiComando('test', { bersaglio: 'x', scenario: A, scenari: [B] })).toThrow(/scenario.*scenari|scenari.*scenario/);
+  });
+
+  it('lo stesso scenario due volte e\' un errore che lo nomina', () => {
+    expect(() => rigaDiComando('test', { bersaglio: 'x', scenari: [A, B, A] })).toThrow(/doppio.*a\.feature/);
+    expect(() => rigaDiComando('test', { bersaglio: 'x', scenari: [`${A}:3`, `${A}:3`] })).toThrow(/doppio/);
+  });
+
+  it('due righe dello stesso file restano due voci: Cucumber le esegue una volta ciascuna', () => {
+    // Verificato su Cucumber 10.9 (percorsi-cucumber.check.ts): il lanciatore non
+    // deve fonderle in `file:3:9`.
+    const r = rigaDiComando('test', { bersaglio: 'x', scenari: [`${A}:3`, `${A}:9`] });
+    expect(dopoIlBersaglio(r.argomenti)).toEqual([`${A}:3`, `${A}:9`]);
+  });
+
+  it('un file intero e una sua riga: resta solo l\'intero', () => {
+    // Il difetto che questo caso ferma: Cucumber, dato `a.feature` e `a.feature:3`,
+    // esegue SOLO la riga 3 (verificato). Chi sceglie il file intero e ne ha uno
+    // scenario non riceve nessun errore: un risultato verde che non e' il suo.
+    const r = rigaDiComando('test', { bersaglio: 'x', scenari: [`${A}:3`, B, A, `${A}:9`] });
+    expect(dopoIlBersaglio(r.argomenti)).toEqual([B, A]);
+  });
+
+  it('l\'intero sostituisce le righe anche quando viene dopo, e le righe di altri file restano', () => {
+    const r = rigaDiComando('test', { bersaglio: 'x', scenari: [`${B}:5`, `${A}:3`, A] });
+    expect(dopoIlBersaglio(r.argomenti)).toEqual([`${B}:5`, A]);
+  });
+
+  it('la lista vale solo per il comando test: gli altri non la leggono', () => {
+    const r = rigaDiComando('sessione', { bersaglio: 'x', scenari: [A] });
+    expect(r.argomenti.join(' ')).not.toContain('a.feature');
+  });
+});
+
 describe('la diagnosi non ricontrolla i tipi', () => {
   // Misurato il 30/9: 1,45 s per ogni apertura del Controllo, di cui circa 0,8
   // spesi a ricontrollare i tipi di script che `tsc` e `check:all` controllano
