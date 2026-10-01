@@ -470,7 +470,7 @@
     "suggerimentoPartenza": "Il catalogo cresce da solo: ogni scenario che salvi aggiunge i suoi step.",
     "vuotoComponentiTitolo": "Nessun componente ancora",
     "vuotoComponentiTesto": "Un componente compare quando uno step ne tocca uno: registra una sessione e salva lo scenario.",
-    "vuotoComponentiNonAgganciati": "{n, plural, one {Lo step del catalogo non è ancora agganciato a una pagina.} other {Gli # step del catalogo non sono ancora agganciati a una pagina.}}",
+    "vuotoComponentiNonAgganciati": "{n, plural, one {Lo step del catalogo non è ancora agganciato a una pagina.} other {I # step del catalogo non sono ancora agganciati a una pagina.}}",
     "registraSessione": "Registra una sessione",
     "riprova": "Riprova",
     "stepSenzaComponenteTesto": "Questo step non è ancora agganciato a un componente. Si aggancia da solo quando registri una sessione che lo usa.",
