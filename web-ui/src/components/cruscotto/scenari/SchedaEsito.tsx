@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { CheckCircle2, XCircle, CircleDashed, History } from 'lucide-react';
 import { FraseFallimento } from '@/components/cruscotto/FraseFallimento';
+import { LinkSchermata } from '@/components/cruscotto/scenari/LinkSchermata';
 import { formattaDurata, formattaQuando, type Traduttore } from '@/lib/formato-quando';
 import type { StatoScenario } from '@/lib/scenari-elenco';
 import type { UltimoEsito } from '@/lib/esiti-tipi';
@@ -73,6 +74,7 @@ export function SchedaEsito({ stato, ambiente }: { stato: StatoScenario; ambient
             ambiente: nomeAmbiente(stato.esito),
           })}
         </p>
+        <LinkSchermata esecuzione={stato.esito.esecuzione} />
       </>
     );
   } else if (stato.tipo === 'modificato') {

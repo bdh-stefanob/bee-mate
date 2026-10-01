@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { PlayCircle, Loader2, AlertTriangle, Square } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
+import { ProvaPassata } from '@/components/cruscotto/ProvaPassata';
 import { cn } from '@/lib/utils';
 import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
@@ -601,10 +602,20 @@ function ScheletroCaricamento() {
   );
 }
 
+/**
+ * `?prova=<id>` apre una prova GIA' conclusa in sola lettura (il "Vedi la
+ * schermata" di Scenari); senza, la schermata di sempre. L'id non e' fidato: lo
+ * valida il server.
+ */
+function EsecuzioneOProva() {
+  const prova = useSearchParams().get('prova');
+  return prova ? <ProvaPassata id={prova} /> : <EsecuzioneContenuto />;
+}
+
 export default function EsecuzionePage() {
   return (
     <Suspense fallback={<ScheletroCaricamento />}>
-      <EsecuzioneContenuto />
+      <EsecuzioneOProva />
     </Suspense>
   );
 }

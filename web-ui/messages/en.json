@@ -179,7 +179,22 @@
     "salvatoNuovo": "Saved as {file}.",
     "salvatoSovrascritto": "Saved as {file}, replacing the previous generated version.",
     "salvatoRinominato": "Saved as {file}: a hand-edited file already had that name and was left untouched.",
-    "interrompi": "Stop"
+    "interrompi": "Stop",
+    "provaTitolo": "Finished run",
+    "provaIntestazione": "Run {quando}, on {ambiente}. It is not running: it is only here to look at.",
+    "provaIntestazioneSenzaAmbiente": "Run {quando}, on an environment we do not know. It is not running: it is only here to look at.",
+    "provaAmbienteSconosciuto": "an unregistered environment",
+    "provaCaricamento": "Opening the run...",
+    "provaNonTrovataTitolo": "This run is gone",
+    "provaNonTrovataTesto": "Older runs are removed automatically so the computer does not fill up. Run the scenario again to get a new one.",
+    "provaNonValidaTitolo": "This address does not point to a run",
+    "provaNonValidaTesto": "Go back to the scenarios list and pick the run from there.",
+    "provaInCorsoTitolo": "This run is still going",
+    "provaInCorsoTesto": "Wait for it to finish: you will find it on the Run page.",
+    "provaErrore": "I could not read the run. Try again in a moment.",
+    "provaSenzaPassi": "This run left no steps to show.",
+    "provaVaiAScenari": "Back to scenarios",
+    "provaVaiAEsecuzione": "Go to Run"
   },
   "Riepilogo": {
     "durataLabel": "Duration: {durata}",
@@ -264,7 +279,9 @@
     "vuotoAzione": "Record your first scenario",
     "nonTrovatoTitolo": "This scenario is gone",
     "nonTrovatoTesto": "It was renamed, moved or deleted. Pick another one from the list.",
-    "tornaElenco": "Back to the list"
+    "tornaElenco": "Back to the list",
+    "vediSchermata": "See the screen",
+    "schermataNonPiuDisponibile": "The screen from this run is gone: older runs are removed automatically. Run the scenario again to see it."
   },
   "PassoTest": {
     "esitoPassato": "passed",

@@ -179,7 +179,22 @@
     "salvatoNuovo": "Salvato come {file}.",
     "salvatoSovrascritto": "Salvato come {file}, al posto della versione generata prima.",
     "salvatoRinominato": "Salvato come {file}: un file modificato a mano aveva già quel nome ed è rimasto com'era.",
-    "interrompi": "Interrompi"
+    "interrompi": "Interrompi",
+    "provaTitolo": "Prova conclusa",
+    "provaIntestazione": "Fatta {quando}, su {ambiente}. Non è in corso: è solo da guardare.",
+    "provaIntestazioneSenzaAmbiente": "Fatta {quando}, su un ambiente che non conosciamo. Non è in corso: è solo da guardare.",
+    "provaAmbienteSconosciuto": "un ambiente non registrato",
+    "provaCaricamento": "Apro la prova...",
+    "provaNonTrovataTitolo": "Questa prova non c'è più",
+    "provaNonTrovataTesto": "Le prove più vecchie si tolgono da sole per non riempire il computer. Riesegui lo scenario per averne una nuova.",
+    "provaNonValidaTitolo": "Questo indirizzo non indica una prova",
+    "provaNonValidaTesto": "Torna all'elenco degli scenari e scegli la prova da lì.",
+    "provaInCorsoTitolo": "Questa prova è ancora in corso",
+    "provaInCorsoTesto": "Aspetta che finisca: la trovi nella pagina Esecuzione.",
+    "provaErrore": "Non sono riuscito a leggere la prova. Riprova tra un momento.",
+    "provaSenzaPassi": "Questa prova non ha lasciato nessun passo da mostrare.",
+    "provaVaiAScenari": "Torna agli scenari",
+    "provaVaiAEsecuzione": "Vai a Esecuzione"
   },
   "Riepilogo": {
     "durataLabel": "Durata: {durata}",
@@ -264,7 +279,9 @@
     "vuotoAzione": "Registra il primo scenario",
     "nonTrovatoTitolo": "Questo scenario non c'è più",
     "nonTrovatoTesto": "È stato rinominato, spostato o eliminato. Scegline un altro dall'elenco.",
-    "tornaElenco": "Torna all'elenco"
+    "tornaElenco": "Torna all'elenco",
+    "vediSchermata": "Vedi la schermata",
+    "schermataNonPiuDisponibile": "La schermata di questa prova non c'è più: le prove più vecchie si tolgono da sole. Riesegui lo scenario per vederla di nuovo."
   },
   "PassoTest": {
     "esitoPassato": "superato",
