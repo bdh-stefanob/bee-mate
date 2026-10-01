@@ -952,6 +952,17 @@ nuova presente -> niente; vecchia assente -> niente; copia fallita -> non blocca
 L'avvio vero si prova a mano su una macchina con le impostazioni vecchie.
 **Bloccato da U1: non si inizia prima del nome.**
 
+## Stato di costruzione (2026-10-01, lavoro N2)
+
+Costruiti i passi 1, 2 e 3 (ramo `lavoro/N2`); restano 4-5 (N3) e la dismissione (N5).
+
+- **Passo 1**: `modifica-scenario`, `convalida-scenario`, `piano-modifica`, `contenuto-scenario`, `bozza-scenario`, `serratura-scenari`; `rinomina-passo` era gia' estratta.
+- **Passo 2**: rotte `contenuto`, `anteprima`, `modifica`, `annulla`; `salva` rifiuta se la serratura e' presa. Il gesto "testo" accetta il testo intero della bozza (i gesti guidati lo producono); "sposta" ed "elimina" non ci sono ancora.
+- **Passo 3**: pannello nella pagina Scenari (titolo, usa un altro passo, togli, aggiungi una verifica, rinomina con conferma, Annulla, "Esegui lo scenario"), `ModificheContext`, `will-prevent-unload`, testi it/en. Decisione M11 realizzata (pulsante Modifica e clic/Invio su un passo o sul titolo).
+- **Scelte rispetto al testo della spec**: (1) un problema che c'era gia' prima della modifica (frase non nel catalogo, ambiguita') avvisa e non blocca: decide la prova a vuoto; (2) "usa un altro passo" toglie le verifiche a meta' passo del passo sostituito (descrivevano il vecchio codice); (3) una bozza in `generated/` toccata da una rinomina tiene il marcatore (senza, "Salva" non la riconoscerebbe); (4) la rinomina toglie dal catalogo la voce `wanted` della frase vecchia prima di rigenerare (la rigenerazione conserva le `wanted` e lascerebbe un fantasma), e annullando toglie quella nuova.
+- **Misure**: prova a vuoto ~2 s con due file di step; un salvataggio di titolo ~3 s dalla finestra, una rinomina ~7,5 s (il resto e' la rigenerazione del catalogo). Il costo e' la compilazione di tutti gli step, non il numero di scenari: restringere la prova al solo scenario non lo riduce.
+- **Non fatto / non verificato**: "Cambia il testo di una verifica"; `will-prevent-unload` non provato in Electron; contrasto e lettore di schermo non misurati.
+
 ## Ordine di lavoro
 
 Passi piccoli, ciascuno annullabile con un `git revert`, con il controllo che
