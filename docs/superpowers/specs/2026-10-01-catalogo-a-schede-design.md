@@ -5,7 +5,13 @@
 > **tre schede** (Step, Componenti, Da sistemare). Gli scenari escono dal
 > Catalogo e vanno nella pagina Scenari (sotto-progetto 2). Qui si decide il
 > resto: cosa c'e' in ogni scheda, come e' fatto il componente a schede, cosa si
-> sposta e come si verifica. **Niente di questo e' ancora costruito.**
+> sposta e come si verifica.
+>
+> **Aggiornamento del 2026-10-01:** il proprietario ha deciso le nove domande
+> aperte (tabella "Decise" in fondo). Due decisioni sono diverse dalla
+> raccomandazione e hanno cambiato il testo: **Q2** (la fusione fra frasi che non
+> fanno la stessa cosa resta com'e', con il confronto in vista) e **Q5** (il
+> Catalogo riapre sull'ultima scheda visitata).
 
 ## Perche' esiste
 
@@ -76,7 +82,7 @@ in "Domande aperte".
 
 | # | Decisione | Perche' |
 |---|---|---|
-| C1 | Scheda di apertura: **Step**. Aprendo `/catalogo` senza parametri si vede quella | E' la domanda del tester; le altre due si raggiungono dai numeri in testa |
+| C1 | Scheda di apertura: aprendo `/catalogo` **senza parametri** si vede **l'ultima scheda visitata** in questa finestra; alla prima visita, **Step** (decisione Q5). Un `?scheda=` nell'indirizzo vince sempre. Vedi "Quale scheda si apre" | E' la domanda del tester alla prima visita; chi lavora sulle coppie ritrova il suo posto |
 | C2 | La scheda attiva sta nell'indirizzo: `?scheda=step\|componenti\|da-sistemare`. Cambiare scheda **aggiunge** una voce alla cronologia (Indietro funziona); cambiare un filtro la **sostituisce** (Indietro non ripercorre ogni lettera digitata) | Un link porta dritto a una scheda; il tasto Indietro fa quel che ci si aspetta |
 | C3 | I numeri in testa sono **link**, non decorazione: ognuno porta alla scheda che mostra quel numero. Nessuna casella usa un filtro: i pulsanti di filtro stanno a un clic, dentro la scheda, e un link da fuori puo' comunque portarci (`urlCatalogo`) | Un numero senza un clic e' una domanda senza risposta |
 | C4 | Le schede mostrano **solo il pannello attivo**; i filtri stanno nell'indirizzo, lo stato di apertura delle righe no | Con 500 righe tre pannelli montati tre volte pesano; i dati restano nello store, quindi cambiare scheda e' istantaneo |
@@ -220,7 +226,9 @@ funzione pura (`mostraFiltri(n)`).
 
 **Mai nel dettaglio per il tester**: percorsi di file, numeri di riga, nomi di
 classi o metodi. Il "come e' fatto" sta in un'unica voce chiusa, **"Dettagli
-tecnici"**, per chi sa leggerla.
+tecnici"**, per chi sa leggerla. **Un'eccezione, voluta dal proprietario**: il
+confronto dei due gestori nel flusso di fusione (vedi Q2 e "Il flusso di
+fusione"): li' resta in vista.
 
 **Ruoli tradotti.** Un componente si legge `button "Sign in"`: `button` e'
 gergo. Si mostra "Pulsante «Sign in»" con una piccola tabella di ruoli noti
@@ -493,13 +501,31 @@ nascosti finche' il precedente non e' fatto:
   persa non esistera' piu'. **Nessun percorso di file.**
 - **Se i due gestori fanno la stessa cosa** (`equivalenti`): una riga che lo
   dice ("Le due frasi fanno la stessa cosa") e il passo 3 e' un pulsante.
-- **Se fanno cose diverse**: un riquadro con il titolo "Attenzione: le due
-  frasi non fanno la stessa cosa" e la spiegazione in parole; il confronto dei
-  due gestori sta dietro **"Dettagli tecnici"** (chiuso); una casella "Ho
-  capito che il comportamento di «B» andra' perso" e solo allora si attiva il
-  pulsante, che cambia nome e aspetto: **"Fondi comunque"** (distruttivo).
-  Si aggiunge una riga: "Meglio deciderlo con chi mantiene i test
-  automatici." (e' una frase, non un blocco).
+- **Se fanno cose diverse** (decisione Q2 = c: **come oggi, confronto in vista**):
+  un riquadro rosso con il titolo "Attenzione: le due frasi non fanno la stessa
+  cosa", la spiegazione in parole, e **i due gestori affiancati e visibili**
+  (due colonne, ognuna con la sua frase); una casella "Ho capito che il
+  comportamento di «B» andra' perso" e solo allora si attiva il pulsante, che
+  cambia nome e aspetto: **"Fondi comunque"** (distruttivo). Si aggiunge una
+  riga: "Meglio deciderlo con chi mantiene i test automatici." (e' una frase,
+  non un blocco).
+  **La tensione con la regola "il tester non vede codice", e come si scioglie.**
+  Il proprietario ha scelto di lasciare il confronto in vista, anche se i
+  gestori sono codice: chi decide se perdere il comportamento di «B» deve poterlo
+  leggere. La regola generale non cambia, cambia **dove** si applica l'eccezione:
+  (1) l'eccezione vale **solo** in questo riquadro, aperto da chi ha scelto una
+  frase e ha davanti un'anteprima che dice "non fanno la stessa cosa", mai in
+  una riga di elenco ne' in un riepilogo; (2) le colonne hanno **un'intestazione
+  in parole semplici** ("Cosa fa «A» oggi" / "Cosa fa «B» oggi: andrebbe perso")
+  e **una riga che dice cosa si sta guardando** ("Sono le istruzioni con cui il
+  sistema esegue la frase. Se non le leggi, puoi lasciar decidere a chi
+  mantiene i test automatici."), cosi' chi non sa leggerle sa che puo' fermarsi
+  senza sentirsi in difetto; (3) **nessun percorso di file ne' numero di riga**
+  nel riquadro: ne' nelle intestazioni ne' nella riga degli scenari coinvolti
+  (li' si scrive "scenario · applicazione / flusso"); la definizione persa si
+  dice con la frase, non con il nome del file; (4) in tutto il resto della pagina
+  percorsi e codice restano nascosti: il codice dei gestori, nel dettaglio dello
+  Step, resta dietro "Dettagli tecnici".
 - **Passo 3**: il pulsante dice **cosa fa con i nomi in chiaro** ("Tieni «A» e
   fondi l'altra"), non "Fondi".
 
@@ -681,8 +707,8 @@ dal bordo del contenitore.
 ### Indirizzo
 
 - Parametro: `scheda`, con valori `step`, `componenti`, `da-sistemare`.
-- Valore mancante o sconosciuto → la scheda predefinita (`step`), **senza
-  redirect** e senza errore: un link vecchio funziona comunque.
+- Valore mancante o sconosciuto → la scheda di ripiego (vedi "Quale scheda si
+  apre"), **senza redirect** e senza errore: un link vecchio funziona comunque.
 - Cambiare scheda: `router.push(url)`, con `scroll: false`; ricliccare quella
   attiva non fa niente. Si **tolgono** i parametri di filtro (`q`, `app`,
   `stato`, `senza-componente`, `ambigua`, `ordina`): appartengono a una scheda
@@ -697,6 +723,47 @@ Un link da altrove: `urlCatalogo({ scheda, q, app, stato, ... })` in
 `lib/catalogo-url.ts` costruisce `/catalogo?...` con le stesse regole, cosi' la
 pagina Scenari (o l'Esecuzione) puo' puntare a "questo step nel catalogo" senza
 scrivere a mano l'indirizzo.
+
+### Quale scheda si apre (decisione Q5 = b)
+
+Tre fonti, in questa precedenza:
+
+1. **`?scheda=` nell'indirizzo**, se e' un valore valido: vince sempre. Un link
+   (dalla pagina Scenari, da un messaggio, dalle caselle in testa) porta
+   esattamente dove dice, qualunque cosa sia stata visitata prima.
+2. **L'ultima scheda visitata** in questa finestra, se valida.
+3. **Step.**
+
+Valore sconosciuto in (1) o in (2) → si passa alla fonte successiva (un valore
+ricordato che oggi non esiste piu' non rompe niente). Funzione pura
+`schedaIniziale({ url, ricordata, valide, predefinita })` in `lib/schede-url.ts`.
+
+**Dove si ricorda: `localStorage`, chiave `cruscotto.catalogo.scheda`, ogni
+lettura e scrittura in `try/catch`.** Scelto contro il cookie (come lingua e
+ambiente) perche':
+
+- lingua e ambiente sono cookie **perche' li legge il server** (`i18n/request.ts`,
+  le rotte): servono a decidere cosa rispondere. La scheda la usa solo il
+  browser: un cookie viaggerebbe a ogni richiesta, `/api` comprese, senza che
+  nessuno lo legga;
+- e' una comodita' **per finestra** (l'app gira anche in Electron): non va a
+  nessun altro, non va nel codice, non va in git;
+- se `localStorage` e' bloccato o pieno (finestra privata, dati cancellati) la
+  comodita' sparisce e la pagina apre su Step: e' il comportamento corretto, non
+  un errore da mostrare.
+
+Si scrive **ogni volta che la scheda cambia**, qualunque ne sia la causa (clic,
+tastiera, Indietro, link): "ultima visitata" significa ultima vista, non ultima
+scelta con il mouse. Si scrive solo un valore valido.
+
+**Come si applica senza scatti.** Il server non conosce `localStorage`, quindi
+la prima resa non puo' sapere la scheda ricordata. Per non mostrare Step e poi
+saltare su un'altra scheda, il pannello **non si disegna finche' la scheda
+iniziale non e' risolta** (un solo ciclo di resa dopo il montaggio; durante, la
+testata e le caselle sono gia' a schermo). Quando la fonte e' (2) l'indirizzo
+viene riscritto con `router.replace` (non `push`): Indietro non deve passare per
+una voce che non e' stata scelta. Quando la fonte e' (1) o (3) non si scrive
+niente nell'indirizzo.
 
 ### Responsive
 
@@ -936,6 +1003,8 @@ stesso schema.
 | `fondiTieni` | Tieni «{frase}» e fondi l'altra | Keep "{frase}" and merge the other |
 | `corpiUguali` | Le due frasi fanno la stessa cosa. | Both phrases do the same thing. |
 | `corpiDiversiTitolo` | Attenzione: le due frasi non fanno la stessa cosa | Careful: the two phrases don't do the same thing |
+| `confrontoDa` / `confrontoA` | Cosa fa «{frase}» oggi / Cosa fa «{frase}» oggi: andrebbe perso | What "{frase}" does today / What "{frase}" does today: it would be lost |
+| `confrontoSpiegazione` | Sono le istruzioni con cui il sistema esegue la frase. Se non le leggi, puoi lasciar decidere a chi mantiene i test automatici. | These are the instructions the system uses to run the phrase. If you don't read them, you can leave the decision to whoever maintains the automated tests. |
 | `corpiDiversiSuggerimento` | Meglio deciderlo con chi mantiene i test automatici. | Best decided with whoever maintains the automated tests. |
 | `fondiComunque` | Fondi comunque | Merge anyway |
 | `esitoFusione` | Fatto: «{da}» ora è «{a}» ({righe, plural, one {# riga riscritta} other {# righe riscritte}}). | Done: "{da}" is now "{a}" ({righe, plural, one {# line rewritten} other {# lines rewritten}}). |
@@ -970,7 +1039,11 @@ si scrivono **prima** del codice, nello stile degli esistenti.
 - `urlConScheda` toglie `q`, `app`, `stato`, `senza-componente`, `ambigua`,
   `ordina` e tiene `scheda`; non tocca parametri estranei;
 - `urlConScheda` scrive **sempre** `scheda=<id>`, anche per la scheda
-  predefinita: un link copiato e' cosi' esplicito, e il caso fissa la regola.
+  predefinita: un link copiato e' cosi' esplicito, e il caso fissa la regola;
+- `schedaIniziale` (Q5): indirizzo valido + ricordata diversa → **l'indirizzo**;
+  nessun parametro + ricordata valida → **la ricordata**; nessuno dei due →
+  predefinita; indirizzo sconosciuto + ricordata valida → la ricordata;
+  ricordata sconosciuta o `null` (memoria bloccata) → predefinita.
 
 **`__tests__/lib/catalogo-filtri.test.ts`**
 - ricerca: insensibile a maiuscole e accenti (una lettera accentata si trova
@@ -1097,16 +1170,49 @@ In quest'ordine, un commit ciascuno, ogni passo con i suoi test gia' scritti:
 | **Esecuzione / Registra** | Possono linkare il Catalogo con `urlCatalogo(...)`. Registra e' anche il pulsante di partenza dei vuoti ("Registra una sessione") |
 | **Barra laterale** | Nessun cambio: la voce "Catalogo" porta a `/catalogo`, cioe' alla scheda Step. Il contatore delle coppie **non** va sulla voce della barra (e' una decisione da tenere separata: aprirebbe un secondo posto in cui mantenerlo) |
 
-## Domande aperte
+## Decise (2026-10-01)
 
-| # | Domanda | Opzioni | Raccomandazione |
-|---|---|---|---|
-| Q1 | Come si chiama la terza scheda? | **a)** "Ordine"; **b)** "Doppioni"; **c)** "Da sistemare" | **c.** "Ordine" e' ambiguo per un tester, "Doppioni" esclude gli equivoci. In inglese "To tidy up" |
-| Q2 | Il tester puo' fondere due frasi i cui gestori **non fanno la stessa cosa** ("Fondi comunque")? | **a)** si, con il confronto dei gestori dietro "Dettagli tecnici" e la casella di conferma; **b)** no: la fusione e' bloccata e il tester chiede a chi mantiene l'automazione; **c)** come oggi (confronto in vista) | **a.** Non toglie il gesto a chi e' competente, non mostra codice a chi non lo e', e la frase "meglio deciderlo con chi mantiene i test" lo dice |
-| Q3 | Le coppie "da verificare" (testo quasi uguale, uno dei due senza componente) hanno un gesto? E' il caso piu' comune finche' gli step scritti a mano non dichiarano componenti | **a)** solo informazione, per ora; **b)** offrire la fusione quando i gestori sono equivalenti (il controllo esiste gia' in `fondi`), anche senza componenti | **a** qui; **b** e' un lavoro a parte, con le sue prove, perche' cambia cosa il motore considera sicuro |
-| Q4 | "Distingui le frasi" deve avere un "Annulla"? | **a)** no, lo si dichiara prima di premere; **b)** si, salvando un'istantanea come fa la fusione | **a.** Costa un lavoro lato server; il passo 2 lo dice chiaro |
-| Q5 | Aprendo `/catalogo`, la scheda e' sempre Step, o si ricorda l'ultima visitata? | **a)** sempre Step; **b)** ricorda l'ultima | **a.** E' prevedibile, i link espliciti coprono il resto, e chi mantiene il vocabolario ha la casella "Da sistemare" in testa |
-| Q6 | Il contatore deve contare solo le coppie su cui si puo' agire, o tutte (comprese "da verificare" e "solo da sapere")? | **a)** solo azionabili, con "+ K da verificare" a parte; **b)** tutte | **a.** Un numero che non si azzera insegna a ignorarlo |
-| Q7 | Il pulsante "Riprova ora" quando l'aggiornamento e' fallito: si fa? | **a)** si (lancia il comando `catalogo`); **b)** no: il tester aspetta il prossimo salvataggio | **a.** "Un comando dove puo' esserci un pulsante" (ROADMAP §5); l'elenco chiuso resta chiuso |
-| Q8 | L'indice dei tag del vecchio portale entra? | **a)** no; **b)** si, come ordinamento "per pagina" in Componenti; **c)** si, come quarta scheda | **a.** Dipende da commenti scritti a mano che le registrazioni non producono; se serve ancora, **b** costa poco |
-| Q9 | Le linguette Step e Componenti portano un conteggio come "Da sistemare"? | **a)** no; **b)** si | **a.** Il numero e' gia' in testa; tre contatori sulla stessa riga smettono di dire cosa e' urgente |
+Le nove domande sono state decise dal proprietario. Dove la decisione e' diversa
+dalla raccomandazione c'e' scritto, e il testo del documento e' stato allineato.
+
+| # | Domanda | Decisione | Diversa dalla raccomandazione? | Dove e' applicata |
+|---|---|---|---|---|
+| Q1 | Nome della terza scheda | **(c)** "Da sistemare" / "To tidy up" | no | "Scheda 3", `schedaSistemare` |
+| Q2 | Fusione di frasi i cui gestori non fanno la stessa cosa | **(c)** come oggi: **confronto in vista**, casella di conferma, "Fondi comunque" | **si** (raccomandato a: confronto dietro "Dettagli tecnici") | "Il flusso di fusione", con la tensione sotto |
+| Q3 | Gesto sulle coppie "da verificare" | **(a)** solo informazione | no | "Scheda 3", `CoppiaDaVerificare` |
+| Q4 | "Distingui" con "Annulla" | **(a)** no, dichiarato prima di premere | no | "Equivoco di denominazione" |
+| Q5 | Scheda all'apertura | **(b)** l'**ultima visitata**; `?scheda=` vince sempre, poi l'ultima, poi Step | **si** (raccomandato a: sempre Step) | "Quale scheda si apre", C1 |
+| Q6 | Cosa conta il contatore | **(a)** solo le coppie su cui si puo' agire, con "+ K da verificare" a parte | no | C7, "L'intestazione" |
+| Q7 | "Riprova ora" su aggiornamento fallito | **(a)** si | no | "Stati dell'intestazione" |
+| Q8 | Indice dei tag del portale | **(a)** non entra | no | "Dismissione del portale" |
+| Q9 | Conteggio su Step e Componenti | **(a)** no, solo su "Da sistemare" | no | C6 |
+
+### Le due decisioni diverse dalla raccomandazione
+
+**Q2 = (c): la fusione "comunque" resta come oggi, con il confronto in vista.**
+La raccomandazione era di nascondere i gestori dietro "Dettagli tecnici" per
+rispettare il vincolo del cruscotto (il tester non vede codice). Il proprietario
+preferisce che chi sta per perdere un comportamento lo **veda**. Le due regole
+confliggono; si sciolgono cosi' (testo completo nel "Flusso di fusione"):
+
+- il confronto resta visibile **solo nel flusso di fusione**, quando si e' scelta
+  una frase e l'anteprima dice che i gestori non fanno la stessa cosa;
+- con **un'intestazione in parole semplici** su ogni colonna e una riga che dice
+  che cosa sono (e che si puo' lasciar decidere a chi mantiene i test);
+- **senza percorsi di file ne' numeri di riga** nel riquadro;
+- **altrove** percorsi e codice restano nascosti (il codice dei gestori, nel
+  dettaglio dello Step, sta dietro "Dettagli tecnici").
+
+Resta un rischio dichiarato: un tester che non sa leggere il codice vede comunque
+il codice in quel riquadro. La frase "meglio deciderlo con chi mantiene i test"
+e la casella di conferma sono la difesa; se la verifica con un tester vero mostra
+che spaventa o confonde, la strada e' la raccomandazione originale (a), che e'
+una modifica di un solo riquadro.
+
+**Q5 = (b): il Catalogo riapre sull'ultima scheda visitata.** Precedenza:
+`?scheda=` nell'indirizzo, poi l'ultima visitata, poi Step. Si ricorda in
+`localStorage` (non in un cookie) per le ragioni scritte in "Quale scheda si
+apre". Conseguenza sul resto: la voce "Catalogo" della barra laterale porta a
+`/catalogo` e quindi **non** garantisce piu' la scheda Step: chi vuole Step per
+certo usa il link con `?scheda=step` (le caselle in testa e `urlCatalogo` lo
+scrivono sempre).
