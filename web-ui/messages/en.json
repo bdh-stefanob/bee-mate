@@ -520,5 +520,58 @@
       "menuitem": "Menu item",
       "img": "Image"
     }
+  },
+  "Suggerimenti": {
+    "titolo": "Suggestions",
+    "riepilogo": "{n, plural, one {# of your steps can use a phrase already in the catalog.} other {# of your steps can use a phrase already in the catalog.}}",
+    "aiuto": "These are only suggestions: nothing changes unless you choose it, step by step.",
+    "suggeritoDa": "Suggestions from: {chi}",
+    "chiRegole": "Catalog rules",
+    "chiAssistente": "Assistant",
+    "passo": "Step {n}",
+    "ancheIn": "Same phrase also in: {altri}",
+    "latuaFrase": "Your phrase",
+    "nelCatalogo": "In the catalog",
+    "perche": "Why",
+    "prova": "It touches the same page elements you used (this is proof, not an estimate)",
+    "stima": "Phrase similar to yours ({n}%): this is an estimate",
+    "stimaSenzaNumero": "Phrase similar to yours: this is an estimate",
+    "spiegazione": "Explanation from whoever suggested it, not verified: {testo}",
+    "legenda": "Step {n}: choose the phrase",
+    "tieniMia": "Keep my phrase",
+    "usaCatalogo": "Use the catalog phrase",
+    "nonApplicabile": "Not applicable: {motivo}",
+    "motivo": {
+      "gia-realizzata": "the catalog phrase is already defined in another saved scenario.",
+      "parametri": "the catalog phrase has a value that changes, and for now it cannot be replaced from here.",
+      "non-wanted": "the catalog phrase is not available for new scenarios.",
+      "caratteri": "the catalog phrase has characters that cannot be inserted from here."
+    },
+    "applica": "{n, plural, =0 {Apply} one {Apply # choice} other {Apply # choices}}",
+    "applicando": "Applying…",
+    "annulla": "Undo the changes",
+    "annullando": "Undoing…",
+    "nota": "You can undo until you save. Saving without using the suggestions is perfectly fine.",
+    "applicate": "{n, plural, one {You used # catalog phrase.} other {You used # catalog phrases.}} You can undo until you save.",
+    "annullate": "I put your phrases back as they were.",
+    "rifiutate": "The changes did not pass the checks and were undone: {quale}. Nothing has changed.",
+    "giudice": {
+      "tsc": "the test could no longer be built",
+      "dry-run": "not every step had its definition",
+      "validatore": "a phrase is not in the catalog"
+    },
+    "errore": {
+      "generico": "I could not apply the choices. Nothing has been changed.",
+      "scaduta": "The catalog or the scenario changed after the suggestions: they are no longer valid. Generate the test again.",
+      "non-applicabile": "One of the chosen phrases cannot be applied. Nothing has been changed.",
+      "stessa-voce": "Two steps point to the same catalog phrase: choose only one.",
+      "collisione": "A catalog phrase is the same as the phrase of another step. Nothing has been changed.",
+      "frase-non-trovata": "I cannot find one of your phrases in the scenario: it may have been edited. Nothing has been changed.",
+      "file-a-mano": "The scenario was edited by hand: I will not touch it.",
+      "modificato-a-mano": "You edited the scenario after choosing: I will not undo, so you do not lose your work.",
+      "gia-salvato": "The scenario has already been saved: it cannot be undone from here.",
+      "niente-da-annullare": "There is nothing to undo."
+    },
+    "dettagliTitolo": "Phrases involved"
   }
 }

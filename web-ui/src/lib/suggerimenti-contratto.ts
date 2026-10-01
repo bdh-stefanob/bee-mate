@@ -251,7 +251,6 @@ export function validaCompito(x: unknown): EsitoCompito {
 
 const NOMI_STRUMENTO: readonly string[] = ['regole', 'kiro-ide', 'kiro-cli', 'amazonq', 'altro'];
 // Qualunque carattere di controllo, a capo e tabulazione compresi: "perche" e' una riga.
-// eslint-disable-next-line no-control-regex
 const CONTROLLO = /[\u0000-\u001f\u007f]/;
 
 function leggiStrumento(x: unknown): Strumento | null {

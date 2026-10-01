@@ -13,6 +13,7 @@ import type { NomeComando } from '@/lib/esecuzione';
 import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
 import { useAmbiente } from '@/context/AmbienteContext';
 import { SalvaScenario } from '@/components/cruscotto/SalvaScenario';
+import { Suggerimenti } from '@/components/cruscotto/Suggerimenti';
 import type { EsitoSalvataggio } from '@/lib/salva-scenario';
 import { rilevaCausaFallimento, type CausaFallimento } from '@/lib/diagnosi-fallimento';
 
@@ -446,11 +447,16 @@ export default function RegistraPage() {
       )}
 
       {fase.tipo === 'salva' && (
-        <SalvaScenario
-          titoloProposto={fase.titolo}
-          onSalvato={(esito) => versoEsecuzione(esito)}
-          onTieni={() => versoEsecuzione()}
-        />
+        <>
+          {/* Suggerimenti di frasi del catalogo: ripiegati, e assenti se non c'e'
+              niente da proporre. Salvare senza usarli e' un percorso normale. */}
+          <Suggerimenti />
+          <SalvaScenario
+            titoloProposto={fase.titolo}
+            onSalvato={(esito) => versoEsecuzione(esito)}
+            onTieni={() => versoEsecuzione()}
+          />
+        </>
       )}
 
       {fase.tipo === 'errore' && (

@@ -520,5 +520,58 @@
       "menuitem": "Voce di menu",
       "img": "Immagine"
     }
+  },
+  "Suggerimenti": {
+    "titolo": "Suggerimenti",
+    "riepilogo": "{n, plural, one {# dei tuoi passi può usare una frase già nel catalogo.} other {# dei tuoi passi possono usare una frase già nel catalogo.}}",
+    "aiuto": "Sono solo suggerimenti: niente cambia se non scegli tu, passo per passo.",
+    "suggeritoDa": "Suggerimenti di: {chi}",
+    "chiRegole": "Regole del catalogo",
+    "chiAssistente": "Assistente",
+    "passo": "Passo {n}",
+    "ancheIn": "Stessa frase anche in: {altri}",
+    "latuaFrase": "La tua frase",
+    "nelCatalogo": "Nel catalogo",
+    "perche": "Perché",
+    "prova": "Tocca gli stessi elementi di pagina che hai usato (è una prova, non una stima)",
+    "stima": "Frase simile alla tua ({n}%): è una stima",
+    "stimaSenzaNumero": "Frase simile alla tua: è una stima",
+    "spiegazione": "Spiegazione di chi ha suggerito, non verificata: {testo}",
+    "legenda": "Passo {n}: scegli la frase",
+    "tieniMia": "Tieni la mia frase",
+    "usaCatalogo": "Usa quella del catalogo",
+    "nonApplicabile": "Non applicabile: {motivo}",
+    "motivo": {
+      "gia-realizzata": "la frase del catalogo è già definita in un altro scenario salvato.",
+      "parametri": "la frase del catalogo ha un valore che cambia, e per ora non si sostituisce da qui.",
+      "non-wanted": "la frase del catalogo non è disponibile per nuovi scenari.",
+      "caratteri": "la frase del catalogo ha caratteri che non si possono inserire da qui."
+    },
+    "applica": "{n, plural, =0 {Applica} one {Applica # scelta} other {Applica # scelte}}",
+    "applicando": "Applico…",
+    "annulla": "Annulla le modifiche",
+    "annullando": "Annullo…",
+    "nota": "Puoi annullare finché non salvi. Salvare senza usare i suggerimenti va benissimo.",
+    "applicate": "{n, plural, one {Hai usato # frase del catalogo.} other {Hai usato # frasi del catalogo.}} Puoi annullare finché non salvi.",
+    "annullate": "Ho rimesso le tue frasi com'erano.",
+    "rifiutate": "Le modifiche non passavano i controlli e sono state annullate: {quale}. Nulla è cambiato.",
+    "giudice": {
+      "tsc": "il test non si poteva più costruire",
+      "dry-run": "non tutti i passi avevano la loro definizione",
+      "validatore": "una frase non risulta nel catalogo"
+    },
+    "errore": {
+      "generico": "Non sono riuscito ad applicare le scelte. Non è stato cambiato niente.",
+      "scaduta": "Il catalogo o lo scenario sono cambiati dopo i suggerimenti: non valgono più. Genera di nuovo il test.",
+      "non-applicabile": "Una delle frasi scelte non si può applicare. Non è stato cambiato niente.",
+      "stessa-voce": "Due passi puntano alla stessa frase del catalogo: scegline uno solo.",
+      "collisione": "Una frase del catalogo coincide con la frase di un altro passo. Non è stato cambiato niente.",
+      "frase-non-trovata": "Non ritrovo una delle tue frasi nello scenario: forse è stato modificato. Non è stato cambiato niente.",
+      "file-a-mano": "Lo scenario è stato modificato a mano: non lo tocco.",
+      "modificato-a-mano": "Hai modificato lo scenario dopo aver scelto: non annullo, per non perdere il tuo lavoro.",
+      "gia-salvato": "Lo scenario è già stato salvato: da qui non si annulla.",
+      "niente-da-annullare": "Non c'è niente da annullare."
+    },
+    "dettagliTitolo": "Frasi coinvolte"
   }
 }
