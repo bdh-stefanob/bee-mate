@@ -1112,9 +1112,14 @@ barra laterale, `FraseFallimento` condivisa, la sezione tolta dal Catalogo.
 
 Scostamenti dalla spec, dichiarati:
 
-- **Il link "Vedi la schermata" (O7) non c'e'**: l'indice ricorda l'id
-  dell'esecuzione; il passo successivo e' di Esecuzione (aprire una prova
-  conclusa per id) e di F20 (tenere i `.ndjson` dei rossi).
+- **Il link "Vedi la schermata" (O7) c'e'** (lavoro N1, 1 ottobre): per un esito
+  rosso, `LinkSchermata` (dentro `SchedaEsito`) porta a
+  `/esecuzione?prova=<id>`, che apre la prova conclusa in sola lettura leggendo
+  dai file (`GET /api/prova`, id validato `[a-z0-9-]`, percorso costruito dal
+  solo id). Se i file non ci sono piu' dice che la schermata non c'e' piu'. Vale
+  anche per gli esiti ricostruiti con `ambiente: null`. La pulizia (F20, parte
+  `reports/cruscotto/`) tiene le ultime 50 esecuzioni per tipo piu' quelle a cui
+  l'indice punta piu' quelle in corso, a fine esecuzione.
 - `formattaDurata` esiste in `formato-quando.ts` **e** ancora in
   `esecuzione/page.tsx`: non si e' spostata per non toccare quel file mentre un
   altro lavoro lo cambia. Da togliere appena possibile.

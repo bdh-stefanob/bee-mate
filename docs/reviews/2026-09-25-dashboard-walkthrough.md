@@ -296,3 +296,7 @@ but a tester would not understand it without help · **P3** polish.
   (`web-ui/src/lib/salva-scenario.ts`). `reports/cruscotto/` keeps one status
   file per operation (80+ after two days): keep the last N
   (`web-ui/src/lib/registro.ts`).
+  *Second half done (1 Oct, job N1):* at the end of each run the last 50 of each
+  kind are kept, plus every run the scenario index still points to and any run in
+  progress (`web-ui/src/lib/pulizia-storico.ts`). The first half (Page Objects in
+  `src/pages/generated/`) is still open, so the box stays unticked.
