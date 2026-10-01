@@ -25,7 +25,11 @@ module.exports = {
     tags: process.env["BDD_TAGS"] ?? "not @non-automatizzato",
     format: [
       "progress-bar",
-      "html:reports/cucumber-report.html",
+      // Un report per esecuzione: `test-bersaglio.ts` lo mette accanto ai messaggi
+      // (BDD_HTML) quando c'e' una finestra che lancia, perche' due processi
+      // contemporanei sullo stesso file se lo sovrascrivevano. Senza BDD_HTML,
+      // il nome di sempre: chi lancia a mano non nota niente.
+      `html:${process.env["BDD_HTML"] || "reports/cucumber-report.html"}`,
       "summary",
     ],
     formatOptions: { snippetInterface: "async-await" },

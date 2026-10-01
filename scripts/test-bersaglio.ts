@@ -29,6 +29,7 @@ import { loadEnv } from "./lib/atlassian";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 import { argValue } from "./lib/args";
 import { scenariRegistrati } from "./lib/registrati";
+import { percorsiDaArgomenti, ambienteDiCucumber } from "./lib/lancio-test";
 
 loadEnv();
 
@@ -101,7 +102,7 @@ function main(): void {
   const registrati = scenariRegistrati(path.join("src", "features"));
   const percorsi = soloGenerati
     ? (registrati.length > 0 ? registrati : [path.join("src", "features", "generated")])
-    : args.slice(1).filter((a) => a !== "vedi" && a !== "pulito" && !a.startsWith("messaggi=") && !a.startsWith("rallenta="));
+    : percorsiDaArgomenti(args);
 
   const eta = sessionAgeHours(target);
   console.log(`\nTEST — ${indirizzoDiretto ? "indirizzo diretto" : `bersaglio "${target.name}"`}\n`);
@@ -138,14 +139,7 @@ function main(): void {
     // scelto finiva eseguito insieme a tutti gli altri.
     execFileSync(process.execPath, [cucumber, ...formato], {
       stdio: "inherit",
-      env: {
-        ...process.env,
-        ...ambiente,
-        BDD_PATHS: percorsi.join(";"),
-        ...(vedi ? { HEADED: "1" } : {}),
-        ...(rallenta > 0 ? { BDD_SLOWMO: String(rallenta) } : {}),
-        ...(pulito ? { BDD_NO_SESSION: "1" } : {}),
-      },
+      env: ambienteDiCucumber({ base: process.env, ambiente, percorsi, messaggi, vedi, rallenta, pulito }),
     });
   } catch (err) {
     // Cucumber ha gia' stampato cosa e' fallito: qui si propaga solo l'esito,
