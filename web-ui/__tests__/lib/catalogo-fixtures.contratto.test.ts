@@ -52,7 +52,6 @@ const CAMPI_NOTI_STEP = new Set([
   'sourceRef',
   'documented',
   'proposedAt',
-  'paramEnums',
   'requires',
   'doc',
 ]);

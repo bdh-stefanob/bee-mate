@@ -1,9 +1,3 @@
-export interface ParamEnumDef {
-  token: string;      // e.g. "{string}"
-  label?: string;     // display label for the field
-  values: string[];   // known valid values; empty = free-text only
-}
-
 /**
  * Un componente di frontend dichiarato con `@component` sopra uno step.
  * Stessa forma di `StepComponent` in `scripts/lib/generation-contract.ts`.
@@ -30,7 +24,6 @@ export interface CatalogStep {
   sourceRef: string;
   documented: boolean;
   proposedAt?: string;   // ISO timestamp for proposed entries (D-13)
-  paramEnums?: ParamEnumDef[];  // enriched at API time from step-enums.json
   requires?: string[];          // prerequisite step expressions
   doc?: { intent?: string; [key: string]: unknown }; // JSDoc annotations (@intent etc.)
 }
@@ -38,14 +31,4 @@ export interface CatalogStep {
 export interface Catalog {
   totalSteps: number;
   steps: CatalogStep[];
-}
-
-export interface FeatureSummary {
-  file: string;
-  name: string;
-  area: string;
-  scenarioCount: number;
-  app?: string;   // first directory segment under src/features/
-  flow?: string;  // second directory segment under src/features/
-  tags?: string[]; // #hashtags extracted from Gherkin comments (# #tag1 #tag2)
 }
