@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     for (const frase of [...(esito.catalogoDaTogliere ? [esito.catalogoDaTogliere] : []), ...(esito.passi?.vanno ?? [])]) {
       togliVoceDalCatalogo(REPO_ROOT, frase);
     }
-    const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
+    const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo(undefined, { soloTraduzione: true }) : null;
     // Uno scenario spostato porta con se' l'esito dell'ultima prova (risultera' "modificato dopo").
     if (esito.spostamento) {
       spostaEsiti(percorsoIndice(REPO_ROOT), esito.spostamento.da, esito.spostamento.a, FEATURES_DIR);

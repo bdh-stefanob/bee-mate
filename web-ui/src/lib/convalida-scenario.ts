@@ -257,6 +257,18 @@ export interface UscitaLancio {
   scaduto: boolean;
   /** Le ultime righe, per i log: non si mostrano cosi' come sono. */
   uscita: string;
+  /**
+   * L'esito del controllo dei tipi del codice dei passi, quando il lanciatore lo fa
+   * a parte (la prova a vuoto gira con la sola traduzione). Assente: la prova a
+   * vuoto ha gia' controllato i tipi da se', o non c'era niente da controllare.
+   */
+  tipi?: EsitoTipi;
+}
+
+export interface EsitoTipi {
+  ok: boolean;
+  /** Le righe d'errore di `tsc` dentro `src/`, per i log: non si mostrano cosi' come sono. */
+  errori: string[];
 }
 
 /** Chi lancia la prova a vuoto: si sostituisce nei test, come il `Lanciatore` di `registro.ts`. */
@@ -270,6 +282,57 @@ export type Lanciatore = (opzioni: OpzioniLancio) => Promise<UscitaLancio>;
 export const TEMPO_MASSIMO_MS = 90_000;
 
 const CUCUMBER_PREDEFINITO = 'node_modules/@cucumber/cucumber/bin/cucumber.js';
+const TSC_PREDEFINITO = 'node_modules/typescript/bin/tsc';
+/** La cache dell'incrementale: sotto `reports/` (fuori da git), mai accanto ai sorgenti. */
+const CACHE_TIPI = 'reports/tsc-controllo.tsbuildinfo';
+const ERRORE_DI_TIPO = /\(\d+,\d+\): error TS\d+/;
+
+/**
+ * Il controllo dei tipi del codice dei passi: `tsc --noEmit --incremental`, con la
+ * cache in `reports/`. Qui il controllo SERVE: e' cio' che produce "il codice dei
+ * passi non compila con questa modifica". Prima lo faceva ts-node dentro la prova a
+ * vuoto, file per file, a ogni salvataggio: +0,042 s per ogni `.steps.ts` e +0,082
+ * s nella rinomina. `tsc` sul progetto intero costa circa 2 s a freddo e 1,3 s a
+ * caldo con 56 file di step, e la prova a vuoto con la sola traduzione 1,5 s: i
+ * due girano insieme.
+ *
+ * Contano solo gli errori dentro `src/` (gli step, i Page Object, il supporto: cio'
+ * che Cucumber carica). Un errore negli script dei programmatori non e' colpa del
+ * salvataggio e non lo blocca: lo trova `npx tsc --noEmit` a mano.
+ *
+ * Senza `tsconfig.json` non c'e' niente da controllare. Se `tsc` non parte o non
+ * finisce, vale come "non compila": mai un via libera per sbaglio.
+ */
+export function controllaTipi(radice: string, tscJs?: string): Promise<EsitoTipi> {
+  const base = path.resolve(radice);
+  if (!fs.existsSync(path.join(base, 'tsconfig.json'))) return Promise.resolve({ ok: true, errori: [] });
+  const eseguibile = tscJs ?? path.join(base, TSC_PREDEFINITO);
+  try {
+    fs.mkdirSync(path.join(base, 'reports'), { recursive: true });
+  } catch {
+    /* se non si scrive, tsc lo dira' */
+  }
+  return new Promise((resolve) => {
+    execFile(
+      process.execPath,
+      [eseguibile, '--noEmit', '--incremental', '--tsBuildInfoFile', CACHE_TIPI, '--pretty', 'false'],
+      { cwd: base, timeout: TEMPO_MASSIMO_MS, windowsHide: true, maxBuffer: 8 * 1024 * 1024 },
+      (errore, stdout, stderr) => {
+        if (!errore) return resolve({ ok: true, errori: [] });
+        const e = errore as Error & { code?: unknown; killed?: boolean };
+        const righe = `${stdout}\n${stderr}`.split(/\r?\n/).map((r) => r.trim()).filter(Boolean);
+        const conErrori = righe.filter((r) => ERRORE_DI_TIPO.test(r));
+        // Non e' finito, o e' finito senza dire quali file hanno l'errore (non e' partito,
+        // tsconfig rotto): non si sa, e non sapere vale come non compila.
+        if (e.killed || typeof e.code !== 'number' || conErrori.length === 0) {
+          return resolve({ ok: false, errori: righe.slice(-8) });
+        }
+        const dentroSrc = conErrori.filter((r) => /^src[\\/]/.test(r));
+        resolve({ ok: dentroSrc.length === 0, errori: dentroSrc.slice(0, 8) });
+      }
+    );
+  });
+}
 
 /**
  * Cucumber vero, in prova a vuoto. Nessuna shell: Node sul file di avvio del
@@ -277,12 +340,20 @@ const CUCUMBER_PREDEFINITO = 'node_modules/@cucumber/cucumber/bin/cucumber.js';
  * viaggiano in `BDD_PATHS` (non sulla riga di comando: vedi `cucumber.js`).
  * Il report HTML va accanto ai messaggi, per non sovrascrivere quello di chi
  * ha lanciato i test.
+ *
+ * Cucumber carica gli step con la sola traduzione (`TS_NODE_TRANSPILE_ONLY`): i tipi
+ * non li controlla piu' ts-node, file per file, ma `controllaTipi` (tsc incrementale),
+ * in parallelo. Un errore di sintassi ferma comunque Cucumber; un errore di tipo lo
+ * trova `tipi`, e `controlloVero` lo boccia come "non compila".
  */
-export function lanciaDryRun(o: OpzioniLancio & { cucumberJs?: string }): Promise<UscitaLancio> {
+export function lanciaDryRun(
+  o: OpzioniLancio & { cucumberJs?: string; tscJs?: string }
+): Promise<UscitaLancio> {
   const radice = path.resolve(o.radice);
   const relativo = (nome: string) => path.relative(radice, path.join(o.cartellaMessaggi, nome)).replace(/\\/g, '/');
   const eseguibile = o.cucumberJs ?? path.join(radice, CUCUMBER_PREDEFINITO);
-  return new Promise((resolve) => {
+  const tipi = controllaTipi(radice, o.tscJs);
+  const prova = new Promise<UscitaLancio>((resolve) => {
     execFile(
       process.execPath,
       [eseguibile, '--dry-run', '--format', `message:${relativo(o.nomeMessaggi)}`],
@@ -290,6 +361,7 @@ export function lanciaDryRun(o: OpzioniLancio & { cucumberJs?: string }): Promis
         cwd: radice,
         env: {
           ...process.env,
+          TS_NODE_TRANSPILE_ONLY: 'true',
           BDD_PATHS: o.percorsi.join(';'),
           BDD_HTML: relativo(o.nomeMessaggi.replace(/\.ndjson$/, '') + '.html'),
         },
@@ -305,6 +377,7 @@ export function lanciaDryRun(o: OpzioniLancio & { cucumberJs?: string }): Promis
       }
     );
   });
+  return Promise.all([prova, tipi]).then(([uscita, esitoTipi]) => ({ ...uscita, tipi: esitoTipi }));
 }
 
 /**
@@ -333,6 +406,9 @@ export async function controlloVero(
     fs.rmSync(file, { force: true });
     const uscita = await lancia({ radice, percorsi, cartellaMessaggi, nomeMessaggi });
     if (uscita.scaduto) return { ok: false, motivo: 'tempo' };
+    // I tipi del codice dei passi non tornano: non compila, e non si guarda altro (come
+    // quando a fermare Cucumber era ts-node: nessun messaggio, nessun passo da nominare).
+    if (uscita.tipi && !uscita.tipi.ok) return { ok: false, motivo: 'compilazione' };
     const letti = fs.existsSync(file) ? fs.readFileSync(file, 'utf-8') : '';
     const esito = leggiMessaggiDryRun(letti);
     // Un passo senza definizione o ambiguo si nomina: e' piu' utile del codice di uscita.

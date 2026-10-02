@@ -7,6 +7,7 @@ import {
   leggiMessaggiDryRun,
   controlloVero,
   lanciaDryRun,
+  controllaTipi,
   type Lanciatore,
 } from '@/lib/convalida-scenario';
 import type { CatalogStep } from '@/lib/types';
@@ -316,6 +317,23 @@ describe('controlloVero: il lanciatore e iniettato', () => {
     expect(await controlloVero(radice, ['shop/a.feature'], lancia)).toMatchObject({ ok: false, motivo: 'compilazione' });
   });
 
+  it('i tipi non tornano: compilazione, anche se i messaggi sono verdi e l uscita e 0', async () => {
+    // La prova a vuoto gira con la sola traduzione: l errore di tipo lo trova il controllo dei tipi.
+    const lancia: Lanciatore = async (o) => {
+      const base = await lanciatoreCon(0, messaggi([{ testo: 'a', stato: 'SKIPPED' }]))(o);
+      return { ...base, tipi: { ok: false, errori: ["src/steps/x.steps.ts(3,1): error TS2322: Type 'string' is not assignable to type 'number'."] } };
+    };
+    expect(await controlloVero(radice, ['shop/a.feature'], lancia)).toMatchObject({ ok: false, motivo: 'compilazione' });
+  });
+
+  it('i tipi tornano: il resto decide come prima', async () => {
+    const lancia: Lanciatore = async (o) => ({
+      ...(await lanciatoreCon(0, messaggi([{ testo: 'a', stato: 'SKIPPED' }]))(o)),
+      tipi: { ok: true, errori: [] },
+    });
+    expect(await controlloVero(radice, ['shop/a.feature'], lancia)).toEqual({ ok: true });
+  });
+
   it('non passa mai un percorso fuori da src/features e li unisce per BDD_PATHS', async () => {
     let visti: string[] = [];
     const lancia: Lanciatore = async (o) => {
@@ -366,4 +384,58 @@ describe.skipIf(!fs.existsSync(CUCUMBER_BIN))('Cucumber vero: la prova a vuoto s
     const misto = await controlloVero(radice, ['shop/ok.feature', 'shop/manca.feature'], lancia);
     expect(misto).toMatchObject({ ok: false, motivo: 'indefinito' });
   }, 60_000);
+});
+
+// ---------------------------------------------------------------------------
+// Il controllo dei tipi del salvataggio: tsc vero, incrementale
+// ---------------------------------------------------------------------------
+
+const TSC_BIN = path.resolve(process.cwd(), '..', 'node_modules', 'typescript', 'bin', 'tsc');
+
+describe.skipIf(!fs.existsSync(TSC_BIN))('controllaTipi: tsc vero, con la cache in reports/', () => {
+  const radice = fs.mkdtempSync(path.join(os.tmpdir(), 'tipi-'));
+  afterAll(() => fs.rmSync(radice, { recursive: true, force: true }));
+  const scrivi = (rel: string, testo: string) => {
+    const p = path.join(radice, rel);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, testo);
+  };
+
+  it('senza tsconfig non c e niente da controllare: ok', async () => {
+    const vuota = fs.mkdtempSync(path.join(os.tmpdir(), 'tipi-vuota-'));
+    try {
+      expect(await controllaTipi(vuota, TSC_BIN)).toEqual({ ok: true, errori: [] });
+    } finally {
+      fs.rmSync(vuota, { recursive: true, force: true });
+    }
+  });
+
+  it('uno step con un errore di tipo viene bocciato, e dopo la correzione passa', async () => {
+    scrivi('tsconfig.json', JSON.stringify({ compilerOptions: { strict: true, noEmit: true, types: [] }, include: ['src/**/*.ts', 'scripts/**/*.ts'] }));
+    scrivi('src/steps/ok.ts', 'export const n: number = 1;\n');
+    expect(await controllaTipi(radice, TSC_BIN)).toEqual({ ok: true, errori: [] });
+
+    scrivi('src/steps/rotto.steps.ts', "export const n: number = 'non e un numero';\n");
+    const rotto = await controllaTipi(radice, TSC_BIN);
+    expect(rotto.ok).toBe(false);
+    expect(rotto.errori.join('\n')).toContain('src/steps/rotto.steps.ts');
+
+    scrivi('src/steps/rotto.steps.ts', 'export const n: number = 2;\n');
+    expect(await controllaTipi(radice, TSC_BIN)).toEqual({ ok: true, errori: [] });
+  }, 60_000);
+
+  it('la cache incrementale sta in reports/ e non sporca il resto del repository', async () => {
+    expect(fs.existsSync(path.join(radice, 'reports', 'tsc-controllo.tsbuildinfo'))).toBe(true);
+    expect(fs.existsSync(path.join(radice, 'tsconfig.tsbuildinfo'))).toBe(false);
+  });
+
+  it('un errore fuori da src/ (gli script dei programmatori) non blocca il salvataggio', async () => {
+    scrivi('scripts/altro.ts', "export const m: number = 'x';\n");
+    expect(await controllaTipi(radice, TSC_BIN)).toEqual({ ok: true, errori: [] });
+  }, 60_000);
+
+  it('se tsc non parte, vale come non compila (mai un via libera per sbaglio)', async () => {
+    const r = await controllaTipi(radice, path.join(radice, 'non-esiste.js'));
+    expect(r.ok).toBe(false);
+  });
 });

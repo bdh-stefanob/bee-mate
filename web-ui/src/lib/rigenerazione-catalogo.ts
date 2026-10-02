@@ -25,15 +25,27 @@ const CUCUMBER_CLI = 'node_modules/@cucumber/cucumber/bin/cucumber-js';
 export type LanciaFile = (
   eseguibile: string,
   argomenti: string[],
-  opzioni: { cwd: string; timeout: number }
+  opzioni: { cwd: string; timeout: number; env?: NodeJS.ProcessEnv }
 ) => Promise<unknown>;
 
 const lanciaFileReale: LanciaFile = promisify(execFile);
 
-export async function tentaRigenerazioneCatalogo(lancia: LanciaFile = lanciaFileReale): Promise<boolean> {
+/**
+ * `soloTraduzione`: la prova a vuoto di Cucumber carica gli step senza ricontrollare
+ * i tipi (+0,085 s per ogni file di step, a ogni modifica). Lo chiede chi ha gia'
+ * controllato i tipi un attimo prima (il salvataggio dal cruscotto: `controllaTipi`);
+ * le altre rotte lo lasciano com'era.
+ */
+export async function tentaRigenerazioneCatalogo(
+  lancia: LanciaFile = lanciaFileReale,
+  { soloTraduzione = false }: { soloTraduzione?: boolean } = {}
+): Promise<boolean> {
   const opzioni = { cwd: REPO_ROOT, timeout: 60000 };
+  const opzioniProva = soloTraduzione
+    ? { ...opzioni, env: { ...process.env, TS_NODE_TRANSPILE_ONLY: 'true' } }
+    : opzioni;
   try {
-    await lancia(NODE, [CUCUMBER_CLI, '--dry-run', '--format', 'message:cucumber-messages.ndjson'], opzioni);
+    await lancia(NODE, [CUCUMBER_CLI, '--dry-run', '--format', 'message:cucumber-messages.ndjson'], opzioniProva);
     await lancia(NODE, [TS_NODE, 'scripts/extract-steps.ts', 'cucumber-messages.ndjson'], opzioni);
     await lancia(NODE, [TS_NODE, 'scripts/render-markdown.ts'], opzioni);
     return true;

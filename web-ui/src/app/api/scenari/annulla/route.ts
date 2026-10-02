@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const esito = await conLaSerratura(() => annulla(radici()));
     // Annullata una rinomina: la frase nuova non c'e' piu' nel codice (vedi `catalogo-voci.ts`).
     if (esito.catalogoDaTogliere) togliVoceDalCatalogo(REPO_ROOT, esito.catalogoDaTogliere);
-    const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
+    const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo(undefined, { soloTraduzione: true }) : null;
     // Annullato uno spostamento: l'esito dell'ultima prova torna al file di prima.
     if (esito.spostamento) {
       spostaEsiti(percorsoIndice(REPO_ROOT), esito.spostamento.a, esito.spostamento.da, FEATURES_DIR);

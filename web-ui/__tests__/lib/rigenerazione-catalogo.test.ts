@@ -59,3 +59,26 @@ describe('tentaRigenerazioneCatalogo', () => {
     spia.mockRestore();
   });
 });
+
+describe('tentaRigenerazioneCatalogo: i tipi', () => {
+  // Dopo una modifica dal cruscotto i tipi li ha gia' controllati il salvataggio (tsc);
+  // la prova a vuoto del catalogo, su tutta la suite, non li ricontrolla un'altra volta
+  // (circa 0,085 s per ogni file di step). Senza la richiesta, tutto come prima.
+  it('con soloTraduzione la prova a vuoto di Cucumber non ricontrolla i tipi', async () => {
+    const opzioniViste: Array<Record<string, unknown>> = [];
+    const lancia = vi.fn(async (_e: string, _a: string[], o: Record<string, unknown>) => {
+      opzioniViste.push(o);
+    });
+    expect(await tentaRigenerazioneCatalogo(lancia, { soloTraduzione: true })).toBe(true);
+    expect((opzioniViste[0].env as NodeJS.ProcessEnv).TS_NODE_TRANSPILE_ONLY).toBe('true');
+  });
+
+  it("senza richiesta nessuna variabile in piu': i tipi si controllano come prima", async () => {
+    const opzioniViste: Array<Record<string, unknown>> = [];
+    const lancia = vi.fn(async (_e: string, _a: string[], o: Record<string, unknown>) => {
+      opzioniViste.push(o);
+    });
+    await tentaRigenerazioneCatalogo(lancia);
+    expect(opzioniViste[0].env).toBeUndefined();
+  });
+});
