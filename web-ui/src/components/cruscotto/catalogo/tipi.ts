@@ -85,6 +85,10 @@ export interface CoppiaRiconciliazione {
 
 export interface RispostaRiconciliazione {
   coppie: CoppiaRiconciliazione[];
+  /** Vero se ce ne sono piu' di quelle restituite (il motore ne porta al massimo 500, le piu' forti). */
+  troncato?: boolean;
+  /** Quante coppie ci sono davvero, anche quelle non restituite. */
+  totale?: number;
 }
 
 export interface RichiestaRiconcilia {

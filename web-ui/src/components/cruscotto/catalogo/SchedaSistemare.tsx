@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRisorsa } from '@/hooks/useRisorsa';
 import { useVistaUrl } from '@/hooks/useVistaUrl';
@@ -109,6 +109,21 @@ export function SchedaSistemare() {
 
       {arricchite && totale > 0 && (
         <>
+          {coppie.dati?.troncato && (
+            <p
+              role="status"
+              className="flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+              style={{ color: 'var(--testo)', borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+            >
+              <Info aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                {t('coppieTroncate', {
+                  altre: Math.max(0, (coppie.dati.totale ?? totale) - coppie.dati.coppie.length),
+                  mostrate: coppie.dati.coppie.length,
+                })}
+              </span>
+            </p>
+          )}
           {mostraFiltri(totale) && (
             <BarraStrumenti
               q={vista.q}

@@ -42,7 +42,8 @@ export const catalogo = creaRisorsa<RispostaCatalogo>(async () => {
 
 export const riconciliazione = creaRisorsa<RispostaRiconciliazione>(async () => {
   const corpo = await leggiJson<Partial<RispostaRiconciliazione>>('/api/catalogo/riconciliazione');
-  return { coppie: corpo.coppie ?? [] };
+  const coppie = corpo.coppie ?? [];
+  return { coppie, troncato: corpo.troncato === true, totale: corpo.totale ?? coppie.length };
 });
 
 /** Solo cio' che serve a contare: i file con i loro scenari eseguibili. */

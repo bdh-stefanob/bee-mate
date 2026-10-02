@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import type { CatalogStep } from '@/lib/types';
-import { individuaCoppie } from '@/lib/riconciliazione';
+import { individuaCoppieConTetto } from '@/lib/riconciliazione';
 import { leggiJson } from '@/lib/file-json';
 
 /**
@@ -17,7 +17,9 @@ export async function GET() {
   try {
     const catalogoPath = path.join(REPO_ROOT, 'step-catalog.json');
     const dati = leggiJson(catalogoPath) as { steps: CatalogStep[] };
-    return NextResponse.json({ coppie: individuaCoppie(dati.steps) });
+    // Con un catalogo "sporco" le coppie sono quadratiche: se ne restituiscono
+    // al massimo TETTO_COPPIE (le piu' forti) e si dice quante ce ne sono davvero.
+    return NextResponse.json(individuaCoppieConTetto(dati.steps));
   } catch (err) {
     console.error('riconciliazione non disponibile:', err);
     return NextResponse.json({ errore: 'catalogo_non_disponibile' }, { status: 500 });

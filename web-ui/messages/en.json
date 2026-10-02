@@ -542,6 +542,7 @@
     "daVerificareTitolo": "Can't tell yet",
     "daVerificareTesto": "The two phrases look alike, but at least one isn't linked to a component yet: without that, we can't tell whether they're the same thing. Once both are, the right action will show up here.",
     "nessunDisordineTitolo": "All tidy",
+    "coppieTroncate": "There are {altre} more pairs beyond the {mostrate} shown below: fix these and reopen the page to see the next ones.",
     "ruoli": {
       "button": "Button",
       "link": "Link",

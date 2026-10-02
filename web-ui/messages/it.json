@@ -542,6 +542,7 @@
     "daVerificareTitolo": "Non si può ancora dire",
     "daVerificareTesto": "Le due frasi si somigliano, ma almeno una non è ancora agganciata a un componente: senza quello non si capisce se siano la stessa cosa. Quando entrambe lo saranno, qui comparirà il gesto giusto.",
     "nessunDisordineTitolo": "Tutto in ordine",
+    "coppieTroncate": "Ci sono altre {altre} coppie oltre alle {mostrate} che vedi qui sotto: sistema queste e riapri la pagina per vedere le successive.",
     "ruoli": {
       "button": "Pulsante",
       "link": "Collegamento",
