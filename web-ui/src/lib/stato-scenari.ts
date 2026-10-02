@@ -1,5 +1,6 @@
 import { creaRisorsa, type Risorsa } from './risorsa';
 import type { RispostaScenari } from './esiti-tipi';
+import { leggiConLimite } from './lettura';
 
 /**
  * Gli scenari e il loro testo, tenuti FUORI dai componenti (come
@@ -9,7 +10,7 @@ import type { RispostaScenari } from './esiti-tipi';
 
 /** Esportata per i test: una risposta senza la forma attesa e' un errore, mai un elenco vuoto. */
 export async function leggiScenari(): Promise<RispostaScenari> {
-  const risposta = await fetch('/api/scenari');
+  const risposta = await leggiConLimite('/api/scenari');
   if (!risposta.ok) throw new Error(`/api/scenari: ${risposta.status}`);
   const corpo = (await risposta.json()) as Partial<RispostaScenari>;
   // "Nessuno scenario" e' una notizia (e porta a "Registra il primo"): non si

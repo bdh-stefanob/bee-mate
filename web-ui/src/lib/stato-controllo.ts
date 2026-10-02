@@ -12,6 +12,7 @@
  * la stessa identita', quindi passarla a una riga `memo` non la fa ridisegnare.
  */
 import { creaRisorsa } from './risorsa';
+import { leggiConLimite } from './lettura';
 import type { VoceDiagnosi } from './controllo';
 
 export interface AmbienteVisibile {
@@ -39,7 +40,7 @@ export interface Diagnosi {
 }
 
 async function leggiJson<T>(rotta: string): Promise<T> {
-  const risposta = await fetch(rotta);
+  const risposta = await leggiConLimite(rotta);
   const corpo = (await risposta.json()) as T;
   if (!risposta.ok) throw new Error(`${rotta}: ${risposta.status}`);
   return corpo;

@@ -60,7 +60,8 @@ describe('dopoUnCambioDegliScenari', () => {
     vi.stubGlobal('fetch', fetchFinto);
     dopoUnCambioDegliScenari();
     await scenari.carica();
-    expect(fetchFinto).toHaveBeenCalledWith('/api/scenari');
+    // La lettura ha un limite di tempo: la richiesta porta il segnale che scade.
+    expect(fetchFinto).toHaveBeenCalledWith('/api/scenari', { signal: expect.any(AbortSignal) });
     expect(scenari.istantanea().dati).toEqual({ file: [], soloDescritti: 0, esiti: 'ok' });
   });
 
