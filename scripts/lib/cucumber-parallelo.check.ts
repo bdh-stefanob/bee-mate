@@ -167,7 +167,11 @@ async function main(): Promise<void> {
     const par = esegui("parallelo", [p1, p2], ["--parallel", "2"]);
     eq("parallelo: ogni scenario parte una volta sola", ordina(par.iniziati), ordina(tutti));
     eq("parallelo: ogni scenario finisce una volta sola", ordina(par.finiti), ordina(tutti));
-    eq("parallelo: gli stessi passi di quando e' in serie, scenario per scenario", par.stati, continua.stati);
+    // In parallelo gli scenari finiscono in un ordine che cambia da un giro all'altro:
+    // si confronta scenario per scenario, non l'ordine delle chiavi (era il controllo
+    // che falliva "ogni tanto" dentro check:all).
+    const perNome = (s: Record<string, string[]>) => Object.fromEntries(Object.entries(s).sort(([a], [b]) => a.localeCompare(b)));
+    eq("parallelo: gli stessi passi di quando e' in serie, scenario per scenario", perNome(par.stati), perNome(continua.stati));
     eq("parallelo: lo stesso numero di messaggi della serie", par.messaggi, continua.messaggi);
     eq("parallelo: il rosso e' ancora uno solo", Object.values(par.stati).flat().filter((s) => s === "FAILED").length, 1);
     eq("parallelo: l'esito del processo e' un fallimento", par.codice, 1);
