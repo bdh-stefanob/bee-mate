@@ -157,7 +157,23 @@ function testoMoltoSimile(a: string, b: string, ha: Uint16Array, hb: Uint16Array
   if (1 - Math.abs(a.length - b.length) / lunghezzaMax < SOGLIA_SOMIGLIANZA) return false;
   const tetto = Math.floor((1 - SOGLIA_SOMIGLIANZA) * lunghezzaMax) + 1;
   if (limiteInferioreDistanza(ha, hb) > tetto) return false;
-  const d = distanzaConTetto(a, b, tetto);
+  // Prefisso e suffisso comuni non cambiano la distanza: si tolgono, e la
+  // programmazione dinamica gira solo sul pezzo che differisce. Nei cataloghi
+  // con frasi che differiscono per un numero o una parola e' quasi sempre
+  // qualche carattere, invece dell'intera frase.
+  const minimo = Math.min(a.length, b.length);
+  let inizio = 0;
+  while (inizio < minimo && a.charCodeAt(inizio) === b.charCodeAt(inizio)) inizio++;
+  let fineA = a.length;
+  let fineB = b.length;
+  while (fineA > inizio && fineB > inizio && a.charCodeAt(fineA - 1) === b.charCodeAt(fineB - 1)) {
+    fineA--;
+    fineB--;
+  }
+  const d =
+    inizio === 0 && fineA === a.length && fineB === b.length
+      ? distanzaConTetto(a, b, tetto)
+      : distanzaConTetto(a.slice(inizio, fineA), b.slice(inizio, fineB), tetto);
   if (d > tetto) return false;
   return 1 - d / lunghezzaMax >= SOGLIA_SOMIGLIANZA;
 }
@@ -219,7 +235,9 @@ function distanzaConTetto(a: string, b: string, tetto: number): number {
     corrente[da - 1] = da === 1 ? Math.min(i, oltre) : oltre;
     if (fino < n) corrente[fino + 1] = oltre;
     const carattere = a.charCodeAt(i - 1);
-    let minimoRiga = oltre;
+    // La cella della colonna 0 (i inserimenti iniziali) fa parte della riga: se
+    // il pezzo da confrontare e' corto puo' essere l'unica sotto il tetto.
+    let minimoRiga = da === 1 ? corrente[0]! : oltre;
     for (let j = da; j <= fino; j++) {
       const costo = carattere === b.charCodeAt(j - 1) ? 0 : 1;
       let v = precedente[j - 1]! + costo;
@@ -240,28 +258,113 @@ function distanzaConTetto(a: string, b: string, tetto: number): number {
   return Math.min(precedente[n]!, oltre);
 }
 
+/** Quante coppie, al massimo, restituisce la ricerca: oltre, l'elenco e' troncato (vedi `individuaCoppieConTetto`). */
+export const TETTO_COPPIE = 500;
+
+export interface RisultatoRiconciliazione {
+  coppie: CoppiaRiconciliazione[];
+  /** Vero se le coppie vere sono piu' del tetto: `coppie` ne porta solo le piu' forti. */
+  troncato: boolean;
+  /** Quante coppie ci sono davvero, anche quelle non restituite. */
+  totale: number;
+}
+
 /**
- * Le coppie sospette del catalogo, ciascuna gia' giudicata.
+ * Forza di una coppia, dalla piu' alla meno utile da mostrare per prima:
+ * 0 doppione (testo quasi uguale e stessi componenti), 1 stessi componenti con
+ * frasi diverse, 2 testo quasi uguale senza componenti uguali (equivoco o da
+ * verificare), 3 solo informativa (applicazioni diverse).
+ */
+type Forza = 0 | 1 | 2 | 3;
+
+/** Il minimo per costruire la coppia dopo: niente oggetti, niente testi, finche' non serve. */
+interface Candidata {
+  seq: number;
+  i: number;
+  j: number;
+  motivo: MotivoRiconciliazione;
+  uguali: boolean;
+}
+
+function costruisci(steps: readonly CatalogStep[], c: Candidata): CoppiaRiconciliazione {
+  const a = steps[c.i]!;
+  const b = steps[c.j]!;
+  const id = `${a.expression}||${b.expression}`;
+  if (c.motivo === 'applicazioni-diverse') {
+    return {
+      id,
+      motivo: 'applicazioni-diverse',
+      // Applicazioni diverse, nessuna delle due common/generated: mai fusione
+      // ne' rinomina (vedi il commento in testa al file).
+      spiegazione: `il testo e' molto simile ma gli step appartengono ad applicazioni diverse (${a.app} e ${b.app}): puo' essere una coincidenza di formulazione (nomi comuni come "Sign in"), non un doppione — nessuna fusione ne' rinomina proposta`,
+      a: vista(a),
+      b: vista(b),
+      stessoComponente: false,
+    };
+  }
+  if (c.motivo === 'stessi-componenti') {
+    return {
+      id,
+      motivo: 'stessi-componenti',
+      spiegazione: "due frasi diverse toccano esattamente lo stesso componente: puo' essere lo stesso gesto scritto due volte",
+      a: vista(a),
+      b: vista(b),
+      stessoComponente: true,
+    };
+  }
+  const entrambiAncorati = Boolean(a.components?.length) && Boolean(b.components?.length);
+  return {
+    id,
+    motivo: 'testo-quasi-uguale',
+    spiegazione: c.uguali
+      ? "il testo e' quasi identico e i componenti coincidono: probabile doppione, si puo' fondere"
+      : entrambiAncorati
+        ? "il testo e' quasi identico ma i componenti sono diversi: e' un equivoco di denominazione, non un doppione — non fondere, distingui le frasi"
+        : "il testo e' quasi identico, ma almeno uno dei due step non ha ancora un componente dichiarato: non si puo' concludere se sia un doppione",
+    a: vista(a),
+    b: vista(b),
+    stessoComponente: c.uguali,
+  };
+}
+
+/**
+ * Le coppie sospette del catalogo, ciascuna gia' giudicata, con un tetto.
  *
  * Non confronta uno step con se stesso e non produce coppie duplicate
  * (a,b)/(b,a): ogni coppia non ordinata compare una sola volta.
  *
- * Il ciclo resta su tutte le coppie (cosi' l'ordine del risultato e' quello di
- * sempre, e le coppie "stessi-componenti" non dipendono dal testo), ma ogni
- * coppia costa poco: testo normalizzato e firma dei componenti si calcolano una
- * volta per step, e Levenshtein parte solo se la lunghezza non esclude gia' la
- * somiglianza.
+ * Il ciclo resta su tutte le coppie (cosi' il totale e' vero, l'ordine del
+ * risultato e' quello di sempre, e le coppie "stessi-componenti" non dipendono
+ * dal testo), ma ogni coppia costa poco: testo normalizzato e firma dei
+ * componenti si calcolano una volta per step, e Levenshtein parte solo se la
+ * lunghezza non esclude gia' la somiglianza.
+ *
+ * Il TETTO limita la forma del risultato, non il conto: di ogni coppia trovata
+ * si incrementa un contatore, e se ne conserva solo l'indice (due interi) finche'
+ * la sua fascia di forza non ha gia' `tetto` posti. Le coppie come oggetti si
+ * costruiscono solo per quelle restituite. Se le coppie vere sono al piu' `tetto`
+ * il risultato e' identico a quello di prima (stesso ordine); se sono di piu',
+ * restano le piu' forti (doppioni, poi stessi componenti, poi il resto), a
+ * parita' nell'ordine del ciclo, e `troncato` e' vero.
  */
-export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconciliazione[] {
-  const coppie: CoppiaRiconciliazione[] = [];
+export function individuaCoppieConTetto(steps: readonly CatalogStep[], tetto: number = TETTO_COPPIE): RisultatoRiconciliazione {
+  const fasce: Candidata[][] = [[], [], [], []];
+  let totale = 0;
   const normalizzati = steps.map((s) => normalizza(s.expression));
   const firme = steps.map((s) => firmaComponenti(s.components));
   const istogrammi = normalizzati.map(istogramma);
+  const n = steps.length;
 
-  for (let i = 0; i < steps.length; i++) {
-    for (let j = i + 1; j < steps.length; j++) {
-      const a = steps[i];
-      const b = steps[j];
+  const accoda = (forza: Forza, i: number, j: number, motivo: MotivoRiconciliazione, uguali: boolean) => {
+    totale++;
+    const fascia = fasce[forza]!;
+    if (fascia.length < tetto) fascia.push({ seq: i * n + j, i, j, motivo, uguali });
+  };
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const a = steps[i]!;
+      const b = steps[j]!;
       if (a.expression === b.expression) continue;
 
       const normA = normalizzati[i]!;
@@ -269,55 +372,45 @@ export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconcilia
       const testoSimile = normA === normB || testoMoltoSimile(normA, normB, istogrammi[i]!, istogrammi[j]!);
 
       if (!stessoAmbito(a.app, b.app)) {
-        // Applicazioni diverse, nessuna delle due common/generated: mai
-        // fusione ne' rinomina (vedi il commento in testa al file). Il
-        // confronto per componente non si fa nemmeno — troppo rumoroso fra
-        // prodotti diversi — ma il testo molto simile resta un'informazione
-        // onesta da mostrare.
-        if (testoSimile) {
-          coppie.push({
-            id: `${a.expression}||${b.expression}`,
-            motivo: 'applicazioni-diverse',
-            spiegazione: `il testo e' molto simile ma gli step appartengono ad applicazioni diverse (${a.app} e ${b.app}): puo' essere una coincidenza di formulazione (nomi comuni come "Sign in"), non un doppione — nessuna fusione ne' rinomina proposta`,
-            a: vista(a),
-            b: vista(b),
-            stessoComponente: false,
-          });
-        }
+        // Applicazioni diverse: il confronto per componente non si fa nemmeno
+        // (troppo rumoroso fra prodotti diversi), ma il testo molto simile
+        // resta un'informazione onesta da mostrare.
+        if (testoSimile) accoda(3, i, j, 'applicazioni-diverse', false);
         continue;
       }
 
       const uguali = firme[i] !== null && firme[i] === firme[j];
-
-      if (!testoSimile && !uguali) continue;
-
-      const entrambiAncorati = Boolean(a.components?.length) && Boolean(b.components?.length);
-
-      if (testoSimile) {
-        coppie.push({
-          id: `${a.expression}||${b.expression}`,
-          motivo: 'testo-quasi-uguale',
-          spiegazione: uguali
-            ? "il testo e' quasi identico e i componenti coincidono: probabile doppione, si puo' fondere"
-            : entrambiAncorati
-              ? "il testo e' quasi identico ma i componenti sono diversi: e' un equivoco di denominazione, non un doppione — non fondere, distingui le frasi"
-              : "il testo e' quasi identico, ma almeno uno dei due step non ha ancora un componente dichiarato: non si puo' concludere se sia un doppione",
-          a: vista(a),
-          b: vista(b),
-          stessoComponente: uguali,
-        });
-      } else {
-        coppie.push({
-          id: `${a.expression}||${b.expression}`,
-          motivo: 'stessi-componenti',
-          spiegazione: "due frasi diverse toccano esattamente lo stesso componente: puo' essere lo stesso gesto scritto due volte",
-          a: vista(a),
-          b: vista(b),
-          stessoComponente: true,
-        });
-      }
+      if (testoSimile) accoda(uguali ? 0 : 2, i, j, 'testo-quasi-uguale', uguali);
+      else if (uguali) accoda(1, i, j, 'stessi-componenti', true);
     }
   }
 
-  return coppie;
+  const troncato = totale > tetto;
+  const scelte: Candidata[] = [];
+  if (troncato) {
+    for (const fascia of fasce) {
+      for (const c of fascia) {
+        if (scelte.length >= tetto) break;
+        scelte.push(c);
+      }
+    }
+  } else {
+    // Ogni fascia e' gia' in ordine di ciclo: la fusione a quattro vie rida' l'ordine di sempre.
+    const posizioni = [0, 0, 0, 0];
+    for (;;) {
+      let migliore = -1;
+      for (let f = 0; f < 4; f++) {
+        const c = fasce[f]![posizioni[f]!];
+        if (c && (migliore < 0 || c.seq < fasce[migliore]![posizioni[migliore]!]!.seq)) migliore = f;
+      }
+      if (migliore < 0) break;
+      scelte.push(fasce[migliore]![posizioni[migliore]!++]!);
+    }
+  }
+  return { coppie: scelte.map((c) => costruisci(steps, c)), troncato, totale };
+}
+
+/** Tutte le coppie, senza tetto: per chi deve sapere di una frase precisa (vedi `piano-modifica.ts`) e per i confronti. */
+export function individuaCoppie(steps: readonly CatalogStep[]): CoppiaRiconciliazione[] {
+  return individuaCoppieConTetto(steps, Number.POSITIVE_INFINITY).coppie;
 }
