@@ -1,9 +1,561 @@
 {
-  "generatedAt": "2026-10-01T08:56:03.110Z",
-  "totalSteps": 2,
-  "documentedSteps": 2,
+  "generatedAt": "2026-10-02T09:30:03.931Z",
+  "totalSteps": 25,
+  "documentedSteps": 25,
   "undocumentedSteps": 0,
   "steps": [
+    {
+      "expression": "the suer check new notification",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "OrderCompleteAsyncNoCallPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "22 Secure messages"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:313",
+      "doc": {
+        "params": {},
+        "intent": "the suer check new notification",
+        "page": "OrderCompleteAsyncNoCallPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "22 Secure messages"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user check and continue the order",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "ImportantInfoPage",
+      "components": [
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above."
+        },
+        {
+          "role": "button",
+          "name": "Continue"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:212",
+      "doc": {
+        "params": {},
+        "intent": "the user check and continue the order",
+        "page": "ImportantInfoPage",
+        "components": [
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above."
+          },
+          {
+            "role": "button",
+            "name": "Continue"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on back to account",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "VisitHistoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Back to Account"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:85",
+      "doc": {
+        "params": {},
+        "intent": "the user click on back to account",
+        "page": "VisitHistoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Back to Account"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on get started",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "TreatmentPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Get started"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:130",
+      "doc": {
+        "params": {},
+        "intent": "the user click on get started",
+        "page": "TreatmentPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Get started"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on i am old user",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "WeiPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:160",
+      "doc": {
+        "params": {},
+        "intent": "the user click on i am old user",
+        "page": "WeiPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on start services",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "AccountPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Start a consultations Choose from our list of services"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:100",
+      "doc": {
+        "params": {},
+        "intent": "the user click on start services",
+        "page": "AccountPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Start a consultations Choose from our list of services"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on started over a started services",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "WeightLossPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Start over"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:145",
+      "doc": {
+        "params": {},
+        "intent": "the user click on started over a started services",
+        "page": "WeightLossPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Start over"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on weight loss treatment",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Weight Loss"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:115",
+      "doc": {
+        "params": {},
+        "intent": "the user click on weight loss treatment",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Weight Loss"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user compile the treatment section",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "ProductsWeiFPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "0.5mg"
+        },
+        {
+          "role": "button",
+          "name": "With Coaching £146.97"
+        },
+        {
+          "role": "radio",
+          "name": "With Coaching"
+        },
+        {
+          "role": "button",
+          "name": "Select"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:178",
+      "doc": {
+        "params": {},
+        "intent": "the user compile the treatment section",
+        "page": "ProductsWeiFPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "0.5mg"
+          },
+          {
+            "role": "button",
+            "name": "With Coaching £146.97"
+          },
+          {
+            "role": "radio",
+            "name": "With Coaching"
+          },
+          {
+            "role": "button",
+            "name": "Select"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user complete the photo autentication",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "VisitPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Open camera"
+        },
+        {
+          "role": "button",
+          "name": "Take Picture"
+        },
+        {
+          "role": "button",
+          "name": "Save"
+        },
+        {
+          "role": "button",
+          "name": "That's me"
+        },
+        {
+          "role": "button",
+          "name": "Submit"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:294",
+      "doc": {
+        "params": {},
+        "intent": "the user complete the photo autentication",
+        "page": "VisitPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Open camera"
+          },
+          {
+            "role": "button",
+            "name": "Take Picture"
+          },
+          {
+            "role": "button",
+            "name": "Save"
+          },
+          {
+            "role": "button",
+            "name": "That's me"
+          },
+          {
+            "role": "button",
+            "name": "Submit"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user continue",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "ProductWeiFPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "continue"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:196",
+      "doc": {
+        "params": {},
+        "intent": "the user continue",
+        "page": "ProductWeiFPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "continue"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user logged in",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "LoginPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Log in"
+        },
+        {
+          "role": "textbox",
+          "name": "Email"
+        },
+        {
+          "role": "button",
+          "name": "Log In"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:68",
+      "doc": {
+        "params": {},
+        "intent": "the user logged in",
+        "page": "LoginPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Log in"
+          },
+          {
+            "role": "textbox",
+            "name": "Email"
+          },
+          {
+            "role": "button",
+            "name": "Log In"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user say no to GP",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "QuestionsPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "NO"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:228",
+      "doc": {
+        "params": {},
+        "intent": "the user say no to GP",
+        "page": "QuestionsPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "NO"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select the card and accept payment",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "SummaryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "....0000 Expiry 07/29"
+        },
+        {
+          "role": "button",
+          "name": "Place Order"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:274",
+      "doc": {
+        "params": {},
+        "intent": "the user select the card and accept payment",
+        "page": "SummaryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "....0000 Expiry 07/29"
+          },
+          {
+            "role": "button",
+            "name": "Place Order"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select the right store",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "PharmacyMapSelectionPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Select Pharmacy"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:258",
+      "doc": {
+        "params": {},
+        "intent": "the user select the right store",
+        "page": "PharmacyMapSelectionPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Select Pharmacy"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "user choos to pick up in store",
+      "parameters": [],
+      "app": "clinic",
+      "area": "weight-loss",
+      "domain": "clinic/weight-loss",
+      "status": "wanted",
+      "page": "PharmaciesPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Yes, pick up in store"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\a-user-complete-an-order-in-weight-loss.steps.ts:243",
+      "doc": {
+        "params": {},
+        "intent": "user choos to pick up in store",
+        "page": "PharmaciesPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Yes, pick up in store"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
     {
       "expression": "the page shows {string}",
       "parameters": [
@@ -33,6 +585,411 @@
       "doc": {
         "params": {},
         "intent": "L'utente e' dentro l'applicazione: con una sessione valida non fa"
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user check the last notification",
+      "parameters": [],
+      "app": "qa-brochure",
+      "area": "weight-loss",
+      "domain": "qa-brochure/weight-loss",
+      "status": "wanted",
+      "page": "OrderCompleteAsyncNoCallPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "2 Secure messages"
+        }
+      ],
+      "sourceRef": "src\\steps\\qa-brochure\\weight-loss\\the-user-complete-the-order.steps.ts:179",
+      "doc": {
+        "params": {},
+        "intent": "the user check the last notification",
+        "page": "OrderCompleteAsyncNoCallPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "2 Secure messages"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click get started",
+      "parameters": [],
+      "app": "qa-brochure",
+      "area": "weight-loss",
+      "domain": "qa-brochure/weight-loss",
+      "status": "wanted",
+      "page": "TreatmentPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Get started"
+        }
+      ],
+      "sourceRef": "src\\steps\\qa-brochure\\weight-loss\\the-user-complete-the-order.steps.ts:94",
+      "doc": {
+        "params": {},
+        "intent": "the user click get started",
+        "page": "TreatmentPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Get started"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user complete the order",
+      "parameters": [],
+      "app": "qa-brochure",
+      "area": "weight-loss",
+      "domain": "qa-brochure/weight-loss",
+      "status": "wanted",
+      "page": "WeiPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "I'M NEW I am new to the Boots Online Doctor Weight Loss service",
+          "page": "WeiPage"
+        },
+        {
+          "role": "button",
+          "name": "With Coaching £121",
+          "page": "ProductsWeiFPage"
+        },
+        {
+          "role": "radio",
+          "name": "With Coaching",
+          "page": "ProductsWeiFPage"
+        },
+        {
+          "role": "button",
+          "name": "Select",
+          "page": "ProductsWeiFPage"
+        },
+        {
+          "role": "button",
+          "name": "continue",
+          "page": "ProductWeiFPage"
+        },
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above.",
+          "page": "ImportantInfoPage"
+        },
+        {
+          "role": "button",
+          "name": "Continue",
+          "page": "ImportantInfoPage"
+        },
+        {
+          "role": "button",
+          "name": "Start of the Questionnaire Section - Move along",
+          "page": "QuestionsPage"
+        },
+        {
+          "role": "button",
+          "name": "Next",
+          "page": "QuestionsPage"
+        },
+        {
+          "role": "button",
+          "name": "No GP",
+          "page": "QuestionsPage"
+        },
+        {
+          "role": "spinbutton",
+          "name": "0",
+          "page": "QuestionsPage"
+        },
+        {
+          "role": "button",
+          "name": "Yes, pick up in store",
+          "page": "PharmaciesPage"
+        },
+        {
+          "role": "button",
+          "name": "Select Pharmacy",
+          "page": "PharmacyMapSelectionPage"
+        },
+        {
+          "role": "button",
+          "name": "Place Order",
+          "page": "SummaryPage"
+        },
+        {
+          "role": "button",
+          "name": "Open camera",
+          "page": "VisitPage"
+        },
+        {
+          "role": "button",
+          "name": "Take Picture",
+          "page": "VisitPage"
+        },
+        {
+          "role": "button",
+          "name": "Save",
+          "page": "VisitPage"
+        },
+        {
+          "role": "button",
+          "name": "That's me",
+          "page": "VisitPage"
+        },
+        {
+          "role": "button",
+          "name": "Submit",
+          "page": "VisitPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\qa-brochure\\weight-loss\\the-user-complete-the-order.steps.ts:127",
+      "doc": {
+        "params": {},
+        "intent": "the user complete the order",
+        "page": "WeiPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "I'M NEW I am new to the Boots Online Doctor Weight Loss service",
+            "page": "WeiPage"
+          },
+          {
+            "role": "button",
+            "name": "With Coaching £121",
+            "page": "ProductsWeiFPage"
+          },
+          {
+            "role": "radio",
+            "name": "With Coaching",
+            "page": "ProductsWeiFPage"
+          },
+          {
+            "role": "button",
+            "name": "Select",
+            "page": "ProductsWeiFPage"
+          },
+          {
+            "role": "button",
+            "name": "continue",
+            "page": "ProductWeiFPage"
+          },
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above.",
+            "page": "ImportantInfoPage"
+          },
+          {
+            "role": "button",
+            "name": "Continue",
+            "page": "ImportantInfoPage"
+          },
+          {
+            "role": "button",
+            "name": "Start of the Questionnaire Section - Move along",
+            "page": "QuestionsPage"
+          },
+          {
+            "role": "button",
+            "name": "Next",
+            "page": "QuestionsPage"
+          },
+          {
+            "role": "button",
+            "name": "No GP",
+            "page": "QuestionsPage"
+          },
+          {
+            "role": "spinbutton",
+            "name": "0",
+            "page": "QuestionsPage"
+          },
+          {
+            "role": "button",
+            "name": "Yes, pick up in store",
+            "page": "PharmaciesPage"
+          },
+          {
+            "role": "button",
+            "name": "Select Pharmacy",
+            "page": "PharmacyMapSelectionPage"
+          },
+          {
+            "role": "button",
+            "name": "Place Order",
+            "page": "SummaryPage"
+          },
+          {
+            "role": "button",
+            "name": "Open camera",
+            "page": "VisitPage"
+          },
+          {
+            "role": "button",
+            "name": "Take Picture",
+            "page": "VisitPage"
+          },
+          {
+            "role": "button",
+            "name": "Save",
+            "page": "VisitPage"
+          },
+          {
+            "role": "button",
+            "name": "That's me",
+            "page": "VisitPage"
+          },
+          {
+            "role": "button",
+            "name": "Submit",
+            "page": "VisitPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user land on brochure",
+      "parameters": [],
+      "app": "qa-brochure",
+      "area": "weight-loss",
+      "domain": "qa-brochure/weight-loss",
+      "status": "wanted",
+      "page": "AccountPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Start a consultations Choose from our list of services",
+          "page": "AccountPage"
+        },
+        {
+          "role": "button",
+          "name": "Accept All",
+          "page": "HomePage"
+        }
+      ],
+      "sourceRef": "src\\steps\\qa-brochure\\weight-loss\\the-user-complete-the-order.steps.ts:61",
+      "doc": {
+        "params": {},
+        "intent": "the user land on brochure",
+        "page": "AccountPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Start a consultations Choose from our list of services",
+            "page": "AccountPage"
+          },
+          {
+            "role": "button",
+            "name": "Accept All",
+            "page": "HomePage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user open the weight loss",
+      "parameters": [],
+      "app": "qa-brochure",
+      "area": "weight-loss",
+      "domain": "qa-brochure/weight-loss",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Weight Loss"
+        }
+      ],
+      "sourceRef": "src\\steps\\qa-brochure\\weight-loss\\the-user-complete-the-order.steps.ts:81",
+      "doc": {
+        "params": {},
+        "intent": "the user open the weight loss",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Weight Loss"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "il cliente accede all'area ordini",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "AccessoPage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Email"
+        },
+        {
+          "role": "button",
+          "name": "Entra"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\zz-controllo.steps.ts:39",
+      "doc": {
+        "params": {},
+        "intent": "il cliente accede all'area ordini",
+        "page": "AccessoPage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Email"
+          },
+          {
+            "role": "button",
+            "name": "Entra"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "il cliente annulla un ordine",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "OrdiniPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Annulla ordine"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\zz-controllo.steps.ts:58",
+      "doc": {
+        "params": {},
+        "intent": "il cliente annulla un ordine",
+        "page": "OrdiniPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Annulla ordine"
+          }
+        ],
+        "wanted": true
       },
       "documented": true
     }
