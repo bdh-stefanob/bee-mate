@@ -1,7 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { walkFeatures } from './features';
 import { improntaDiTesto } from './impronta-scenario';
+import { CachePerFile } from './cache-file';
 
 /**
  * Gli scenari che la schermata Esecuzione puo' offrire.
@@ -98,20 +98,29 @@ export interface RiepilogoScenari {
  */
 export function riepilogaScenari(cartella: string): RiepilogoScenari {
   const elenco: FileScenari[] = [];
+  const vivi = new Set<string>();
   let soloDescritti = 0;
   for (const rel of walkFeatures(cartella)) {
-    let testo = '';
-    try {
-      testo = fs.readFileSync(path.join(cartella, rel), 'utf-8');
-    } catch {
-      continue;
-    }
-    const f = leggiScenari(testo, rel);
+    const percorso = path.join(cartella, rel);
+    vivi.add(percorso);
+    // Si rilegge e si analizza solo cio' che e' cambiato dall'ultima volta
+    // (vedi `cache-file.ts`): a 300 scenari erano ~290 ms a ogni chiamata, e
+    // in quel tempo il server non serviva nessun'altra richiesta.
+    const f = cacheScenari.ottieni(percorso, '', (testo) => leggiScenari(testo, rel));
+    if (!f) continue;
     soloDescritti += f.nonAutomatizzati;
-    if (f.scenari.length > 0) elenco.push(f);
+    if (f.scenari.length > 0) elenco.push(copiaFileScenari(f));
   }
+  cacheScenari.pota(cartella + path.sep, vivi);
   elenco.sort((a, b) => Number(b.generato) - Number(a.generato) || a.file.localeCompare(b.file));
   return { file: elenco, soloDescritti };
+}
+
+const cacheScenari = new CachePerFile<FileScenari>();
+
+/** Chi riceve l'elenco lo puo' ordinare, filtrare, arricchire: la cache non si sporca. */
+function copiaFileScenari(f: FileScenari): FileScenari {
+  return { ...f, scenari: f.scenari.map((s) => ({ ...s })) };
 }
 
 export function elencaScenari(cartella: string): FileScenari[] {

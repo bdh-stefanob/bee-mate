@@ -1,7 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import type { CatalogStep, StepComponentRef } from './types';
 import { walkFeatures } from './features';
+import { CachePerFile, improntaDiElenco } from './cache-file';
 import { computeComponentImpact } from './component-impact';
 import { leggiComportamenti, type ComportamentoStep } from './descrizione-step';
 
@@ -129,9 +129,43 @@ function righeStepDiFile(contenuto: string): RigaStep[] {
 }
 
 /**
+ * Le espressioni regolari si compilano una volta, non a ogni chiamata: un
+ * catalogo da 2000 voci le ricostruiva tutte ogni volta. L'espressione e' la
+ * chiave e la regex non ha stato (niente flag `g`), quindi si condivide.
+ */
+const regexPerEspressione = new Map<string, RegExp>();
+const MAX_REGEX_IN_MEMORIA = 20000;
+
+function regexDi(espressione: string): RegExp {
+  let r = regexPerEspressione.get(espressione);
+  if (!r) {
+    if (regexPerEspressione.size >= MAX_REGEX_IN_MEMORIA) regexPerEspressione.clear();
+    r = espressioneInRegex(espressione);
+    regexPerEspressione.set(espressione, r);
+  }
+  return r;
+}
+
+/**
+ * Di ogni file: le righe di step (dipendono solo dal file) e, accanto, gli usi
+ * che ne risultano per l'ultimo catalogo visto (la "chiave"). Cambiare catalogo
+ * rifa' il confronto delle righe, non rilegge il file.
+ */
+interface FileAnalizzato {
+  righe: RigaStep[];
+  usi?: { chiave: string; trovati: Array<[string, UsoScenario]> };
+}
+const cacheUsi = new CachePerFile<FileAnalizzato>();
+
+/**
  * Per ogni step del catalogo, i file e gli scenari che lo usano davvero
  * (scansionando i `.feature`, non fidandosi di un indice che potrebbe non
  * essere aggiornato).
+ *
+ * "Scansionando" non vuol dire rileggere tutto a ogni chiamata: per ogni file
+ * si ricorda cio' che ha trovato finche' il file non cambia e finche' il
+ * catalogo e' lo stesso (vedi `cache-file.ts`). A 2000 voci e 300 scenari
+ * erano ~1,5 s a chiamata, in cui il server non serviva nient'altro.
  */
 export function trovaUsatoIn(
   steps: readonly CatalogStep[],
@@ -140,28 +174,35 @@ export function trovaUsatoIn(
   const risultato = new Map<string, UsoScenario[]>();
   for (const s of steps) risultato.set(s.expression, []);
 
-  const perStep = steps.map((s) => ({ espressione: s.expression, regex: espressioneInRegex(s.expression) }));
+  const chiave = improntaDiElenco(steps.map((s) => s.expression));
+  const perStep = steps.map((s) => ({ espressione: s.expression, regex: regexDi(s.expression) }));
+  const vivi = new Set<string>();
 
   for (const rel of walkFeatures(featuresDir)) {
-    let contenuto = '';
-    try {
-      contenuto = fs.readFileSync(path.join(featuresDir, rel), 'utf-8');
-    } catch {
-      continue;
-    }
-    for (const { riga, testo, scenario } of righeStepDiFile(contenuto)) {
-      // Il primo che combacia vince: le espressioni del catalogo sono pensate
-      // per non sovrapporsi. Se due ne coprissero la stessa riga, sarebbe
-      // proprio il tipo di ambiguita' che la riconciliazione deve segnalare,
-      // non qualcosa che questa funzione di sola lettura deve arbitrare.
-      for (const { espressione, regex } of perStep) {
-        if (regex.test(testo)) {
-          risultato.get(espressione)!.push({ file: rel, scenario, riga });
-          break;
+    const percorso = path.join(featuresDir, rel);
+    vivi.add(percorso);
+    const file = cacheUsi.ottieni(percorso, '', (contenuto) => ({ righe: righeStepDiFile(contenuto) }));
+    if (!file) continue;
+    if (file.usi?.chiave !== chiave) {
+      const trovati: Array<[string, UsoScenario]> = [];
+      for (const { riga, testo, scenario } of file.righe) {
+        // Il primo che combacia vince: le espressioni del catalogo sono pensate
+        // per non sovrapporsi. Se due ne coprissero la stessa riga, sarebbe
+        // proprio il tipo di ambiguita' che la riconciliazione deve segnalare,
+        // non qualcosa che questa funzione di sola lettura deve arbitrare.
+        for (const { espressione, regex } of perStep) {
+          if (regex.test(testo)) {
+            trovati.push([espressione, { file: rel, scenario, riga }]);
+            break;
+          }
         }
       }
+      file.usi = { chiave, trovati };
     }
+    // Copie: chi riceve la mappa non deve poter sporcare la cache.
+    for (const [espressione, uso] of file.usi.trovati) risultato.get(espressione)!.push({ ...uso });
   }
+  cacheUsi.pota(featuresDir + path.sep, vivi);
 
   return risultato;
 }

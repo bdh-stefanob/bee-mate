@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { haParametri } from './riscrittura-step';
 import { estraiDefinizione } from './fusione-step';
 import { percorsoDefinizione } from './percorso-definizione';
+import { firmaDi, improntaDiElenco } from './cache-file';
 import type { CatalogStep } from './types';
 
 /**
@@ -62,6 +63,55 @@ export interface ComportamentoStep {
  * Di sola lettura: nessuna scrittura, nessuna modifica allo step-catalog.
  */
 export function leggiComportamenti(
+  cartellaSrc: string,
+  steps: readonly Pick<CatalogStep, 'expression' | 'sourceRef'>[]
+): Map<string, ComportamentoStep> {
+  // Con 2000 voci il conto (cercare ogni definizione nel suo file) costa piu'
+  // di mezzo secondo, e il catalogo lo chiede a ogni apertura. Il risultato
+  // dipende solo dall'elenco degli step e dal contenuto dei file che li
+  // definiscono: finche' nessuno dei due cambia, e' lo stesso. Un file toccato
+  // da poco non si da' mai per buono (vedi `cache-file.ts`).
+  const senzaParametri = steps.filter((s) => !haParametri(s.expression));
+  const firmeFile = firmeDeiFileDefinizione(cartellaSrc, senzaParametri);
+  const chiave =
+    firmeFile === null
+      ? null
+      : improntaDiElenco([...senzaParametri.flatMap((s) => [s.expression, s.sourceRef]), ...firmeFile]);
+  const nota = memoComportamenti.get(cartellaSrc);
+  if (chiave !== null && nota && nota.chiave === chiave) return new Map(nota.risultato);
+
+  const risultato = calcolaComportamenti(cartellaSrc, steps);
+  if (chiave !== null) memoComportamenti.set(cartellaSrc, { chiave, risultato });
+  else memoComportamenti.delete(cartellaSrc);
+  return new Map(risultato);
+}
+
+const memoComportamenti = new Map<string, { chiave: string; risultato: Map<string, ComportamentoStep> }>();
+
+/**
+ * Le firme dei file che definiscono gli step (uno per file, non per step), o
+ * `null` se qualcuno e' stato toccato da pochissimo: in quel caso non si ricorda nulla.
+ */
+function firmeDeiFileDefinizione(
+  cartellaSrc: string,
+  steps: readonly Pick<CatalogStep, 'sourceRef'>[]
+): string[] | null {
+  const riferimenti = [...new Set(steps.map((s) => s.sourceRef.replace(/:\d+$/, '')))].sort();
+  const firme: string[] = [];
+  for (const rif of riferimenti) {
+    const percorso = percorsoDefinizione(cartellaSrc, rif);
+    if (!percorso) {
+      firme.push(`${rif}=fuori`);
+      continue;
+    }
+    const f = firmaDi(percorso);
+    if (f?.recente) return null;
+    firme.push(`${percorso}=${f ? f.firma : 'assente'}`);
+  }
+  return firme;
+}
+
+function calcolaComportamenti(
   cartellaSrc: string,
   steps: readonly Pick<CatalogStep, 'expression' | 'sourceRef'>[]
 ): Map<string, ComportamentoStep> {
