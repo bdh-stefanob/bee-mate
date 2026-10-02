@@ -22,6 +22,7 @@ import {
 } from '@/lib/scenari-elenco';
 import type { Istantanea } from '@/lib/risorsa';
 import type { RispostaScenari } from '@/lib/esiti-tipi';
+import { ErroreLettura } from '@/components/cruscotto/ErroreLettura';
 import { RiepilogoEsiti } from '@/components/cruscotto/scenari/RiepilogoEsiti';
 import { ElencoScenari } from '@/components/cruscotto/scenari/ElencoScenari';
 import { ModificaScenario } from '@/components/cruscotto/scenari/modifica/ModificaScenario';
@@ -234,27 +235,12 @@ function ScenariContenuto() {
     return (
       <div className={CLASSE_PAGINA}>
         {intestazione}
-        <div
-          role="alert"
-          className="flex flex-col items-start gap-3 rounded-lg border p-6"
-          style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}
-        >
-          <p className="flex items-center gap-2 text-base font-semibold" style={{ color: 'var(--rosso)' }}>
-            <AlertTriangle size={20} aria-hidden="true" />
-            {t('erroreTitolo')}
-          </p>
-          <p className="text-sm" style={{ color: 'var(--testo)' }}>
-            {t('erroreTesto')}
-          </p>
-          <button
-            type="button"
-            onClick={() => void scenari.carica()}
-            className="inline-flex min-h-10 items-center rounded-md border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', color: 'var(--blu)', outlineColor: 'var(--blu)' }}
-          >
-            {t('riprova')}
-          </button>
-        </div>
+        <ErroreLettura
+          titolo={t('erroreTitolo')}
+          testo={t('erroreTesto')}
+          etichettaRiprova={t('riprova')}
+          onRiprova={() => void scenari.carica()}
+        />
       </div>
     );
   }

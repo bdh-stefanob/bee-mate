@@ -13,6 +13,8 @@ import { useAmbiente } from '@/context/AmbienteContext';
 import type { FileScenari } from '@/lib/scenari';
 import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 import { formattaDurata, type Traduttore } from '@/lib/formato-quando';
+import { leggiConLimite, leggiElencoScenari, statoElencoScenari, type EsitoElencoScenari } from '@/lib/lettura';
+import { ErroreLettura } from '@/components/cruscotto/ErroreLettura';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
@@ -139,6 +141,7 @@ function Interruttore({
 
 function EsecuzioneContenuto() {
   const t = useTranslations('Esecuzione');
+  const tScenari = useTranslations('Scenari');
   const locale = useLocale();
   const router = useRouter();
   const { ambiente } = useAmbiente();
@@ -156,7 +159,13 @@ function EsecuzioneContenuto() {
   const parametri = useSearchParams();
   const [scelta, setScelta] = useState(() => parametri.get('scenario') ?? '');
   const salvato = parametri.get('salvato');
-  const [fileScenari, setFileScenari] = useState<FileScenari[] | null>(null);
+  // null = la richiesta non e' ancora tornata. 'non-letto' NON e' "nessuno
+  // scenario": un errore di rete o un server che non risponde non deve far
+  // credere al tester di aver perso il suo lavoro.
+  const [elenco, setElenco] = useState<EsitoElencoScenari<FileScenari> | null>(null);
+  const [tentativoElenco, setTentativoElenco] = useState(0);
+  const fileScenari = elenco?.tipo === 'letto' ? elenco.file : null;
+  const statoElenco = statoElencoScenari(elenco);
   const [id, setId] = useState<string | null>(null);
   const [statoCorrente, setStatoCorrente] = useState<StatoEsecuzione | null>(null);
   const [passi, setPassi] = useState<Passo[]>([]);
@@ -201,7 +210,7 @@ function EsecuzioneContenuto() {
       return;
     }
 
-    fetch('/api/esegui')
+    leggiConLimite('/api/esegui')
       .then((r) => r.json())
       .then((d: RispostaOperazioneInCorso) => {
         if (!attivo || !d.operazione) return;
@@ -230,18 +239,14 @@ function EsecuzioneContenuto() {
   // gia' aggiornato senza bisogno di interrogarlo di continuo.
   useEffect(() => {
     let attivo = true;
-    fetch('/api/scenari')
-      .then((r) => r.json())
-      .then((d: { file?: FileScenari[] }) => {
-        if (attivo) setFileScenari(d.file ?? []);
-      })
-      .catch(() => {
-        if (attivo) setFileScenari([]);
-      });
+    setElenco(null);
+    void leggiElencoScenari<FileScenari>().then((esito) => {
+      if (attivo) setElenco(esito);
+    });
     return () => {
       attivo = false;
     };
-  }, []);
+  }, [tentativoElenco]);
 
   // I passi si aggiornano da soli mentre l'esecuzione gira: una richiesta al
   // secondo basta, e si ferma da sola quando l'esecuzione non e' piu' in corso.
@@ -249,7 +254,7 @@ function EsecuzioneContenuto() {
     if (!id || !inCorso) return;
     let attivo = true;
     const leggi = () => {
-      fetch(`/api/passi?id=${encodeURIComponent(id)}`)
+      leggiConLimite(`/api/passi?id=${encodeURIComponent(id)}`)
         .then((r) => r.json())
         .then((d: { passi?: Passo[] }) => {
           if (attivo) setPassi(d.passi ?? []);
@@ -321,7 +326,7 @@ function EsecuzioneContenuto() {
   // messaggi puo' aver ricevuto le ultime righe dopo l'ultima lettura al secondo.
   useEffect(() => {
     if (!id || inCorso || statoCorrente === null) return;
-    fetch(`/api/passi?id=${encodeURIComponent(id)}`)
+    leggiConLimite(`/api/passi?id=${encodeURIComponent(id)}`)
       .then((r) => r.json())
       .then((d: { passi?: Passo[] }) => setPassi(d.passi ?? []))
       .catch(() => {});
@@ -450,7 +455,7 @@ function EsecuzioneContenuto() {
                 label={f.generato ? t('gruppoRegistrato', { nome: f.nome }) : f.nome}
               >
                 <option value={`src/features/${f.file}`}>
-                  {t('interoFile', { n: f.scenari.length, file: f.file })}
+                  {t('interoGruppo', { n: f.scenari.length, nome: f.nome })}
                 </option>
                 {f.scenari.map((s) => (
                   <option key={s.riga} value={`src/features/${f.file}:${s.riga}`}>
@@ -460,11 +465,19 @@ function EsecuzioneContenuto() {
               </optgroup>
             ))}
           </select>
-          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
-            {fileScenari !== null && fileScenari.length === 0
-              ? t('nessunoScenario')
-              : t('notaDocumentati')}
-          </p>
+          {statoElenco === 'non-letto' ? (
+            <ErroreLettura
+              compatto
+              titolo={tScenari('erroreTitolo')}
+              testo={tScenari('erroreTesto')}
+              etichettaRiprova={tScenari('riprova')}
+              onRiprova={() => setTentativoElenco((n) => n + 1)}
+            />
+          ) : (
+            <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+              {statoElenco === 'vuoto' ? t('nessunoScenario') : t('notaDocumentati')}
+            </p>
+          )}
         </div>
 
         <Interruttore
