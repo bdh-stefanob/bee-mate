@@ -21,7 +21,7 @@ import { fieldName } from "./component-naming";
 import { judge } from "./stability";
 import type { PageIdentity } from "./generate-core";
 import type {
-  Assertion, Component, GeneratedFile, ResolvedIntent,
+  Assertion, Component, GeneratedFile, ResolvedIntent, ResolvedStep,
 } from "./generation-contract";
 
 /**
@@ -274,6 +274,66 @@ export function phraseOf(intent: ResolvedIntent): string {
     .trim();
 }
 
+/**
+ * I valori che il tester ha digitato in questo passo.
+ *
+ * Non le password: quelle non si sono mai avute, e il loro valore viene
+ * dall'ambiente. Non le scelte (una casella spuntata non porta un dato da
+ * cambiare).
+ */
+export function valoriDigitati(intent: ResolvedIntent): ResolvedStep[] {
+  return intent.steps.filter(
+    (r) => r.component.kind === "input" && !r.step.secret && r.step.value !== undefined
+  );
+}
+
+/**
+ * La frase del passo, con i valori digitati portati **fuori** dal codice.
+ *
+ * IL DIFETTO CHE RISOLVE. Il valore digitato finiva murato nella glue
+ * (`fillWeight("100")`): una risposta del caso di prova scritta dentro
+ * all'automazione. Per provare lo stesso flusso con un'altra risposta si doveva
+ * toccare il codice, e il passo non era riusabile — cioe' il contrario di cio'
+ * che un catalogo di step serve a ottenere.
+ *
+ * Ora il valore sta nel `.feature`, dove il tester lo cambia da solo, e lo step
+ * lo riceve come parametro. Decisione del proprietario del progetto, 2026-10-02.
+ *
+ * LA FORMULAZIONE E' GREZZA, DI PROPOSITO. «... with "100" and "NG1 1AA"» non e'
+ * una bella frase, ed e' la stessa ragione per cui l'intera frase e' `@wanted`:
+ * il generatore non inventa il linguaggio, porta il materiale. Scegliere qui una
+ * formulazione piu' elegante vorrebbe dire inventarla — e sarebbe il lavoro
+ * dell'assistente, fatto male e senza il catalogo davanti.
+ */
+export function frasiDiIntento(intent: ResolvedIntent): {
+  /** L'espressione Cucumber, con un `{string}` per valore. */
+  espressione: string;
+  /** La riga del `.feature`, con i valori veri. */
+  frase: string;
+  /** I nomi dei parametri della funzione, nell'ordine. */
+  parametri: string[];
+  valori: ResolvedStep[];
+} {
+  const base = phraseOf(intent);
+  const valori = valoriDigitati(intent);
+  if (valori.length === 0) {
+    return { espressione: base, frase: base, parametri: [], valori };
+  }
+
+  const parametri = valori.map((_, i) => (valori.length === 1 ? "valore" : `valore${i + 1}`));
+  const elenca = (pezzi: string[]): string =>
+    pezzi.length === 1
+      ? pezzi[0]!
+      : `${pezzi.slice(0, -1).join(", ")} and ${pezzi[pezzi.length - 1]!}`;
+
+  return {
+    espressione: `${base} with ${elenca(valori.map(() => "{string}"))}`,
+    frase: `${base} with ${elenca(valori.map((r) => `"${(r.step.value ?? "").replace(/"/g, "'")}"`))}`,
+    parametri,
+    valori,
+  };
+}
+
 function keywordOf(index: number): "Given" | "When" {
   return index === 0 ? "Given" : "When";
 }
@@ -326,6 +386,7 @@ export function emitSteps(
 
     const variable = variableName(page.className);
     const lines: string[] = [];
+    const frasi = frasiDiIntento(intent);
 
     // La Page Object si crea nello step che la introduce, mai in un hook.
     if (!initialised.has(page.key) && conPageObject.has(page.key)) {
@@ -357,8 +418,16 @@ export function emitSteps(
         lines.push(`${ownerVar} = new ${owner.className}(this.page);`);
         lines.push(`await ${ownerVar}.assertLoaded();`);
       }
+      // Il valore digitato arriva dal `.feature` come parametro dello step, non
+      // dal codice: vedi `frasiDiIntento`. Una password non e' fra i parametri —
+      // non e' mai stata registrata — e la chiede l'ambiente.
+      const posizione = frasi.valori.indexOf(r);
       const arg =
-        r.component.kind === "input" ? valueExpression(r.step.value, r.step.secret) : "";
+        r.component.kind !== "input"
+          ? ""
+          : r.step.secret || posizione < 0
+          ? valueExpression(r.step.value, r.step.secret)
+          : frasi.parametri[posizione]!;
       lines.push(`await ${ownerVar}.${method}(${arg});`);
     }
 
@@ -387,7 +456,7 @@ export function emitSteps(
       lines.push(`await ${nextVar}.assertLoaded();`);
     }
 
-    const phrase = phraseOf(intent);
+    const phrase = frasi.espressione;
     if (!seenPhrases.has(phrase)) {
       seenPhrases.add(phrase);
       const candidates = intent.candidates.length
@@ -462,12 +531,25 @@ export function emitSteps(
           ` * @page    ${page.className}\n` +
           (componentLines.length ? componentLines.join("\n") + "\n" : "") +
           (contestoLines.length ? contestoLines.join("\n") + "\n" : "") +
+          // I parametri documentati con il componente che riempiono: senza,
+          // `valore2` non dice a chi legge quale campo e'.
+          frasi.valori
+            .map((r, k) => {
+              const dove = r.step.contesto?.intestazione
+                ? ` (sotto "${r.step.contesto.intestazione}")`
+                : "";
+              return ` * @param ${frasi.parametri[k]!} ${r.component.role} "${r.component.name}"${dove}\n`;
+            })
+            .join("") +
           ` * @wanted\n` +
           ` *\n` +
-          ` * Formulazione presa dall'etichetta del tester. Da portare nel catalogo:\n` +
+          ` * Formulazione presa dall'etichetta del tester, con i valori digitati portati\n` +
+          ` * nel .feature. Da portare nel catalogo:\n` +
           candidates +
           `\n */\n` +
-          `${keywordOf(i)}(${ts(phrase)}, async function (this: CustomWorld) {\n` +
+          `${keywordOf(i)}(${ts(phrase)}, async function (this: CustomWorld${frasi.parametri
+            .map((p) => `, ${p}: string`)
+            .join("")}) {\n` +
           lines.map((l) => `  ${l}`).join("\n") +
           `\n});`
       );
@@ -512,7 +594,9 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
     // Con l'accesso in testa, il primo passo del tester non e' piu' il primo
     // `Given`: lo segue.
     const keyword = i === 0 && ctx.startedWithSession ? "And" : keywordOf(i);
-    lines.push(`${keyword} ${phraseOf(intent)}`);
+    // La frase con i valori VERI: e' il .feature, il posto dove il tester li
+    // cambia. Lo step li riceve come parametri (vedi `frasiDiIntento`).
+    lines.push(`${keyword} ${frasiDiIntento(intent).frase}`);
     // Le verifiche a meta' del passo stanno dentro lo step, nel punto giusto; qui si
     // vedono come commento, perche' chi legge lo scenario sappia che ci sono.
     for (const a of intent.assertions.filter((x) => verificaNelPasso(x, intent))) {
