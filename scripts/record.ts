@@ -49,12 +49,11 @@ import {
 } from "./lib/labelling";
 import * as fs from "fs";
 import * as path from "path";
-import { DOM_PROBE_SOURCE } from "./lib/dom-probe";
-import { RECORDER_OVERLAY_SOURCE } from "./lib/recorder-overlay";
+import { apriRegistrazione, type RawEvent } from "./lib/registrazione";
 import { judge } from "./lib/stability";
 import type { Step, Assertion, Intent, Recording } from "./lib/generation-contract";
 import { pageIdentity } from "./lib/generate-core";
-import { inventory, mergeInventories } from "./lib/inventory";
+import { mergeInventories } from "./lib/inventory";
 import type { ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 import { argValue, hasFlag, positionals } from "./lib/args";
@@ -73,21 +72,9 @@ loadEnv();
 // Tipi della traccia
 // ---------------------------------------------------------------------------
 
-interface RawEvent {
-  type: "ready" | "action" | "assert" | "intent" | "note" | "stop";
-  at: number;
-  url?: string;
-  action?: "click" | "fill" | "set";
-  role?: string;
-  name?: string;
-  value?: string;
-  secret?: boolean;
-  text?: string;
-  label?: string;
-}
-
 // I tipi della traccia NON si dichiarano qui: vengono dal contratto condiviso,
-// che li legge anche il generatore. Vedi scripts/lib/generation-contract.ts
+// che li legge anche il generatore (`lib/generation-contract.ts`), e l'evento
+// grezzo dal cablaggio della registrazione (`lib/registrazione.ts`).
 
 // ---------------------------------------------------------------------------
 // Da eventi grezzi a intenti
@@ -240,8 +227,6 @@ interface Sessione {
 
 async function record(target: Target, browserName: string): Promise<Sessione> {
   const url = target.url;
-  const events: RawEvent[] = [];
-  const pages = new Set<string>();
   const startedAt = Date.now();
 
   // Finestra massimizzata: il tester deve vedere l'applicazione come la vede
@@ -283,60 +268,11 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
           : "")
     );
   }
-  let stopped = false;
-
-  /**
-   * La pagina chiama questa binding per mandarci ogni evento, e riceve indietro
-   * i totali correnti.
-   *
-   * Il ritorno non e' un dettaglio: l'overlay viene reiniettato a ogni
-   * navigazione, quindi un contatore tenuto nella pagina ripartirebbe da zero
-   * appena si cambia pagina. Il tester farebbe il login, vedrebbe "0 azioni" e
-   * concluderebbe che non sta registrando. Il totale vero lo conosce solo questo
-   * lato, che accumula per tutta la sessione: glielo rimandiamo indietro.
-   */
-  const counts = (): { actions: number; intents: number; assertions: number } => ({
-    actions: events.filter((e) => e.type === "action").length,
-    intents: events.filter((e) => e.type === "intent").length,
-    // Mostrato anche questo nella barra: senza, il tester preme "Verifica",
-    // vede il click bloccato e non ha modo di sapere se e' stato registrato.
-    assertions: events.filter((e) => e.type === "assert").length,
-  });
-
-  await context.exposeBinding("__bddEmit", async (source, payload: string) => {
-    let event: RawEvent;
-    try {
-      event = JSON.parse(payload) as RawEvent;
-    } catch {
-      return counts();
-    }
-    if (event.type === "ready") {
-      // about:blank e' la pagina su cui nasce ogni scheda: non l'ha visitata nessuno.
-      if (event.url && event.url !== "about:blank") pages.add(event.url);
-      return counts();
-    }
-    if (event.type === "stop") {
-      stopped = true;
-      return counts();
-    }
-    // L'URL lo stampiglia Node, non la pagina: `page.url()` e' vero anche dopo
-    // un redirect che la pagina non ha avuto tempo di raccontare. Senza, non si
-    // sa a quale Page Object appartiene il gesto, e un intento che attraversa
-    // due pagine finirebbe tutto nella prima.
-    event.url = source.page.url();
-    events.push(event);
-    return counts();
-  });
-
-  // addInitScript, non evaluate: cosi' l'overlay rinasce a ogni navigazione.
-  // Senza, la barra sparirebbe al primo cambio pagina — cioe' subito.
-  await context.addInitScript({ content: DOM_PROBE_SOURCE });
-  await context.addInitScript({ content: RECORDER_OVERLAY_SOURCE });
-
-  const page = await context.newPage();
-  page.on("framenavigated", (frame) => {
-    if (frame === page.mainFrame() && frame.url() !== "about:blank") pages.add(frame.url());
-  });
+  // Il cablaggio — binding, sorgenti iniettati, inventario mentre si registra —
+  // sta in lib/registrazione.ts, perche' lo usa anche il controllo che guida gli
+  // stessi gesti da codice: due copie misurerebbero cose diverse.
+  const sessione = await apriRegistrazione(context);
+  const { page, eventi: events, pagine: pages } = sessione;
 
   await page.goto(url, { waitUntil: "domcontentloaded" });
 
@@ -379,57 +315,19 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
     console.log(`  Barra presente. In alto a destra, trascinabile.\n`);
   }
 
-  // ── L'inventario, preso mentre si registra ────────────────────────────────
-  //
-  // A ogni pagina che si assesta si inventaria cio' che c'e'. Con un ritardo, e
-  // annullabile: su un'applicazione a pagina singola le navigazioni arrivano a
-  // raffica, e inventariare a ogni cambio di rotta rallenterebbe chi sta
-  // lavorando — che e' la cosa da non fare mai, perche' un tester rallentato
-  // torna a fare il test senza lo strumento.
-  //
-  // Ogni errore qui e' silenzioso di proposito: una pagina non inventariata e'
-  // un dizionario piu' povero, non una sessione persa. Fermare la registrazione
-  // di qualcuno a meta' per un dettaglio tecnico sarebbe sproporzionato.
-  const dizionari = new Map<string, ScoutResult>();
-  let attesa: NodeJS.Timeout | null = null;
-
-  const inventaria = (): void => {
-    if (attesa) clearTimeout(attesa);
-    attesa = setTimeout(() => {
-      void inventory(page)
-        .then((d) => {
-          const key = pageIdentity(d.url).key;
-          const gia = dizionari.get(key);
-          // Unione, non sostituzione: un modale aperto a meta' sessione mostra
-          // componenti che dopo non ci sono piu', e sono proprio quelli toccati.
-          dizionari.set(key, gia ? mergeInventories(gia, d) : d);
-        })
-        .catch(() => { /* pagina che naviga mentre si legge: si riprovera' */ });
-    }, 1200);
-  };
-
-  page.on("framenavigated", (frame) => {
-    if (frame === page.mainFrame()) inventaria();
-  });
-  inventaria();
+  const { dizionari } = sessione;
 
   // Si aspetta il pulsante di stop, la chiusura del browser, oppure la
   // chiusura dell'ultima finestra: su Windows chiudere la finestra non chiude
   // sempre il browser, e senza quest'ultimo segnale il processo non finiva mai
   // (vedi lib/fine-sessione.ts).
-  await attendiFineSessione(browser, context, () => stopped);
+  await attendiFineSessione(browser, context, () => sessione.fermato());
 
   // Un ultimo inventario prima di chiudere: l'ultima pagina e' quella su cui si
   // e' fermato il tester, spesso la conferma — cioe' proprio quella che serve
   // alle verifiche, e l'unica che nessuna navigazione successiva ha catturato.
-  if (attesa) clearTimeout(attesa);
-  await inventory(page)
-    .then((d) => {
-      const key = pageIdentity(d.url).key;
-      const gia = dizionari.get(key);
-      dizionari.set(key, gia ? mergeInventories(gia, d) : d);
-    })
-    .catch(() => { /* browser gia' chiuso dal tester */ });
+  sessione.ferma();
+  await sessione.inventariaOra();
 
   await browser.close().catch(() => { /* gia' chiuso dal tester */ });
 
