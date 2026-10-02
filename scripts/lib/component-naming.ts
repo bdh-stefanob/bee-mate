@@ -129,6 +129,18 @@ const ARIA_ROLES = new Set([
  * Meglio di non registrarlo, pero': un gesto dichiarato fragile si corregge, un
  * gesto che non c'e' non si vede nemmeno.
  */
+/**
+ * Lo stesso componente, ma da inviare dopo averlo compilato.
+ *
+ * Il nome del metodo cambia, e non e' decorazione: `fillSearchByPostcode` che
+ * preme anche Invio e' un metodo che fa una cosa in piu' di quella che dichiara.
+ * `submitSearchByPostcode` si legge e si capisce.
+ */
+export function conInvio(c: Component): Component {
+  if (c.invio) return c;
+  return { ...c, invio: true, method: `submit${toPascalCase(c.name) || "Unnamed"}` };
+}
+
 export function componenteSenzaRuolo(raw: {
   tag: string;
   classi: string[];

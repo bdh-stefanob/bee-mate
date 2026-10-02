@@ -112,9 +112,17 @@ function ts(value: string): string {
 // Page Object
 // ---------------------------------------------------------------------------
 
-function methodBody(kind: Component["kind"], field: string): { signature: string; body: string } {
+function methodBody(c: Component, field: string): { signature: string; body: string } {
+  const kind = c.kind;
   if (kind === "input") {
-    return { signature: "(value: string): Promise<void>", body: `await this.${field}.fill(value);` };
+    return {
+      signature: "(value: string): Promise<void>",
+      body: c.invio
+        ? // Compilare un campo di ricerca non fa comparire niente: inviarlo si'.
+          // Il tester aveva premuto Invio, e il gesto adesso si registra.
+          `await this.${field}.fill(value);\n  await this.${field}.press("Enter");`
+        : `await this.${field}.fill(value);`,
+    };
   }
   if (kind === "choice") {
     return { signature: "(): Promise<void>", body: `await this.${field}.check();` };
@@ -214,7 +222,7 @@ export function emitPageObject(
     .join("\n");
 
   const methodBlocks = components.map((c) => {
-    const { signature, body } = methodBody(c.kind, fields.get(c)!);
+    const { signature, body } = methodBody(c, fields.get(c)!);
     const warn = c.stability === "stable" ? "" : `\n * @attenzione  ancoraggio ${c.stability}: ${c.notes.join("; ")}`;
     return (
       `/**\n * @componente  ${c.role} ${ts(c.name)}${warn}\n */\n` +

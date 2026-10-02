@@ -41,6 +41,8 @@ export interface RawEvent {
   ancoraggioAssente?: SenzaAncoraggio;
   /** Dove e avvenuto: la domanda, il dialog. Vedi Contesto nel contratto. */
   contesto?: Contesto;
+  /** Il campo e stato inviato con Invio, non solo compilato. */
+  invio?: boolean;
 }
 
 export interface OpzioniRegistrazione {

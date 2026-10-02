@@ -448,7 +448,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
    */
   const VALUED = ['textbox', 'searchbox', 'spinbutton', 'combobox', 'checkbox', 'radio', 'switch'];
 
-  function captureField(ev) {
+  function captureField(ev, invio) {
     if (fromBar(ev)) return;
     const el = target(ev);
     if (!el || state.picking) return;
@@ -481,6 +481,9 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       role: d.role, name: d.name,
       value: secret ? '<password>' : String(value).slice(0, 200),
       secret: secret,
+      // Inviato, non solo compilato: in un campo di ricerca e' tutta la
+      // differenza fra "ho scritto un postcode" e "sono comparse le farmacie".
+      invio: invio ? true : undefined,
       // La domanda a cui si sta rispondendo. Serve quando il nome accessibile
       // del campo non dice niente — un campo numerico che si chiama "0" — ed e'
       // proprio il caso in cui lo scenario, senza, non si lascia leggere.
@@ -489,8 +492,22 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     });
   }
 
-  document.addEventListener('change', captureField, true);
-  document.addEventListener('focusout', captureField, true);
+  document.addEventListener('change', function (ev) { captureField(ev, false); }, true);
+  document.addEventListener('focusout', function (ev) { captureField(ev, false); }, true);
+
+  /**
+   * Invio in un campo: si registra il valore SUBITO, marcato come inviato.
+   *
+   * Non si puo' aspettare 'change' o 'focusout': su un campo di ricerca
+   * l'applicazione reagisce al keydown, e quando il fuoco se ne va la pagina e'
+   * un'altra — oppure il campo e' ancora li' e il valore viene emesso senza che
+   * nessuno sappia che era stato inviato. La WeakMap dei valori gia' visti
+   * impedisce il doppione quando 'focusout' arriva dopo.
+   */
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Enter' || state.picking) return;
+    captureField(ev, true);
+  }, true);
 
   window.__bddRecorder = true;
   emit({ type: 'ready', url: location.href, at: Date.now() });

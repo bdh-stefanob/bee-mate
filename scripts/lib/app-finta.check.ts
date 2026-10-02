@@ -626,6 +626,19 @@ function verificaRegistrazione(esito: EsitoRegistrazione): void {
     );
   }
 
+  // Il tasto premuto in un campo: senza l'Invio la ricerca non parte, e i pin
+  // che il gesto successivo cerca non compaiono mai.
+  const postcode = gesti.find((s) => s.name === "Search by postcode");
+  if (postcode?.invio) {
+    ok("la ricerca per postcode e' registrata come inviata, non solo digitata");
+  } else {
+    fail(
+      "la ricerca per postcode e' registrata come inviata, non solo digitata",
+      `il gesto registrato e' ${JSON.stringify(postcode)}: il recorder non registra i tasti ` +
+        `premuti, quindi lo scenario digita il postcode e aspetta dei pin che nessuno ha chiesto.`
+    );
+  }
+
   // Le pagine lasciate prima che si assestassero: il generatore sintetizzera' i
   // loro componenti senza sapere se i locator sono univoci.
   if (esito.pagineMancate.length === 0) {

@@ -82,6 +82,15 @@ export interface Step {
    * chi scrive la frase Gherkin. Vedi `Contesto`.
    */
   contesto?: Contesto;
+  /**
+   * Il campo e' stato **inviato** con Invio, non solo compilato.
+   *
+   * Il recorder non registrava i tasti premuti, e in un campo di ricerca e'
+   * tutta la differenza: digitare un postcode non fa comparire niente, inviarlo
+   * fa comparire i risultati. Lo scenario generato cercava dei risultati che
+   * nessuno aveva chiesto, e aspettava trenta secondi prima di arrendersi.
+   */
+  invio?: boolean;
 }
 
 /** Quel poco che si puo' dire di un elemento senza ruolo ne' nome. */
@@ -196,6 +205,14 @@ export interface Component {
   notes: string[];
   href?: string;
   disabled?: boolean;
+  /**
+   * Il campo si **invia** dopo averlo compilato (Invio).
+   *
+   * Non e' una proprieta' dell'elemento ma del gesto osservato, e sta qui perche'
+   * e' il metodo della Page Object a doverla eseguire: uno step non conosce ne'
+   * selettori ne' tasti.
+   */
+  invio?: boolean;
 }
 
 export interface ScoutResult {

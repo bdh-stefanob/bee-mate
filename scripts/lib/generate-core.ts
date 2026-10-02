@@ -12,7 +12,7 @@
 
 import { fold, tokenize, fingerprint, maskParams } from "./normalize";
 import { tokenSetRatio } from "./cluster";
-import { componenteSenzaRuolo, toComponent } from "./component-naming";
+import { componenteSenzaRuolo, conInvio, toComponent } from "./component-naming";
 import { judge } from "./stability";
 // Gli avvisi sono dichiarati una volta sola, dove vive il gestore che li chiude:
 // `avvisoDelGesto` e' pura e non apre nessun browser, quindi questo file resta
@@ -469,6 +469,18 @@ export function resolveRecording(
 
   const canonici = new Map<string, Component>();
   const avvisi: AvvisoScartato[] = [];
+
+  // I campi che in questa sessione sono stati INVIATI, non solo compilati.
+  // Si raccolgono prima di risolvere: la proprieta' e' della coppia
+  // pagina+campo, non del singolo gesto.
+  const inviati = new Set<string>();
+  for (const intent of recording.intents) {
+    for (const step of intent.steps) {
+      if (!step.invio) continue;
+      const id = identitaDi(step.url ?? intent.pageUrl ?? recording.startUrl);
+      inviati.add(`${id.key}\u0000${componentKey(step.role, step.name)}`);
+    }
+  }
   const intents: ResolvedIntent[] = recording.intents.map((intent) => {
     const fallbackUrl = intent.pageUrl ?? recording.startUrl;
 
@@ -530,8 +542,14 @@ export function resolveRecording(
       // metodi per identita' dell'oggetto: un gesto ripetuto (due foto, due "Next")
       // su una pagina fuori dallo scout ne produceva uno nuovo a ogni occorrenza, e
       // tutti tranne uno venivano saltati in silenzio.
-      const fresco = found ?? synthesise(step);
-      const chiaveComponente = `${id.key}\u0000${componentKey(fresco.role, fresco.name)}`;
+      const grezzo = found ?? synthesise(step);
+      const chiaveComponente = `${id.key}\u0000${componentKey(grezzo.role, grezzo.name)}`;
+      // Un campo inviato con Invio si invia SEMPRE, su quella pagina: la
+      // decisione si prende guardando tutta la registrazione, non il gesto
+      // corrente, altrimenti due compilazioni dello stesso campo produrrebbero
+      // due componenti diversi — e chi emette i file indicizza i metodi per
+      // identita' dell'oggetto, quindi uno dei due sparirebbe in silenzio.
+      const fresco = inviati.has(chiaveComponente) ? conInvio(grezzo) : grezzo;
       const component = canonici.get(chiaveComponente) ?? fresco;
       canonici.set(chiaveComponente, component);
       // Il gesto senza ancoraggio ha gia' il suo avviso, sopra, scritto in modo
