@@ -28,8 +28,8 @@ import * as path from "path";
 import {
   looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates, componentsForPage,
 } from "./generate-core";
-import { toComponent } from "./component-naming";
-import { assertLoadedBody, emitSteps, phraseOf } from "./generate-emit";
+import { componenteSenzaRuolo, toComponent } from "./component-naming";
+import { assertLoadedBody, emitPageObject, emitSteps, frasiDiIntento, phraseOf, rilevaRipetizione } from "./generate-emit";
 import type {
   CatalogStep, Gap, Intent, Recording, ResolvedIntent, ResolvedStep, ScoutResult,
 } from "./generation-contract";
@@ -566,6 +566,162 @@ console.log("\n--- rosa dei candidati ---\n");
     "un passo senza nome nemmeno",
     phraseOf({ ...vuoto, label: "(intento senza nome)" }),
     "unnamed step"
+  );
+}
+
+console.log("\n--- ripetizione -> ciclo (G2, punto 1) ---\n");
+
+{
+  // IL CASO CHE CONTA (G2-ricette-mappa-e-ripetizioni.md, punto 1, con lo
+  // stesso esempio della registrazione vera: "Take Picture, Save, That's me"
+  // fatta due volte nel flusso della fotocamera, 2/10).
+  //
+  // PRIMA DI QUESTO COMMIT: nella glue generata c'erano 6 chiamate di fila, una
+  // per gesto, e nessun parametro di conteggio ne' nel .feature ne' nello step —
+  // il blocco si ripeteva silenziosamente tale e quale al numero di volte
+  // registrato. DOPO: un ciclo di 3 chiamate che gira "volte" volte, e un "2"
+  // nel .feature. Il blocco sotto costruisce quella registrazione e verifica
+  // entrambe le meta' dell'affermazione: la rilevazione e il codice emesso.
+  const url = "https://esempio.invalid/camera";
+  const camera = {
+    key: url, keyEsatta: url, host: "esempio.invalid", path: "/camera", pattern: "/camera",
+    className: "CameraPage", slug: "camera",
+  };
+  const cTakePicture = toComponent({ role: "button", name: "Take Picture" }, 1);
+  const cSave = toComponent({ role: "button", name: "Save" }, 1);
+  const cThatsMe = toComponent({ role: "button", name: "That's me" }, 1);
+  const gesto = (c: typeof cTakePicture, nome: string): ResolvedStep => ({
+    step: { action: "click", role: "button", name: nome },
+    component: c, synthesised: false, fromPage: camera.key,
+  });
+  const dueVolte: ResolvedStep[] = [
+    gesto(cTakePicture, "Take Picture"), gesto(cSave, "Save"), gesto(cThatsMe, "That's me"),
+    gesto(cTakePicture, "Take Picture"), gesto(cSave, "Save"), gesto(cThatsMe, "That's me"),
+  ];
+  const intento: ResolvedIntent = {
+    label: "il cliente fa due foto",
+    steps: dueVolte, assertions: [], notes: [],
+    page: camera.key, navigatesTo: null, candidates: [],
+  };
+
+  const rip = rilevaRipetizione(dueVolte);
+  eq(
+    "sei gesti, tre diversi ripetuti due volte: la ripetizione si trova",
+    rip,
+    { inizio: 0, lunghezza: 3, ripetizioni: 2 }
+  );
+
+  const frasi = frasiDiIntento(intento);
+  truthy(
+    "l'espressione dello step porta un {int} per il conteggio",
+    frasi.espressione.endsWith(", {int} times"),
+    frasi.espressione
+  );
+  truthy(
+    "la frase nel .feature porta il numero vero osservato nella registrazione",
+    frasi.frase.endsWith(", 2 times"),
+    frasi.frase
+  );
+  eq("il parametro del conteggio si chiama 'volte'", frasi.parametroVolte, "volte");
+
+  const metodi = new Map([
+    [camera.key, new Map([
+      [cTakePicture, "clickTakePicture"], [cSave, "clickSave"], [cThatsMe, "clickThatsMe"],
+    ])],
+  ]);
+  const file = emitSteps(
+    {
+      intents: [intento], pages: [camera],
+      recordingPath: "x.json", dictionaryPaths: [], recordedAt: "", durationSeconds: 0,
+      generatedAt: "", slug: "due-foto", outRoot: "src",
+    },
+    [camera],
+    metodi as never
+  );
+
+  truthy(
+    "la glue emette un ciclo for, non sei chiamate incollate",
+    /for \(let i = 0; i < volte; i\+\+\) \{/.test(file.contents),
+    file.contents
+  );
+  const chiamateTakePicture = (file.contents.match(/\.clickTakePicture\(\)/g) ?? []).length;
+  eq("il gesto ripetuto compare una volta sola nel codice, non due", chiamateTakePicture, 1);
+  truthy(
+    "la funzione dello step riceve 'volte: number'",
+    /async function \(this: CustomWorld, volte: number\)/.test(file.contents),
+    file.contents
+  );
+  truthy(
+    "le tre chiamate del blocco stanno dentro al ciclo, non fuori",
+    /for \(let i = 0; i < volte; i\+\+\) \{\n(?:.*\n)*?\s*await cameraPage\.clickTakePicture\(\);\n\s*await cameraPage\.clickSave\(\);\n\s*await cameraPage\.clickThatsMe\(\);\n\s*\}/.test(
+      file.contents
+    ),
+    file.contents
+  );
+
+  // LA DEDUPLICAZIONE DOPO UN CICLO. Due registrazioni della stessa procedura,
+  // con un numero di ripetizioni diverso (due foto qui, tre in un'altra sessione),
+  // DEVONO condividere lo stesso step: l'espressione porta `{int}`, non il
+  // numero vero, quindi la chiave di deduplicazione (`frasi.espressione`) resta
+  // identica. Se non fosse cosi' Cucumber vedrebbe due definizioni per la stessa
+  // frase e si rifiuterebbe di partire — il difetto che G2 segnala esplicitamente
+  // ("un ciclo cambia l'espressione, quindi cambia la chiave con cui si dedup").
+  const treVolte: ResolvedStep[] = [...dueVolte, gesto(cTakePicture, "Take Picture"), gesto(cSave, "Save"), gesto(cThatsMe, "That's me")];
+  const intentoTre: ResolvedIntent = { ...intento, steps: treVolte };
+  const fileDue = emitSteps(
+    {
+      intents: [intento, intentoTre], pages: [camera],
+      recordingPath: "x.json", dictionaryPaths: [], recordedAt: "", durationSeconds: 0,
+      generatedAt: "", slug: "due-e-tre-foto", outRoot: "src",
+    },
+    [camera],
+    metodi as never
+  );
+  const definizioni = (fileDue.contents.match(/When\(/g) ?? []).length + (fileDue.contents.match(/Given\(/g) ?? []).length;
+  eq(
+    "un conteggio diverso non crea una seconda definizione dello stesso step",
+    definizioni,
+    1
+  );
+}
+
+console.log("\n--- clic su un componente senza ancoraggio (G2, punto 3) ---\n");
+
+{
+  // IL CASO CHE CONTA (G2-ricette-mappa-e-ripetizioni.md, punto 3). Un pin di
+  // mappa non ha ne' ruolo ne' nome accessibile: `componenteSenzaRuolo` (vedi
+  // `component-naming.ts`) lo marca `stability: "unnamed"`. Da li' in poi il
+  // metodo generato NON deve essere un `.click()` normale — fallirebbe con
+  // "element intercepts pointer events" contro un livello trasparente sopra la
+  // mappa — ma deve passare da `clickSenzaAncoraggio` (vedi `base.page.ts`),
+  // che scorre, forza un resize e clicca col mouse vero al centro del
+  // rettangolo. PRIMA di questo commit il generatore produceva `.click()` per
+  // ogni componente, pin compreso: questo e' il caso che l'avrebbe fatto
+  // fallire (un `locator('.custom-marker').click()` generato, non
+  // `this.clickSenzaAncoraggio(...)`).
+  const pin = componenteSenzaRuolo({ tag: "div", classi: ["custom-marker"], selettore: ".custom-marker", fra: { indice: 0, totale: 3 } });
+  eq("un pin senza ruolo ne' nome e' marcato 'unnamed'", pin.stability, "unnamed");
+
+  const bottone = toComponent({ role: "button", name: "Continue" }, 1);
+  const pagina = {
+    key: "x/mappa", keyEsatta: "x/mappa", host: "x", path: "/mappa", pattern: "/mappa",
+    className: "MappaPage", slug: "mappa",
+  };
+  const { file } = emitPageObject(pagina, [pin, bottone], [], {
+    intents: [], pages: [pagina], recordingPath: "x.json", dictionaryPaths: [],
+    recordedAt: "", durationSeconds: 0, generatedAt: "", slug: "mappa", outRoot: "src",
+  });
+
+  truthy(
+    "il metodo del pin chiama clickSenzaAncoraggio, non .click()",
+    file.contents.includes("await this.clickSenzaAncoraggio(this.customMarkerButton);") ||
+      /async clickCustomMarker\(\): Promise<void> \{\s*await this\.clickSenzaAncoraggio\(this\.\w+\);/.test(file.contents),
+    file.contents
+  );
+  truthy(
+    "un componente normale (con ruolo e nome) resta un .click() semplice",
+    /async clickContinue\(\): Promise<void> \{\s*await this\.continueButton\.click\(\);/.test(file.contents),
+    file.contents
   );
 }
 

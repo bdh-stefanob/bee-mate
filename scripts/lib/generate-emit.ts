@@ -127,6 +127,12 @@ function methodBody(c: Component, field: string): { signature: string; body: str
   if (kind === "choice") {
     return { signature: "(): Promise<void>", body: `await this.${field}.check();` };
   }
+  if (c.stability === "unnamed") {
+    // Nessun ruolo, nessun nome: un clic normale non e' affidabile su una cosa
+    // disegnata (un livello sopra puo' intercettare i puntatori, come fa una
+    // libreria di mappe vera). Vedi `clickSenzaAncoraggio` in `base.page.ts`.
+    return { signature: "(): Promise<void>", body: `await this.clickSenzaAncoraggio(this.${field});` };
+  }
   return { signature: "(): Promise<void>", body: `await this.${field}.click();` };
 }
 
@@ -313,19 +319,117 @@ export function valoriDigitati(intent: ResolvedIntent): ResolvedStep[] {
  * formulazione piu' elegante vorrebbe dire inventarla — e sarebbe il lavoro
  * dell'assistente, fatto male e senza il catalogo davanti.
  */
+/** Una sottosequenza contigua di gesti, ripetuta. */
+export interface Ripetizione {
+  /** Indice del primo gesto della prima occorrenza. */
+  inizio: number;
+  /** Quanti gesti compongono la sottosequenza che si ripete. */
+  lunghezza: number;
+  /** Quante volte si ripete (>= 2: una sola occorrenza non e' una ripetizione). */
+  ripetizioni: number;
+}
+
+/**
+ * Due gesti sono "lo stesso gesto" per la ripetizione se toccano lo stesso
+ * componente, sulla stessa pagina, con lo stesso valore (se ne portano uno).
+ *
+ * Non per somiglianza: ruolo+nome e' la stessa identita' che il resto del
+ * generatore usa per agganciare un gesto al dizionario (vedi
+ * `generation-contract.ts`). Una somiglianza di testo non e' una prova.
+ */
+function gestiUguali(a: ResolvedStep, b: ResolvedStep): boolean {
+  return (
+    a.component.role === b.component.role &&
+    a.component.name === b.component.name &&
+    a.fromPage === b.fromPage &&
+    (a.step.value ?? "") === (b.step.value ?? "") &&
+    Boolean(a.step.secret) === Boolean(b.step.secret)
+  );
+}
+
+function bloccoUguale(
+  steps: readonly ResolvedStep[],
+  inizio: number,
+  lunghezza: number,
+  occorrenza: number
+): boolean {
+  for (let j = 0; j < lunghezza; j++) {
+    if (!gestiUguali(steps[inizio + j]!, steps[inizio + occorrenza * lunghezza + j]!)) return false;
+  }
+  return true;
+}
+
+/**
+ * La sottosequenza contigua piu' ampia che si ripete almeno due volte, se c'e'.
+ *
+ * SOLO CONTIGUA E IDENTICA. Due gesti "quasi uguali" non sono una ripetizione:
+ * nel dubbio non si trova niente, e l'intento resta gesti grezzi come oggi — un
+ * ciclo sbagliato e' molto peggio di sei righe (vedi
+ * `G2-ricette-mappa-e-ripetizioni.md`, punto 1).
+ *
+ * Fra piu' sottosequenze possibili si preferisce quella che copre piu' gesti
+ * (`lunghezza * ripetizioni`), non la piu' lunga in assoluto: coprire di piu'
+ * toglie piu' rumore dallo scenario.
+ */
+export function rilevaRipetizione(steps: readonly ResolvedStep[]): Ripetizione | null {
+  const n = steps.length;
+  let migliore: Ripetizione | null = null;
+  for (let lunghezza = 2; lunghezza <= Math.floor(n / 2); lunghezza++) {
+    for (let inizio = 0; inizio + lunghezza * 2 <= n; inizio++) {
+      let ripetizioni = 1;
+      while (
+        inizio + (ripetizioni + 1) * lunghezza <= n &&
+        bloccoUguale(steps, inizio, lunghezza, ripetizioni)
+      ) {
+        ripetizioni++;
+      }
+      if (ripetizioni >= 2) {
+        const copertura = lunghezza * ripetizioni;
+        if (!migliore || copertura > migliore.lunghezza * migliore.ripetizioni) {
+          migliore = { inizio, lunghezza, ripetizioni };
+        }
+      }
+    }
+  }
+  return migliore;
+}
+
+/**
+ * Il blocco ripetuto contiene un valore digitato dal tester?
+ *
+ * Se si', non si tocca: un ciclo con un valore digitato dentro dovrebbe
+ * portare lo stesso parametro Gherkin piu' volte, ed e' un caso che G2 lascia
+ * ai gesti grezzi di oggi invece di indovinare come parametrizzarlo.
+ */
+function ripetizioneConValori(steps: readonly ResolvedStep[], rip: Ripetizione): boolean {
+  for (let j = 0; j < rip.lunghezza * rip.ripetizioni; j++) {
+    const r = steps[rip.inizio + j]!;
+    if (r.component.kind === "input" && !r.step.secret && r.step.value !== undefined) return true;
+  }
+  return false;
+}
+
 export function frasiDiIntento(intent: ResolvedIntent): {
-  /** L'espressione Cucumber, con un `{string}` per valore. */
+  /** L'espressione Cucumber, con un `{string}` per valore e un `{int}` per la ripetizione. */
   espressione: string;
   /** La riga del `.feature`, con i valori veri. */
   frase: string;
-  /** I nomi dei parametri della funzione, nell'ordine. */
+  /** I nomi dei parametri della funzione, nell'ordine (i valori, poi il conteggio). */
   parametri: string[];
   valori: ResolvedStep[];
+  /** La sottosequenza ripetuta trovata, se c'e' ed e' sicura da trasformare in ciclo. */
+  ripetizione: Ripetizione | null;
+  /** Nome del parametro che porta il conteggio, se `ripetizione` non e' null. */
+  parametroVolte: string | null;
 } {
   const base = phraseOf(intent);
   const valori = valoriDigitati(intent);
-  if (valori.length === 0) {
-    return { espressione: base, frase: base, parametri: [], valori };
+  const ripTrovata = rilevaRipetizione(intent.steps);
+  const ripetizione = ripTrovata && !ripetizioneConValori(intent.steps, ripTrovata) ? ripTrovata : null;
+  const parametroVolte = ripetizione ? "volte" : null;
+
+  if (valori.length === 0 && !ripetizione) {
+    return { espressione: base, frase: base, parametri: [], valori, ripetizione, parametroVolte };
   }
 
   const parametri = valori.map((_, i) => (valori.length === 1 ? "valore" : `valore${i + 1}`));
@@ -334,11 +438,20 @@ export function frasiDiIntento(intent: ResolvedIntent): {
       ? pezzi[0]!
       : `${pezzi.slice(0, -1).join(", ")} and ${pezzi[pezzi.length - 1]!}`;
 
+  const espressioneBase =
+    valori.length === 0 ? base : `${base} with ${elenca(valori.map(() => "{string}"))}`;
+  const fraseBase =
+    valori.length === 0
+      ? base
+      : `${base} with ${elenca(valori.map((r) => `"${(r.step.value ?? "").replace(/"/g, "'")}"`))}`;
+
   return {
-    espressione: `${base} with ${elenca(valori.map(() => "{string}"))}`,
-    frase: `${base} with ${elenca(valori.map((r) => `"${(r.step.value ?? "").replace(/"/g, "'")}"`))}`,
+    espressione: ripetizione ? `${espressioneBase}, {int} times` : espressioneBase,
+    frase: ripetizione ? `${fraseBase}, ${ripetizione.ripetizioni} times` : fraseBase,
     parametri,
     valori,
+    ripetizione,
+    parametroVolte,
   };
 }
 
@@ -404,18 +517,22 @@ export function emitSteps(
       else lines.push(`await ${variable}.assertLoaded();`);
     }
 
-    for (const [k, r] of intent.steps.entries()) {
+    // Le righe per UN gesto: estratto in funzione perche' la sottosequenza
+    // ripetuta (se c'e', vedi `frasi.ripetizione`) si emette una volta sola, nel
+    // corpo di un ciclo, non incollata N volte.
+    const lineePerGesto = (k: number, r: ResolvedStep): string[] => {
+      const out: string[] = [];
       // Le verifiche fatte prima di questo gesto, nel punto in cui il tester le ha
       // fatte. `expectTextVisible` sta nel World: uno step non conosce selettori.
       for (const a of intent.assertions) {
         if (verificaNelPasso(a, intent) && a.afterStep === k) {
-          lines.push(`await this.expectTextVisible(${ts(a.name)});`);
+          out.push(`await this.expectTextVisible(${ts(a.name)});`);
         }
       }
       const owner = byKey.get(r.fromPage ?? intent.page ?? "") ?? page;
       const ownerVar = variableName(owner.className);
       const method = methodsByPage.get(owner.key)?.get(r.component);
-      if (!method) continue;
+      if (!method) return out;
       // Un passo che attraversa piu' pagine (dal carrello fino a "Finish")
       // tocca Page Object diverse da quella in cui comincia. Ognuna va creata
       // la prima volta che si incontra: usarla prima di assegnarla e' TS2454, e
@@ -423,8 +540,8 @@ export function emitSteps(
       // scenari, non solo del suo.
       if (!initialised.has(owner.key)) {
         initialised.add(owner.key);
-        lines.push(`${ownerVar} = new ${owner.className}(this.page);`);
-        lines.push(`await ${ownerVar}.assertLoaded();`);
+        out.push(`${ownerVar} = new ${owner.className}(this.page);`);
+        out.push(`await ${ownerVar}.assertLoaded();`);
       }
       // Il valore digitato arriva dal `.feature` come parametro dello step, non
       // dal codice: vedi `frasiDiIntento`. Una password non e' fra i parametri —
@@ -436,7 +553,32 @@ export function emitSteps(
           : r.step.secret || posizione < 0
           ? valueExpression(r.step.value, r.step.secret)
           : frasi.parametri[posizione]!;
-      lines.push(`await ${ownerVar}.${method}(${arg});`);
+      out.push(`await ${ownerVar}.${method}(${arg});`);
+      return out;
+    };
+
+    const rip = frasi.ripetizione;
+    if (rip) {
+      for (let k = 0; k < rip.inizio; k++) lines.push(...lineePerGesto(k, intent.steps[k]!));
+
+      // Il corpo si emette una volta sola: si costruisce dalla PRIMA occorrenza,
+      // e gira `volte` volte a runtime. Il conteggio arriva dal `.feature`
+      // (parametro `{int}`, vedi `frasiDiIntento`), non e' murato nel codice.
+      const corpo: string[] = [];
+      for (let j = 0; j < rip.lunghezza; j++) {
+        const k = rip.inizio + j;
+        corpo.push(...lineePerGesto(k, intent.steps[k]!));
+      }
+      lines.push(`for (let i = 0; i < ${frasi.parametroVolte}; i++) {`);
+      corpo.forEach((l) => lines.push(`  ${l}`));
+      lines.push(`}`);
+
+      const fineRipetuto = rip.inizio + rip.lunghezza * rip.ripetizioni;
+      for (let k = fineRipetuto; k < intent.steps.length; k++) {
+        lines.push(...lineePerGesto(k, intent.steps[k]!));
+      }
+    } else {
+      for (const [k, r] of intent.steps.entries()) lines.push(...lineePerGesto(k, r));
     }
 
     // LA TRANSIZIONE FRA PAGINE, E PERCHE' NON E' return-value chaining.
@@ -549,6 +691,9 @@ export function emitSteps(
               return ` * @param ${frasi.parametri[k]!} ${r.component.role} "${r.component.name}"${dove}\n`;
             })
             .join("") +
+          (frasi.ripetizione
+            ? ` * @param ${frasi.parametroVolte} quante volte ripetere il blocco di ${frasi.ripetizione.lunghezza} gesti osservato ${frasi.ripetizione.ripetizioni} volte di fila nella registrazione\n`
+            : "") +
           ` * @wanted\n` +
           ` *\n` +
           ` * Formulazione presa dall'etichetta del tester, con i valori digitati portati\n` +
@@ -557,7 +702,7 @@ export function emitSteps(
           `\n */\n` +
           `${keywordOf(i)}(${ts(phrase)}, async function (this: CustomWorld${frasi.parametri
             .map((p) => `, ${p}: string`)
-            .join("")}) {\n` +
+            .join("")}${frasi.parametroVolte ? `, ${frasi.parametroVolte}: number` : ""}) {\n` +
           lines.map((l) => `  ${l}`).join("\n") +
           `\n});`
       );
