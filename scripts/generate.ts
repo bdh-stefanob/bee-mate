@@ -44,7 +44,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  indexDictionaries, resolveRecording, componentsForPage, type PageIdentity,
+  indexDictionaries, resolveRecording, componentsForPage, assertionPage, type PageIdentity,
 } from "./lib/generate-core";
 import { emitPageObject, emitSteps, emitFeature, type EmitContext } from "./lib/generate-emit";
 import { isRegenerable } from "./lib/render-template";
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
   for (const page of pages) {
     const components = componentsForPage(intents, page.key, asComponent);
     if (components.length === 0) continue;
-    const assertions = intents.filter((i) => i.page === page.key).flatMap((i) => i.assertions);
+    const assertions = intents.flatMap((i) => i.assertions.filter((a) => assertionPage(i, a) === page.key));
     const { file, methods } = emitPageObject(page, components, assertions, ctx);
     files.push(file);
     methodsByPage.set(page.key, methods);

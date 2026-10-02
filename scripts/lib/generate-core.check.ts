@@ -26,7 +26,7 @@ import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import {
-  looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates,
+  looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates, componentsForPage,
 } from "./generate-core";
 import { toComponent } from "./component-naming";
 import { assertLoadedBody, emitSteps, phraseOf } from "./generate-emit";
@@ -444,6 +444,28 @@ console.log("\n--- rosa dei candidati ---\n");
     /\bMessagesPage\b|\bmessagesPage\b/.test(conArrivo.replace(/^\s*\/\/.*$/gm, "")),
     false
   );
+  // LA PAGINA DI ARRIVO SI GENERA. Le verifiche in coda a un passo che cambia
+  // pagina sono state fatte sulla pagina di ARRIVO: danno alla Page Object i
+  // componenti con cui riconoscersi. Senza, la pagina non esiste e lo scenario
+  // non sa dove e' arrivato.
+  const comeComponente = (a: { role: string; name: string }) => toComponent({ role: a.role, name: a.name }, 1);
+  const conVerificaInArrivo: ResolvedIntent = {
+    ...intento,
+    steps: [passo(cCheckout, "Checkout", carrello.key)],
+    assertions: [{ role: "heading", name: "Secure messages" }],
+    navigatesTo: arrivo.key,
+  };
+  eq(
+    "la verifica a fine passo diventa un componente della pagina di arrivo",
+    componentsForPage([conVerificaInArrivo], arrivo.key, comeComponente).map((c) => c.name),
+    ["Secure messages"]
+  );
+  eq(
+    "e non della pagina di partenza",
+    componentsForPage([conVerificaInArrivo], carrello.key, comeComponente).map((c) => c.name),
+    ["Checkout"]
+  );
+
   truthy(
     "la prima pagina si apre con navigate(), le altre si riconoscono con assertLoaded()",
     file.contents.includes("await cartPage.navigate();") &&

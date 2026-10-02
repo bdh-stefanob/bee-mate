@@ -546,6 +546,20 @@ export function rankCandidates(
 // Cio' che serve a chi emette i file
 // ---------------------------------------------------------------------------
 
+/**
+ * Su quale pagina e' stata fatta una verifica. Una verifica in coda a un passo che
+ * cambia pagina l'ha fatta il tester sulla pagina di ARRIVO; una a meta' passo,
+ * su quella di partenza. Attribuirla sempre alla partenza lasciava la pagina di
+ * arrivo senza componenti, quindi senza Page Object.
+ */
+export function assertionPage(
+  intent: Pick<ResolvedIntent, "page" | "navigatesTo" | "steps">,
+  a: Assertion
+): string | null {
+  const aMeta = a.afterStep !== undefined && a.afterStep < intent.steps.length;
+  return aMeta ? intent.page : intent.navigatesTo ?? intent.page;
+}
+
 /** I componenti che una pagina deve esporre, dedotti da cosa la registrazione ha usato. */
 export function componentsForPage(
   intents: readonly ResolvedIntent[],
@@ -561,11 +575,10 @@ export function componentsForPage(
     }
     // Le asserzioni valgono quanto i gesti: `assertLoaded` ne ha bisogno, e
     // senza il locator la pagina non saprebbe riconoscersi.
-    if (intent.page === pageKey) {
-      for (const a of intent.assertions) {
-        const c = assertionsOf(a);
-        if (!byKey.has(componentKey(c.role, c.name))) byKey.set(componentKey(c.role, c.name), c);
-      }
+    for (const a of intent.assertions) {
+      if (assertionPage(intent, a) !== pageKey) continue;
+      const c = assertionsOf(a);
+      if (!byKey.has(componentKey(c.role, c.name))) byKey.set(componentKey(c.role, c.name), c);
     }
   }
 
