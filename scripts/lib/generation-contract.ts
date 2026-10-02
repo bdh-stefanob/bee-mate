@@ -96,11 +96,13 @@ export interface Step {
 /** Quel poco che si puo' dire di un elemento senza ruolo ne' nome. */
 export interface SenzaAncoraggio {
   tag: string;
-  /** Le classi CSS: l'unica identita' che ha, e non e' stabile come un ruolo. */
+  /** Le classi CSS: un'identita' debole, e non stabile come un ruolo. */
   classi: string[];
-  /** Il selettore derivato dalle classi. Assente se non ne aveva nessuna. */
+  /** L'id, se lo aveva: piu' forte di una classe, e gia' univoco da solo. */
+  id?: string;
+  /** Il selettore derivato dall'id (se c'e') o dalle classi. Assente se non aveva ne' l'uno ne' le altre. */
   selettore?: string;
-  /** Quale fra quanti elementi uguali. Dice se il locator e' univoco. */
+  /** Quale fra quanti elementi uguali. Dice se il locator e' univoco (vuoto quando il selettore viene dall'id). */
   fra?: { indice: number; totale: number };
 }
 

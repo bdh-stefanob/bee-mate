@@ -144,20 +144,25 @@ export function conInvio(c: Component): Component {
 export function componenteSenzaRuolo(raw: {
   tag: string;
   classi: string[];
+  id?: string;
   selettore?: string;
   fra?: { indice: number; totale: number };
 }): Component {
-  const nome = raw.classi[0] ?? raw.tag;
+  // L'id vale piu' della classe: e' gia' univoco (vedi `describeSenzaRuolo` in
+  // dom-probe.ts). Il nome del metodo segue la stessa preferenza, altrimenti un
+  // elemento identificato per id ma senza classe si chiamerebbe "clickDiv" come
+  // un qualunque altro div senza nome.
+  const nome = raw.classi[0] ?? raw.id ?? raw.tag;
   const totale = raw.fra?.totale ?? 1;
   const base = raw.selettore
     ? `locator('${escapeForLocator(raw.selettore)}')`
     : `locator('${escapeForLocator(raw.tag)}')`;
 
   const notes = [
-    "nessun ruolo e nessun nome accessibile: ancorato alla classe CSS, che e' un dettaglio di implementazione",
+    "nessun ruolo e nessun nome accessibile: ancorato a un selettore CSS, che e' un dettaglio di implementazione",
     "serve una ricetta: un comportamento dichiarato, non un locator per ogni elemento",
   ];
-  if (!raw.selettore) notes.push("nemmeno una classe: il locator ricade sul nome del tag, e non e' univoco");
+  if (!raw.selettore) notes.push("nemmeno una classe o un id: il locator ricade sul nome del tag, e non e' univoco");
   if (totale > 1) notes.push(`${totale} elementi uguali sulla pagina: si prende il primo`);
 
   return {

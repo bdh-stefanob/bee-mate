@@ -210,7 +210,20 @@ export const DOM_PROBE_SOURCE = String.raw`
         var grezze = typeof node.className === 'string' ? node.className.trim() : '';
         var classi = grezze ? grezze.split(/\s+/).filter(Boolean) : [];
         var risultato = { tag: node.tagName.toLowerCase(), classi: classi };
-        if (classi.length > 0) {
+        // UN ID VALE PIU' DI UNA CLASSE: E' GIA' UNIVOCO.
+        //
+        // Il caso che l'ha fatta nascere: il livello che intercetta i clic sopra
+        // una mappa ("#map-overlay") non ha classe, solo un id -- senza questo
+        // ramo il locator ricadeva sul solo tag ("div"), che su una pagina con
+        // piu' di un <div> e' ambiguo (locator('div') risolve a N elementi, e
+        // lo scenario generato cade con "strict mode violation" invece di
+        // cliccare qualcosa). Un id non ha bisogno di un conteggio "fra quanti":
+        // e' gia' uno solo per costruzione del DOM.
+        var id = typeof node.id === 'string' ? node.id.trim() : '';
+        if (id) {
+          risultato.id = id;
+          risultato.selettore = '#' + CSS.escape(id);
+        } else if (classi.length > 0) {
           var selettore = '.' + classi.map(function (c) { return CSS.escape(c); }).join('.');
           risultato.selettore = selettore;
           try {
