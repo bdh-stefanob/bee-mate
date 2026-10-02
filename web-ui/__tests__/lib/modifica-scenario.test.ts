@@ -9,6 +9,8 @@ import {
   rimuoviPasso,
   aggiungiVerifica,
   togliMarcatore,
+  spostaTesto,
+  tuttiIPassi,
   ErroreModifica,
 } from '@/lib/modifica-scenario';
 import { MARCATORE } from '@/lib/salva-scenario';
@@ -283,5 +285,81 @@ describe('togliMarcatore', () => {
     const out = togliMarcatore(conCrlf(BASE));
     expect(out.split('\r\n').length).toBe(BASE.split('\n').length - 1);
     expect(out).not.toMatch(/[^\r]\n/);
+  });
+});
+
+describe('spostaTesto: il file nel suo nuovo flusso', () => {
+  const DEST = 'shop/account/pagamento.feature';
+
+  it('cambia il tag del flusso e la riga del percorso; gli altri tag restano (il difetto dei tag)', () => {
+    const nuovo = spostaTesto(BASE, DEST);
+    expect(nuovo).toContain('@shop @account @generato @da-rivedere');
+    expect(nuovo).toContain('# src/features/shop/account/pagamento.feature');
+    expect(nuovo).not.toContain('# src/features/shop/order/');
+  });
+
+  it('non duplica la riga dei tag quando il file comincia con il commento del marcatore', () => {
+    const nuovo = spostaTesto(BASE, DEST);
+    expect(righe(nuovo).filter((r) => r.startsWith('@'))).toHaveLength(1);
+  });
+
+  it('@non-automatizzato e @generato sopravvivono anche se sono prima dei due tag di posizione', () => {
+    const t = BASE.replace('@shop @order @generato @da-rivedere', '@generato @shop @order @non-automatizzato');
+    const nuovo = spostaTesto(t, DEST);
+    expect(nuovo).toContain('@shop @account @generato @non-automatizzato');
+  });
+
+  it('non tocca passi, titolo e verifiche', () => {
+    const nuovo = spostaTesto(BASE, DEST);
+    const solo = (t: string) => righe(t).filter((r) => /^\s+(Given|When|Then|And)|durante questo passo/.test(r));
+    expect(solo(nuovo)).toEqual(solo(BASE));
+    expect(titoloDi(nuovo)).toBe('Pagamento con carta');
+  });
+
+  it('conserva i fine riga CRLF, anche sulla riga dei tag inserita da zero', () => {
+    const senzaTag = BASE.replace('@shop @order @generato @da-rivedere\n', '');
+    const nuovo = spostaTesto(conCrlf(senzaTag), DEST);
+    expect(nuovo).toContain('@shop @account');
+    expect(nuovo).not.toMatch(/[^\r]\n/);
+  });
+
+  it('senza riga dei tag la mette sopra Feature', () => {
+    const senzaTag = BASE.replace('@shop @order @generato @da-rivedere\n', '');
+    const nuovo = righe(spostaTesto(senzaTag, DEST));
+    expect(nuovo.findIndex((r) => r === '@shop @account')).toBeGreaterThan(-1);
+    expect(nuovo.findIndex((r) => r === '@shop @account')).toBeLessThan(nuovo.findIndex((r) => r.startsWith('Feature:')));
+  });
+
+  it('un testo senza la riga del percorso non ne guadagna una', () => {
+    const senza = BASE.replace('# src/features/shop/order/pagamento.feature\n', '');
+    expect(spostaTesto(senza, DEST)).not.toContain('# src/features');
+  });
+
+  it('rifiuta una destinazione che non e app/flusso/nome.feature', () => {
+    expect(() => spostaTesto(BASE, 'shop/pagamento.feature')).toThrow(ErroreModifica);
+    expect(() => spostaTesto(BASE, '../x/y/z.feature')).toThrow(ErroreModifica);
+  });
+});
+
+describe('tuttiIPassi: ogni riga di passo, in qualunque scenario', () => {
+  it('per uno scenario semplice coincide con i passi letti', () => {
+    expect(tuttiIPassi(BASE).map((p) => [p.riga, p.frase])).toEqual(leggiPassi(BASE).map((p) => [p.riga, p.frase]));
+  });
+
+  it('vede anche i passi del secondo scenario, del Background e di un Scenario Outline', () => {
+    const t = [
+      'Feature: F',
+      '  Background:',
+      '    Given the user opens the shop',
+      '  Scenario: Uno',
+      '    When a',
+      '  Scenario Outline: Due',
+      '    Then b <x>',
+      '    Examples:',
+      '      | x |',
+      '      | 1 |',
+      '',
+    ].join('\n');
+    expect(tuttiIPassi(t).map((p) => p.frase)).toEqual(['the user opens the shop', 'a', 'b <x>']);
   });
 });

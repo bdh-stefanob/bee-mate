@@ -6,7 +6,7 @@ import { IdGenerator } from '@cucumber/messages';
 import type { CatalogStep } from './types';
 import { espressioneInRegex } from './catalogo';
 import { dentroLaCartella } from './percorsi';
-import { leggiPassi, titoloDi, valutaSemplicita, MAX_TITOLO } from './modifica-scenario';
+import { tuttiIPassi, titoloDi, titoloFeatureDi, valutaSemplicita, MAX_TITOLO } from './modifica-scenario';
 
 /**
  * La convalida di uno scenario modificato, a due livelli con ruoli diversi
@@ -104,17 +104,23 @@ export function convalidaTesto(ctx: ContestoConvalida): EsitoConvalida {
   // Un testo che non si legge non si puo' giudicare oltre.
   if (rigaErrore !== null) return { blocchi: [{ codice: 'sintassi', riga: rigaErrore }], avvisi };
 
-  if (!valutaSemplicita(ctx.testo).semplice) blocchi.push({ codice: 'struttura' });
+  // Il testo avanzato puo' avere piu' scenari, un Background, esempi: la struttura la sceglie
+  // chi scrive. Quello che non puo' fare e' diventare un documento (`@non-automatizzato`),
+  // che non si esegue.
+  const semplicita = valutaSemplicita(ctx.testo);
+  if (!semplicita.semplice && semplicita.ragione === 'documento') blocchi.push({ codice: 'struttura' });
 
-  const titolo = titoloDi(ctx.testo);
+  // Il titolo e' quello dello scenario; senza nessuno `Scenario:` (solo un Outline) vale quello della Feature.
+  const titolo = /^\s*(Scenario|Example):/m.test(ctx.testo) ? titoloDi(ctx.testo) : titoloFeatureDi(ctx.testo);
   if (!titolo || titolo.length > MAX_TITOLO) blocchi.push({ codice: 'titolo' });
 
-  const passi = leggiPassi(ctx.testo);
+  // Ogni riga di passo, ovunque stia: una frase inventata non sfugge perche' e' nel secondo scenario.
+  const passi = tuttiIPassi(ctx.testo);
   if (passi.length === 0) blocchi.push({ codice: 'nessun-passo' });
 
   const regex = new Map<string, RegExp>();
   const catalogoPrima = ctx.catalogoPrima ?? ctx.catalogo;
-  const passiPrima = leggiPassi(ctx.prima);
+  const passiPrima = tuttiIPassi(ctx.prima);
   const nonRiconosciutePrima = new Set(
     passiPrima.filter((p) => chiRiconosce(catalogoPrima, regex, p.frase).length === 0).map((p) => p.frase)
   );

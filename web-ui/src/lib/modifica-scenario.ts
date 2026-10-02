@@ -1,4 +1,5 @@
 import { MARCATORE } from './marcatore';
+import { getFeatureTags, setFeatureTags } from './feature-tags';
 import { PREFISSO_VERIFICA, tokenizzaGherkin, type ParolaPasso } from './gherkin-lettura';
 
 /**
@@ -122,6 +123,14 @@ export function titoloDi(testo: string): string {
   for (const r of dividi(testo).righe) {
     const m = SCENARIO.exec(r);
     if (m) return m[4].trim();
+  }
+  return '';
+}
+
+/** Il titolo della `Feature:`, o `''`: per un file che non ha uno `Scenario:` (solo `Scenario Outline:`). */
+export function titoloFeatureDi(testo: string): string {
+  for (const r of dividi(testo).righe) {
+    if (FEATURE.test(r)) return r.replace(/^\s*Feature:\s*/, '').trim();
   }
   return '';
 }
@@ -267,4 +276,48 @@ export function togliMarcatore(testo: string): string {
   const d = dividi(testo);
   const rimaste = d.righe.filter((r) => !r.includes(MARCATORE));
   return rimaste.length === d.righe.length ? testo : unisci({ righe: rimaste, eol: d.eol });
+}
+
+/**
+ * Ogni riga di passo del file, in qualunque scenario (anche il secondo, il
+ * Background, uno `Scenario Outline`). `leggiPassi` guarda solo i passi che
+ * seguono un `Scenario:`: basta per i gesti della modifica guidata, che vale solo
+ * per un file semplice, ma non per il testo avanzato, dove una frase inventata
+ * non deve sfuggire solo perche' sta nel posto sbagliato.
+ */
+export function tuttiIPassi(testo: string): Array<Pick<PassoLetto, 'riga' | 'parolaChiave' | 'frase'>> {
+  const passi: Array<Pick<PassoLetto, 'riga' | 'parolaChiave' | 'frase'>> = [];
+  dividi(testo).righe.forEach((r, i) => {
+    const m = PASSO.exec(r);
+    if (m) passi.push({ riga: i + 1, parolaChiave: m[2] as PassoLetto['parolaChiave'], frase: m[4] });
+  });
+  return passi;
+}
+
+const DESTINAZIONE = /^([a-z0-9][a-z0-9-]*)\/([a-z0-9][a-z0-9-]*)\/[^/\\]+\.feature$/;
+
+/**
+ * Il testo di uno scenario nel suo nuovo flusso: il tag del flusso (il secondo
+ * tag di posizione; gli altri non si toccano: `@generato`, `@non-automatizzato`,
+ * i ticket restano dove sono) e la riga di commento che dice dove sta il file.
+ * `destinazione` e' `<app>/<flusso>/<nome>.feature`, relativa a `src/features/`.
+ * Non toglie il marcatore: lo fa chi compone l'operazione (`togliMarcatore`).
+ */
+export function spostaTesto(testo: string, destinazione: string): string {
+  const m = DESTINAZIONE.exec(destinazione);
+  if (!m || destinazione.includes('..')) throw new ErroreModifica('riga', 'destinazione non valida');
+  const [, appDestinazione, flusso] = m;
+
+  const { eol } = dividi(testo);
+  const normalizzato = testo.replace(/\r\n/g, '\n');
+  // L'applicazione resta quella che il file dichiara; se non ne dichiara, quella della cartella.
+  const app = getFeatureTags(normalizzato).app ?? appDestinazione;
+  const conTag = setFeatureTags(normalizzato, app, flusso);
+
+  const righe = conTag.split('\n');
+  const iFeature = righe.findIndex((r) => FEATURE.test(r));
+  const iPercorso = righe.findIndex((r, i) => (iFeature < 0 || i < iFeature) && /^#\s+\S*features\/\S+\.feature\s*$/.test(r));
+  if (iPercorso >= 0) righe[iPercorso] = `# src/features/${destinazione}`;
+  const finito = righe.join('\n');
+  return eol === '\r\n' ? finito.replace(/\n/g, '\r\n') : finito;
 }

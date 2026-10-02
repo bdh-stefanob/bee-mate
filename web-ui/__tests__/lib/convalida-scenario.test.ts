@@ -126,11 +126,55 @@ describe('convalidaTesto: livello 1, in memoria', () => {
     expect(e.blocchi).toEqual([]);
   });
 
-  it('un documento @non-automatizzato o una struttura complessa: blocca', () => {
+  it('un testo che diventa un documento @non-automatizzato: blocca', () => {
     const doc = '@non-automatizzato\nFeature: F\n  Scenario: S\n    Given the user is logged in\n';
     expect(convalidaTesto({ testo: doc, prima: BUONO, catalogo: CATALOGO }).blocchi.map((b) => b.codice)).toContain('struttura');
-    const due = `${BUONO}\n  Scenario: Altro\n    Given the user is logged in\n`;
-    expect(convalidaTesto({ testo: due, prima: BUONO, catalogo: CATALOGO }).blocchi.map((b) => b.codice)).toContain('struttura');
+  });
+});
+
+describe('convalidaTesto: il testo avanzato, dove i file possono avere piu scenari', () => {
+  const due = `${BUONO}\n  Scenario: Altro\n    Given the user is logged in\n    Then the page shows "x"\n`;
+  const conOutline = [
+    'Feature: F',
+    '  Scenario Outline: Uno',
+    '    Given the user is logged in',
+    '    When the user inventa <x>',
+    '    Then the page shows "<x>"',
+    '    Examples:',
+    '      | x |',
+    '      | 1 |',
+    '',
+  ].join('\n');
+
+  it('due scenari non sono piu un blocco: la struttura la decide chi scrive', () => {
+    const e = convalidaTesto({ testo: due, prima: due, catalogo: CATALOGO });
+    expect(e.blocchi).toEqual([]);
+  });
+
+  it('una frase inventata nel secondo scenario blocca, e dice quale e a che riga', () => {
+    const rotto = due.replace('Given the user is logged in\n    Then the page shows "x"', 'Given the user dances\n    Then the page shows "x"');
+    const e = convalidaTesto({ testo: rotto, prima: due, catalogo: CATALOGO });
+    expect(e.blocchi).toContainEqual({ codice: 'sconosciuto', frase: 'the user dances', riga: 10 });
+  });
+
+  it('una frase inventata dentro uno Scenario Outline blocca (il passo non sfugge per via del posto)', () => {
+    const e = convalidaTesto({ testo: conOutline, prima: BUONO, catalogo: CATALOGO });
+    expect(e.blocchi).toContainEqual({ codice: 'sconosciuto', frase: 'the user inventa <x>', riga: 4 });
+  });
+
+  it('una frase gia sconosciuta prima, nello stesso file complesso, avvisa e non blocca', () => {
+    const e = convalidaTesto({ testo: conOutline, prima: conOutline, catalogo: CATALOGO });
+    expect(e.blocchi).toEqual([]);
+    expect(e.avvisi.map((a) => a.codice)).toContain('sconosciuto-gia');
+  });
+
+  it('un Outline ha un titolo anche se non ha uno Scenario: la Feature', () => {
+    const e = convalidaTesto({ testo: conOutline.replace('the user inventa <x>', 'the user opens the shop'), prima: conOutline, catalogo: CATALOGO });
+    expect(e.blocchi.map((b) => b.codice)).not.toContain('titolo');
+  });
+
+  it('senza nessuna riga di passo blocca', () => {
+    expect(convalidaTesto({ testo: 'Feature: F\n  Scenario: S\n', prima: BUONO, catalogo: CATALOGO }).blocchi.map((b) => b.codice)).toContain('nessun-passo');
   });
 });
 
