@@ -160,6 +160,24 @@ The full list, with who decides, is in `docs/OVERVIEW.md` §10. The main ones:
 - **Q5** who owns the ritual · **Q9** publishing to the wiki · **Q10** company
   remote
 
+### Parked observation — test IDs (`data-testid`)
+
+*Raised 2026-10-02, from a colleague.* Stable test IDs would make the automation
+more robust than role + accessible name: a name changes with wording or language,
+repeats (`Select Pharmacy` once per pharmacy) or is meaningless (a field named "0").
+
+**Not actionable today:** we cannot ask the app team to add them. Kept here so it
+is not lost. Two cautions for whoever picks it up: it means a dedicated attribute,
+not the HTML `id` (framework ids like `ng-17` change on every build); and IDs alone
+do not fix the map pins or the repeated questionnaire pages: those need recipes.
+
+**If it becomes possible:**
+1. the scout records `data-testid` when present and the generator prefers it over
+   role + name;
+2. the stability judgement lists the critical components that have none, as a
+   concrete list to bring to the developers;
+3. where there is no ID, role + name stays, plus the recipes.
+
 ---
 
 ## 7. Quick start for the agent
