@@ -17,7 +17,7 @@ import type { AddressInfo } from "net";
 import type { BrowserContext } from "@playwright/test";
 import { avviaBrowser } from "./browser";
 import type { Target } from "./targets";
-import { assicuraAccesso } from "../../src/actions/accesso.actions";
+import { assicuraAccesso, chiudiOrdineAperto } from "../../src/actions/accesso.actions";
 
 let failures = 0;
 const ok = (w: string): void => console.log(`OK   ${w}`);
@@ -64,6 +64,17 @@ const server = http.createServer((req, res) => {
   if (req.url === "/home") return dentro ? html("<h1>Benvenuto</h1>") : vai("/");
   // Una pagina interna il cui indirizzo non dice niente: ne' modulo, ne' conferma.
   if (req.url === "/bacheca") return dentro ? html("<h1>Bacheca</h1>") : vai("/");
+  // Un account con un ordine aperto: l'avviso si chiude con Escape.
+  if (req.url === "/con-ordine") {
+    return dentro
+      ? html(`<h1>Home</h1><div id=m><button>Resume order</button></div>
+<script>addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("m").remove()})</script>`)
+      : vai("/");
+  }
+  // Lo stesso avviso, ma che non si lascia chiudere: non deve far cadere niente.
+  if (req.url === "/con-ordine-ostinato") {
+    return dentro ? html("<h1>Home</h1><button>Resume order</button>") : vai("/");
+  }
   res.writeHead(404);
   res.end();
 });
@@ -129,6 +140,21 @@ async function main(): Promise<void> {
     await assicuraAccesso(page, ambiente(), TEMPI);
     eq("si e' dentro, riconosciuto dall'indirizzo di conferma", new URL(page.url()).pathname, "/home");
     eq("e il modulo non e' stato inviato", invii, 0);
+  });
+
+  console.log("\n--- l'avviso dell'ordine aperto non fa mai fallire ---\n");
+
+  await caso(conSessione, async (page) => {
+    await assicuraAccesso(page, ambiente({ url: `${base}/con-ordine`, readyWhen: "/con-ordine" }), TEMPI);
+    eq("l'avviso «Resume order» viene chiuso", await page.getByRole("button", { name: /resume/i }).count(), 0);
+  });
+  await caso(conSessione, async (page) => {
+    await page.goto(`${base}/con-ordine-ostinato`);
+    eq("un avviso che non si chiude non lancia", await chiudiOrdineAperto(page, 500), true);
+  });
+  await caso(conSessione, async (page) => {
+    await page.goto(`${base}/home`);
+    eq("nessun avviso: si prosegue, senza errore", await chiudiOrdineAperto(page, 300), false);
   });
 
   await caso(conSessione, async (page) => {

@@ -22,6 +22,8 @@ export interface OpzioniAccesso {
   attesaMs?: number;
   /** Quanto aspettare, dopo aver premuto, che l'applicazione faccia entrare. */
   attesaIngressoMs?: number;
+  /** Quanto aspettare l'avviso «riprendi l'ordine» prima di concludere che non c'e'. */
+  attesaAvvisoMs?: number;
 }
 
 type Posizione = "dentro" | "accesso";
@@ -49,7 +51,7 @@ async function doveSono(
   }
 }
 
-export async function assicuraAccesso(
+async function entra(
   page: Page,
   ambiente: Target | undefined,
   opzioni: OpzioniAccesso = {}
@@ -113,4 +115,37 @@ export async function assicuraAccesso(
         `  Se le credenziali sono cambiate, correggile nella riga dell'ambiente.`
     );
   }
+}
+
+/**
+ * Chiude l'avviso «riprendi l'ordine aperto», se compare. Mai un errore.
+ *
+ * Un account con un ordine non concluso lo mostra subito dopo l'accesso, e
+ * intercetta ogni click successivo. Non e' una verifica del test: e' una
+ * condizione dell'account, che cambia da un'esecuzione all'altra. Per questo non
+ * puo' far fallire lo scenario: se c'e', si chiude con Escape (l'ordine non si
+ * tocca); se non c'e', o non si lascia chiudere, si prosegue, e se poi blocca
+ * davvero qualcosa il dossier del fallimento lo mostrera'.
+ */
+export async function chiudiOrdineAperto(page: Page, attesaMs = 1500): Promise<boolean> {
+  try {
+    const riprendi = page.getByRole("button", { name: /resume/i });
+    if (!(await riprendi.first().waitFor({ state: "visible", timeout: attesaMs }).then(() => true, () => false))) {
+      return false;
+    }
+    await page.keyboard.press("Escape");
+    await riprendi.first().waitFor({ state: "hidden", timeout: 3000 }).catch(() => undefined);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function assicuraAccesso(
+  page: Page,
+  ambiente: Target | undefined,
+  opzioni: OpzioniAccesso = {}
+): Promise<void> {
+  await entra(page, ambiente, opzioni);
+  await chiudiOrdineAperto(page, opzioni.attesaAvvisoMs);
 }
