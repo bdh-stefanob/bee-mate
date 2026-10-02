@@ -81,25 +81,50 @@ const SEGNAPOSTO: Record<string, string> = {
  * righe che promette di aggiornare.
  */
 export function espressioneInRegex(espressione: string): RegExp {
+  return compilaEspressione(espressione).regex;
+}
+
+interface EspressioneCompilata {
+  regex: RegExp;
+  /** Il testo fisso prima del primo segnaposto vero: ogni frase che la regex riconosce comincia cosi'. */
+  prefisso: string;
+  /** Nessun segnaposto vero: la regex riconosce una sola frase, l'espressione stessa. */
+  letterale: boolean;
+}
+
+/** Il lavoro di `espressioneInRegex`, piu' cio' che serve a cercarla in fretta (vedi `creaCercatore`). */
+function compilaEspressione(espressione: string): EspressioneCompilata {
   let pattern = '';
+  let prefisso = '';
+  let letterale = true;
+  const aggiungiTesto = (testo: string): void => {
+    pattern += escapeRegExp(testo);
+    if (letterale) prefisso += testo;
+  };
   let i = 0;
   while (i < espressione.length) {
     const apertura = espressione.indexOf('{', i);
     if (apertura === -1) {
-      pattern += escapeRegExp(espressione.slice(i));
+      aggiungiTesto(espressione.slice(i));
       break;
     }
-    pattern += escapeRegExp(espressione.slice(i, apertura));
+    aggiungiTesto(espressione.slice(i, apertura));
     const chiusura = espressione.indexOf('}', apertura);
     if (chiusura === -1) {
-      pattern += escapeRegExp(espressione.slice(apertura));
+      aggiungiTesto(espressione.slice(apertura));
       break;
     }
     const token = espressione.slice(apertura, chiusura + 1);
-    pattern += SEGNAPOSTO[token] ?? escapeRegExp(token);
+    const segnaposto = SEGNAPOSTO[token];
+    if (segnaposto === undefined) {
+      aggiungiTesto(token);
+    } else {
+      pattern += segnaposto;
+      letterale = false;
+    }
     i = chiusura + 1;
   }
-  return new RegExp(`^${pattern}$`);
+  return { regex: new RegExp(`^${pattern}$`), prefisso, letterale };
 }
 
 interface RigaStep {
@@ -133,17 +158,58 @@ function righeStepDiFile(contenuto: string): RigaStep[] {
  * catalogo da 2000 voci le ricostruiva tutte ogni volta. L'espressione e' la
  * chiave e la regex non ha stato (niente flag `g`), quindi si condivide.
  */
-const regexPerEspressione = new Map<string, RegExp>();
-const MAX_REGEX_IN_MEMORIA = 20000;
+const compilatePerEspressione = new Map<string, EspressioneCompilata>();
+const MAX_COMPILATE_IN_MEMORIA = 20000;
 
-function regexDi(espressione: string): RegExp {
-  let r = regexPerEspressione.get(espressione);
-  if (!r) {
-    if (regexPerEspressione.size >= MAX_REGEX_IN_MEMORIA) regexPerEspressione.clear();
-    r = espressioneInRegex(espressione);
-    regexPerEspressione.set(espressione, r);
+function compilataDi(espressione: string): EspressioneCompilata {
+  let c = compilatePerEspressione.get(espressione);
+  if (!c) {
+    if (compilatePerEspressione.size >= MAX_COMPILATE_IN_MEMORIA) compilatePerEspressione.clear();
+    c = compilaEspressione(espressione);
+    compilatePerEspressione.set(espressione, c);
   }
-  return r;
+  return c;
+}
+
+/**
+ * Dato il testo di una riga, la prima espressione del catalogo (nell'ordine del
+ * catalogo) che la riconosce, o `null`. Stessa risposta di provarle tutte in
+ * ordine, ma senza provarle tutte: con 2000 voci e centinaia di scenari quello
+ * era il grosso del conto (~0,5 s a freddo).
+ *   - Un'espressione senza segnaposto riconosce una frase sola, se stessa: basta
+ *     una tabella da testo a posizione.
+ *   - Una con segnaposto riconosce solo frasi che cominciano con il suo testo
+ *     fisso: si prova la regex solo se la riga comincia cosi'.
+ */
+function creaCercatore(espressioni: readonly string[]): (testo: string) => string | null {
+  const esatte = new Map<string, number>();
+  const conSegnaposto: Array<{ indice: number; prefisso: string; regex: RegExp }> = [];
+  espressioni.forEach((e, indice) => {
+    const c = compilataDi(e);
+    if (c.letterale) {
+      if (!esatte.has(e)) esatte.set(e, indice);
+    } else {
+      conSegnaposto.push({ indice, prefisso: c.prefisso, regex: c.regex });
+    }
+  });
+  return (testo) => {
+    let migliore = esatte.get(testo) ?? Infinity;
+    for (const c of conSegnaposto) {
+      if (c.indice >= migliore) break;
+      if (testo.startsWith(c.prefisso) && c.regex.test(testo)) {
+        migliore = c.indice;
+        break;
+      }
+    }
+    return migliore === Infinity ? null : espressioni[migliore];
+  };
+}
+
+let ultimoCercatore: { chiave: string; cerca: (testo: string) => string | null } | null = null;
+
+function cercatoreDi(chiave: string, espressioni: readonly string[]): (testo: string) => string | null {
+  if (ultimoCercatore?.chiave !== chiave) ultimoCercatore = { chiave, cerca: creaCercatore(espressioni) };
+  return ultimoCercatore.cerca;
 }
 
 /**
@@ -174,8 +240,8 @@ export function trovaUsatoIn(
   const risultato = new Map<string, UsoScenario[]>();
   for (const s of steps) risultato.set(s.expression, []);
 
-  const chiave = improntaDiElenco(steps.map((s) => s.expression));
-  const perStep = steps.map((s) => ({ espressione: s.expression, regex: regexDi(s.expression) }));
+  const espressioni = steps.map((s) => s.expression);
+  const chiave = improntaDiElenco(espressioni);
   const vivi = new Set<string>();
 
   for (const rel of walkFeatures(featuresDir)) {
@@ -184,18 +250,15 @@ export function trovaUsatoIn(
     const file = cacheUsi.ottieni(percorso, '', (contenuto) => ({ righe: righeStepDiFile(contenuto) }));
     if (!file) continue;
     if (file.usi?.chiave !== chiave) {
+      const cerca = cercatoreDi(chiave, espressioni);
       const trovati: Array<[string, UsoScenario]> = [];
       for (const { riga, testo, scenario } of file.righe) {
         // Il primo che combacia vince: le espressioni del catalogo sono pensate
         // per non sovrapporsi. Se due ne coprissero la stessa riga, sarebbe
         // proprio il tipo di ambiguita' che la riconciliazione deve segnalare,
         // non qualcosa che questa funzione di sola lettura deve arbitrare.
-        for (const { espressione, regex } of perStep) {
-          if (regex.test(testo)) {
-            trovati.push([espressione, { file: rel, scenario, riga }]);
-            break;
-          }
-        }
+        const espressione = cerca(testo);
+        if (espressione !== null) trovati.push([espressione, { file: rel, scenario, riga }]);
       }
       file.usi = { chiave, trovati };
     }

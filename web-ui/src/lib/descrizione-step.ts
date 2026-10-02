@@ -117,11 +117,19 @@ function calcolaComportamenti(
 ): Map<string, ComportamentoStep> {
   const risultato = new Map<string, ComportamentoStep>();
   const cacheFile = new Map<string, string | null>();
+  const percorsi = new Map<string, string | null>();
 
   for (const step of steps) {
     if (haParametri(step.expression)) continue; // vedi il limite ereditato in testa al file
 
-    const percorso = percorsoDefinizione(cartellaSrc, step.sourceRef);
+    // Il percorso si risolve (con la guardia sui collegamenti, che tocca il
+    // disco) una volta per file, non una volta per step.
+    const rif = step.sourceRef.replace(/:\d+$/, '');
+    let percorso = percorsi.get(rif);
+    if (percorso === undefined) {
+      percorso = percorsoDefinizione(cartellaSrc, rif);
+      percorsi.set(rif, percorso);
+    }
     if (!percorso) continue;
 
     let testo = cacheFile.get(percorso);
