@@ -38,15 +38,16 @@ export interface Bozza {
   marcatore: boolean;
   focus: Focus | null;
   ragione: RagioneNonModificabile | null;
-  /** Cosa si sta confermando (oggi solo la rinomina: sposta ed elimina sono del passo 4). */
-  conferma: 'rinomina' | 'testo' | null;
+  /** Cosa si sta confermando: rinomina, sposta ed elimina valgono oltre questo testo e si applicano subito. */
+  conferma: 'rinomina' | 'testo' | 'sposta' | 'elimina' | null;
   /** Da quale fase si e' entrati in `conferma`: "Torna indietro" ci riporta. */
   prima: 'pulita' | 'sporca' | null;
   /** Il dialogo "modifiche non salvate" e' aperto per questa uscita. */
   inSospeso: Uscita | null;
   /** Via libera: si puo' lasciare la bozza. Una volta sola, poi `proseguito`. */
   proseguire: Uscita | null;
-  avviso: 'salva-prima' | null;
+  /** "Prima salva o scarta": per quale delle tre azioni che si applicano subito. */
+  avviso: 'salva-prima' | 'salva-prima-sposta' | 'salva-prima-elimina' | null;
   errore: string | null;
   /** In `conflitto`: com'e' il file adesso sul disco. */
   attuale: { testo: string; versione: string } | null;
@@ -75,6 +76,8 @@ export type Azione =
   /** `blocchi`: quanti ne ha trovati il controllo; `tocca`: la modifica tocca altro oltre a questo scenario (chiede conferma). */
   | { tipo: 'controllato'; blocchi: number; tocca: boolean }
   | { tipo: 'chiedi-rinomina' }
+  /** Sposta o elimina lo scenario: come la rinomina, solo a bozza pulita e con conferma. */
+  | { tipo: 'chiedi'; quale: 'sposta' | 'elimina' }
   | { tipo: 'conferma' }
   | { tipo: 'indietro' }
   | { tipo: 'salvata'; testo: string; versione: string }
@@ -144,6 +147,14 @@ export function riduci(b: Bozza, a: Azione): Bozza {
       if (b.fase === 'sporca') return { ...b, avviso: 'salva-prima' };
       return b;
 
+    case 'chiedi':
+      if (b.fase === 'pulita' || b.fase === 'salvata') {
+        return { ...b, fase: 'conferma', conferma: a.quale, prima: 'pulita', avviso: null };
+      }
+      // Come la rinomina: da sporca non parte, prima si salva o si scarta.
+      if (b.fase === 'sporca') return { ...b, avviso: a.quale === 'sposta' ? 'salva-prima-sposta' : 'salva-prima-elimina' };
+      return b;
+
     case 'conferma':
       return b.fase === 'conferma' ? { ...b, fase: 'salvataggio' } : b;
 
@@ -181,7 +192,7 @@ export function riduci(b: Bozza, a: Azione): Bozza {
 
     case 'rifiutata':
       if (b.fase !== 'salvataggio' && b.fase !== 'controllo') return b;
-      return { ...b, fase: 'errore', errore: a.codice, inSospeso: null };
+      return { ...b, fase: 'errore', errore: a.codice, inSospeso: null, conferma: null, prima: null };
 
     case 'riprova':
       // Un errore di salvataggio: il testo del tester e' intatto, si torna a lavorarci.

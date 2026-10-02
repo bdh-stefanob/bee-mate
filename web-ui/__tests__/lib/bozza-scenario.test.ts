@@ -122,6 +122,70 @@ describe('bozza: rinomina, che vale ovunque', () => {
   });
 });
 
+describe('bozza: sposta ed elimina, che si applicano subito come la rinomina', () => {
+  const salvata = () =>
+    [
+      { tipo: 'modifica', testo: T1 } as Azione,
+      { tipo: 'controlla' } as Azione,
+      { tipo: 'controllato', blocchi: 0, tocca: false } as Azione,
+      { tipo: 'salvata', testo: T1, versione: 'v1' } as Azione,
+    ].reduce(riduci, pulita());
+
+  for (const quale of ['sposta', 'elimina'] as const) {
+    it(`${quale}: da pulita si apre la conferma; Torna indietro la chiude, Conferma salva`, () => {
+      const b = riduci(pulita(), { tipo: 'chiedi', quale });
+      expect(b.fase).toBe('conferma');
+      expect(b.conferma).toBe(quale);
+      expect(riduci(b, { tipo: 'indietro' })).toMatchObject({ fase: 'pulita', conferma: null });
+      expect(riduci(b, { tipo: 'conferma' }).fase).toBe('salvataggio');
+    });
+
+    it(`${quale}: parte anche subito dopo un salvataggio`, () => {
+      expect(riduci(salvata(), { tipo: 'chiedi', quale }).fase).toBe('conferma');
+    });
+
+    it(`${quale}: da sporca non parte e dice di salvare o scartare prima, col testo intatto`, () => {
+      const b = riduci(sporca(), { tipo: 'chiedi', quale });
+      expect(b.fase).toBe('sporca');
+      expect(b.avviso).toBe(quale === 'sposta' ? 'salva-prima-sposta' : 'salva-prima-elimina');
+      expect(b.testo).toBe(T1);
+    });
+
+    it(`${quale}: non parte mentre si controlla, si salva o si e in conflitto`, () => {
+      const controllo = riduci(sporca(), { tipo: 'controlla' });
+      expect(riduci(controllo, { tipo: 'chiedi', quale }).fase).toBe('controllo');
+      const salvataggio = riduci(riduci(riduci(sporca(), { tipo: 'controlla' }), { tipo: 'controllato', blocchi: 0, tocca: false }), { tipo: 'chiedi', quale });
+      expect(salvataggio.fase).toBe('salvataggio');
+    });
+
+    it(`${quale}: un rifiuto del server (destinazione occupata, passi fuori posto) lascia lo scenario com'era`, () => {
+      const inCorso = riduci(riduci(pulita(), { tipo: 'chiedi', quale }), { tipo: 'conferma' });
+      const b = riduci(inCorso, { tipo: 'rifiutata', codice: 'occupato' });
+      expect(b).toMatchObject({ fase: 'errore', errore: 'occupato', testo: T0, letto: T0 });
+      expect(riduci(b, { tipo: 'riprova' }).fase).toBe('pulita');
+    });
+  }
+
+  it('un nuovo avviso sostituisce il vecchio, e un gesto qualunque lo toglie', () => {
+    const a = riduci(sporca(), { tipo: 'chiedi', quale: 'elimina' });
+    expect(a.avviso).toBe('salva-prima-elimina');
+    expect(riduci(a, { tipo: 'chiedi-rinomina' }).avviso).toBe('salva-prima');
+    expect(riduci(a, { tipo: 'modifica', testo: T0 }).avviso).toBeNull();
+  });
+
+  it('dopo l\'eliminazione o lo spostamento la bozza si chiude', () => {
+    const inCorso = riduci(riduci(pulita(), { tipo: 'chiedi', quale: 'elimina' }), { tipo: 'conferma' });
+    expect(riduci(inCorso, { tipo: 'esci' }).fase).toBe('lettura');
+  });
+});
+
+describe('bozza: il testo avanzato di un file con piu scenari', () => {
+  it('si apre in modifica anche se il file non e semplice, e il testo si cambia come sempre', () => {
+    const b = esegui({ tipo: 'apri' }, { tipo: 'letto', testo: T0, versione: 'v0', marcatore: false }, { tipo: 'modifica', testo: T1 });
+    expect(b.fase).toBe('sporca');
+  });
+});
+
 describe('bozza: salvataggio', () => {
   const inSalvataggio = () =>
     [{ tipo: 'controlla' } as Azione, { tipo: 'controllato', blocchi: 0, tocca: false } as Azione].reduce(riduci, sporca());

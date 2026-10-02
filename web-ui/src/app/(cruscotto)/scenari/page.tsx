@@ -25,6 +25,10 @@ import type { RispostaScenari } from '@/lib/esiti-tipi';
 import { RiepilogoEsiti } from '@/components/cruscotto/scenari/RiepilogoEsiti';
 import { ElencoScenari } from '@/components/cruscotto/scenari/ElencoScenari';
 import { ModificaScenario } from '@/components/cruscotto/scenari/modifica/ModificaScenario';
+import { AvvisoOperazione } from '@/components/cruscotto/scenari/modifica/AvvisoOperazione';
+import type { AzioneFatta } from '@/components/cruscotto/scenari/modifica/PannelloModifica';
+import { chiediAnnulla, type ErroreServer } from '@/lib/client-modifica';
+import { titoloDi } from '@/lib/modifica-scenario';
 import { useModifiche } from '@/context/ModificheContext';
 import { StatoVuotoScenari } from '@/components/cruscotto/scenari/StatoVuotoScenari';
 import { ScheletroScenari } from '@/components/cruscotto/scenari/ScheletroScenari';
@@ -58,6 +62,10 @@ function ScenariContenuto() {
   const [testoCerca, setTestoCerca] = useState('');
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [annuncio, setAnnuncio] = useState('');
+  // Spostato o eliminato: l'avviso con l'"Annulla" sta nella pagina, perche' il pannello si smonta.
+  const [avviso, setAvviso] = useState<{ tipo: 'eliminato' | 'spostato'; nome: string; flusso?: string } | null>(null);
+  const [annullandoAzione, setAnnullandoAzione] = useState(false);
+  const [erroreAvviso, setErroreAvviso] = useState<ErroreServer | null>(null);
   const titoloRef = useRef<HTMLHeadingElement>(null);
   const scelta = useRef({ chiave: null as string | null, daUtente: false });
 
@@ -135,21 +143,80 @@ function ScenariContenuto() {
   // nuovo titolo.
   const alTermine = useCallback(
     async ({ file, titolo }: { file: string; titolo: string }) => {
+      // Un'altra modifica: l'"Annulla" di uno spostamento o di un'eliminazione di prima non vale piu'
+      // (annulla sempre l'ultima, e questa e' un'altra).
+      setAvviso(null);
       await scenari.ricarica();
       router.replace(indirizzoScenario(file, titolo), { scroll: false });
     },
     [router]
   );
 
+  // Uno scenario spostato o eliminato non e' piu' dov'era: il pannello si e' smontato, quindi
+  // l'avviso con l'"Annulla" sta qui. Spostato: la pagina lo segue. Eliminato: si sceglie il
+  // vicino nell'elenco (mai uno scenario a caso dello stesso file), o nessuno.
+  const alAzione = useCallback(
+    async (azione: AzioneFatta) => {
+      let verso = '/scenari';
+      if (azione.tipo === 'spostato') {
+        verso = indirizzoScenario(azione.a, azione.nome);
+        setAvviso({ tipo: 'spostato', nome: azione.nome, flusso: azione.flusso });
+      } else {
+        const i = visibili.findIndex((v) => v.file === azione.file);
+        const dopo = i >= 0 ? visibili.slice(i + 1).find((v) => v.file !== azione.file) : undefined;
+        const prima = i >= 0 ? [...visibili.slice(0, i)].reverse().find((v) => v.file !== azione.file) : undefined;
+        const vicino = dopo ?? prima;
+        if (vicino) verso = indirizzoScenario(vicino.file, vicino.nome);
+        setAvviso({ tipo: 'eliminato', nome: azione.nome });
+      }
+      setErroreAvviso(null);
+      await scenari.ricarica();
+      router.replace(verso, { scroll: false });
+    },
+    [visibili, router]
+  );
+
+  const annullaAzione = useCallback(async () => {
+    setAnnullandoAzione(true);
+    setErroreAvviso(null);
+    try {
+      const r = await chiediAnnulla();
+      if (!r.ok) {
+        setErroreAvviso(r.corpo);
+        return;
+      }
+      setAvviso(null);
+      await scenari.ricarica();
+      router.replace(r.corpo.attuale ? indirizzoScenario(r.corpo.file, titoloDi(r.corpo.attuale.testo)) : '/scenari', { scroll: false });
+    } catch {
+      setErroreAvviso({ errore: 'rete' });
+    } finally {
+      setAnnullandoAzione(false);
+    }
+  }, [router]);
+
   const intestazione = (
-    <div>
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
-        {t('titolo')}
-      </h1>
-      <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
-        {t('descrizione')}
-      </p>
-    </div>
+    <>
+      <div>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+          {t('titolo')}
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          {t('descrizione')}
+        </p>
+      </div>
+      {avviso && (
+        <AvvisoOperazione
+          tipo={avviso.tipo}
+          nome={avviso.nome}
+          flusso={avviso.flusso}
+          occupato={annullandoAzione}
+          errore={erroreAvviso}
+          onAnnulla={() => void annullaAzione()}
+          onChiudi={() => setAvviso(null)}
+        />
+      )}
+    </>
   );
 
   // 1. Caricamento: lo scheletro, solo la prima volta in assoluto.
@@ -247,6 +314,7 @@ function ScenariContenuto() {
               ambiente={ambienteScelto}
               titoloRef={titoloRef}
               alTermine={alTermine}
+              alAzione={alAzione}
             />
           ) : selezione.tipo === 'non-trovato' ? (
             <section

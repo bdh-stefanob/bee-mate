@@ -4,7 +4,7 @@ import { useCallback, useRef, useState, type Ref } from 'react';
 import { useTranslations } from 'next-intl';
 import { Pencil } from 'lucide-react';
 import { PannelloScenario } from '../PannelloScenario';
-import { PannelloModifica } from './PannelloModifica';
+import { PannelloModifica, type AzioneFatta } from './PannelloModifica';
 import { CLASSE_BOTTONE } from './stile';
 import type { RigaGherkin } from '@/lib/gherkin-lettura';
 import type { Focus } from '@/lib/bozza-scenario';
@@ -28,12 +28,15 @@ export function ModificaScenario({
   ambiente,
   titoloRef,
   alTermine,
+  alAzione,
 }: {
   voce: VoceScenario;
   ambiente: string | null;
   titoloRef: Ref<HTMLHeadingElement>;
   /** Una modifica e' stata salvata o annullata: la pagina rilegge l'elenco e aggiorna l'indirizzo. */
   alTermine: (info: { file: string; titolo: string }) => void;
+  /** Lo scenario e' stato spostato o eliminato: la pagina lo segue, o sceglie il vicino, e offre di annullare. */
+  alAzione: (azione: AzioneFatta) => void;
 }) {
   const t = useTranslations('ModificaScenario');
   const [aperta, setAperta] = useState<{ focus: Focus | null } | null>(null);
@@ -87,7 +90,9 @@ export function ModificaScenario({
           }
         : {})}
       sostituisciTesto={
-        aperta ? <PannelloModifica file={voce.file} focusIniziale={aperta.focus} onEsci={chiudi} onTermine={termine} /> : undefined
+        aperta ? (
+          <PannelloModifica file={voce.file} focusIniziale={aperta.focus} onEsci={chiudi} onTermine={termine} onAzione={alAzione} />
+        ) : undefined
       }
     />
   );

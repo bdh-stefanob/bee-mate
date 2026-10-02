@@ -15,8 +15,9 @@ export function fraseMessaggio(t: T, m: Messaggio): string {
     case 'titolo': return t('bloccoTitolo');
     case 'nessun-passo': return t('bloccoNessunPasso');
     case 'struttura': return t('bloccoStruttura');
-    case 'sconosciuto': return t('bloccoSconosciuto', { frase });
-    case 'ambiguo': return t('bloccoAmbiguo', { frase });
+    // Dal testo avanzato il blocco porta la riga: chi scrive deve poter andare a cercarla.
+    case 'sconosciuto': return m.riga !== undefined ? t('bloccoSconosciutoRiga', { frase, riga: m.riga }) : t('bloccoSconosciuto', { frase });
+    case 'ambiguo': return m.riga !== undefined ? t('bloccoAmbiguoRiga', { frase, riga: m.riga }) : t('bloccoAmbiguo', { frase });
     case 'frase-orfana': return t('bloccoOrfana', { frase });
     case 'sconosciuto-gia': return t('avvisoSconosciutoGia', { frase });
     case 'ambiguo-gia': return t('avvisoAmbiguoGia', { frase });
@@ -101,6 +102,9 @@ export function frasiRifiuto(t: T, e: ErroreServer): { principale: string; detta
       };
     case 'non-rinominabile': return { principale: t('bloccoNonRinominabile'), messaggi };
     case 'frase-esiste': return { principale: t('bloccoFraseEsiste'), messaggi };
+    case 'occupato': return { principale: t('spostaOccupato'), messaggi };
+    case 'flusso': return { principale: t('spostaFlussoNonValido'), messaggi };
+    case 'non-spostabile': return { principale: e.ragione === 'stesso' ? t('spostaStesso') : t('spostaNonSpostabile'), messaggi };
     case 'operazione-in-corso': return { principale: t('operazioneInCorso'), messaggi };
     case 'richiesta-non-ammessa': return { principale: t('richiestaNonAmmessa'), messaggi };
     case 'catalogo': return { principale: t('erroreCatalogo'), messaggi };

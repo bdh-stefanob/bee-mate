@@ -1,6 +1,6 @@
 import type { Contenuto } from './contenuto-scenario';
 import type { Messaggio } from './convalida-scenario';
-import type { Operazione, ScenarioToccato } from './piano-modifica';
+import type { Operazione, PassoRimasto, ScenarioToccato } from './piano-modifica';
 
 /**
  * Le chiamate che la finestra fa alle rotte `/api/scenari/{contenuto,anteprima,
@@ -16,10 +16,14 @@ export interface Anteprima {
   blocchi: Messaggio[];
   avvisi: Messaggio[];
   conseguenze: { scenari: ScenarioToccato[] };
-  /** Tocca altro oltre a questo scenario (una rinomina): chiede conferma. */
+  /** Tocca altro oltre a questo scenario (rinomina, sposta, elimina): chiede conferma. */
   tocca: boolean;
   scrive: number;
   marcatoreTolto: boolean;
+  /** Dove sta lo scenario dopo (sposta); `null` se si elimina. */
+  fileDopo: string | null;
+  /** Elimina: i passi che vanno con lo scenario e quelli che restano, e perche'. */
+  passi?: { vanno: string[]; restano: PassoRimasto[] };
 }
 
 export interface EsitoModifica {
@@ -32,11 +36,17 @@ export interface EsitoModifica {
   marcatoreTolto: boolean;
   /** `null` = non serviva; `false` = serviva e non e' riuscita. */
   catalogoRigenerato: boolean | null;
+  /** Lo scenario dopo la modifica: cambia se si e' spostato, `null` se si e' eliminato. */
+  file: string | null;
+  eliminato: boolean;
+  passi?: { vanno: string[]; restano: PassoRimasto[] };
 }
 
 export interface EsitoAnnulla {
   ok: true;
   fileToccati: number;
+  /** Lo scenario di prima, da riaprire (dopo aver annullato uno spostamento o un'eliminazione). */
+  file: string;
   attuale: { testo: string; versione: string } | null;
   catalogoRigenerato: boolean | null;
 }
@@ -72,7 +82,11 @@ async function chiama<T>(url: string, metodo: 'GET' | 'POST', corpo?: unknown): 
 export const leggiContenutoDalServer = (file: string) =>
   chiama<Contenuto>(`/api/scenari/contenuto?file=${encodeURIComponent(file)}`, 'GET');
 
-export const chiediAnteprima = (op: Operazione) => chiama<Anteprima>('/api/scenari/anteprima', 'POST', op);
+/** Le applicazioni con i loro flussi: per proporre dove spostare uno scenario. */
+export const leggiCartelleDalServer = () =>
+  chiama<{ cartelle: Array<{ app: string; flussi: string[] }> }>('/api/scenari/cartelle', 'GET');
+
+export const chiediAnteprima =(op: Operazione) => chiama<Anteprima>('/api/scenari/anteprima', 'POST', op);
 
 export const chiediModifica = (op: Operazione) => chiama<EsitoModifica>('/api/scenari/modifica', 'POST', op);
 

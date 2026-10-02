@@ -10,7 +10,7 @@ import { pianificaRinomina, percorsoDefinizione } from './rinomina-passo';
 import { haParametri } from './riscrittura-step';
 import { rimuoviDefinizione } from './fusione-step';
 import { frasiDefinite } from './salva-glue';
-import { leggiPassi, spostaTesto, titoloDi, togliMarcatore, tuttiIPassi } from './modifica-scenario';
+import { leggiPassi, spostaTesto, titoloDi, togliMarcatore } from './modifica-scenario';
 import { MARCATORE } from './marcatore';
 import { CARTELLA_REGISTRATI, NOME_CARTELLA } from './salva-scenario';
 import {

@@ -53,9 +53,24 @@ describe('i testi della modifica degli scenari', () => {
       'erroreGenerico', 'erroreRete', 'conflittoTitolo', 'bloccoFraseEsiste', 'bloccoNonRinominabile',
       'bocciatoTitolo', 'bocciatoIndefinito', 'bocciatoAmbiguo', 'bocciatoCompilazione', 'bocciatoTempo',
       'bocciatoNessunaProva', 'bocciatoFallito',
+      // sposta ed elimina (N3)
+      'spostaOccupato', 'spostaFlussoNonValido', 'spostaStesso', 'spostaNonSpostabile',
     ]) {
       expect(mIt[chiave], `it ${chiave}`).toBeTruthy();
       expect(mEn[chiave], `en ${chiave}`).toBeTruthy();
     }
+  });
+
+  it('ogni motivo per cui un passo resta, eliminando uno scenario, ha il suo testo', () => {
+    for (const motivo of ['Condiviso', 'Comune', 'Parametri', 'Richiesto', 'Altro']) {
+      expect(mIt[`resta${motivo}`], `it resta${motivo}`).toContain('{frase}');
+      expect(mEn[`resta${motivo}`], `en resta${motivo}`).toContain('{frase}');
+    }
+    expect(mIt.restaCondiviso).toContain('{scenari}');
+  });
+
+  it('il testo avanzato avverte che una frase nuova non si salva, nelle due lingue', () => {
+    expect(mIt.testoAvvertenza).toContain('non si salva');
+    expect(mEn.testoAvvertenza).toContain("won't save");
   });
 });
