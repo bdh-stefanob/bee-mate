@@ -1,14 +1,11 @@
 # BDD Catalog — desktop app
 
-The app has two faces on the same Next.js server, packaged with Electron:
+The tester dashboard, on a Next.js server packaged with Electron: Check-up,
+Record, Scenarios, Run, Catalog. Specification in
+`../docs/superpowers/specs/2026-09-22-cruscotto-tester-design.md`, user guide in
+`../docs/TESTER-DASHBOARD-GUIDE.md`.
 
-- the **dashboard** for manual testers: Check-up, Record, Run.
-  Specification in `../docs/superpowers/specs/2026-09-22-cruscotto-tester-design.md`,
-  user guide in `../docs/TESTER-DASHBOARD-GUIDE.md`;
-- the **portal** for writing scenarios with the catalog: catalog, editor,
-  features, components, tags, settings. User guide in `../docs/USER-GUIDE.md`.
-
-The root `/` redirects to `/controllo`.
+The root `/` redirects to `/controllo`. The addresses of the old portal (`/portale`, `/editor`, `/features`, `/components`, `/tags`, `/settings`) redirect to the dashboard (`next.config.ts`).
 
 ## Getting started
 
@@ -24,21 +21,15 @@ npm run electron:build:win   # Windows installer
 
 ## Pages
 
-| URL | Group | What it does |
-|---|---|---|
-| `/controllo` | dashboard | machine status, environments, credentials, sign-in |
-| `/registra` | dashboard | records a session, shows what it understood, generates the test |
-| `/esecuzione` | dashboard | runs the test, steps live, screenshot on failure |
-| `/portale` | portal | step catalog, searchable and filterable |
-| `/editor` | portal | Gherkin editor with catalog-only autocomplete |
-| `/features` | portal | the repository's `.feature` files, by application and flow |
-| `/components` | portal | for each UI component, how many steps use it |
-| `/tags` | portal | page tags, with the steps and files that use them |
-| `/settings` | portal | integrations (GitHub, Jira), commit identity |
+| URL | What it does |
+|---|---|
+| `/controllo` | machine status, environments, credentials, sign-in |
+| `/registra` | records a session, shows what it understood, generates the test |
+| `/scenari` | the saved scenarios and their last result; edit, move, delete, export |
+| `/esecuzione` | runs the test, steps live, screenshot on failure |
+| `/catalogo` | the steps, the page components they touch, what needs tidying up |
 
 ## API routes
-
-**Dashboard**
 
 | Method | Route | What it does |
 |---|---|---|
@@ -57,23 +48,19 @@ npm run electron:build:win   # Windows installer
 | GET | `/api/scenari/cartelle` | applications and flows to suggest: the catalog's `app` / `area` plus existing folders |
 | POST | `/api/scenari/salva` | moves the scenario just generated (read from the generation manifest, never from the window) to `src/features/<app>/<flow>/<name>.feature` |
 | POST | `/api/lingua` | the window's language (cookie) |
-
-**Portal**
-
-| Method | Route | What it does |
-|---|---|---|
-| GET | `/api/catalog` | `step-catalog.json` |
-| POST | `/api/catalog/propose` | proposes new steps (`@wanted`) |
-| GET, POST | `/api/features` | lists and saves `.feature` files |
-| POST | `/api/features/move` | moves a `.feature` file |
-| POST | `/api/lint` | validates Gherkin text |
-| POST | `/api/import` | imports scenarios from text |
-| GET | `/api/download` | downloads a `.feature` file |
-| PUT | `/api/enums` | updates the allowed values of a parameter |
-| GET | `/api/tags` | tag aggregate |
-| GET | `/api/git/status` | repository status |
-| POST | `/api/github/push` | commit to GitHub |
-| POST | `/api/jira/sync` | Jira sync |
+| GET | `/api/scenari/contenuto` | the text of one scenario and the catalog's expressions, for editing |
+| POST | `/api/scenari/anteprima` | previews an edit: what would change, and the two-level check |
+| POST | `/api/scenari/modifica` | applies an edit (title, step, check, rename, move, delete, text), atomically |
+| GET, POST | `/api/scenari/annulla` | the last edit that can be undone; undoes it |
+| GET | `/api/scenari/esporta` | exports scenarios |
+| GET | `/api/download` | downloads a `.feature` file (used by the Scenarios screen) |
+| POST | `/api/lint` | validates Gherkin text (the advanced text editor) |
+| GET | `/api/catalogo`, `/api/catalogo/stato` | the catalog and its freshness, for the Catalog screen |
+| GET, POST | `/api/catalogo/fondi` | merges two phrases that mean the same (preview, apply) |
+| GET, POST | `/api/catalogo/fondi/annulla` | the last merge; undoes it |
+| GET, POST | `/api/catalogo/riconciliazione`, `/api/catalogo/riconcilia` | gives a new wording to a phrase that touches different elements (preview, apply) |
+| GET | `/api/prova` | a finished run, read from its files, for "See the screenshot" |
+| POST | `/api/suggerimenti`, `/api/suggerimenti/applica`, `/api/suggerimenti/annulla` | step-name suggestions for the last generated scenario, chosen by rules (no model, no network): prepare, apply, undo |
 
 ## Rules that apply here
 

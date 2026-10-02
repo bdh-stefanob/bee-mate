@@ -131,7 +131,7 @@ Full procedure: `docs/anti-entropy/06-rituale.md`.
 
 | Channel | For whom | What it does |
 |---|---|---|
-| **Desktop app, portal** (`web-ui`, "Step catalog") | testers without the repository | searchable catalog, Gherkin editor with catalog-only autocomplete, unknown steps underlined, `@wanted` proposals, commit to GitHub |
+| **Desktop app, dashboard** (`web-ui`: Record, Scenarios, Catalog) | testers without the repository | record a run into a scenario; edit it from the Scenarios screen (title, steps, checks, rename, move, delete, or the text, always checked with a Cucumber dry run and undoable); browse the catalog |
 | **VS Code extension** (`vscode-extension/`) | technical testers | completion, diagnostics, hover, catalog tree |
 | **Validator** (`npm run validate:steps`, pre-commit hook) | everyone | exact → ok · similar → suggests the existing phrase · new → blocks |
 | **Assistant** (Kiro / Amazon Q, rules in `.amazonq/rules/`) | people writing with AI | searches the catalog first, proposes at most one new step, never writes without a human yes |
@@ -235,7 +235,7 @@ Cucumber and the app read one root, `src/features/`.
 
 | Kind | Path | In git? | Organised by |
 |---|---|---|---|
-| Hand-written or imported scenarios | `src/features/<app>/<flow>/<name>.feature` | yes | `@app` and `@flow` tags; the portal places files from the tags |
+| Hand-written or imported scenarios | `src/features/<app>/<flow>/<name>.feature` | yes | `@app` and `@flow` tags; the Scenarios screen groups them by those tags |
 | Test cases documented but never automated | same tree, tagged `@non-automatizzato` | yes | excluded from runs by `cucumber.js`, not offered in Run |
 | Scenarios generated and **saved** by the tester | `src/features/<app>/<flow>/<name>.feature`, steps in `src/steps/<app>/<flow>/`, Page Objects in `src/pages/<app>/` | yes, all three | `@app @flow @generato` tags; app and flow from the catalog's `app` / `area` |
 | Scenarios generated and not saved yet | `src/features/generated/<recording-name>.feature` | no | flat; named after the recording |
@@ -286,8 +286,7 @@ yet pick a whole flow or application.
 | **Environments and sessions** | JSON + `.env` | `bdd-targets.json`, `scripts/session.ts`, `lib/targets.ts` | several environments, automatic sign-in where possible, saved session | ✅ |
 | **Measurement** | Node.js + TypeScript | `scripts/benchmark.ts`, `benchmark-arena.ts`, `referto.ts` | seven measures per run; with/without rules comparison; numbers-only report | ✅ built · P8 comparison to do |
 | **Assistant** | Kiro (IDE + CLI), Amazon Q | `.amazonq/rules/` (source) → `.kiro/steering/` (generated); agents `bdd-generate`, `bdd-authoring` | method rules always on; one agent that writes, one that only reviews | 🟡 IDE works; CLI partly (§5) |
-| **Dashboard** | Electron + Next.js | `web-ui/src/app/(cruscotto)/`, `web-ui/src/lib/` | the three screens; closed list of commands; results read from artifacts | ✅ MVP complete |
-| **Portal** | Electron + Next.js, CodeMirror | `web-ui/src/app/(portale)/` | catalog, editor, features, components, tags, settings | ✅ |
+| **Dashboard** | Electron + Next.js | `web-ui/src/app/(cruscotto)/`, `web-ui/src/lib/` | the five screens (check-up, record, scenarios, run, catalog); closed list of commands; results read from artifacts | ✅ |
 | **VS Code extension** | VS Code API | `vscode-extension/` | completion, diagnostics, hover, tree | 🟡 not packaged |
 | **Checks** | ts-node, Vitest | `scripts/lib/*.check.ts` (`npm run check:all`), `web-ui/__tests__` | 247 script assertions, 187 app cases | ✅ |
 
@@ -297,7 +296,7 @@ yet pick a whole flow or application.
 
 | Role | Does | Uses | Must **not** have to |
 |---|---|---|---|
-| **Manual tester** | runs tests as always, names steps, marks checks | dashboard, portal | write Gherkin or code, open a terminal |
+| **Manual tester** | runs tests as always, names steps, marks checks | dashboard | write Gherkin or code, open a terminal |
 | **Consolidation owner** | runs the monthly 15 minutes, breaks ties | queue, per-area report | name people: attribution is by area |
 | **Tester from one area, rotating** | represents their area in the ritual | queue | — |
 | **SDET** | implements `@wanted` steps, reviews generated code | VS Code, generator, assistant | write step bodies blindly |
@@ -378,7 +377,6 @@ rules), P9 (publishing). Protocol in `docs/anti-entropy/10-prove-sul-campo.md`.
 | **Everything, briefly** | this document |
 | What to build next, in which order, and what **not** to build | `ROADMAP.md` |
 | How to use the dashboard | `docs/TESTER-DASHBOARD-GUIDE.md` |
-| How to use the portal | `docs/USER-GUIDE.md` |
 | How to present the project | `docs/PRESENTATION.md` |
 | How to write steps and scenarios | `CONTRIBUTING.md`, `docs/GHERKIN-CONVENTIONS.md`, `docs/STEP-LIFECYCLE.md` |
 | The dashboard's specification and plan | `docs/superpowers/specs/`, `docs/superpowers/plans/` |

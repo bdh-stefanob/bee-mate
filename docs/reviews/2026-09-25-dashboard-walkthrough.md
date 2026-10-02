@@ -243,7 +243,8 @@ but a tester would not understand it without help · **P3** polish.
   `npm run check:i18n` to the portal.
 - **Done when:** switching language changes every visible string on the summary
   and in the portal; `check:i18n` covers the portal.
-- [ ] done
+- [ ] done _(2 Oct, job N5: the portal half is moot, the portal was removed; the
+  generator-warning half is still open.)_
 
 ### F10 (P2) — "Target" on Run, "Environment" everywhere else
 - **Seen:** Run says *Target: demo* and *No target configured* (*Bersaglio*).
@@ -285,7 +286,7 @@ but a tester would not understand it without help · **P3** polish.
 - [ ] **F18 — Run results.** One card per step with uppercase PASSED; the total
   at the bottom, off-screen on long scenarios; steps and checks look the same.
   Compact rows, checks indented, total at the top.
-- [ ] **F19 — the portal looks like another app.** Top nav vs sidebar, *IT*
+- [x] **F19 — the portal looks like another app.** _Closed on 2 Oct (job N5): the portal was removed; its old addresses redirect to the dashboard. The last sentence (Components at 0 after a saved scenario) is a separate point, ROADMAP §4 item 3._ Top nav vs sidebar, *IT*
   toggle vs English/Italiano, dark switch only there; the empty editor
   highlights line 1 in orange. Components stays at 0 anchored after a saved
   scenario because the catalog is not refreshed after generating (ROADMAP §4,

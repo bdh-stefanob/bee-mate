@@ -43,7 +43,7 @@ Il **catalogo** (`step-catalog.json`) è la fonte di verità di tutti gli step: 
 }
 ```
 
-Lo step ha un'implementazione TypeScript funzionante in `src/steps/`, documentazione `@intent`, e si può usare nei `.feature` senza restrizioni. Appare **verde** nel portale web.
+Lo step ha un'implementazione TypeScript funzionante in `src/steps/`, documentazione `@intent`, e si può usare nei `.feature` senza restrizioni. Nel Catalogo del cruscotto risulta **pronto**.
 
 ### `wanted` — richiesto, in attesa di implementazione
 
@@ -60,7 +60,7 @@ Lo step ha un'implementazione TypeScript funzionante in `src/steps/`, documentaz
 }
 ```
 
-Lo step è stato approvato come canonico da Steve, esiste nella codebase come stub (o nel catalog come richiesta), ma **non ha ancora un'automazione Playwright dietro**. I QA possono includerlo nei loro scenari; i test che lo usano falliranno o saranno saltati in CI finché non viene implementato. Appare **arancione** nel portale.
+Lo step è stato approvato come canonico da Steve, esiste nella codebase come stub (o nel catalog come richiesta), ma **non ha ancora un'automazione Playwright dietro**. I QA possono includerlo nei loro scenari; i test che lo usano falliranno o saranno saltati in CI finché non viene implementato. Nel Catalogo del cruscotto risulta **richiesto**.
 
 ### `deprecated` — obsoleto
 
@@ -72,7 +72,7 @@ Lo step è stato approvato come canonico da Steve, esiste nella codebase come st
 }
 ```
 
-Lo step non deve essere usato in nuovi scenari. Il campo `replacedBy` indica lo step sostitutivo. I `.feature` esistenti che lo usano devono essere migrati. Appare **rosso** nel portale.
+Lo step non deve essere usato in nuovi scenari. Il campo `replacedBy` indica lo step sostitutivo. I `.feature` esistenti che lo usano devono essere migrati.
 
 ---
 
@@ -153,6 +153,8 @@ Given('I am logged in as a {string} user', async (role: string) => {
 
 ### Valori enum in `step-enums.json`
 
+> **Stato: senza lettori.** Il file `step-enums.json` serviva solo ai menu a tendina dell'editor del vecchio portale, che non c'è più: oggi nessuna parte dell'app lo legge e modificarlo non ha effetto. Resta nel repository per ora (decisione del 2026-10-02); le istruzioni qui sotto descrivono il formato per quando tornasse utile.
+
 Il file `step-enums.json` arricchisce gli step parametrici con **valori noti** (enum). È l'unico file di configurazione che **non viene sovrascritto** da `npm run catalog`: va editato manualmente.
 
 Struttura di una voce enum:
@@ -170,9 +172,7 @@ Struttura di una voce enum:
 }
 ```
 
-Quando il portale web mostra questo step nel pannello Step Browser, il campo `{string}` appare come **menu a tendina** con i valori della lista invece di una casella di testo libero. Questo riduce gli errori di digitazione e garantisce che i valori dei parametri siano coerenti tra scenari diversi.
-
-Se `values` è un array vuoto (`[]`), il campo compare come **testo libero** nel picker.
+L'idea: un campo `{string}` con una lista di valori noti si sceglie da un elenco invece di digitarlo, e i valori dei parametri restano coerenti tra scenari diversi. Se `values` è un array vuoto (`[]`), il campo è testo libero.
 
 ### Come aggiungere nuovi valori enum
 
@@ -202,7 +202,7 @@ Esempio — aggiungere "Melatonin 3mg" ai prodotti noti:
 }
 ```
 
-4. Salvate il file — le modifiche sono attive immediatamente al riavvio del portale web; non è necessario eseguire `npm run catalog`.
+4. Salvate il file — non è necessario eseguire `npm run catalog`.
 
 > **Attenzione:** `npm run catalog` non tocca `step-enums.json`. Le vostre modifiche agli enum sono al sicuro.
 
@@ -267,7 +267,7 @@ Ad ogni PR, la pipeline esegue una validazione degli step usati nei `.feature` m
 
 ## Come richiedere un nuovo step (ruolo: QA)
 
-1. Verificate nel catalogo (pagina Catalog del portale) che lo step non esista già con una formulazione diversa
+1. Verificate nel catalogo (schermata Catalogo del cruscotto) che lo step non esista già con una formulazione diversa
 2. Controllate i near-duplicate: se esiste uno step simile al 90%, usate quello
 3. Se siete certi che lo step non esiste, **contattate Steve** (Jira, chat o direttamente) con:
    - La frase esatta che vorreste usare (`Given I open the prescription page`)
@@ -291,7 +291,7 @@ Quando ricevete una richiesta di nuovo step da un QA:
 grep -i "prescription" step-catalog.json
 ```
 
-Oppure cercate nel portale web (Catalog → barra di ricerca).
+Oppure cercate nel cruscotto (Catalogo → scheda Step → ricerca).
 
 ### 2. Verificare che non sia un near-duplicate
 
@@ -332,7 +332,7 @@ Campi obbligatori:
 
 ### 4. (Opzionale) Aggiungere enum values
 
-Se lo step ha parametri con valori noti, aggiungeteli subito in `step-enums.json` (vedi sezione precedente).
+Se lo step ha parametri con valori noti, potete annotarli in `step-enums.json` (vedi sezione precedente: oggi nessuna parte dell'app lo legge).
 
 ### 5. Comunicare al QA
 
@@ -377,7 +377,7 @@ npm test
 # Dry-run: valida gli step senza eseguire Playwright
 npm run test:dry
 
-# Avvia il portale web di authoring
+# Avvia il cruscotto nel browser (sviluppo)
 cd web-ui && npm run dev
 ```
 
@@ -388,6 +388,6 @@ cd web-ui && npm run dev
 | File | Chi lo modifica | Come |
 |---|---|---|
 | `step-catalog.json` | Generato da `npm run catalog`; voce `wanted`/`deprecated` da Steve manualmente | Editor di testo + `npm run catalog` |
-| `step-enums.json` | Steve (o chi gestisce il catalog) | Editor di testo diretto — non viene toccato da `npm run catalog` |
+| `step-enums.json` | Steve (o chi gestisce il catalog) | Editor di testo diretto — non viene toccato da `npm run catalog`; oggi senza lettori |
 | `STEP_CATALOG.md` | **Non modificare a mano** — generato da `npm run catalog` | Solo tramite `npm run catalog` |
 | `src/steps/**/*.ts` | Dev team | Implementazione TypeScript + Playwright |

@@ -103,7 +103,7 @@ pages. Readable without having seen the presentation.
 | 4. The process | the three cycles with the diagram; who does what | §4, §8 |
 | 5. Under the hood | the technical pipeline and who decides each link | §5 |
 | 6. The ritual | calendar, roles, what is decided and how | `anti-entropy/06-rituale.md` |
-| 7. The tools | dashboard, portal, validator, assistant: one line each, with a screenshot | §7, `TESTER-DASHBOARD-GUIDE.md` |
+| 7. The tools | dashboard, validator, assistant: one line each, with a screenshot | §7, `TESTER-DASHBOARD-GUIDE.md` |
 | 8. Data and security | what stays on the machine, credentials, read-only | §9 |
 | 9. Status and next steps | what is proven, what is missing, open decisions | §10 |
 | 10. The ask | the owner of the consolidation | `anti-entropy/03-piano-demo.md` |
@@ -128,7 +128,7 @@ pages. Readable without having seen the presentation.
 | What | Status |
 |---|---|
 | Numbers for act 1 | ✅ measured |
-| Act 2 demo (portal) | ✅ runs locally |
+| Act 2 demo (dashboard) | to be re-recorded: the old demo script showed the portal, which no longer exists |
 | Act 3 demo (queue and report) | ✅ on an export already downloaded |
 | Act 4 demo (Record) | ✅ from the dashboard · backup video to record |
 | Act 5 demo (Run) | 🟡 5 of 11 steps: needs task 14, or show a flow without lists |

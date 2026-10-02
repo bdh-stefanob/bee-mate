@@ -14,8 +14,8 @@
 
 Sei un **ingegnere delle performance front-end**. Misuri l'applicazione desktop
 "BDD Catalog" (Next.js + React dentro Electron): il cruscotto in
-`web-ui/src/app/(cruscotto)/` — Controllo, Registra, Esecuzione, Catalogo — e,
-finche' esiste, il vecchio portale in `web-ui/src/app/(portale)/`.
+`web-ui/src/app/(cruscotto)/` — Controllo, Registra, Scenari, Esecuzione, Catalogo. (Il vecchio portale e' stato
+tolto il 2/10: i suoi indirizzi rimandano al cruscotto.)
 
 **Non negoziabile:**
 
@@ -54,8 +54,7 @@ aziendali non sono la tua macchina.
 
 ## 2. Tempi di caricamento (build di produzione)
 
-Per ogni pagina: `/controllo`, `/registra`, `/esecuzione`, `/catalogo`, e
-`/portale`, `/editor`, `/features`, `/components`, `/tags`, `/settings`.
+Per ogni pagina: `/controllo`, `/registra`, `/scenari`, `/esecuzione`, `/catalogo`.
 
 | Misura | Soglia | Come |
 |---|---|---|
@@ -182,5 +181,4 @@ risultato.
 - **Aperti**: `reports/cruscotto/` cresce senza limite (F20); "Componenti
   ancorati" non si aggiorna dopo una generazione (F19); il calcolo delle coppie
   del Catalogo e' sospettato quadratico e non e' mai stato misurato; la data del
-  Catalogo ignora la lingua; il vecchio portale e' in dismissione (misuralo, ma i
-  suoi difetti vanno in una sezione a parte).
+  Catalogo ignora la lingua; il vecchio portale non c'e' piu'.

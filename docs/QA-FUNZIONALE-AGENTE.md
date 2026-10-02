@@ -15,7 +15,7 @@
 ## 0. Ruolo e regole d'ingaggio
 
 Sei un **tester QA indipendente**. Collaudi l'applicazione desktop "BDD Catalog"
-(cruscotto per tester manuali + portale del catalogo) e la catena che c'e' sotto
+(cruscotto per tester manuali) e la catena che c'e' sotto
 (registra → genera → esegui). Riporti **fatti con prove**, non impressioni.
 
 **Non negoziabile:**
@@ -171,15 +171,15 @@ Tutte provate su un solo scenario; se una non regge, e' una **regressione**.
 | X8 | chiudi l'ultimo passo con "Fine intento", poi premi **Verifica** sulla pagina di arrivo e chiudi il browser | la verifica va in fondo al passo che hai appena chiuso: **nessun passo "non chiuso"** in piu' nella traccia e nel riepilogo. Se invece restano gesti senza "Fine intento", quelli sono ancora un gruppo non chiuso |
 | X6 | ultimo passo lasciato aperto | la frase in feature e' inglese ("the tester did not close this step"), non italiana |
 
-## 7. Catalogo, portale e catena dei dati
+## 7. Catalogo e catena dei dati
 
 | ID | Caso | Atteso |
 |---|---|---|
-| P1 | `/catalogo` (cruscotto) e `/portale` | mostrano i conteggi coerenti con `step-catalog.json` (10 voci: 1 implementata, 9 `@wanted` a inizio 30/9) |
+| P1 | `/catalogo` | mostra i conteggi coerenti con `step-catalog.json` (10 voci: 1 implementata, 9 `@wanted` a inizio 30/9) |
 | P2 | il catalogo **non mente su se stesso** | stato e conteggi coincidono con il file dopo un salvataggio e dopo "aggiorna" |
 | P3 | doppione di frase | si risolve dalla finestra, a cascata e con ritorno (annullabile) |
 | P4 | a quale applicazione appartiene uno step | visibile, con cosa fa |
-| P5 | `/editor` | l'autocompletamento propone **solo** step del catalogo; uno step sconosciuto e' sottolineato; una variante nota suggerisce la riga da usare (non "non conforme") |
+| P5 | `/scenari`, modifica con "Modifica il testo" | l'autocompletamento propone **solo** step del catalogo; uno step sconosciuto e' sottolineato e il salvataggio e' bloccato con la frase giusta; una variante nota suggerisce la riga da usare (non "non conforme") |
 | P6 | `/features`, `/components`, `/tags` | elencano per applicazione e flusso; "Componenti ancorati" si aggiorna dopo aver generato (oggi no: F19) |
 | P7 | `npm run validate:steps` su un `.feature` con: step identico, step simile, step nuovo | ok / suggerisce la riga esistente / blocca |
 | P8 | `npm run catalog` | rigenera `STEP_CATALOG.md` e `step-catalog.json`; **nessuna** modifica a mano di `STEP_CATALOG.md` e' richiesta o accettata |
@@ -200,14 +200,15 @@ Tutte provate su un solo scenario; se una non regge, e' una **regressione**.
 
 ## 9. UI e UX
 
-Per ogni schermata (`/controllo`, `/registra`, `/esecuzione`, `/catalogo`,
-`/portale`, `/editor`, `/features`, `/components`, `/tags`, `/settings`):
+Per ogni schermata (`/controllo`, `/registra`, `/scenari`, `/esecuzione`, `/catalogo`)
+e per i vecchi indirizzi del portale (`/portale`, `/editor`, `/features`,
+`/components`, `/tags`, `/settings`), che devono rimandare al cruscotto:
 
 | ID | Verifica | Criterio |
 |---|---|---|
 | U1 | larghezze | 1280x720, 1024, 900, 820, 390: nessuno scroll orizzontale; sotto 900 la barra laterale diventa barra in alto; una colonna sotto 900, due sopra |
 | U2 | tema | chiaro e scuro: testo leggibile, nessun elemento invisibile |
-| U3 | lingua | cambia in inglese/italiano: **ogni** stringa visibile cambia, incluso portale (gia' noto: F9), avvisi del generatore, barra del recorder |
+| U3 | lingua | cambia in inglese/italiano: **ogni** stringa visibile cambia, avvisi del generatore, barra del recorder |
 | U4 | contrasto | testi almeno 4,5:1 (misurato, non a occhio) |
 | U5 | aree cliccabili | almeno 40 px |
 | U6 | focus | contorno di focus sempre visibile; percorso con la sola tastiera completo, ordine logico, nessuna trappola |
@@ -216,7 +217,7 @@ Per ogni schermata (`/controllo`, `/registra`, `/esecuzione`, `/catalogo`,
 | U9 | lettore di schermo | ruoli e nomi accessibili dei controlli; stati annunciati (`role=status`, `role=alert`) |
 | U10 | console e rete | nessun errore in console, nessuna risposta 4xx/5xx non attesa |
 | U11 | stati vuoti, di caricamento, di errore | esistono e dicono cosa fare |
-| U12 | coerenza | stesse parole per la stessa cosa ("Ambiente"); il portale ha lo stesso aspetto del cruscotto (oggi no: F19) |
+| U12 | coerenza | stesse parole per la stessa cosa ("Ambiente") |
 | U13 | messaggi | nessun gergo da sviluppatore ("Playwright", "locator", "13 eventi ricevuti") visibile a un tester (gia' noto: F12) |
 
 ### 9b. Giudizio di stile e di UX (oltre alle verifiche sopra)
@@ -228,7 +229,7 @@ prova** (screenshot con nome file o testo citato). Un voto senza prova non conta
 | Punto | Cosa guardare |
 |---|---|
 | Gerarchia visiva | cosa si nota per primo, e' la cosa giusta? c'e' un'azione principale chiara? |
-| Coerenza | stessi componenti, colori, parole e posizioni fra tutte le schermate, portale incluso |
+| Coerenza | stessi componenti, colori, parole e posizioni fra tutte le schermate |
 | Spaziatura e allineamento | ritmo verticale, margini, testi che si sovrappongono o si troncano |
 | Tipografia | dimensioni, pesi, leggibilita' su 1280 e su 390 px |
 | Densita' | troppo vuoto o troppo pieno? righe lunghe? |

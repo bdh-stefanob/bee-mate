@@ -974,6 +974,16 @@ Costruiti sopra i moduli di N2 (piano, applicazione atomica, annulla, riduttore,
 - **Interfaccia**: dopo uno spostamento o un'eliminazione il pannello si smonta, quindi l'avviso con "Annulla" sta nella pagina (e sparisce a ogni altra modifica: l'Annulla annulla sempre l'ultima). Eliminato: si seleziona il vicino nell'elenco.
 - **Non fatto**: "Cambia il testo di una verifica" (gia' non fatto in N2); `will-prevent-unload` mai provato in Electron.
 
+### Stato di costruzione dei passi 6, 7 e 8 (2026-10-02, lavoro N5)
+
+La dismissione e' fatta, con la regola del proprietario del 2/10: si toglie tutto cio' che serviva solo al portale; del condiviso si taglia solo il cordone.
+
+- **Passo 6 (spegnere)**: `web-ui/next.config.ts` rimanda `/portale`, `/components`, `/tags` a `/catalogo`, `/editor`, `/features` a `/scenari`, `/settings` a `/controllo` (307, non permanente). La pulizia di `localStorage` (token GitHub in `bdd-scaffold-settings` e le cinque chiavi `gsd-editor-*`) e' `lib/residui-portale.ts` (pura, provata) montata dal layout del cruscotto da `PuliziaResiduiPortale`; da tenere due versioni, poi si toglie. Dopo la cancellazione i rimandi restano come rete per i segnalibri (non c'e' piu' il flag per riaccendere il portale: le pagine non ci sono).
+- **Passo 7 (cancellare)**, in commit separati e con `build`, `tsc` e `vitest` verdi a ciascuno: pagine `(portale)/**`; sedici componenti e `useSettings`; rotte `catalog`, `catalog/propose`, `enums`, `features`, `features/move`, `git/status`, `github/push`, `import`, `jira/sync`, `tags`; librerie `catalog`, `github-utils` (con il test vagante in `src/lib/`), `import-extended`, `page-markers`, `step-snippets`, `i18n` (con `useLanguage` e il `Toaster` in `Providers`); tipi `ParamEnumDef`, `paramEnums` e `FeatureSummary`, `listFeatures`, `parseFeatureSummary`; `sonner` (package.json e lockfile) e i componenti `ui/` senza usi (`card`, `input`, `popover`, `select`, `separator`, `sonner`, `table`).
+- **Restano perche' condivisi**: `GherkinEditor` e `gherkin-cm` (testo avanzato), `autocomplete` (solo la regex del completamento), `catalog-match`, `feature-tags` (lo usa `modifica-scenario`), `features` (`walkFeatures`), `api/lint`, `api/download`, `api/lingua`, `suggerimenti-misura` (lo usano gli script e il suo test), `ui/badge`, `button`, `schede`, `tooltip`. Dal condiviso e' uscito il cordone: la proposta di un passo al clic su una frase sconosciuta (`onProposeStep`, `lib/passo-sconosciuto.ts` e il suo test), il `GherkinEditorHandle` (inserimento al cursore, annulla e ripeti per la barra strumenti), `formatGherkin`, `getSuggestions`.
+- **Passo 8 (documenti)**: `README.md`, `web-ui/README.md`, `docs/TESTER-DASHBOARD-GUIDE.md` (cinque voci, modifica degli scenari, Catalogo, tema), `docs/OVERVIEW.md`, `docs/STEP-LIFECYCLE.md` (enum "senza lettori"), `ROADMAP.md`, `docs/QA-FUNZIONALE-AGENTE.md`, `docs/PERFORMANCE-AGENTE.md`, `docs/PRESENTATION.md`, `docs/anti-entropy/README.md`, la rassegna del 25/9 (F19 spuntata; F9 annotata); `docs/USER-GUIDE.md` cancellato.
+- **Non fatto**: il cambio del nome del prodotto (B10), bloccato da U1; il pacchetto Electron (`electron:build:win`) non e' stato costruito.
+
 ## Ordine di lavoro
 
 Passi piccoli, ciascuno annullabile con un `git revert`, con il controllo che

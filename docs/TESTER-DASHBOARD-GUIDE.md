@@ -3,7 +3,7 @@
 _For people who run tests by hand. You do not need to know Gherkin or code,
 and you never need to open a terminal._
 
-The dashboard is the part of the desktop app that opens first. It has four
+The dashboard is the part of the desktop app that opens first. It has five
 entries in the sidebar, one for each thing you do:
 
 | Entry | What it is for |
@@ -12,14 +12,14 @@ entries in the sidebar, one for each thing you do:
 | **Record** | run your test as always, and get a scenario out of it |
 | **Scenarios** | see what you have recorded, and how each scenario went the last time |
 | **Run** | run the scenario on its own and see how it went |
+| **Catalog** | see the phrases the system knows, which page elements they touch, and where the wording needs tidying up |
 
 The sidebar also has:
 
 - **Environment**: the environment you are working on. You choose it once and
   it applies to every screen.
 - **Language**: English or Italian. The choice is kept when you close the app.
-- **Step catalog**: the portal with the catalog and the editor (see
-  `USER-GUIDE.md`).
+- **Theme**: light, dark, or the same as your system. The choice is kept too.
 
 > **Before you start:** the app works on a copy of the project on your
 > computer. The first time, it asks which folder that copy is in.
@@ -130,6 +130,31 @@ scenario already chosen (it does not start by itself), or **Export** to download
 it. Results are kept on this computer only: a scenario that arrived from a
 colleague shows as never run until you run it here.
 
+### Editing a scenario
+
+Press **Edit** on a scenario (or press one of its steps, or its title). You can:
+
+- change the **title**;
+- **use a different step** instead of one of the scenario's steps, picking from
+  the steps the catalog already has;
+- **remove** a step, or **add a check** (a text that must appear);
+- **rename** a step: it is renamed in every scenario that uses it, so the window
+  first lists those scenarios and asks you to confirm;
+- **move** the scenario to another flow of the same application, or **delete**
+  it (the window lists what goes away and what stays, because another scenario
+  still uses it);
+- under **Advanced**, edit the **text** of the scenario as in a file. You can
+  only use phrases that exist in the catalog: a new phrase does not save, and
+  the window tells you which one.
+
+Nothing is written until you press **Check and save**: the program first checks
+that the test still runs, and if it does not it saves nothing. **Undo the
+change** puts every file back as it was. Saving does not run the scenario: use
+**Run the scenario** to try it. A scenario you edit becomes yours: recording
+again with the same title will not overwrite it.
+
+There is no way to create a scenario from nothing in the app: you record it.
+
 ---
 
 ## 3. Run
@@ -154,6 +179,20 @@ taken.
 
 If the test starts but there is no scenario to run, the window tells you to
 record a session and generate the test first.
+
+---
+
+## Catalog
+
+Three tabs:
+
+- **Steps**: the phrases the system knows, with how many scenarios use each one
+  and what each one does. A step nobody has built yet is shown as requested.
+- **Components**: the page elements the steps touch, and which steps depend on
+  each (useful to know what a change to the page may affect).
+- **To tidy up**: wording that needs attention. Two phrases for the same thing
+  (you can merge them, and undo the last merge), and the same phrase touching
+  different elements (you give one of them a new wording).
 
 ---
 

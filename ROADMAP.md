@@ -17,7 +17,7 @@ The project went through three phases:
 
 | Phase | When | Goal | Outcome |
 |---|---|---|---|
-| **M1 — Scaffold and authoring app** | June 2026 | show the manager a shared step catalog instead of a notepad | ✅ desktop app with catalog and constrained editor, validator, VS Code extension, scenario import, Jira sync |
+| **M1 — Scaffold and authoring app** | June 2026 | show the manager a shared step catalog instead of a notepad | ✅ desktop app with catalog and constrained editor (the "portal": removed on 2 October 2026, see item 11), validator, VS Code extension, scenario import, Jira sync |
 | **Anti-entropy** | 3–22 September | measure the entropy of real test cases and make it converge; Specification by Demonstration | ✅ full chain: read the wiki → measure → catalog → record → generate → test. Details in `docs/anti-entropy/` |
 | **Tester dashboard** | 22–24 September | make the chain usable without a terminal | ✅ MVP of the three screens, refined through use. Spec in `docs/superpowers/specs/` |
 
@@ -63,9 +63,9 @@ LLMs (Kiro, Amazon Q, Copilot, Claude) are there for **speed**, not for
  people write)      - dashboard            - extension         - rules
  - observatory        Check-up             - pre-commit hook   - agents
  - queue + ritual     Record                                   - generated
- - publishing (Q9)    Run                                        brief
-                    - portal
-                      catalog, editor
+ - publishing (Q9)    Scenarios (edit)                           brief
+                      Run
+                      Catalog
    |                 |                       |                  |
    +-----------------+-----------+-----------+------------------+
                                  |
@@ -95,6 +95,7 @@ credible, then the rest.
 | 8 | A scenario already in the repository fails the validator | it blocks whoever touches it | ½ d | task 13 |
 | 9 | Package the VS Code extension (`.vsix`) | today it installs only from source | ½ d | old 5.6 |
 | 10 | **Dashboard fixes from the 25 September walkthrough**: readable failures, sidebar in sync, no terminal commands, one language | a tester cannot tell why a step failed; four batches, F1–F20 | 3.5–4 d | task 18, `docs/reviews/2026-09-25-dashboard-walkthrough.md`, issues #1–#4 |
+| 11 | **Old portal removed** (job N5): pages, routes, components, libraries and the `sonner` dependency are gone; the old addresses redirect to the dashboard; the token and drafts it left in the window's storage are cleaned at first start | the dashboard now edits scenarios (title, steps, checks, rename, move, delete, text) and has the catalog and the theme selector | ✅ done 2026-10-02, except: **product name change waits for U1** (see `docs/superpowers/specs/2026-10-01-modifica-scenari-e-dismissione-portale-design.md` B10); `step-enums.json` stays, with no readers (M9); the `catalog` branch cycle on GitHub is left as it is (M10) | spec B |
 
 ### Item 3: one home for every scenario
 
