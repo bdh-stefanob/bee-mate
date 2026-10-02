@@ -156,7 +156,6 @@ function testoMoltoSimile(a: string, b: string, ha: Uint16Array, hb: Uint16Array
   if (lunghezzaMax === 0) return true;
   if (1 - Math.abs(a.length - b.length) / lunghezzaMax < SOGLIA_SOMIGLIANZA) return false;
   const tetto = Math.floor((1 - SOGLIA_SOMIGLIANZA) * lunghezzaMax) + 1;
-  if (limiteInferioreDistanza(ha, hb) > tetto) return false;
   // Prefisso e suffisso comuni non cambiano la distanza: si tolgono, e la
   // programmazione dinamica gira solo sul pezzo che differisce. Nei cataloghi
   // con frasi che differiscono per un numero o una parola e' quasi sempre
@@ -170,6 +169,11 @@ function testoMoltoSimile(a: string, b: string, ha: Uint16Array, hb: Uint16Array
     fineA--;
     fineB--;
   }
+  // Il pezzo che resta e' un limite alto della distanza (basta sostituire/togliere
+  // tutto): se gia' quello supera la soglia, la coppia e' simile senza altro conto.
+  const rimasti = Math.max(fineA - inizio, fineB - inizio);
+  if (1 - rimasti / lunghezzaMax >= SOGLIA_SOMIGLIANZA) return true;
+  if (limiteInferioreDistanza(ha, hb) > tetto) return false;
   const d =
     inizio === 0 && fineA === a.length && fineB === b.length
       ? distanzaConTetto(a, b, tetto)
