@@ -220,9 +220,17 @@ function percorso(base: string): Array<{ etichetta: string; gesti: Gesto[] }> {
         {
           cosa: "scegle un pin sulla mappa",
           fai: async (page) => {
+            // Un livello trasparente sopra la mappa intercetta i clic (G2, punto
+            // 2: lo stesso caso difficile che il generatore deve gestire con
+            // clickSenzaAncoraggio). Un tester vero clicca col mouse sul pixel
+            // del pin, non attraverso l'azione guidata dal locator: quella
+            // fallirebbe qui con "element intercepts pointer events", prima
+            // ancora di arrivare alla generazione.
             const pin = page.locator(".custom-marker").first();
             await pin.waitFor({ state: "visible", timeout: ATTESA });
-            await pin.click({ timeout: ATTESA });
+            const box = await pin.boundingBox();
+            if (!box) throw new Error("il pin non e' sulla pagina");
+            await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
           },
         },
         premi("Select Pharmacy"),
