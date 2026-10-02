@@ -8,6 +8,7 @@ import { setWorldConstructor, World, IWorldOptions } from "@cucumber/cucumber";
 import { Browser, BrowserContext, Page } from "@playwright/test";
 import { avviaBrowser } from "../../scripts/lib/browser";
 import { aspettaPresenza } from "./presenza";
+import { registraAvvisi } from "./avvisi";
 import { loadEnv } from "../../scripts/lib/atlassian";
 import {
   resolveTarget, hasSession, sessionAgeHours, passwordDelBersaglio, type Target,
@@ -128,6 +129,8 @@ export class CustomWorld extends World {
       ...(AMBIENTE.storageState ? { storageState: AMBIENTE.storageState } : {}),
     });
     this.page = await this.context.newPage();
+    // Gli avvisi che compaiono quando vogliono loro: vedi avvisi.ts.
+    await registraAvvisi(this.page);
   }
 
   /**

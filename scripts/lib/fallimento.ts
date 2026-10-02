@@ -41,6 +41,10 @@ export interface DatiFallimento {
 /** Toglie dall'errore cio' che non deve finire in un file: password, token, intestazioni. */
 export function senzaSegreti(testo: string): string {
   return testo
+    // Colori del terminale (Playwright li mette nel call log): in un file sono rumore.
+    .replace(/\u001b\[[0-9;]*m|\[[0-9;]*m(?=\s|-)/g, "")
+    // Una riga di call log puo' elencare dieci locator: oltre una soglia non aiuta a leggere.
+    .replace(/^(.{400}).{20,}$/gm, "$1 [...]")
     .replace(/(Bearer\s+)[A-Za-z0-9._~+/=-]+/gi, "$1[nascosto]")
     .replace(/(password|passwd|token|secret|authorization|cookie)(["'\s:=]+)(?!Bearer\b)[^\s"',;]+/gi, "$1$2[nascosto]");
 }

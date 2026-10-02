@@ -18,6 +18,7 @@ import type { BrowserContext } from "@playwright/test";
 import { avviaBrowser } from "./browser";
 import type { Target } from "./targets";
 import { assicuraAccesso, chiudiOrdineAperto } from "../../src/actions/accesso.actions";
+import { registraAvvisi } from "../../src/support/avvisi";
 
 let failures = 0;
 const ok = (w: string): void => console.log(`OK   ${w}`);
@@ -74,6 +75,12 @@ const server = http.createServer((req, res) => {
   // Lo stesso avviso, ma che non si lascia chiudere: non deve far cadere niente.
   if (req.url === "/con-ordine-ostinato") {
     return dentro ? html("<h1>Home</h1><button>Resume order</button>") : vai("/");
+  }
+  // Il modale compare dopo un po', in un punto qualunque, e copre il pulsante.
+  if (req.url === "/modale-in-mezzo") {
+    return html(`<button id=vai onclick="document.title='fatto'">Vai</button>
+<script>setTimeout(()=>{document.body.insertAdjacentHTML("beforeend",'<div id=m style="position:fixed;inset:0;background:#0008"><button>Resume order</button></div>');
+addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("m")?.remove()})},200)</script>`);
   }
   res.writeHead(404);
   res.end();
@@ -155,6 +162,20 @@ async function main(): Promise<void> {
   await caso(conSessione, async (page) => {
     await page.goto(`${base}/home`);
     eq("nessun avviso: si prosegue, senza errore", await chiudiOrdineAperto(page, 300), false);
+  });
+
+  await caso(null, async (page) => {
+    await registraAvvisi(page);
+    await page.goto(`${base}/modale-in-mezzo`);
+    await page.waitForTimeout(400); // il modale e' comparso e copre il pulsante
+    await page.getByRole("button", { name: "Vai" }).click({ timeout: 4000 });
+    eq("un modale comparso in mezzo allo scenario viene chiuso da solo, e il click va a segno", await page.title(), "fatto");
+  });
+  await caso(null, async (page) => {
+    await page.goto(`${base}/modale-in-mezzo`);
+    await page.waitForTimeout(400);
+    const cade = await page.getByRole("button", { name: "Vai" }).click({ timeout: 1500 }).then(() => false, () => true);
+    eq("senza il gestore lo stesso click cade: la prova misura qualcosa", cade, true);
   });
 
   await caso(conSessione, async (page) => {
