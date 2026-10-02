@@ -171,7 +171,7 @@ async function main(): Promise<void> {
   console.log(`  Catalogo      : ${catalog.length} step\n`);
 
   const index = indexDictionaries(dicts);
-  const { intents, gaps, pages } = resolveRecording(recording, index, { catalog });
+  const { intents, gaps, pages, avvisi } = resolveRecording(recording, index, { catalog });
 
   const ctx: EmitContext = {
     intents,
@@ -280,6 +280,21 @@ async function main(): Promise<void> {
     }
   }
 
+  // ── I gesti che non sono diventati passi ────────────────────────────────
+  //
+  // Non e' un buco: e' una decisione. Dirla serve perche' chi rilegge la
+  // registrazione conta i gesti e non li ritrova tutti nello scenario.
+  if (avvisi.length > 0) {
+    console.log(`\n  AVVISI — ${avvisi.length} gesti non sono diventati passi\n`);
+    for (const a of avvisi) {
+      console.log(`   · ${a.role} "${a.name}" (${a.avviso}) in «${a.where}»`);
+    }
+    console.log(
+      `   Un avviso compare quando vuole: un passo che lo clicca fallisce quando non c'e'.\n` +
+        `   A chiuderlo pensa src/support/avvisi.ts, in qualunque punto dello scenario.`
+    );
+  }
+
   // ── Cosa non ha saputo fare da solo ─────────────────────────────────────
   if (gaps.length > 0) {
     console.log(`\n  DA GUARDARE — ${gaps.length}\n`);
@@ -311,6 +326,7 @@ async function main(): Promise<void> {
           files: files.map((f) => ({ path: f.path, origin: f.origin, template: f.template })),
           skipped,
           gaps,
+          avvisi,
           // Per ogni passo, i candidati di catalogo: da qui il cruscotto legge i
           // suggerimenti. Solo frasi del tester e del catalogo, mai valori o note.
           compito: costruisciCompito({

@@ -14,6 +14,11 @@ import { fold, tokenize, fingerprint, maskParams } from "./normalize";
 import { tokenSetRatio } from "./cluster";
 import { toComponent } from "./component-naming";
 import { judge } from "./stability";
+// Gli avvisi sono dichiarati una volta sola, dove vive il gestore che li chiude:
+// `avvisoDelGesto` e' pura e non apre nessun browser, quindi questo file resta
+// quello che era. Due elenchi di avvisi divergerebbero, e divergendo farebbero
+// generare un passo che a tempo di esecuzione viene chiuso da solo.
+import { avvisoDelGesto } from "../../src/support/avvisi";
 import type {
   Assertion, CatalogStep, Component, Gap, Intent, Recording,
   ResolvedIntent, ResolvedStep, ScoutResult, Step,
@@ -225,11 +230,29 @@ export interface ResolveOptions {
   shortlist?: number;
 }
 
+/**
+ * Un gesto che il tester ha fatto su un avviso noto, e che non e' diventato un
+ * passo.
+ *
+ * Non e' un buco: e' una decisione, e va detta. Un gesto scartato in silenzio
+ * e' un gesto che, il giorno in cui serviva davvero, non si sa dove e' finito.
+ */
+export interface AvvisoScartato {
+  /** L'etichetta dell'intento in cui stava. */
+  where: string;
+  role: string;
+  name: string;
+  /** Quale avviso ha riconosciuto. */
+  avviso: string;
+}
+
 export interface ResolveResult {
   intents: ResolvedIntent[];
   gaps: Gap[];
   /** Pagine incontrate, con nomi gia' resi univoci. */
   pages: PageIdentity[];
+  /** I gesti su un avviso noto, tolti dai passi e dichiarati. */
+  avvisi: AvvisoScartato[];
 }
 
 export function resolveRecording(
@@ -325,10 +348,27 @@ export function resolveRecording(
   }
 
   const canonici = new Map<string, Component>();
+  const avvisi: AvvisoScartato[] = [];
   const intents: ResolvedIntent[] = recording.intents.map((intent) => {
     const fallbackUrl = intent.pageUrl ?? recording.startUrl;
 
-    const steps: ResolvedStep[] = intent.steps.map((step) => {
+    // UN AVVISO NON E' UN PASSO.
+    //
+    // Il tester ha cliccato «Accept All» perche' il banner c'era in quel
+    // momento, non perche' facesse parte del test. Uno scenario che lo clicca
+    // fallisce ogni volta che non c'e' — cioe' quasi sempre dalla seconda
+    // esecuzione in poi, quando il consenso e' gia' dato. A chiuderlo pensa
+    // `registraAvvisi`, in qualunque punto dello scenario, e quindi il passo non
+    // deve esistere. Solo i click: un valore digitato in un campo che si chiama
+    // come un avviso non e' la chiusura di un avviso.
+    const gesti = intent.steps.filter((step) => {
+      const avviso = step.action === "click" ? avvisoDelGesto(step) : null;
+      if (!avviso) return true;
+      avvisi.push({ where: intent.label, role: step.role, name: step.name, avviso: avviso.nome });
+      return false;
+    });
+
+    const steps: ResolvedStep[] = gesti.map((step) => {
       const url = step.url ?? fallbackUrl;
       const id = nameByKey.get(pageIdentity(url).key) ?? pageIdentity(url);
       // Un campo password si cerca per tipo, sempre: anche quando il dizionario
@@ -422,7 +462,7 @@ export function resolveRecording(
     };
   });
 
-  return { intents, gaps, pages };
+  return { intents, gaps, pages, avvisi };
 }
 
 // ---------------------------------------------------------------------------

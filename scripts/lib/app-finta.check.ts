@@ -146,7 +146,7 @@ const ATTESA = 5000;
  * Nominare l'app finta rende la frase inconfondibile senza cambiare cosa descrive.
  */
 const ETICHETTE = {
-  vetrina: "the user accepts the cookie notice on the demo brochure",
+  vetrina: "the user starts from the demo brochure",
   ordine: "the user orders a demo plan and picks it up in a pharmacy",
 };
 
@@ -329,6 +329,8 @@ function tsNode(script: string, args: string[]): { status: number | null; out: s
 interface Manifesto {
   files: Array<{ path: string }>;
   gaps: Array<{ kind: string; where: string; detail: string }>;
+  /** I gesti su un avviso noto, che il generatore non ha fatto diventare passi. */
+  avvisi?: Array<{ where: string; role: string; name: string; avviso: string }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -653,6 +655,18 @@ function verificaGenerazione(manifesto: Manifesto, recording: Recording): void {
     );
   } else {
     ok("il banner dei cookie non diventa un passo");
+  }
+
+  // E non si perde in silenzio: un gesto scartato che nessuno dichiara e' un
+  // gesto che, il giorno in cui serviva, non si sa dove sia finito.
+  const dichiarati = manifesto.avvisi ?? [];
+  if (dichiarati.some((a) => /accept all/i.test(a.name))) {
+    ok("il gesto sull'avviso e' dichiarato, non perso in silenzio");
+  } else {
+    fail(
+      "il gesto sull'avviso e' dichiarato, non perso in silenzio",
+      `il manifesto non nomina nessun gesto scartato perche' era un avviso: ${JSON.stringify(dichiarati)}`
+    );
   }
 
   // n. 3b — la risposta del questionario non e' murata nello step.
