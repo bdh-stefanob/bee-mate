@@ -63,7 +63,7 @@ export function leggiCatalogoPassi(repoRoot: string): CatalogStep[] {
 }
 
 /** Cartella degli step in cui sta la definizione (`steps/common/`, `steps/generated/`, `steps/<app>/...`). */
-function cartellaDefinizione(sourceRef: string): string {
+export function cartellaDefinizione(sourceRef: string): string {
   const m = sourceRef.replace(/\\/g, '/').match(/steps\/([^/]+)\//);
   return m ? m[1] : '';
 }
@@ -93,7 +93,11 @@ export function percorsoFeature(radici: RadiciModifica, file: string): string {
   return assoluto;
 }
 
-/** Perche' uno scenario non si modifica con i gesti, o `undefined` se si puo'. */
+/**
+ * Perche' uno scenario non si modifica con i gesti (rinomina, sposta, elimina, titolo,
+ * passi), o `undefined` se si puo'. Il testo avanzato e' piu' largo: ammette anche
+ * `complesso` (vedi `piano-modifica.ts`).
+ */
 export function ragioneNonModificabile(file: string, testo: string): 'registrato' | 'documento' | 'complesso' | undefined {
   if (file.split('/')[0] === 'generated') return 'registrato';
   const s = valutaSemplicita(testo);

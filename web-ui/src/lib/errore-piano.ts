@@ -11,7 +11,13 @@ export interface RadiciModifica {
 export type CodiceErrorePiano =
   | 'percorso' | 'non-trovato' | 'non-modificabile' | 'conflitto' | 'bloccato' | 'non-rinominabile'
   | 'frase-esiste' | 'catalogo' | 'richiesta' | 'bocciato' | 'scrittura' | 'ripristino'
-  | 'niente-da-annullare' | 'cambiato-dopo' | 'operazione-in-corso';
+  | 'niente-da-annullare' | 'cambiato-dopo' | 'operazione-in-corso'
+  /** Sposta: la destinazione (il `.feature` o i suoi step) e' occupata. */
+  | 'occupato'
+  /** Sposta: il nome del flusso non e' un nome di cartella ammesso. */
+  | 'flusso'
+  /** Sposta: il file non sta in `<app>/<flusso>/`, o e' gia' in quel flusso. */
+  | 'non-spostabile';
 
 /**
  * Perche' una modifica non si fa. Il `codice` e' stabile e la finestra lo traduce;

@@ -26,8 +26,9 @@ import { MARCATORE } from './marcatore';
 // Il marcatore sta in `marcatore.ts` (senza `fs`, cosi' lo usano anche le
 // funzioni pure che girano nel browser); qui si riesporta com'e' sempre stato.
 
-const CARTELLA_REGISTRATI = 'generated';
-const NOME_CARTELLA = /^[a-z0-9][a-z0-9-]{0,39}$/;
+export const CARTELLA_REGISTRATI = 'generated';
+/** Un nome di applicazione o di flusso: una cartella, mai un percorso. Lo usa anche lo spostamento. */
+export const NOME_CARTELLA = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const MAX_TITOLO = 80;
 const MAX_COPIE = 99;
 

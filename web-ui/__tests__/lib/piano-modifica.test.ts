@@ -126,8 +126,8 @@ describe('pianifica: cosa si scriverebbe, senza scrivere', () => {
     const piano = pianifica(radici, opTesto(nuovo));
     expect(piano.scritture).toHaveLength(1);
     expect(piano.scritture[0].rel).toBe(`src/features/${FILE}`);
-    expect(piano.scritture[0].nuovo.includes(MARCATORE)).toBe(false);
-    expect(piano.scritture[0].nuovo).toContain('@shop @order @generato');
+    expect(piano.scritture[0].nuovo!.includes(MARCATORE)).toBe(false);
+    expect(piano.scritture[0].nuovo!).toContain('@shop @order @generato');
     expect(piano.marcatoreTolto).toBe(true);
     expect(piano.blocchi).toEqual([]);
   });
@@ -162,18 +162,22 @@ describe('pianifica: cosa si scriverebbe, senza scrivere', () => {
     }
   });
 
-  it('un @non-automatizzato e un file con due scenari non si modificano', () => {
+  it('un @non-automatizzato non si modifica, e un file con due scenari non si modifica con i gesti', () => {
     scrivi('src/features/shop/order/doc.feature', '@shop @non-automatizzato\nFeature: D\n  Scenario: D\n    Given x\n');
     scrivi('src/features/shop/order/due.feature', 'Feature: D\n  Scenario: A\n    Given x\n  Scenario: B\n    Given y\n');
-    for (const [file, ragione] of [['shop/order/doc.feature', 'documento'], ['shop/order/due.feature', 'complesso']]) {
+    const prova = (operazione: Operazione['operazione'], file: string): ErrorePiano => {
+      const versione = improntaDiTesto(leggi(`src/features/${file}`));
+      const op: Operazione =
+        operazione === 'testo' ? { operazione, file, versione, testo: 'x' } : { operazione: 'rinomina', file, versione, da: 'x', a: 'y' };
       try {
-        pianifica(radici, { operazione: 'testo', file, versione: improntaDiTesto(leggi(`src/features/${file}`)), testo: 'x' });
-        throw new Error('doveva rifiutare');
+        pianifica(radici, op);
       } catch (e) {
-        expect((e as ErrorePiano).codice).toBe('non-modificabile');
-        expect((e as ErrorePiano).ragione).toBe(ragione);
+        return e as ErrorePiano;
       }
-    }
+      throw new Error('doveva rifiutare');
+    };
+    expect(prova('testo', 'shop/order/doc.feature')).toMatchObject({ codice: 'non-modificabile', ragione: 'documento' });
+    expect(prova('rinomina', 'shop/order/due.feature')).toMatchObject({ codice: 'non-modificabile', ragione: 'complesso' });
   });
 
   it('una frase che il catalogo non riconosce e un blocco del livello 1', () => {
@@ -221,7 +225,7 @@ describe('pianifica: rinomina', () => {
     const piano = pianifica(radici, opRinomina());
     for (const s of piano.scritture) {
       const bozza = s.rel.includes('/generated/');
-      expect(s.nuovo.includes(MARCATORE)).toBe(bozza);
+      expect(s.nuovo!.includes(MARCATORE)).toBe(bozza);
     }
   });
 
@@ -340,9 +344,9 @@ describe('applica', () => {
     const prima = istantanea();
     const piano = pianifica(radici, opRinomina());
     let n = 0;
-    const scrivi2 = (p: string, testo: string) => {
+    const scrivi2 = (p: string, testo: string | null) => {
       if (++n === 3) throw Object.assign(new Error('EPERM: operation not permitted'), { code: 'EPERM' });
-      fs.writeFileSync(p, testo);
+      if (testo !== null) fs.writeFileSync(p, testo);
     };
     await expect(applica(radici, piano, { controllo: verde, scriviFile: scrivi2 })).rejects.toMatchObject({ codice: 'scrittura' });
     expect(senzaReports(istantanea())).toEqual(senzaReports(prima));
@@ -402,6 +406,32 @@ describe('annulla', () => {
     const snap = JSON.parse(leggi('reports/modifiche/ultima-modifica.json')) as { files: Array<{ rel: string; dopo: string }> };
     const f = snap.files.find((x) => x.rel === `src/features/${FILE}`)!;
     expect(f.dopo).toBe(createHash('sha256').update(fs.readFileSync(path.join(RADICE, `src/features/${FILE}`))).digest('hex'));
+  });
+});
+
+describe('pianifica: il testo avanzato su un file con piu scenari', () => {
+  const DUE = 'shop/order/due.feature';
+  const TESTO_DUE = ['@shop @order', 'Feature: Due', '  Scenario: A', '    Given the user is logged in', '  Scenario: B', `    When ${DA}`, ''].join('\n');
+  beforeEach(() => scrivi(`src/features/${DUE}`, TESTO_DUE));
+
+  it('si puo scrivere, ed e un blocco solo una frase che il catalogo non conosce (in qualunque scenario)', () => {
+    const buono = TESTO_DUE.replace('Scenario: B', 'Scenario: B rinominato');
+    expect(pianifica(radici, opTesto(buono, DUE)).blocchi).toEqual([]);
+    expect(pianifica(radici, opTesto(buono, DUE)).scritture).toHaveLength(1);
+    const inventato = TESTO_DUE.replace(`When ${DA}`, 'When the user dances');
+    const piano = pianifica(radici, opTesto(inventato, DUE));
+    expect(piano.blocchi).toContainEqual({ codice: 'sconosciuto', frase: 'the user dances', riga: 6 });
+  });
+
+  it('il blocco impedisce di scrivere', async () => {
+    const piano = pianifica(radici, opTesto(TESTO_DUE.replace(`When ${DA}`, 'When the user dances'), DUE));
+    await expect(applica(radici, piano, { controllo: verde })).rejects.toMatchObject({ codice: 'bloccato' });
+    expect(leggi(`src/features/${DUE}`)).toBe(TESTO_DUE);
+  });
+
+  it('un file con un documento @non-automatizzato non si apre al testo', () => {
+    scrivi('src/features/shop/order/doc.feature', '@shop @non-automatizzato\nFeature: D\n  Scenario: D\n    Given x\n');
+    expect(codiceDi(() => pianifica(radici, opTesto('x', 'shop/order/doc.feature')))).toBe('non-modificabile');
   });
 });
 

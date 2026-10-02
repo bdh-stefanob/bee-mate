@@ -6,10 +6,13 @@ import { walkFeatures } from './features';
 import { improntaDiTesto } from './impronta-scenario';
 import { espressioneInRegex, trovaUsatoIn } from './catalogo';
 import { individuaCoppie } from './riconciliazione';
-import { pianificaRinomina } from './rinomina-passo';
+import { pianificaRinomina, percorsoDefinizione } from './rinomina-passo';
 import { haParametri } from './riscrittura-step';
-import { leggiPassi, titoloDi, togliMarcatore } from './modifica-scenario';
+import { rimuoviDefinizione } from './fusione-step';
+import { frasiDefinite } from './salva-glue';
+import { leggiPassi, spostaTesto, titoloDi, togliMarcatore, tuttiIPassi } from './modifica-scenario';
 import { MARCATORE } from './marcatore';
+import { CARTELLA_REGISTRATI, NOME_CARTELLA } from './salva-scenario';
 import {
   convalidaTesto,
   controlloVero,
@@ -17,6 +20,7 @@ import {
   type Messaggio,
 } from './convalida-scenario';
 import {
+  cartellaDefinizione,
   giudicaRinominabile,
   leggiCatalogoPassi,
   percorsoFeature,
@@ -51,16 +55,36 @@ export type { RadiciModifica } from './errore-piano';
 
 export type Operazione =
   | { operazione: 'testo'; file: string; versione: string; testo: string }
-  | { operazione: 'rinomina'; file: string; versione: string; da: string; a: string };
+  | { operazione: 'rinomina'; file: string; versione: string; da: string; a: string }
+  /** `flusso`: il nome della cartella di destinazione, nella stessa applicazione (M4). */
+  | { operazione: 'sposta'; file: string; versione: string; flusso: string }
+  | { operazione: 'elimina'; file: string; versione: string };
 
 export interface FileDelPiano {
   /** Relativo alla radice del repository, con `/`. Mai mostrato al tester. */
   rel: string;
   categoria: 'feature' | 'steps';
-  vecchio: string;
-  nuovo: string;
+  /** Com'e' adesso sul disco; `null` = il file non c'e' (lo crea questa modifica). */
+  vecchio: string | null;
+  /** Com'e' dopo; `null` = lo toglie questa modifica. */
+  nuovo: string | null;
   /** Aveva il marcatore e adesso no. */
   perdeMarcatore: boolean;
+}
+
+/** Un passo che l'eliminazione di uno scenario lascia dov'e', e perche'. */
+export interface PassoRimasto {
+  /** L'espressione del catalogo (con i segnaposto: `the page shows {string}`). */
+  frase: string;
+  /**
+   * `comune`: una definizione di `steps/common/`, di tutti; `condiviso`: lo usa un altro scenario;
+   * `parametri`: ha un valore variabile e non si riscrive; `richiesto`: e' una richiesta del
+   * team (non ancora realizzata) e non si perde con uno scenario; `altro`: la sua definizione
+   * non si e' trovata esattamente una volta, e non si indovina.
+   */
+  motivo: 'comune' | 'condiviso' | 'parametri' | 'richiesto' | 'altro';
+  /** I nomi degli altri scenari che lo usano (solo per `condiviso`). */
+  usatoDa: string[];
 }
 
 export interface ScenarioToccato {
@@ -93,6 +117,12 @@ export interface Piano {
    * vecchia voce se e' `wanted` (vedi `catalogo-voci.ts`); annullando, la nuova.
    */
   frasi?: { da: string; a: string };
+  /** Lo scenario aperto dopo la modifica, relativo a `src/features/`: cambia con lo spostamento, `null` se e' eliminato. */
+  fileDopo: string | null;
+  /** Sposta: da dove a dove. Gli esiti delle prove seguono il file (vedi `spostaEsiti`). */
+  spostamento?: { da: string; a: string };
+  /** Elimina: quali passi vanno con lo scenario e quali restano, e perche'. */
+  passi?: { vanno: string[]; restano: PassoRimasto[] };
 }
 
 // ---------------------------------------------------------------------------
@@ -168,15 +198,25 @@ export function pianifica(radici: RadiciModifica, op: Operazione): Piano {
     throw new ErrorePiano('conflitto', 409, 'lo scenario e\' cambiato mentre lo modificavi');
   }
   const ragione = ragioneNonModificabile(op.file, corrente);
-  if (ragione) throw new ErrorePiano('non-modificabile', 403, 'questo scenario non si modifica da qui', { ragione });
+  // Il testo avanzato e' piu' largo dei gesti: ammette anche piu' scenari, esempi, tabelle. Un
+  // documento (`@non-automatizzato`) e uno scenario non ancora salvato no, in nessun modo.
+  if (ragione && !(op.operazione === 'testo' && ragione === 'complesso')) {
+    throw new ErrorePiano('non-modificabile', 403, 'questo scenario non si modifica da qui', { ragione });
+  }
 
-  return op.operazione === 'testo' ? pianificaTesto(radici, op, corrente) : pianificaRinominaPasso(radici, op, corrente);
+  switch (op.operazione) {
+    case 'testo': return pianificaTesto(radici, op, corrente);
+    case 'rinomina': return pianificaRinominaPasso(radici, op, corrente);
+    case 'sposta': return pianificaSposta(radici, op, corrente);
+    case 'elimina': return pianificaElimina(radici, op, corrente);
+  }
 }
 
 function pianoVuoto(op: Operazione, corrente: string): Piano {
   return {
     operazione: op.operazione,
     file: op.file,
+    fileDopo: op.file,
     versionePrima: improntaDiTesto(corrente),
     scritture: [],
     featureToccati: [],
@@ -265,11 +305,11 @@ function pianificaRinominaPasso(
   risultato.conseguenze = {
     scenari: features.map((s) => {
       const file = s.rel.replace(/^src\/features\//, '');
-      return { file, nome: nomeScenario(s.vecchio, file), diventaTuo: s.perdeMarcatore };
+      return { file, nome: nomeScenario(s.vecchio ?? '', file), diventaTuo: s.perdeMarcatore };
     }),
   };
   const aperta = features.find((s) => s.rel === `src/features/${op.file}`);
-  risultato.testoAperto = aperta ? aperta.nuovo : corrente;
+  risultato.testoAperto = aperta?.nuovo ?? corrente;
   risultato.marcatoreTolto = scritture.some((s) => s.perdeMarcatore);
 
   // Il controllo rapido, contro il catalogo come sara' dopo la rinomina.
@@ -299,14 +339,169 @@ function pianificaRinominaPasso(
 }
 
 // ---------------------------------------------------------------------------
+// Sposta (A8): solo dentro la stessa applicazione, perche' le Page Object sono per applicazione
+// ---------------------------------------------------------------------------
+
+const stepsRel = (app: string, flusso: string, nome: string): string => `src/steps/${app}/${flusso}/${nome}.steps.ts`;
+
+function pianificaSposta(radici: RadiciModifica, op: Extract<Operazione, { operazione: 'sposta' }>, corrente: string): Piano {
+  if (typeof op.flusso !== 'string') throw new ErrorePiano('richiesta', 400, 'richiesta non valida');
+  const parti = op.file.split('/');
+  if (parti.length !== 3 || parti[0] === CARTELLA_REGISTRATI) {
+    throw new ErrorePiano('non-spostabile', 400, 'questo scenario non sta in un flusso', { ragione: 'posizione' });
+  }
+  const [app, flussoPrima, nomeFeature] = parti;
+  const nome = nomeFeature.replace(/\.feature$/, '');
+  const flusso = op.flusso;
+  if (!NOME_CARTELLA.test(flusso) || flusso === CARTELLA_REGISTRATI) {
+    throw new ErrorePiano('flusso', 400, 'il nome del flusso non e\' ammesso');
+  }
+  if (flusso === flussoPrima) throw new ErrorePiano('non-spostabile', 400, 'e\' gia\' in questo flusso', { ragione: 'stesso' });
+
+  // Per spostare conta il posto: se e' occupato non si scrive accanto.
+  const destinazione = `${app}/${flusso}/${nomeFeature}`;
+  if (fs.existsSync(path.join(radici.featuresDir, destinazione))) {
+    throw new ErrorePiano('occupato', 409, 'in quel flusso c\'e\' gia\' uno scenario con questo nome');
+  }
+  const stepsDa = stepsRel(app, flussoPrima, nome);
+  const stepsA = stepsRel(app, flusso, nome);
+  const stepsVecchio = leggiFile(path.join(radici.repoRoot, stepsDa));
+  if (stepsVecchio !== null && fs.existsSync(path.join(radici.repoRoot, stepsA))) {
+    throw new ErrorePiano('occupato', 409, 'in quel flusso ci sono gia\' i passi di uno scenario con questo nome');
+  }
+
+  const piano = pianoVuoto(op, corrente);
+  // Chi sposta rende suo il file, come chi modifica: perde il marcatore (e cosi' i suoi step).
+  const featureNuovo = togliMarcatore(spostaTesto(corrente, destinazione));
+  const perdeFeature = corrente.includes(MARCATORE) && !featureNuovo.includes(MARCATORE);
+  const scritture: FileDelPiano[] = [
+    { rel: `src/features/${destinazione}`, categoria: 'feature', vecchio: null, nuovo: featureNuovo, perdeMarcatore: perdeFeature },
+  ];
+  if (stepsVecchio !== null) {
+    // Il commento di testa dice dove sta il file; gli import (`../../../pages/...`) restano validi: stessa profondita'.
+    const righe = stepsVecchio.split('\n').map((r) => (r.trim() === `// ${stepsDa}` ? r.replace(stepsDa, stepsA) : r));
+    const stepsNuovo = togliMarcatore(righe.join('\n'));
+    scritture.push({ rel: stepsA, categoria: 'steps', vecchio: null, nuovo: stepsNuovo, perdeMarcatore: stepsVecchio.includes(MARCATORE) && !stepsNuovo.includes(MARCATORE) });
+  }
+  // Prima si scrive il nuovo, poi si toglie il vecchio: in nessun momento lo scenario non c'e'.
+  scritture.push({ rel: `src/features/${op.file}`, categoria: 'feature', vecchio: corrente, nuovo: null, perdeMarcatore: false });
+  if (stepsVecchio !== null) scritture.push({ rel: stepsDa, categoria: 'steps', vecchio: stepsVecchio, nuovo: null, perdeMarcatore: false });
+
+  piano.scritture = scritture;
+  piano.featureToccati = [destinazione];
+  piano.testoAperto = featureNuovo;
+  piano.marcatoreTolto = scritture.some((s) => s.perdeMarcatore);
+  piano.conseguenze = { scenari: [{ file: destinazione, nome: nomeScenario(featureNuovo, destinazione), diventaTuo: piano.marcatoreTolto }] };
+  // La definizione ha cambiato posto: area e riferimenti del catalogo vanno riletti dal codice.
+  piano.rigeneraCatalogo = stepsVecchio !== null;
+  piano.fileDopo = destinazione;
+  piano.spostamento = { da: op.file, a: destinazione };
+  return piano;
+}
+
+// ---------------------------------------------------------------------------
+// Elimina (A7): lo scenario e i passi che nessun altro usa. Le Page Object non si toccano mai.
+// ---------------------------------------------------------------------------
+
+/** Quanti scenari si guardano, al massimo, per controllare che gli altri partano ancora. */
+const MAX_TESTIMONI = 25;
+
+function pianificaElimina(radici: RadiciModifica, op: Extract<Operazione, { operazione: 'elimina' }>, corrente: string): Piano {
+  const catalogo = leggiCatalogoPassi(radici.repoRoot);
+  const usi = trovaUsatoIn(catalogo, radici.featuresDir);
+  const piano = pianoVuoto(op, corrente);
+
+  const steps = new Map<string, { rel: string; vecchio: string; nuovo: string }>();
+  const vanno: string[] = [];
+  const restano: PassoRimasto[] = [];
+  // Gli scenari che usano un passo condiviso che resta: se qualcosa si e' rotto, lo mostrano loro.
+  const testimoni = new Set<string>();
+  const viste = new Set<string>();
+
+  for (const { frase } of leggiPassi(corrente)) {
+    const trovati = catalogo.filter((s) => espressioneInRegex(s.expression).test(frase));
+    // Una frase che il catalogo non riconosce, o riconosce due volte, non ha una definizione da togliere.
+    if (trovati.length !== 1) continue;
+    const s = trovati[0];
+    if (viste.has(s.expression)) continue;
+    viste.add(s.expression);
+
+    const altri = (usi.get(s.expression) ?? []).filter((u) => u.file !== op.file);
+    const usatoDa = [...new Set(altri.map((u) => u.scenario))];
+    const resta = (motivo: PassoRimasto['motivo']) =>
+      restano.push({ frase: s.expression, motivo, usatoDa: motivo === 'condiviso' ? usatoDa : [] });
+
+    const cartella = cartellaDefinizione(s.sourceRef);
+    if (cartella === 'common') {
+      resta('comune');
+      continue;
+    }
+    if (altri.length > 0) {
+      for (const u of altri) if (!eInGenerated(u.file)) testimoni.add(u.file);
+      resta('condiviso');
+      continue;
+    }
+    if (haParametri(s.expression)) {
+      resta('parametri');
+      continue;
+    }
+    // Una richiesta del team (non ancora realizzata) non si perde con uno scenario.
+    if (s.status !== 'implemented') {
+      resta('richiesto');
+      continue;
+    }
+    const percorso = cartella === 'generated' ? null : percorsoDefinizione(radici.repoRoot, s.sourceRef);
+    let definizione = percorso ? steps.get(percorso) : undefined;
+    if (percorso && !definizione) {
+      const testo = leggiFile(percorso);
+      if (testo !== null) definizione = { rel: slash(path.relative(radici.repoRoot, percorso)), vecchio: testo, nuovo: testo };
+    }
+    let rimossa: { testo: string; rimosse: number } | null = null;
+    if (definizione) {
+      try {
+        rimossa = rimuoviDefinizione(definizione.nuovo, s.expression);
+      } catch {
+        rimossa = null;
+      }
+    }
+    // Non trovata esattamente una volta: non si indovina, il passo resta.
+    if (!percorso || !definizione || !rimossa || rimossa.rimosse !== 1) {
+      resta('altro');
+      continue;
+    }
+    steps.set(percorso, { ...definizione, nuovo: rimossa.testo });
+    vanno.push(s.expression);
+  }
+
+  // Prima lo scenario, poi i passi: se ci si ferma a meta' restano definizioni senza uso (innocue),
+  // non uno scenario con passi che non esistono piu'.
+  const scritture: FileDelPiano[] = [
+    { rel: `src/features/${op.file}`, categoria: 'feature', vecchio: corrente, nuovo: null, perdeMarcatore: false },
+  ];
+  for (const s of steps.values()) {
+    // Se non resta nessuna definizione il file non serve piu'.
+    const nuovo = frasiDefinite(s.nuovo).length === 0 ? null : togliMarcatore(s.nuovo);
+    scritture.push({ rel: s.rel, categoria: 'steps', vecchio: s.vecchio, nuovo, perdeMarcatore: nuovo !== null && s.vecchio.includes(MARCATORE) && !nuovo.includes(MARCATORE) });
+  }
+
+  piano.scritture = scritture;
+  piano.featureToccati = [...testimoni].filter((f) => fs.existsSync(path.join(radici.featuresDir, f))).sort().slice(0, MAX_TESTIMONI);
+  piano.conseguenze = { scenari: [{ file: op.file, nome: nomeScenario(corrente, op.file), diventaTuo: false }] };
+  piano.rigeneraCatalogo = steps.size > 0;
+  piano.fileDopo = null;
+  piano.passi = { vanno, restano };
+  return piano;
+}
+
+// ---------------------------------------------------------------------------
 // L'applicazione, con il disco
 // ---------------------------------------------------------------------------
 
 export interface OpzioniApplica {
   /** Il controllo vero sui `.feature` toccati (relativi a `src/features/`). Di norma `controlloVero`. */
   controllo?: (files: string[]) => Promise<EsitoControlloVero>;
-  /** Scrive un file: solo per i test, per simulare un errore a meta'. */
-  scriviFile?: (percorso: string, testo: string) => void;
+  /** Scrive un file, o lo toglie (`null`): solo per i test, per simulare un errore a meta'. */
+  scriviFile?: (percorso: string, testo: string | null) => void;
   ora?: () => Date;
 }
 
@@ -322,6 +517,12 @@ export interface EsitoApplica {
   rigeneraCatalogo: boolean;
   /** Rinomina: la voce `wanted` della frase vecchia va tolta dal catalogo prima di rigenerarlo. */
   catalogoDaTogliere?: string;
+  /** Lo scenario aperto dopo la modifica (relativo a `src/features/`); `null` se e' stato eliminato. */
+  fileDopo: string | null;
+  /** Sposta: da dove a dove (gli esiti delle prove seguono il file). */
+  spostamento?: { da: string; a: string };
+  /** Elimina: i passi che sono andati e quelli che sono rimasti. */
+  passi?: { vanno: string[]; restano: PassoRimasto[] };
 }
 
 interface Istantanea {
@@ -333,13 +534,20 @@ interface Istantanea {
   rigeneraCatalogo: boolean;
   /** Rinomina: annullando, la voce della frase nuova va tolta dal catalogo prima di rigenerarlo. */
   frasiRinomina?: { da: string; a: string };
-  files: Array<{ rel: string; prima: string; dopo: string }>;
+  /** Sposta: da dove a dove; annullando, gli esiti tornano indietro. */
+  spostamento?: { da: string; a: string };
+  /**
+   * `prima`: com'era (`null` = non c'era: lo ha creato la modifica). `dopo`: l'impronta di
+   * com'e' rimasto (`null` = lo ha tolto la modifica).
+   */
+  files: Array<{ rel: string; prima: string | null; dopo: string | null }>;
 }
 
 const fileIstantanea = (radici: RadiciModifica) => path.join(radici.repoRoot, 'reports', 'modifiche', 'ultima-modifica.json');
 
 /** Un file in un temporaneo accanto, poi rinominato: un lettore non vede mai un file a meta'. */
 function scriviAtomico(percorso: string, testo: string): void {
+  fs.mkdirSync(path.dirname(percorso), { recursive: true });
   const temporaneo = `${percorso}.${process.pid}.tmp`;
   fs.writeFileSync(temporaneo, testo);
   try {
@@ -347,6 +555,37 @@ function scriviAtomico(percorso: string, testo: string): void {
   } catch (e) {
     fs.rmSync(temporaneo, { force: true });
     throw e;
+  }
+}
+
+/** Scrive il file, o lo toglie se il testo e' `null`. */
+function scriviOTogli(percorso: string, testo: string | null): void {
+  if (testo === null) fs.rmSync(percorso, { force: true });
+  else scriviAtomico(percorso, testo);
+}
+
+/**
+ * Toglie le cartelle rimaste vuote dopo che dei file sono stati tolti, risalendo fino a
+ * `src/features/` e `src/steps/` (mai oltre, mai quelle due). Una cartella con dentro
+ * qualcosa resta. Non lancia: una cartella vuota in piu' non e' un guasto.
+ */
+function togliCartelleVuote(radici: RadiciModifica, rels: readonly string[]): void {
+  const basi = [radici.featuresDir, path.join(radici.repoRoot, 'src', 'steps')];
+  const dentro = (dir: string) =>
+    basi.some((base) => {
+      const r = path.relative(base, dir);
+      return r !== '' && !r.startsWith('..') && !path.isAbsolute(r);
+    });
+  for (const rel of rels) {
+    let dir = path.dirname(path.join(radici.repoRoot, rel));
+    try {
+      while (dentro(dir) && fs.readdirSync(dir).length === 0) {
+        fs.rmdirSync(dir);
+        dir = path.dirname(dir);
+      }
+    } catch {
+      /* resta com'e' */
+    }
   }
 }
 
@@ -369,17 +608,23 @@ function scriviIstantanea(radici: RadiciModifica, s: Istantanea | null): void {
   fs.writeFileSync(p, JSON.stringify(s, null, 2));
 }
 
-/** Rimette ogni file del piano com'era, se non lo e' gia'. Non lancia: raccoglie i guasti. */
+/**
+ * Rimette ogni file del piano com'era, se non lo e' gia': ricrea quelli tolti, toglie quelli
+ * creati, e le cartelle che la modifica aveva creato e restano vuote. Prima si ricrea e poi
+ * si toglie: in nessun momento lo scenario non c'e'. Non lancia: raccoglie i guasti.
+ */
 function ripristina(radici: RadiciModifica, scritture: readonly FileDelPiano[]): string[] {
   const guasti: string[] = [];
-  for (const s of scritture) {
+  const ordinati = [...scritture].sort((a, b) => Number(a.vecchio === null) - Number(b.vecchio === null));
+  for (const s of ordinati) {
     const p = path.join(radici.repoRoot, s.rel);
     try {
-      if (leggiFile(p) !== s.vecchio) scriviAtomico(p, s.vecchio);
+      if (leggiFile(p) !== s.vecchio) scriviOTogli(p, s.vecchio);
     } catch (e) {
       guasti.push((e as Error).message);
     }
   }
+  togliCartelleVuote(radici, scritture.filter((s) => s.vecchio === null).map((s) => s.rel));
   return guasti;
 }
 
@@ -396,6 +641,9 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
     marcatoreTolto: piano.marcatoreTolto,
     rigeneraCatalogo: piano.rigeneraCatalogo,
     ...(piano.frasi ? { catalogoDaTogliere: piano.frasi.da } : {}),
+    fileDopo: piano.fileDopo,
+    ...(piano.spostamento ? { spostamento: piano.spostamento } : {}),
+    ...(piano.passi ? { passi: piano.passi } : {}),
   });
   // Niente da scrivere: niente controllo, niente istantanea, e l'Annulla di prima resta.
   if (piano.scritture.length === 0) return finale();
@@ -417,7 +665,8 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
     stato: 'applicata',
     rigeneraCatalogo: piano.rigeneraCatalogo,
     ...(piano.frasi ? { frasiRinomina: piano.frasi } : {}),
-    files: piano.scritture.map((s) => ({ rel: s.rel, prima: s.vecchio, dopo: sha(Buffer.from(s.nuovo, 'utf-8')) })),
+    ...(piano.spostamento ? { spostamento: piano.spostamento } : {}),
+    files: piano.scritture.map((s) => ({ rel: s.rel, prima: s.vecchio, dopo: s.nuovo === null ? null : sha(Buffer.from(s.nuovo, 'utf-8')) })),
   };
   scriviIstantanea(radici, istantanea);
   const annullaTutto = (): string[] => {
@@ -431,7 +680,7 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
   };
 
   // 3. Si scrive, un file alla volta; se uno fallisce si rimette a posto tutto.
-  const scrivi = opzioni.scriviFile ?? scriviAtomico;
+  const scrivi = opzioni.scriviFile ?? scriviOTogli;
   try {
     for (const s of piano.scritture) scrivi(path.join(radici.repoRoot, s.rel), s.nuovo);
   } catch (e) {
@@ -439,20 +688,25 @@ export async function applica(radici: RadiciModifica, piano: Piano, opzioni: Opz
     throw new ErrorePiano(guasti.length ? 'ripristino' : 'scrittura', 500, `scrittura non riuscita: ${(e as Error).message}`);
   }
 
-  // 4. Il controllo vero decide.
-  const controllo = opzioni.controllo ?? ((files: string[]) => controlloVero(radici.repoRoot, files));
-  let esito: EsitoControlloVero;
-  try {
-    esito = await controllo(piano.featureToccati);
-  } catch {
-    esito = { ok: false, motivo: 'compilazione' };
+  // 4. Il controllo vero decide. Se non c'e' nessuno scenario da provare (un'eliminazione i cui
+  // passi non li usa nessun altro) non c'e' niente da controllare: non si lancia a vuoto.
+  if (piano.featureToccati.length > 0) {
+    const controllo = opzioni.controllo ?? ((files: string[]) => controlloVero(radici.repoRoot, files));
+    let esito: EsitoControlloVero;
+    try {
+      esito = await controllo(piano.featureToccati);
+    } catch {
+      esito = { ok: false, motivo: 'compilazione' };
+    }
+    if (!esito.ok) {
+      const guasti = annullaTutto();
+      throw new ErrorePiano(guasti.length ? 'ripristino' : 'bocciato', 422, 'il controllo del test non e\' passato: non ho salvato', {
+        controllo: esito,
+      });
+    }
   }
-  if (!esito.ok) {
-    const guasti = annullaTutto();
-    throw new ErrorePiano(guasti.length ? 'ripristino' : 'bocciato', 422, 'il controllo del test non e\' passato: non ho salvato', {
-      controllo: esito,
-    });
-  }
+  // Riuscita: le cartelle rimaste vuote dopo aver tolto dei file si tolgono.
+  togliCartelleVuote(radici, piano.scritture.filter((s) => s.nuovo === null).map((s) => s.rel));
   return finale();
 }
 
@@ -479,6 +733,8 @@ export interface EsitoAnnulla {
   rigeneraCatalogo: boolean;
   /** Dopo l'annullamento di una rinomina: la voce `wanted` della frase nuova va tolta prima di rigenerare. */
   catalogoDaTogliere?: string;
+  /** Annullato uno spostamento: com'era (`da`, `a`); gli esiti delle prove tornano da `a` a `da`. */
+  spostamento?: { da: string; a: string };
 }
 
 export async function annulla(radici: RadiciModifica): Promise<EsitoAnnulla> {
@@ -488,39 +744,48 @@ export async function annulla(radici: RadiciModifica): Promise<EsitoAnnulla> {
   // Prima si controlla che ogni file sia ancora come l'ha lasciato la modifica:
   // se qualcuno l'ha cambiato nel frattempo non si cancella il suo lavoro.
   for (const f of s.files) {
-    let corrente: Buffer;
-    try {
-      corrente = fs.readFileSync(path.join(radici.repoRoot, f.rel));
-    } catch {
-      throw new ErrorePiano('cambiato-dopo', 409, 'un file e\' stato cambiato dopo la modifica: non lo tocco');
-    }
-    if (sha(corrente) !== f.dopo) throw new ErrorePiano('cambiato-dopo', 409, 'un file e\' stato cambiato dopo la modifica: non lo tocco');
+    const corrente = leggiBuffer(path.join(radici.repoRoot, f.rel));
+    // Un file che la modifica ha tolto deve essere ancora assente; gli altri, identici a come li ha lasciati.
+    const come = f.dopo === null ? corrente === null : corrente !== null && sha(corrente) === f.dopo;
+    if (!come) throw new ErrorePiano('cambiato-dopo', 409, 'un file e\' stato cambiato dopo la modifica: non lo tocco');
   }
 
-  const fatti: Array<{ rel: string; dopo: string }> = [];
+  // Prima si rimette cio' che c'era, poi si toglie cio' che la modifica aveva creato: lo scenario non manca mai.
+  const ordinati = [...s.files].sort((a, b) => Number(a.prima === null) - Number(b.prima === null));
+  const fatti: Array<{ rel: string; dopo: string | null }> = [];
   try {
-    for (const f of s.files) {
+    for (const f of ordinati) {
       const p = path.join(radici.repoRoot, f.rel);
-      const dopo = fs.readFileSync(p, 'utf-8');
-      scriviAtomico(p, f.prima);
+      const dopo = leggiFile(p);
+      scriviOTogli(p, f.prima);
       fatti.push({ rel: f.rel, dopo });
     }
   } catch (e) {
     // A meta': si rimette il nuovo, cosi' la modifica resta intera e annullabile.
     for (const f of fatti) {
       try {
-        scriviAtomico(path.join(radici.repoRoot, f.rel), f.dopo);
+        scriviOTogli(path.join(radici.repoRoot, f.rel), f.dopo);
       } catch {
         /* il guasto e' gia' nel messaggio */
       }
     }
     throw new ErrorePiano('scrittura', 500, `annullamento non riuscito: ${(e as Error).message}`);
   }
+  togliCartelleVuote(radici, s.files.filter((f) => f.prima === null).map((f) => f.rel));
   scriviIstantanea(radici, { ...s, stato: 'annullata' });
   return {
     fileToccati: s.files.length,
     file: s.file,
     rigeneraCatalogo: s.rigeneraCatalogo,
     ...(s.frasiRinomina ? { catalogoDaTogliere: s.frasiRinomina.a } : {}),
+    ...(s.spostamento ? { spostamento: s.spostamento } : {}),
   };
+}
+
+function leggiBuffer(assoluto: string): Buffer | null {
+  try {
+    return fs.readFileSync(assoluto);
+  } catch {
+    return null;
+  }
 }
