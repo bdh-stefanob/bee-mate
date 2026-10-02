@@ -12,11 +12,12 @@
  * di esito.
  */
 import { creaRisorsa } from './risorsa';
+import { leggiConLimite } from './lettura';
 import type { RispostaCatalogo, RispostaRiconciliazione } from '@/components/cruscotto/catalogo/tipi';
 import type { EsitoAggiornamento } from './catalogo-numeri';
 
 async function leggiJson<T>(rotta: string): Promise<T> {
-  const risposta = await fetch(rotta);
+  const risposta = await leggiConLimite(rotta);
   if (!risposta.ok) throw new Error(`HTTP ${risposta.status}`);
   return (await risposta.json()) as T;
 }
@@ -93,6 +94,37 @@ export async function rilanciaAggiornamento(pausaMs = 500): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export type EsitoRiprova = 'riletto' | 'ricostruzione' | 'rifiutato' | 'rete';
+
+/**
+ * "Riprova" quando il catalogo non si e' letto. Prima si RILEGGE: se la
+ * lettura era caduta per la rete o per un server in ritardo, basta quello, e
+ * subito. Solo se il catalogo e' davvero illeggibile si passa alla
+ * ricostruzione (decine di secondi), e solo se non ne e' gia' in corso una.
+ *
+ *  - 'riletto': catalogo e coppie ora ci sono;
+ *  - 'ricostruzione': e' partita (o era gia' in corso) una ricostruzione;
+ *  - 'rifiutato': un altro comando occupa il programma;
+ *  - 'rete': il programma non risponde, non si e' fatto nient'altro.
+ */
+export async function riprovaCatalogo(): Promise<EsitoRiprova> {
+  await Promise.all([catalogo.ricarica(), riconciliazione.ricarica()]);
+  if (catalogo.istantanea().stato === 'pronto' && riconciliazione.istantanea().stato === 'pronto') {
+    return 'riletto';
+  }
+  // Una lettura diretta, non la risorsa: se fallisce la risorsa tiene i dati di
+  // prima (anche un "in corso" ormai vecchio), qui serve sapere com'e' ADESSO.
+  let stato: StatoAggiornamentoCatalogo;
+  try {
+    stato = await leggiJson<StatoAggiornamentoCatalogo>('/api/catalogo/stato');
+  } catch {
+    return 'rete';
+  }
+  void statoAggiornamento.ricarica();
+  if (stato.stato === 'in-corso') return 'ricostruzione';
+  return (await rilanciaAggiornamento()) ? 'ricostruzione' : 'rifiutato';
 }
 
 /**

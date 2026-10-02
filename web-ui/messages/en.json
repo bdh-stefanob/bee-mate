@@ -194,7 +194,8 @@
     "provaErrore": "I could not read the run. Try again in a moment.",
     "provaSenzaPassi": "This run left no steps to show.",
     "provaVaiAScenari": "Back to scenarios",
-    "provaVaiAEsecuzione": "Go to Run"
+    "provaVaiAEsecuzione": "Go to Run",
+    "interoGruppo": "{n, plural, one {The only scenario in {nome}} other {All # scenarios in {nome}}}"
   },
   "Riepilogo": {
     "durataLabel": "Duration: {durata}",
@@ -553,7 +554,8 @@
       "dialog": "Dialog",
       "menuitem": "Menu item",
       "img": "Image"
-    }
+    },
+    "nonRaggiungibile": "The program isn't answering. Check that the window is still connected to the dashboard and try again."
   },
   "Suggerimenti": {
     "titolo": "Suggestions",

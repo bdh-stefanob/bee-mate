@@ -194,7 +194,8 @@
     "provaErrore": "Non sono riuscito a leggere la prova. Riprova tra un momento.",
     "provaSenzaPassi": "Questa prova non ha lasciato nessun passo da mostrare.",
     "provaVaiAScenari": "Torna agli scenari",
-    "provaVaiAEsecuzione": "Vai a Esecuzione"
+    "provaVaiAEsecuzione": "Vai a Esecuzione",
+    "interoGruppo": "{n, plural, one {L'unico scenario} other {Tutti i # scenari}} di {nome}"
   },
   "Riepilogo": {
     "durataLabel": "Durata: {durata}",
@@ -553,7 +554,8 @@
       "dialog": "Finestra",
       "menuitem": "Voce di menu",
       "img": "Immagine"
-    }
+    },
+    "nonRaggiungibile": "Il programma non risponde. Controlla che la finestra sia ancora collegata al cruscotto e riprova."
   },
   "Suggerimenti": {
     "titolo": "Suggerimenti",
