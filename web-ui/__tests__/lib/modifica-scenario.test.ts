@@ -90,11 +90,21 @@ describe('cambiaTitolo', () => {
     expect(r[8]).toBe('  Scenario: Pagamento rifiutato');
   });
 
-  it('uno scenario gia rinominato a mano resta com e', () => {
+  // Il campo mostra il titolo dello scenario (titoloDi): e' quello che si cambia.
+  // Il difetto visto dal vivo il 2/10: su uno scenario generato con Feature e
+  // Scenario diversi, il salvataggio riscriveva la Feature e lasciava lo Scenario,
+  // cioe' il nome nell'elenco, com'era.
+  it('cambia lo Scenario anche quando la Feature ha un altro nome, e la Feature resta com e', () => {
     const t = BASE.replace('Scenario: Pagamento con carta', 'Scenario: Altro nome');
     const r = righe(cambiaTitolo(t, 'Nuovo'));
-    expect(r[4]).toBe('Feature: Nuovo');
-    expect(r[8]).toBe('  Scenario: Altro nome');
+    expect(r[4]).toBe('Feature: Pagamento con carta');
+    expect(r[8]).toBe('  Scenario: Nuovo');
+    expect(titoloDi(cambiaTitolo(t, 'Nuovo'))).toBe('Nuovo');
+  });
+
+  it('il titolo senza cambiamenti, rispetto a quello dello scenario, restituisce lo stesso testo', () => {
+    const t = BASE.replace('Scenario: Pagamento con carta', 'Scenario: Altro nome');
+    expect(cambiaTitolo(t, 'Altro nome')).toBe(t);
   });
 
   it('mantiene i tag e il commento di testa', () => {

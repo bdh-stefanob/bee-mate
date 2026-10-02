@@ -169,7 +169,7 @@ si approva col team.
 
 | Gesto | Cosa tocca | Quando |
 |---|---|---|
-| **Titolo** dello scenario | solo il `.feature` (riga `Feature:` e `Scenario:`) | in bozza, si salva con "Controlla e salva" |
+| **Titolo** dello scenario | solo il `.feature`: la riga `Scenario:` (quella che il campo mostra e l'elenco usa); la `Feature:` segue solo se aveva lo stesso nome (corretto il 2/10) | in bozza, si salva con "Controlla e salva" |
 | **Usa un altro passo** (cambia questa riga con un passo del catalogo) | solo questo `.feature` | in bozza |
 | **Togli il passo** | solo questo `.feature` | in bozza |
 | **Aggiungi una verifica** (`the page shows "..."`) | solo questo `.feature`; lo step e' quello comune, non serve glue | in bozza |

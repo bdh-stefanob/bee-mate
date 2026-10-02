@@ -150,9 +150,11 @@ export function rigaScenario(testo: string): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Cambia il titolo: la riga `Feature:` e, se portava lo stesso nome (la
- * generazione da' lo stesso titolo a entrambe), anche `Scenario:`. Uno scenario
- * rinominato a mano resta com'e'. Tag e commento di testa non si toccano.
+ * Cambia il titolo dello scenario, quello che il campo mostra (`titoloDi`) e che
+ * l'elenco usa: la riga `Scenario:`. La `Feature:` segue solo se portava lo stesso
+ * nome (la generazione spesso da' lo stesso titolo a entrambe); una Feature con
+ * un nome suo resta com'e'. Senza `Scenario:` (solo `Scenario Outline:`) il titolo
+ * e' quello della Feature. Tag e commento di testa non si toccano.
  */
 export function cambiaTitolo(testo: string, titolo: string): string {
   const nuovo = titolo.trim();
@@ -162,14 +164,18 @@ export function cambiaTitolo(testo: string, titolo: string): string {
   const d = dividi(testo);
   const iFeature = d.righe.findIndex((r) => FEATURE.test(r));
   if (iFeature < 0) throw new ErroreModifica('titolo', 'non trovo il titolo');
+  const iScenario = d.righe.findIndex((r, i) => i > iFeature && SCENARIO.test(r));
 
-  const vecchio = d.righe[iFeature].replace(/^\s*Feature:\s*/, '').trim();
-  if (vecchio !== nuovo) {
-    d.righe[iFeature] = d.righe[iFeature].replace(/^(\s*Feature:\s*).*$/, `$1${nuovo}`);
+  const featureVecchia = d.righe[iFeature].replace(/^\s*Feature:\s*/, '').trim();
+  const vecchio = iScenario < 0 ? featureVecchia : (SCENARIO.exec(d.righe[iScenario]) as RegExpExecArray)[4].trim();
+  if (vecchio === nuovo) return testo;
+
+  if (iScenario >= 0) {
+    const m = SCENARIO.exec(d.righe[iScenario]) as RegExpExecArray;
+    d.righe[iScenario] = `${m[1]}${m[2]}:${m[3] || ' '}${nuovo}`;
   }
-  for (let i = iFeature + 1; i < d.righe.length; i++) {
-    const m = SCENARIO.exec(d.righe[i]);
-    if (m && m[4].trim() === vecchio && vecchio !== nuovo) d.righe[i] = `${m[1]}${m[2]}:${m[3] || ' '}${nuovo}`;
+  if (featureVecchia === vecchio) {
+    d.righe[iFeature] = d.righe[iFeature].replace(/^(\s*Feature:\s*).*$/, `$1${nuovo}`);
   }
   return unisci(d);
 }
