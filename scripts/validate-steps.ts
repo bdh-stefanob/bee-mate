@@ -16,7 +16,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { execSync } from "child_process";
+import { execSync, spawnSync } from "child_process";
 import { leggiJson } from "./lib/leggi-json";
 
 // ---------------------------------------------------------------------------
@@ -154,6 +154,82 @@ function loadCatalog(): StepCatalog | null {
   }
 }
 
+/**
+ * Compila le espressioni del catalogo (e delle sue varianti) in espressioni regolari.
+ * Si rifa' dopo una rigenerazione: il catalogo e' cambiato.
+ */
+function compila(catalog: StepCatalog) {
+  const compiled = catalog.steps.map((s) => ({
+    expression: s.expression,
+    regex: cucumberExprToRegex(s.expression),
+    norm: normExpr(s.expression),
+    sourceRef: s.sourceRef,
+  }));
+  /**
+   * Le varianti note, ognuna con la forma canonica che la sostituisce.
+   *
+   * Cercate DOPO le espressioni canoniche: una frase che e' gia' conforme non
+   * deve passare da qui.
+   */
+  const aliases = catalog.steps.flatMap((s) =>
+    (s.aliases ?? []).map((a) => ({
+      alias: a,
+      regex: cucumberExprToRegex(a),
+      canonical: s.expression,
+    }))
+  );
+  return { compiled, aliases };
+}
+
+/**
+ * Rigenera il catalogo dal codice (la stessa pipeline di `npm run catalog`).
+ *
+ * PERCHE' QUI. Il catalogo si ricava dagli step definition: uno step appena
+ * generato e' gia' scritto in un `.steps.ts`, quindi e' `implemented` o `wanted`
+ * per costruzione — il catalogo e' solo vecchio, non manca niente. Bloccare il
+ * commit per questo insegnava a usare il bypass (`SKIP_STEP_VALIDATION`), e il
+ * controllo smetteva di proteggere anche dove serve. I nuovi step entrano subito
+ * nel catalogo e si potano dopo.
+ *
+ * Il blocco resta per cio' che il catalogo rigenerato NON conosce: una frase
+ * scritta in un .feature senza nessuno step definition dietro.
+ */
+function rigeneraCatalogo(salvaNelCommit: boolean): boolean {
+  console.log("ℹ️  Ci sono frasi fuori catalogo: lo rigenero dal codice (qualche secondo)...");
+  const esito = spawnSync(
+    process.execPath,
+    [path.join("node_modules", "ts-node", "dist", "bin.js"), path.join("scripts", "rigenera-catalogo.ts")],
+    { encoding: "utf-8" }
+  );
+  if (esito.status !== 0) {
+    // La causa e' su stderr (l'errore di compilazione); stdout porta solo le intestazioni.
+    const ultime = (esito.stderr?.trim() ? esito.stderr : esito.stdout ?? "")
+      .split("\n")
+      .filter((r) => r.trim())
+      .slice(-4)
+      .join("\n");
+    console.error(
+      [
+        "⚠️  Catalogo non rigenerato: la suite non compila, quindi non si puo' leggere cosa e' definito.",
+        "   Causa (ultime righe):",
+        ultime.replace(/^/gm, "     "),
+        "   Rimedio: correggi l'errore di compilazione (di solito uno step generato da una versione vecchia:",
+        "   rigenera da quella registrazione), poi rifai il commit.",
+      ].join("\n")
+    );
+    return false;
+  }
+  if (salvaNelCommit) {
+    try {
+      execSync("git add step-catalog.json STEP_CATALOG.md", { stdio: "ignore" });
+      console.log("ℹ️  Catalogo aggiornato e aggiunto al commit: i nuovi step ci sono, si potano dopo.");
+    } catch {
+      console.log("ℹ️  Catalogo aggiornato (non sono riuscito ad aggiungerlo al commit: fallo a mano).");
+    }
+  }
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -210,26 +286,20 @@ function main(): void {
   }
 
   // Pre-compile all catalog regexes once.
-  const compiled = catalog.steps.map((s) => ({
-    expression: s.expression,
-    regex: cucumberExprToRegex(s.expression),
-    norm: normExpr(s.expression),
-    sourceRef: s.sourceRef,
-  }));
+  let { compiled, aliases } = compila(catalog);
 
-  /**
-   * Le varianti note, ognuna con la forma canonica che la sostituisce.
-   *
-   * Cercate DOPO le espressioni canoniche: una frase che e' gia' conforme non
-   * deve passare da qui.
-   */
-  const aliases = catalog.steps.flatMap((s) =>
-    (s.aliases ?? []).map((a) => ({
-      alias: a,
-      regex: cucumberExprToRegex(a),
-      canonical: s.expression,
-    }))
-  );
+  // Una frase che non corrisponde a niente puo' essere uno step appena generato
+  // (catalogo vecchio) o un errore vero: lo dice il catalogo rigenerato.
+  const fuoriCatalogo = (): boolean =>
+    featureFiles.some((f) =>
+      extractSteps(fs.readFileSync(f, "utf-8")).some(
+        ({ text }) => !compiled.some((c) => c.regex.test(text)) && !aliases.some((al) => al.regex.test(text))
+      )
+    );
+  if (fuoriCatalogo() && rigeneraCatalogo(explicit.length === 0)) {
+    const nuovo = loadCatalog();
+    if (nuovo) ({ compiled, aliases } = compila(nuovo));
+  }
 
   /**
    * In fase di avvio il catalogo e' giovane e quasi tutto e' una variante: se
@@ -303,7 +373,9 @@ function main(): void {
         console.error(
           `   🚫  Line ${line}: step not in catalog and no close match found\n` +
           `       Step: "${text}"\n` +
-          `       → Ask Steve to add this step to the catalog before committing.`
+          `       → Nessuno step definition la implementa (il catalogo e' appena stato riletto dal codice).\n` +
+          `         Se e' una frase generata: dai il brief in reports/generate/<nome>/ a Kiro (agente bdd-generate).\n` +
+          `         Se e' una frase nuova e voluta: scrivi lo step, taggalo @wanted, e proponila al team.`
         );
         hasErrors = true;
       }

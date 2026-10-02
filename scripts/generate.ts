@@ -333,8 +333,10 @@ async function main(): Promise<void> {
   console.log(`   1. Il test gira gia' cosi' com'e', senza AI:`);
   console.log(`        npm run test:dry`);
   console.log(`        npx cucumber-js ${ctx.outRoot}/features/generated/${slug}.feature`);
-  console.log(`   2. Poi dai ${path.join(briefDir, "brief.md")} all'assistente:`);
-  console.log(`      porta le frasi nel vocabolario del catalogo.`);
+  console.log(`   2. Il commit non si blocca per queste frasi: il validatore rilegge il catalogo dal`);
+  console.log(`      codice, e gli step generati ci entrano subito (si potano dopo).`);
+  console.log(`      Per portarle nel vocabolario condiviso, dai ${path.join(briefDir, "brief.md")} a Kiro`);
+  console.log(`      (agente bdd-generate): cambia la frase nel feature e nello step definition.`);
   console.log(`   3. E verifica il suo lavoro con giudici che non sono pareri:`);
   console.log(`        npx tsc --noEmit -p tsconfig.json && npm run test:dry\n`);
 }
