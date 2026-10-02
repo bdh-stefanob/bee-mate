@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { REPO_ROOT, FEATURES_DIR } from './repo';
+import { cediIlTurno } from './cache-file';
 import { estraiVoci, type VoceEsito } from './esiti-da-messaggi';
 import type { FileScenari } from './scenari';
 import type { FileConEsiti, UltimoEsito } from './esiti-tipi';
@@ -180,6 +181,68 @@ export function vociDaiMessaggiGiaFatti(cartella: string, escludi: string[] = []
     }
   }
   return tutte;
+}
+
+/**
+ * La stessa lettura di `vociDaiMessaggiGiaFatti`, ma un file alla volta e
+ * restituendo il turno al server fra un file e l'altro: con 2000 `.ndjson`
+ * (368 MB) quella sincrona teneva fermo il server per ~7 s, e ogni altra
+ * richiesta — la barra laterale compresa — restava ad aspettare (a volte la
+ * connessione cadeva). Stesso risultato, stesso ordine di lettura.
+ */
+export async function vociDaiMessaggiGiaFattiAsync(cartella: string, escludi: string[] = []): Promise<VoceEsito[]> {
+  let nomi: string[];
+  try {
+    nomi = (await fs.promises.readdir(cartella)).filter((n) => /^test-.+\.ndjson$/.test(n) && !escludi.includes(n));
+  } catch {
+    return [];
+  }
+  let tutte: VoceEsito[] = [];
+  let ultimaCessione = Date.now();
+  for (const nome of nomi) {
+    try {
+      const testo = await fs.promises.readFile(path.join(cartella, nome), 'utf-8');
+      tutte = fondiEsiti(tutte, estraiVoci(testo, { ambiente: null, esecuzione: nome.replace(/\.ndjson$/, '') }));
+    } catch {
+      // Un file che non si legge non ferma gli altri.
+    }
+    if (Date.now() - ultimaCessione > 8) {
+      await cediIlTurno();
+      ultimaCessione = Date.now();
+    }
+  }
+  return tutte;
+}
+
+const ricostruzioniInCorso = new Map<string, Promise<void>>();
+
+/**
+ * Come `assicuraIndice`, senza fermare il server mentre legge. Due richieste
+ * insieme (la schermata Scenari e quella di Esecuzione si aprono quasi nello
+ * stesso istante) aspettano la stessa ricostruzione: si fa una volta sola. Se
+ * mentre si legge l'indice nasce da un'altra parte (una prova conclusa lo
+ * scrive), non lo si sovrascrive. Non lancia mai.
+ */
+export function assicuraIndiceAsync(
+  percorso: string = percorsoIndice(),
+  cartella: string = cartellaMessaggi(),
+  cartellaFeatures: string = FEATURES_DIR,
+  escludi: string[] = []
+): Promise<void> {
+  if (fs.existsSync(percorso)) return Promise.resolve();
+  const inCorso = ricostruzioniInCorso.get(percorso);
+  if (inCorso) return inCorso;
+  const lavoro = (async () => {
+    try {
+      const voci = await vociDaiMessaggiGiaFattiAsync(cartella, escludi);
+      if (fs.existsSync(percorso)) return;
+      registraEsiti(percorso, voci, cartellaFeatures);
+    } catch {
+      // Lo stato su disco e' un servizio, non un requisito.
+    }
+  })().finally(() => ricostruzioniInCorso.delete(percorso));
+  ricostruzioniInCorso.set(percorso, lavoro);
+  return lavoro;
 }
 
 /**

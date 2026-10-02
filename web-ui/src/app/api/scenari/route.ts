@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { FEATURES_DIR } from '@/lib/repo';
 import { riepilogaScenari } from '@/lib/scenari';
-import { assicuraIndice, leggiEsiti, percorsoIndice, unisciEsiti } from '@/lib/esiti-scenari';
+import { assicuraIndiceAsync, leggiEsiti, percorsoIndice, unisciEsiti } from '@/lib/esiti-scenari';
 import type { RispostaScenari } from '@/lib/esiti-tipi';
 
 /**
@@ -18,7 +18,9 @@ import type { RispostaScenari } from '@/lib/esiti-tipi';
  */
 export async function GET() {
   const { file, soloDescritti } = riepilogaScenari(FEATURES_DIR);
-  assicuraIndice(percorsoIndice(), undefined, FEATURES_DIR);
+  // Asincrona: la ricostruzione dell'indice (una tantum) puo' leggere centinaia
+  // di MB, e non deve tenere fermo il server per le altre richieste.
+  await assicuraIndiceAsync(percorsoIndice(), undefined, FEATURES_DIR);
   const lettura = leggiEsiti(percorsoIndice());
   const corpo: RispostaScenari = {
     file: unisciEsiti(file, lettura.voci),
