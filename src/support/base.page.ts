@@ -115,4 +115,43 @@ export abstract class BasePage {
     await locator.click();
     return true;
   }
+
+  /**
+   * Il clic giusto per un componente senza ruolo ne' nome accessibile (un pin
+   * di mappa, una cosa disegnata): vedi `componenteSenzaRuolo` in
+   * `scripts/lib/component-naming.ts`, che e' da dove ogni Page Object generata
+   * arriva a chiamare questo metodo.
+   *
+   * PERCHE' NON `.click()`. Su una libreria di mappe vera un pin non e' un
+   * elemento isolato: un livello trasparente sopra la mappa intercetta i
+   * puntatori e decide lui quale pin e' stato colpito (e' cosi' che si fa un
+   * "hit test" su un canvas o su tile ridisegnate). Un `locator.click()` fa il
+   * controllo di raggiungibilita' di Playwright PRIMA di cliccare, vede quel
+   * livello sopra il pin e fallisce con "element intercepts pointer events" —
+   * mai arrivando a cliccare. Un clic col mouse vero, a coordinate, non fa
+   * quel controllo: arriva dove deve arrivare, come arriverebbe il clic di una
+   * persona.
+   *
+   * Si porta l'elemento in vista e si forza un `resize` prima di leggere il suo
+   * rettangolo: molte librerie di mappe calcolano l'area che disegnano una sola
+   * volta, alla creazione, e non si accorgono da sole che il contenitore e'
+   * cambiato — serve lo stesso segnale che manderebbe un ridimensionamento
+   * vero della finestra perche' ridisegnino.
+   *
+   * Fallisce parlando: un locator lasciato scadere per trenta secondi non dice
+   * niente di utile su un elemento che non ha ne' ruolo ne' nome.
+   */
+  protected async clickSenzaAncoraggio(locator: Locator): Promise<void> {
+    await locator.scrollIntoViewIfNeeded().catch(() => undefined);
+    await this.page.evaluate(() => window.dispatchEvent(new Event("resize")));
+    const box = await locator.boundingBox();
+    if (!box) {
+      throw new Error(
+        `${this.constructor.name}: l'elemento non e' sulla pagina. Non ha ne' ruolo ne' ` +
+          `nome accessibile (e' ancorato solo a un selettore CSS): non c'e' niente su cui ` +
+          `aspettare, quindi non si aspetta trenta secondi un locator che non comparira'.`
+      );
+    }
+    await this.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  }
 }
