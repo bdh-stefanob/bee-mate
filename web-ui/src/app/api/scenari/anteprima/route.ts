@@ -7,7 +7,7 @@ import { leggiOperazione, rispostaErrore } from '@/lib/risposte-scenari';
 /**
  * POST /api/scenari/anteprima
  *
- * Corpo: `{ operazione: 'testo' | 'rinomina', file, versione, ... }`. Calcola il
+ * Corpo: `{ operazione: 'testo' | 'rinomina' | 'sposta' | 'elimina', file, versione, ... }`. Calcola il
  * piano SENZA scrivere e risponde con i blocchi e gli avvisi del controllo
  * rapido e con le conseguenze: quali scenari toccherebbe, quali diventerebbero
  * "tuoi" (perdono il marcatore di generazione). E' la schermata di conferma
@@ -36,10 +36,13 @@ export async function POST(request: Request) {
       blocchi: piano.blocchi,
       avvisi: piano.avvisi,
       conseguenze: piano.conseguenze,
-      // Una rinomina vale per tutto il repository: chiede sempre conferma.
-      tocca: piano.operazione === 'rinomina',
+      // Rinomina, sposta ed elimina valgono oltre questo testo e si applicano subito: chiedono sempre conferma.
+      tocca: piano.operazione !== 'testo',
       scrive: piano.scritture.length,
       marcatoreTolto: piano.marcatoreTolto,
+      // Dove sta lo scenario dopo (sposta), e quali passi vanno e quali restano (elimina).
+      fileDopo: piano.fileDopo,
+      ...(piano.passi ? { passi: piano.passi } : {}),
     });
   } catch (e) {
     const r = rispostaErrore(e);

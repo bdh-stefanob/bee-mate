@@ -21,6 +21,12 @@ export function leggiOperazione(corpo: unknown): Operazione | null {
   if (c.operazione === 'rinomina' && typeof c.da === 'string' && typeof c.a === 'string') {
     return { operazione: 'rinomina', file: c.file, versione: c.versione, da: c.da, a: c.a };
   }
+  if (c.operazione === 'sposta' && typeof c.flusso === 'string') {
+    return { operazione: 'sposta', file: c.file, versione: c.versione, flusso: c.flusso };
+  }
+  if (c.operazione === 'elimina') {
+    return { operazione: 'elimina', file: c.file, versione: c.versione };
+  }
   return null;
 }
 

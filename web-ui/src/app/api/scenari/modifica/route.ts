@@ -7,16 +7,20 @@ import { conLaSerratura } from '@/lib/serratura-scenari';
 import { operazioneInCorso } from '@/lib/registro';
 import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
 import { togliVoceDalCatalogo } from '@/lib/catalogo-voci';
+import { percorsoIndice, spostaEsiti } from '@/lib/esiti-scenari';
 import { leggiOperazione, rispostaErrore } from '@/lib/risposte-scenari';
 
 /**
  * POST /api/scenari/modifica
  *
- * Corpo: `{ operazione: 'testo', file, versione, testo }` oppure
- * `{ operazione: 'rinomina', file, versione, da, a }`. Pianifica, scrive in modo
- * atomico, lancia il controllo vero (la prova a vuoto di Cucumber, letta dai
- * messaggi) e, se boccia o se una scrittura fallisce, ripristina ogni file.
- * Dopo una rinomina rigenera il catalogo (cambia una definizione).
+ * Corpo: `{ operazione: 'testo', file, versione, testo }`,
+ * `{ operazione: 'rinomina', file, versione, da, a }`,
+ * `{ operazione: 'sposta', file, versione, flusso }` o `{ operazione: 'elimina', file, versione }`.
+ * Pianifica, scrive in modo atomico, lancia il controllo vero (la prova a vuoto di
+ * Cucumber, letta dai messaggi) e, se boccia o se una scrittura fallisce, ripristina
+ * ogni file. Dopo una rinomina, uno spostamento o un'eliminazione che toccano delle
+ * definizioni rigenera il catalogo. Risponde con `file` (lo scenario dopo la modifica:
+ * nuovo se si e' spostato, `null` se si e' eliminato).
  *
  * Prende la serratura degli scenari e rifiuta se si sta registrando o eseguendo:
  * per qualche secondo il repository ha il contenuto nuovo, e una prova in corso
@@ -46,6 +50,10 @@ export async function POST(request: Request) {
     // La frase vecchia non c'e' piu' nel codice: la sua voce `wanted` non va conservata dalla rigenerazione.
     if (esito.catalogoDaTogliere) togliVoceDalCatalogo(REPO_ROOT, esito.catalogoDaTogliere);
     const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
+    // Uno scenario spostato porta con se' l'esito dell'ultima prova (risultera' "modificato dopo").
+    if (esito.spostamento) {
+      spostaEsiti(percorsoIndice(REPO_ROOT), esito.spostamento.da, esito.spostamento.a, FEATURES_DIR);
+    }
     return NextResponse.json({
       ok: true,
       testo: esito.testo,
@@ -55,6 +63,10 @@ export async function POST(request: Request) {
       avvisi: esito.avvisi,
       marcatoreTolto: esito.marcatoreTolto,
       catalogoRigenerato,
+      // Lo scenario dopo la modifica: cambia se si e' spostato, `null` se si e' eliminato.
+      file: esito.fileDopo,
+      eliminato: esito.fileDopo === null,
+      ...(esito.passi ? { passi: esito.passi } : {}),
     });
   } catch (e) {
     const r = rispostaErrore(e);

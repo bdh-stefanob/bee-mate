@@ -9,6 +9,7 @@ import {
   assicuraIndice,
   unisciEsiti,
   registraEsitiDiUnaProva,
+  spostaEsiti,
 } from '@/lib/esiti-scenari';
 import type { VoceEsito } from '@/lib/esiti-da-messaggi';
 import type { FileScenari } from '@/lib/scenari';
@@ -304,5 +305,75 @@ describe('assicuraIndice: la ricostruzione dai .ndjson, una volta sola (O6)', ()
     assicuraIndice(r.indice, r.messaggi, r.features);
     expect(fs.readFileSync(r.indice, 'utf-8')).toBe('corrotto');
     expect(leggiEsiti(r.indice).stato).toBe('illeggibile');
+  });
+});
+
+describe('spostaEsiti: un esito segue lo scenario che si sposta', () => {
+  const DA = 'shop/order/ordine.feature';
+  const A = 'shop/account/ordine.feature';
+
+  /** Sposta il file sul disco, come fa la modifica prima di toccare l'indice. */
+  function muovi(features: string, da: string, a: string, testo?: string) {
+    const origine = path.join(features, da);
+    const contenuto = testo ?? fs.readFileSync(origine, 'utf-8');
+    fs.mkdirSync(path.dirname(path.join(features, a)), { recursive: true });
+    fs.writeFileSync(path.join(features, a), contenuto);
+    fs.rmSync(origine);
+  }
+
+  it('le voci del file vecchio passano al nuovo, con la loro impronta: lo scenario risulta "modificato dopo la prova", non "mai eseguito"', () => {
+    const r = radice({ [DA]: FEATURE });
+    registraEsiti(r.indice, [voce({ file: DA, impronta: 'vecchia' })], r.features);
+    muovi(r.features, DA, A, FEATURE.replace('Ordini', 'Ordini spostati'));
+    spostaEsiti(r.indice, DA, A, r.features);
+    const dopo = leggiEsiti(r.indice);
+    expect(dopo).toEqual({ stato: 'ok', voci: [voce({ file: A, impronta: 'vecchia' })] });
+    const elenco = [{ file: A, impronta: 'nuova', scenari: [{ nome: voce().nome }] }] as unknown as FileScenari[];
+    const unite = unisciEsiti(elenco, dopo.voci);
+    expect(unite[0].scenari[0].esiti).toHaveLength(1);
+    expect(unite[0].scenari[0].esiti[0].aggiornato).toBe(false);
+  });
+
+  it('le voci degli altri file restano com\'erano', () => {
+    const r = radice({ [DA]: FEATURE, 'shop/order/altro.feature': FEATURE });
+    registraEsiti(r.indice, [voce({ file: DA }), voce({ file: 'shop/order/altro.feature', esecuzione: 'test-b' })], r.features);
+    muovi(r.features, DA, A);
+    spostaEsiti(r.indice, DA, A, r.features);
+    const files = (leggiEsiti(r.indice).voci as VoceEsito[]).map((v) => v.file).sort();
+    expect(files).toEqual([A, 'shop/order/altro.feature']);
+  });
+
+  it('annullando (dal nuovo al vecchio) con il file tornato com\'era, lo scenario torna "aggiornato"', () => {
+    const r = radice({ [DA]: FEATURE });
+    registraEsiti(r.indice, [voce({ file: DA, impronta: 'xyz' })], r.features);
+    muovi(r.features, DA, A);
+    spostaEsiti(r.indice, DA, A, r.features);
+    muovi(r.features, A, DA);
+    spostaEsiti(r.indice, A, DA, r.features);
+    expect(leggiEsiti(r.indice).voci).toEqual([voce({ file: DA, impronta: 'xyz' })]);
+  });
+
+  it('senza voci per quel file, o senza indice, non scrive niente e non lo crea', () => {
+    const r = radice({ [A]: FEATURE });
+    spostaEsiti(r.indice, DA, A, r.features);
+    expect(fs.existsSync(r.indice)).toBe(false);
+    registraEsiti(r.indice, [voce({ file: A })], r.features);
+    const prima = fs.readFileSync(r.indice, 'utf-8');
+    spostaEsiti(r.indice, DA, A, r.features);
+    expect(fs.readFileSync(r.indice, 'utf-8')).toBe(prima);
+  });
+
+  it('un indice illeggibile non si tocca (ne\' si rinomina): perdere gli esiti costa "mai eseguito", mai altro', () => {
+    const r = radice({ [A]: FEATURE });
+    fs.writeFileSync(r.indice, '{ non e\' json');
+    spostaEsiti(r.indice, DA, A, r.features);
+    expect(fs.readFileSync(r.indice, 'utf-8')).toBe('{ non e\' json');
+    expect(fs.existsSync(`${r.indice}.illeggibile`)).toBe(false);
+  });
+
+  it('non lancia mai: e\' un servizio, non un requisito', () => {
+    const r = radice({ [DA]: FEATURE });
+    registraEsiti(r.indice, [voce({ file: DA })], r.features);
+    expect(() => spostaEsiti(r.indice, DA, A, path.join(r.dir, 'non', 'esiste'))).not.toThrow();
   });
 });

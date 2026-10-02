@@ -134,6 +134,30 @@ export function registraEsiti(percorso: string, nuove: VoceEsito[], cartellaFeat
 }
 
 /**
+ * Uno scenario spostato (o uno spostamento annullato) porta con se' i suoi esiti: la chiave
+ * di una voce e' file + titolo, e col file nuovo "mai eseguito" sarebbe una bugia a meta'.
+ * Le voci passano da `da` ad `a` CON la loro impronta: il file e' cambiato (tag e commento
+ * del percorso), quindi l'elenco dice "modificato dopo l'ultima prova" e il tester ripete la
+ * prova; se si annulla e il file torna com'era, torna anche "aggiornato".
+ *
+ * Va chiamata DOPO aver spostato il file sul disco (le voci di un file che non c'e' piu'
+ * le scarta `registraEsiti`, ed e' cosi' che le vecchie spariscono). Non crea l'indice, non
+ * tocca un indice illeggibile, non scrive se non c'e' niente da spostare, e non lancia mai:
+ * gli esiti sono un servizio, non un requisito.
+ */
+export function spostaEsiti(percorso: string, da: string, a: string, cartellaFeatures: string = FEATURES_DIR): void {
+  try {
+    const lettura = leggiEsiti(percorso);
+    if (lettura.stato !== 'ok') return;
+    const daSpostare = lettura.voci.filter((v) => v.file === da);
+    if (daSpostare.length === 0) return;
+    registraEsiti(percorso, daSpostare.map((v) => ({ ...v, file: a })), cartellaFeatures);
+  } catch {
+    // Perdere gli esiti costa "mai eseguito", mai un numero sbagliato.
+  }
+}
+
+/**
  * Le voci che si ricavano dai `.ndjson` delle esecuzioni gia' fatte. L'ambiente
  * non c'e' ne' nei messaggi ne' nei vecchi file di stato, e non lo si inventa:
  * `null`. Robusta per costruzione: un file illeggibile, troncato o vuoto si

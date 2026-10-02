@@ -7,6 +7,7 @@ import { conLaSerratura } from '@/lib/serratura-scenari';
 import { operazioneInCorso } from '@/lib/registro';
 import { tentaRigenerazioneCatalogo } from '@/lib/rigenerazione-catalogo';
 import { togliVoceDalCatalogo } from '@/lib/catalogo-voci';
+import { percorsoIndice, spostaEsiti } from '@/lib/esiti-scenari';
 import { rispostaErrore } from '@/lib/risposte-scenari';
 
 const radici = () => ({ repoRoot: REPO_ROOT, featuresDir: FEATURES_DIR });
@@ -35,6 +36,10 @@ export async function POST(request: Request) {
     // Annullata una rinomina: la frase nuova non c'e' piu' nel codice (vedi `catalogo-voci.ts`).
     if (esito.catalogoDaTogliere) togliVoceDalCatalogo(REPO_ROOT, esito.catalogoDaTogliere);
     const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
+    // Annullato uno spostamento: l'esito dell'ultima prova torna al file di prima.
+    if (esito.spostamento) {
+      spostaEsiti(percorsoIndice(REPO_ROOT), esito.spostamento.a, esito.spostamento.da, FEATURES_DIR);
+    }
     // Lo scenario com'e' adesso, cosi' il pannello riparte dal testo di prima.
     let attuale: { testo: string; versione: string } | null = null;
     try {
@@ -43,7 +48,8 @@ export async function POST(request: Request) {
     } catch {
       /* lo scenario aperto non c'e' piu' */
     }
-    return NextResponse.json({ ok: true, fileToccati: esito.fileToccati, attuale, catalogoRigenerato });
+    // `file`: lo scenario di prima (se un'eliminazione o uno spostamento e' stato annullato, e' quello da riaprire).
+    return NextResponse.json({ ok: true, fileToccati: esito.fileToccati, file: esito.file, attuale, catalogoRigenerato });
   } catch (e) {
     const r = rispostaErrore(e);
     return NextResponse.json(r.corpo, { status: r.stato });
