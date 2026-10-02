@@ -98,7 +98,7 @@ console.log("\n--- dove finisce il passo: l'ultimo evento nel tempo, non l'ultim
 console.log("\n--- il generatore la rispetta ---\n");
 {
   const pagina = (nome: string, percorso: string) => ({
-    key: `shop.invalid${percorso}`, host: "shop.invalid", path: percorso, pattern: percorso,
+    key: `shop.invalid${percorso}`, keyEsatta: `shop.invalid${percorso}`, host: "shop.invalid", path: percorso, pattern: percorso,
     className: `${nome}Page`, slug: nome.toLowerCase(),
   });
   const carrello = pagina("Cart", "/cart");

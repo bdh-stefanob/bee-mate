@@ -156,8 +156,14 @@ export async function apriRegistrazione(
    * Unione, non sostituzione: un modale aperto a meta' sessione mostra
    * componenti che dopo non ci sono piu', e sono proprio quelli toccati.
    */
+  // PER PERCORSO VERO, NON PER CHIAVE MASCHERATA.
+  //
+  // Con la chiave mascherata i dizionari di `/questions/1`, `/questions/2` e
+  // `/questions/3` si fondevano gia' qui, prima che qualcuno potesse decidere se
+  // quelle tre pagine sono la stessa cosa. La decisione la prende il generatore,
+  // guardando i componenti: per poterla prendere deve averli separati.
   const assorbi = (d: ScoutResult): void => {
-    const key = pageIdentity(d.url).key;
+    const key = pageIdentity(d.url).keyEsatta;
     const gia = dizionari.get(key);
     dizionari.set(key, gia ? mergeInventories(gia, d) : d);
     mancate.delete(key);
@@ -177,7 +183,7 @@ export async function apriRegistrazione(
       // nessuno, e inventariarla produrrebbe un dizionario vuoto per una pagina
       // che non esiste — o, peggio, un avviso di pagina non inventariata.
       if (!url || url === "about:blank") return "";
-      return pageIdentity(url).key;
+      return pageIdentity(url).keyEsatta;
     } catch {
       return "";
     }

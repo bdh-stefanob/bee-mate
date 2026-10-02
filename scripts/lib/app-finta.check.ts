@@ -44,6 +44,7 @@ import { spawn, spawnSync, type ChildProcess } from "child_process";
 import type { Browser, Page } from "@playwright/test";
 import { avviaBrowser, MEDIA_FINTI } from "./browser";
 import { apriRegistrazione, type RawEvent } from "./registrazione";
+import { scriviDizionari } from "./inventory";
 import { group } from "../record";
 import type { Recording, ScoutResult, Step } from "./generation-contract";
 
@@ -398,13 +399,13 @@ async function main(): Promise<void> {
     const dirLavoro = path.join(RADICE, LAVORO);
     fs.rmSync(dirLavoro, { recursive: true, force: true });
     const dirScout = path.join(dirLavoro, "scout");
-    fs.mkdirSync(dirScout, { recursive: true });
     const fileRegistrazione = path.join(dirLavoro, "registrazione.json");
+    fs.mkdirSync(dirLavoro, { recursive: true });
     fs.writeFileSync(fileRegistrazione, JSON.stringify(esito.recording, null, 2), "utf-8");
-    for (const [chiave, d] of esito.dizionari) {
-      const nome = chiave.replace(/[^a-zA-Z0-9.-]+/g, "-").replace(/^-|-$/g, "");
-      fs.writeFileSync(path.join(dirScout, `${nome}.json`), JSON.stringify(d, null, 2), "utf-8");
-    }
+    // La stessa funzione che usa il recorder: se il controllo scrivesse i
+    // dizionari a modo suo, misurerebbe la propria scrittura invece di quella
+    // vera — ed e' proprio li' che stava il difetto (un file per host).
+    scriviDizionari(esito.dizionari.values(), dirScout);
 
     console.log("\n--- cosa la registrazione ha visto ---\n");
     verificaRegistrazione(esito);

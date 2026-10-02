@@ -19,6 +19,7 @@ import { judge } from "./stability";
 // quello che era. Due elenchi di avvisi divergerebbero, e divergendo farebbero
 // generare un passo che a tempo di esecuzione viene chiuso da solo.
 import { avvisoDelGesto } from "../../src/support/avvisi";
+import { mergeInventories } from "./inventory";
 import type {
   Assertion, CatalogStep, Component, Gap, Intent, Recording,
   ResolvedIntent, ResolvedStep, ScoutResult, Step,
@@ -31,6 +32,19 @@ import type {
 export interface PageIdentity {
   /** Chiave di identita': host + percorso mascherato. Due URL uguali qui sono la stessa pagina. */
   key: string;
+  /**
+   * Host + percorso **vero**, senza mascherare niente.
+   *
+   * PERCHE' SERVONO DUE CHIAVI. La mascheratura e' una scommessa: che il
+   * segmento numerico sia un identificativo e che le pagine che lo portano siano
+   * la stessa cosa con dentro un dato diverso. E' giusta per `/orders/1830941`,
+   * sbagliata per `/questions/3`, e dall'URL non si distingue.
+   *
+   * Tenere anche la chiave esatta permette di non scommettere: i dizionari si
+   * raccolgono per percorso vero, e la decisione di unire due pagine la prende
+   * chi ha visto i loro componenti — non chi guarda la forma dell'indirizzo.
+   */
+  keyEsatta: string;
   host: string;
   /** Percorso vero, quello che finisce in `readonly path`. */
   path: string;
@@ -105,8 +119,13 @@ export function pageIdentity(url: string): PageIdentity {
   const last = named[named.length - 1] ?? "";
 
   const base = pascal(last) || "Home";
+  // Il percorso vero, normalizzato solo sulla barra finale: `/camera/visit/` e
+  // `/camera/visit` sono lo stesso indirizzo, e due chiavi per la stessa pagina
+  // produrrebbero due dizionari, ognuno con meta' dei componenti.
+  const esatto = "/" + segments.join("/");
   return {
     key: `${host}${pattern}`,
+    keyEsatta: `${host}${esatto}`,
     host,
     path: rawPath,
     pattern,
@@ -173,29 +192,47 @@ export function uniqueNames(identities: readonly PageIdentity[]): PageIdentity[]
 // ---------------------------------------------------------------------------
 
 export interface DictionaryIndex {
-  /** Dizionari per chiave di pagina. */
+  /**
+   * Dizionari per percorso vero. E' il primo posto dove cercare: se ci sono tre
+   * dizionari per `/questions/1..3`, indicizzarli per chiave mascherata ne
+   * terrebbe uno solo — l'ultimo letto — e i componenti degli altri due
+   * risulterebbero assenti.
+   */
+  byPath: Map<string, ScoutResult>;
+  /** Dizionari per chiave di pagina mascherata. */
   byKey: Map<string, ScoutResult>;
   /** Dizionari per host, quando la pagina esatta non c'e'. */
   byHost: Map<string, ScoutResult[]>;
 }
 
 export function indexDictionaries(dicts: readonly ScoutResult[]): DictionaryIndex {
+  const byPath = new Map<string, ScoutResult>();
   const byKey = new Map<string, ScoutResult>();
   const byHost = new Map<string, ScoutResult[]>();
   for (const d of dicts) {
     const id = pageIdentity(d.url);
-    byKey.set(id.key, d);
+    byPath.set(id.keyEsatta, d);
+    // Per chiave mascherata si tiene l'unione, non l'ultimo: se due dizionari
+    // cadono sulla stessa chiave, sono due stati o due passi della stessa
+    // pagina, e il ripiego deve poterli vedere entrambi.
+    const gia = byKey.get(id.key);
+    byKey.set(id.key, gia ? mergeInventories(gia, d) : d);
     byHost.set(id.host, [...(byHost.get(id.host) ?? []), d]);
   }
-  return { byKey, byHost };
+  return { byPath, byKey, byHost };
 }
 
 /** Il componente esatto, dal dizionario della pagina giusta. Null se non c'e'. */
 function lookup(index: DictionaryIndex, url: string, role: string, name: string): Component | null {
   const id = pageIdentity(url);
-  const exact = index.byKey.get(id.key);
-  const found = exact?.components.find((c) => c.role === role && c.name === name);
-  if (found) return found;
+  // Prima il dizionario del percorso vero, poi quello della chiave mascherata.
+  // L'ordine conta: su una procedura a passi il secondo e' l'unione di tutti i
+  // passi, e un componente che esiste solo alla domanda 2 vi risulterebbe
+  // presente anche alla domanda 3.
+  for (const d of [index.byPath.get(id.keyEsatta), index.byKey.get(id.key)]) {
+    const found = d?.components.find((c) => c.role === role && c.name === name);
+    if (found) return found;
+  }
 
   // Ripiego sullo stesso host: un componente di navigazione presente su ogni
   // pagina sta nel dizionario di una sola di esse. Il ripiego e' onesto solo

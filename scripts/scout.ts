@@ -56,7 +56,7 @@ import { type Page } from "@playwright/test";
 import { avviaBrowser, noteRipiego } from "./lib/browser";
 import * as fs from "fs";
 import * as path from "path";
-import { inventory } from "./lib/inventory";
+import { inventory, nomeFileDizionario } from "./lib/inventory";
 import type { Kind, ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours } from "./lib/targets";
 import { loadEnv } from "./lib/atlassian";
@@ -194,16 +194,6 @@ function report(result: ScoutResult, outPath: string): void {
 // CLI
 // ---------------------------------------------------------------------------
 
-function slugify(url: string): string {
-  try {
-    const u = new URL(url);
-    const p = u.pathname.replace(/^\/|\/$/g, "").replace(/\//g, "-");
-    return `${u.hostname}${p ? "-" + p : ""}`.replace(/[^a-zA-Z0-9.-]/g, "-");
-  } catch {
-    return "scout";
-  }
-}
-
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const which = positionals(args, ["pause", "headed"])[0];
@@ -294,7 +284,7 @@ ${nota}`);
 
     const page = await context.newPage();
     const result = await scan(page, url, scope, waitMs, pause);
-    const outPath = outFlag ?? path.join("reports", "scout", `${slugify(result.url)}.json`);
+    const outPath = outFlag ?? path.join("reports", "scout", `${nomeFileDizionario(result.url)}.json`);
 
     // Cambiare pagina con --pause e' NORMALE: e' il motivo per cui esiste.
     // Senza pausa e' sospetto: quasi sempre un rimando al login, e il dizionario

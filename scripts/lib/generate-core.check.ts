@@ -394,7 +394,7 @@ console.log("\n--- rosa dei candidati ---\n");
   // un intento cosi', e la compilazione della catena qui sotto non poteva
   // accorgersene.
   const pagina = (host: string, percorso: string, nome: string) => ({
-    key: `${host}${percorso}`, host, path: percorso, pattern: percorso,
+    key: `${host}${percorso}`, keyEsatta: `${host}${percorso}`, host, path: percorso, pattern: percorso,
     className: `${nome}Page`, slug: nome.toLowerCase(),
   });
   const carrello = pagina("shop.invalid", "/cart", "Cart");

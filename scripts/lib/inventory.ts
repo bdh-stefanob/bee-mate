@@ -20,6 +20,8 @@
  * accessibilita', che si fa su pagine che nessuno sta registrando.
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import type { Page } from "@playwright/test";
 import { DOM_PROBE_SOURCE } from "./dom-probe";
 import { toComponent, type RawElement } from "./component-naming";
@@ -136,6 +138,50 @@ export async function inventory(page: Page, scope = "body"): Promise<ScoutResult
  * e' ambiguo, e dimenticarlo produrrebbe un locator che funziona in prova e
  * fallisce quando la lista si riempie.
  */
+/**
+ * Il nome del file di un dizionario: host **e percorso**.
+ *
+ * UN POSTO SOLO, PERCHE' CE N'ERANO DUE E UNO ERA SBAGLIATO. Lo scout nominava
+ * i file con host e percorso; il recorder con il solo host. Risultato: tutte le
+ * pagine di una sessione finivano in `reports/scout/<host>.json`, fuse in un
+ * dizionario unico, e il generatore — che cerca il componente nel dizionario
+ * della pagina giusta — trovava l'unione dei componenti di tutte le pagine
+ * oppure niente. Il sintomo era un elenco di "componente non nel dizionario" per
+ * componenti che il dizionario aveva, e non assomiglia per niente alla causa.
+ */
+export function nomeFileDizionario(url: string): string {
+  try {
+    const u = new URL(url);
+    const p = u.pathname.replace(/^\/|\/$/g, "").replace(/\//g, "-");
+    return `${u.hostname}${p ? "-" + p : ""}`.replace(/[^a-zA-Z0-9.-]/g, "-");
+  } catch {
+    return "scout";
+  }
+}
+
+/**
+ * Scrive i dizionari di una sessione, uno per pagina, e restituisce i percorsi.
+ *
+ * Si fondono con quelli che c'erano: una scansione precedente puo' aver visto
+ * stati che questa sessione non ha attraversato. Lo fanno in due — il recorder e
+ * il controllo che guida gli stessi gesti da codice — e devono farlo allo stesso
+ * modo, o il controllo misura la propria scrittura invece di quella vera.
+ */
+export function scriviDizionari(dizionari: Iterable<ScoutResult>, dir: string): string[] {
+  fs.mkdirSync(dir, { recursive: true });
+  const scritti: string[] = [];
+  for (const d of dizionari) {
+    const file = path.join(dir, `${nomeFileDizionario(d.url)}.json`);
+    const precedente = fs.existsSync(file)
+      ? (JSON.parse(fs.readFileSync(file, "utf-8")) as ScoutResult)
+      : null;
+    const unione = precedente ? mergeInventories(precedente, d) : d;
+    fs.writeFileSync(file, JSON.stringify(unione, null, 2), "utf-8");
+    scritti.push(file);
+  }
+  return scritti;
+}
+
 export function mergeInventories(a: ScoutResult, b: ScoutResult): ScoutResult {
   const perChiave = new Map<string, Component>();
 

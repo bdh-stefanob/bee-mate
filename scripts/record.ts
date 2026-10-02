@@ -53,7 +53,7 @@ import { apriRegistrazione, type RawEvent } from "./lib/registrazione";
 import { judge } from "./lib/stability";
 import type { Step, Assertion, Intent, Recording } from "./lib/generation-contract";
 import { pageIdentity } from "./lib/generate-core";
-import { mergeInventories } from "./lib/inventory";
+import { scriviDizionari } from "./lib/inventory";
 import type { ScoutResult } from "./lib/generation-contract";
 import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/targets";
 import { argValue, hasFlag, positionals } from "./lib/args";
@@ -635,16 +635,10 @@ async function main(): Promise<void> {
   // Se ne esisteva gia' uno per la stessa pagina, si fondono invece di
   // sostituirsi: una scansione precedente puo' aver visto stati che questa
   // sessione non ha attraversato.
-  const scoutDir = path.join("reports", "scout");
-  fs.mkdirSync(scoutDir, { recursive: true });
-  for (const d of sessione.dizionari.values()) {
-    const file = path.join(scoutDir, `${slugify(d.url)}.json`);
-    const precedente = fs.existsSync(file)
-      ? (JSON.parse(fs.readFileSync(file, "utf-8")) as ScoutResult)
-      : null;
-    const unione = precedente ? mergeInventories(precedente, d) : d;
-    fs.writeFileSync(file, JSON.stringify(unione, null, 2), "utf-8");
-  }
+  // Uno per pagina, non uno per host: vedi `nomeFileDizionario`. Finche' il nome
+  // era il solo host, tutte le pagine della sessione finivano in un file unico e
+  // il generatore non trovava piu' il dizionario della pagina giusta.
+  scriviDizionari(sessione.dizionari.values(), path.join("reports", "scout"));
 
   report(finale, outPath, sessione.pagineMancate);
 }
