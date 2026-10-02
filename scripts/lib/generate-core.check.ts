@@ -257,6 +257,31 @@ eq(
   eq("e il locator e' quello che userebbe lo scout", cancel.component.locator, "getByRole('button', { name: 'Annulla ordine' })");
 }
 
+{
+  // UN GESTO RIPETUTO NON SI PERDE (registrazione vera, 2/10: la sequenza fotocamera
+  // "Take Picture, Save, That's me" fatta DUE volte usciva una volta sola).
+  // I metodi sono indicizzati per identita' dell'oggetto componente: su una pagina
+  // fuori dallo scout ogni occorrenza ne creava uno nuovo, e tutte tranne una
+  // venivano saltate in silenzio.
+  const url = "https://esempio.invalid/camera";
+  const clic = (name: string) => ({ action: "click" as const, role: "button", name, url });
+  const ripetuta: Recording = {
+    startUrl: url, recordedAt: "", durationSeconds: 1, pagesVisited: [url],
+    summary: { intents: 1, steps: 4, assertions: 0, unlabelled: 0 },
+    intents: [{
+      label: "il cliente fa due foto", pageUrl: url, steps: [clic("Take Picture"), clic("Save"), clic("Take Picture"), clic("Save")],
+      assertions: [], notes: [],
+    }],
+  } as Recording;
+  const r = resolveRecording(ripetuta, indexDictionaries([]), { catalog: [] });
+  const passi = r.intents[0]!.steps;
+  truthy(
+    "due gesti uguali su una pagina fuori dallo scout condividono il componente",
+    passi[0]!.component === passi[2]!.component && passi[1]!.component === passi[3]!.component,
+    "oggetti diversi: il generatore ne salta uno, in silenzio"
+  );
+}
+
 const kinds = (g: readonly Gap[]): string[] => [...new Set(g.map((x) => x.kind))].sort();
 eq(
   "i buchi dichiarati sono quelli veri",

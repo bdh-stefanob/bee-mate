@@ -324,6 +324,7 @@ export function resolveRecording(
     });
   }
 
+  const canonici = new Map<string, Component>();
   const intents: ResolvedIntent[] = recording.intents.map((intent) => {
     const fallbackUrl = intent.pageUrl ?? recording.startUrl;
 
@@ -346,7 +347,14 @@ export function resolveRecording(
         });
       }
 
-      const component = found ?? synthesise(step);
+      // UN SOLO OGGETTO PER COMPONENTE E PER PAGINA. Chi emette i file indicizza i
+      // metodi per identita' dell'oggetto: un gesto ripetuto (due foto, due "Next")
+      // su una pagina fuori dallo scout ne produceva uno nuovo a ogni occorrenza, e
+      // tutti tranne uno venivano saltati in silenzio.
+      const fresco = found ?? synthesise(step);
+      const chiaveComponente = `${id.key}\u0000${componentKey(fresco.role, fresco.name)}`;
+      const component = canonici.get(chiaveComponente) ?? fresco;
+      canonici.set(chiaveComponente, component);
       if (component.stability !== "stable") {
         gaps.push({
           kind: "ancoraggio-instabile",
