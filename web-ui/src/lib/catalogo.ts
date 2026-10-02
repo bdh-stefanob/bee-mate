@@ -1,7 +1,7 @@
 import * as path from 'path';
 import type { CatalogStep, StepComponentRef } from './types';
 import { walkFeatures } from './features';
-import { CachePerFile, improntaDiElenco } from './cache-file';
+import { CachePerFile, improntaDiElenco, testoCondiviso, potaTestiCondivisi } from './cache-file';
 import { computeComponentImpact } from './component-impact';
 import { leggiComportamenti, type ComportamentoStep } from './descrizione-step';
 
@@ -221,7 +221,7 @@ interface FileAnalizzato {
   righe: RigaStep[];
   usi?: { chiave: string; trovati: Array<[string, UsoScenario]> };
 }
-const cacheUsi = new CachePerFile<FileAnalizzato>();
+const cacheUsi = new CachePerFile<FileAnalizzato>(testoCondiviso);
 
 /**
  * Per ogni step del catalogo, i file e gli scenari che lo usano davvero
@@ -266,6 +266,7 @@ export function trovaUsatoIn(
     for (const [espressione, uso] of file.usi.trovati) risultato.get(espressione)!.push({ ...uso });
   }
   cacheUsi.pota(featuresDir + path.sep, vivi);
+  potaTestiCondivisi(featuresDir + path.sep, vivi);
 
   return risultato;
 }

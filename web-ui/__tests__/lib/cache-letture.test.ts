@@ -98,6 +98,22 @@ describe('riepilogaScenari: ogni file si rilegge solo se e\' cambiato', () => {
     expect(r.file).toHaveLength(3);
   });
 
+  it('scenari e catalogo si dividono la lettura: un .feature aperto da uno non si riapre per l\'altro', () => {
+    const dir = cartellaFeatures(5);
+    riepilogaScenari(dir);
+    expect(lettureDi('.feature')).toBe(5);
+    trovaUsatoIn(STEPS, dir);
+    expect(lettureDi('.feature')).toBe(5);
+    // E se un file cambia, entrambi lo vedono con una lettura sola.
+    scrivi(dir, 'app1/f1.feature', feature(1, 'titolo nuovo'), 1800);
+    conta.letture.length = 0;
+    const r = riepilogaScenari(dir);
+    const u = trovaUsatoIn(STEPS, dir);
+    expect(lettureDi('.feature')).toBe(1);
+    expect(r.file.find((f) => f.file === 'app1/f1.feature')!.scenari[0].nome).toBe('titolo nuovo');
+    expect(u.get('the user opens the page')!.find((x) => x.file === 'app1/f1.feature')!.scenario).toBe('titolo nuovo');
+  });
+
   it('chi riceve il risultato lo puo\' modificare senza sporcare la chiamata dopo', () => {
     const dir = cartellaFeatures(2);
     const a = riepilogaScenari(dir);

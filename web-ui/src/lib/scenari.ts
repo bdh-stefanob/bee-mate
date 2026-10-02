@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { walkFeatures } from './features';
 import { improntaDiTesto } from './impronta-scenario';
-import { CachePerFile } from './cache-file';
+import { CachePerFile, testoCondiviso, potaTestiCondivisi } from './cache-file';
 
 /**
  * Gli scenari che la schermata Esecuzione puo' offrire.
@@ -112,11 +112,12 @@ export function riepilogaScenari(cartella: string): RiepilogoScenari {
     if (f.scenari.length > 0) elenco.push(copiaFileScenari(f));
   }
   cacheScenari.pota(cartella + path.sep, vivi);
+  potaTestiCondivisi(cartella + path.sep, vivi);
   elenco.sort((a, b) => Number(b.generato) - Number(a.generato) || a.file.localeCompare(b.file));
   return { file: elenco, soloDescritti };
 }
 
-const cacheScenari = new CachePerFile<FileScenari>();
+const cacheScenari = new CachePerFile<FileScenari>(testoCondiviso);
 
 /** Chi riceve l'elenco lo puo' ordinare, filtrare, arricchire: la cache non si sporca. */
 function copiaFileScenari(f: FileScenari): FileScenari {

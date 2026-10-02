@@ -70,6 +70,14 @@ interface Voce<T> {
   valore: T;
 }
 
+function leggiDalDisco(percorso: string): string | null {
+  try {
+    return fs.readFileSync(percorso, 'utf-8');
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Il risultato di `calcola(testo)` per ogni file, ricordato finche' la firma del
  * file e la `chiave` (cio' da cui il risultato dipende oltre al file stesso)
@@ -77,6 +85,9 @@ interface Voce<T> {
  */
 export class CachePerFile<T> {
   private readonly voci = new Map<string, Voce<T>>();
+
+  /** `leggi`: come si ottiene il testo quando serve. Di norma dal disco; `testoCondiviso` lo divide con le altre cache. */
+  constructor(private readonly leggi: (percorso: string) => string | null = leggiDalDisco) {}
 
   /**
    * Il valore per questo file, o `null` se non si legge. `calcola` riceve il
@@ -95,10 +106,8 @@ export class CachePerFile<T> {
     const nota = this.voci.get(percorso);
     if (nota && !f.recente && nota.firma === f.firma && nota.chiave === chiave) return nota.valore;
 
-    let testo: string;
-    try {
-      testo = fs.readFileSync(percorso, 'utf-8');
-    } catch {
+    const testo = this.leggi(percorso);
+    if (testo === null) {
       this.voci.delete(percorso);
       return null;
     }
@@ -120,4 +129,21 @@ export class CachePerFile<T> {
   svuota(): void {
     this.voci.clear();
   }
+}
+
+const cacheTesti = new CachePerFile<string>();
+
+/**
+ * Il testo di un file, riletto dal disco solo se e' cambiato, e UNO per tutti:
+ * `/api/scenari` e `/api/catalogo` si aprono insieme e leggono gli stessi
+ * `.feature`, e leggerli due volte a freddo costava ~150 ms con 300 file.
+ * Chi lo usa non deve modificare il testo (e' una stringa: non puo').
+ */
+export function testoCondiviso(percorso: string): string | null {
+  return cacheTesti.ottieni(percorso, '', (testo) => testo);
+}
+
+/** Come `CachePerFile.pota`, per i testi condivisi. */
+export function potaTestiCondivisi(prefisso: string, vivi: ReadonlySet<string>): void {
+  cacheTesti.pota(prefisso, vivi);
 }
