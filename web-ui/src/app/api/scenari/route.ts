@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { FEATURES_DIR } from '@/lib/repo';
 import { riepilogaScenari } from '@/lib/scenari';
+import { precaricaFeatures } from '@/lib/cache-file';
 import { assicuraIndiceAsync, leggiEsiti, percorsoIndice, unisciEsiti } from '@/lib/esiti-scenari';
 import type { RispostaScenari } from '@/lib/esiti-tipi';
 
@@ -17,6 +18,9 @@ import type { RispostaScenari } from '@/lib/esiti-tipi';
  * l'indice non c'e'. Non porta schermate, messaggi grezzi o percorsi assoluti.
  */
 export async function GET() {
+  // A freddo i .feature si leggono prima, in modo asincrono: il conto che segue
+  // trova i testi pronti e il server resta libero per le altre richieste.
+  await precaricaFeatures(FEATURES_DIR);
   const { file, soloDescritti } = riepilogaScenari(FEATURES_DIR);
   // Asincrona: la ricostruzione dell'indice (una tantum) puo' leggere centinaia
   // di MB, e non deve tenere fermo il server per le altre richieste.

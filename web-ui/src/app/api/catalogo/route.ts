@@ -6,6 +6,7 @@ import type { CatalogStep } from '@/lib/types';
 import { costruisciCatalogo } from '@/lib/catalogo';
 import { cartellaSrcDiRepo } from '@/lib/percorso-definizione';
 import { leggiJson } from '@/lib/file-json';
+import { precaricaFeatures } from '@/lib/cache-file';
 
 /**
  * GET /api/catalogo
@@ -18,6 +19,8 @@ export async function GET() {
   try {
     const catalogoPath = path.join(REPO_ROOT, 'step-catalog.json');
     const dati = leggiJson(catalogoPath) as { steps: CatalogStep[] };
+    // I .feature si leggono prima, in modo asincrono (vedi `precaricaFeatures`).
+    await precaricaFeatures(FEATURES_DIR);
     return NextResponse.json(costruisciCatalogo(dati.steps, FEATURES_DIR, cartellaSrcDiRepo(REPO_ROOT)));
   } catch (err) {
     console.error('catalogo non disponibile:', err);

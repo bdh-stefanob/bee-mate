@@ -1,5 +1,7 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { createHash } from 'crypto';
+import { walkFeatures } from './features';
 
 /**
  * cache-file.ts
@@ -126,6 +128,17 @@ export class CachePerFile<T> {
     }
   }
 
+  /** C'e' un valore ricordato per questo file, con questa firma e questa chiave? */
+  haFirma(percorso: string, firma: string, chiave = ''): boolean {
+    const nota = this.voci.get(percorso);
+    return nota !== undefined && nota.firma === firma && nota.chiave === chiave;
+  }
+
+  /** Ricorda un valore calcolato altrove (una lettura anticipata): la `firma` e' quella di PRIMA della lettura. */
+  inserisci(percorso: string, firma: string, valore: T, chiave = ''): void {
+    this.voci.set(percorso, { firma, chiave, valore });
+  }
+
   svuota(): void {
     this.voci.clear();
   }
@@ -141,6 +154,37 @@ const cacheTesti = new CachePerFile<string>();
  */
 export function testoCondiviso(percorso: string): string | null {
   return cacheTesti.ottieni(percorso, '', (testo) => testo);
+}
+
+const LETTURE_INSIEME = 16;
+
+async function caricaUnTesto(percorso: string): Promise<void> {
+  const f = firmaDi(percorso);
+  // Un file appena scritto non si ricorda (vedi in testa): lo leggera' chi ne ha bisogno, al momento.
+  if (!f || f.recente || cacheTesti.haFirma(percorso, f.firma)) return;
+  try {
+    const testo = await fs.promises.readFile(percorso, 'utf-8');
+    // La firma e' quella di PRIMA della lettura: se il file cambia in mezzo, la prossima volta si rilegge.
+    cacheTesti.inserisci(percorso, f.firma, testo);
+  } catch {
+    // Non si legge: ci pensera' chi lo chiede, con la sua gestione dell'errore.
+  }
+}
+
+/**
+ * Legge in anticipo, e FUORI dal filo principale (lettura asincrona, qualche
+ * file alla volta), i `.feature` che `riepilogaScenari` e `trovaUsatoIn`
+ * leggeranno subito dopo. A freddo, con 300 file, la lettura era ~150 ms di
+ * server fermo; cosi' il conto che segue trova i testi gia' pronti e il server
+ * resta libero per le altre richieste mentre il disco lavora.
+ */
+export async function precaricaFeatures(cartella: string): Promise<void> {
+  const percorsi = walkFeatures(cartella).map((rel) => path.join(cartella, rel));
+  let prossimo = 0;
+  const lavora = async (): Promise<void> => {
+    while (prossimo < percorsi.length) await caricaUnTesto(percorsi[prossimo++]);
+  };
+  await Promise.all(Array.from({ length: Math.min(LETTURE_INSIEME, percorsi.length) }, lavora));
 }
 
 /** Come `CachePerFile.pota`, per i testi condivisi. */

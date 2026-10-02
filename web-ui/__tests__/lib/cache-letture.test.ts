@@ -16,6 +16,7 @@ vi.mock('fs', async (originale) => {
 });
 
 import { riepilogaScenari } from '@/lib/scenari';
+import { precaricaFeatures } from '@/lib/cache-file';
 import { trovaUsatoIn, costruisciCatalogo } from '@/lib/catalogo';
 import { leggiComportamenti } from '@/lib/descrizione-step';
 import type { CatalogStep } from '@/lib/types';
@@ -112,6 +113,33 @@ describe('riepilogaScenari: ogni file si rilegge solo se e\' cambiato', () => {
     expect(lettureDi('.feature')).toBe(1);
     expect(r.file.find((f) => f.file === 'app1/f1.feature')!.scenari[0].nome).toBe('titolo nuovo');
     expect(u.get('the user opens the page')!.find((x) => x.file === 'app1/f1.feature')!.scenario).toBe('titolo nuovo');
+  });
+
+  it('la lettura a freddo si puo\' fare prima, in modo asincrono: poi il conto non apre piu\' nessun file', async () => {
+    const dir = cartellaFeatures(6);
+    await precaricaFeatures(dir);
+    expect(lettureDi('.feature')).toBe(0);
+    const r = riepilogaScenari(dir);
+    const u = trovaUsatoIn(STEPS, dir);
+    expect(lettureDi('.feature')).toBe(0);
+    expect(r.file).toHaveLength(6);
+    expect(u.get('the user opens the page')).toHaveLength(6);
+  });
+
+  it('la lettura anticipata non da\' mai un testo vecchio: un file cambiato dopo si vede', async () => {
+    const dir = cartellaFeatures(3);
+    await precaricaFeatures(dir);
+    scrivi(dir, 'app1/f1.feature', feature(1, 'titolo nuovo'), 1800);
+    await precaricaFeatures(dir);
+    expect(riepilogaScenari(dir).file.find((f) => f.file === 'app1/f1.feature')!.scenari[0].nome).toBe('titolo nuovo');
+    // e un file scritto adesso (troppo recente per fidarsi) non si ricorda, ma si legge giusto
+    scrivi(dir, 'app1/f1.feature', feature(1, 'titolo ancora nuovo'), 0);
+    await precaricaFeatures(dir);
+    expect(riepilogaScenari(dir).file.find((f) => f.file === 'app1/f1.feature')!.scenari[0].nome).toBe('titolo ancora nuovo');
+  });
+
+  it('una cartella che non c\'e\' non e\' un errore', async () => {
+    await expect(precaricaFeatures('/non/esiste/proprio')).resolves.toBeUndefined();
   });
 
   it('chi riceve il risultato lo puo\' modificare senza sporcare la chiamata dopo', () => {
