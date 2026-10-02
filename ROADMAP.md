@@ -179,6 +179,30 @@ do not fix the map pins or the repeated questionnaire pages: those need recipes.
    concrete list to bring to the developers;
 3. where there is no ID, role + name stays, plus the recipes.
 
+### Open — recipes for complex behaviours
+
+*Raised 2026-10-02, from the fake-app run (`npm run check:app-finta`).* Some
+behaviours are not one gesture on one component, and generating them as a list
+of gestures produces code that happens to work on the recorded path and nothing
+more. The two cases we have measured:
+
+- **Map pins.** `div.custom-marker` has no role and no accessible name. The
+  recorder now records the click and the generator anchors it to the CSS class,
+  declaring it `unnamed` — honest, but a class is an implementation detail, and
+  on a real map library the click needs `page.mouse.click` plus a scroll and a
+  `resize` (the library only draws the visible area). Reference that works:
+  `uiautomationpwpoc/src/test/page-objects/JetLagDeliveryPage.ts`.
+- **A photo taken twice.** Take Picture → Save → That's me, repeated until the
+  page says it has enough. Generated as six gestures it is six gestures; as a
+  behaviour it is "provide two photos", and the number belongs to the data.
+
+A recipe would be a behaviour declared once in `templates/`, recognised by a
+signature over the recorded gestures, with its values (postcode, answers, how
+many photos) outside the steps. **Not done:** recognising the signature is where
+this can go wrong silently, and nothing is worse than a recipe that fires on the
+wrong page. What exists today is the declaration — the generator says, for every
+gesture with no accessible anchor, that a recipe is what is missing there.
+
 ---
 
 ## 7. Quick start for the agent
