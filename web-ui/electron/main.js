@@ -137,9 +137,8 @@ function createWindow() {
     },
   });
 
-  // Si punta direttamente a /controllo (non alla radice) per evitare il giro a
-  // vuoto sul vecchio portale: la radice comunque reindirizza qui, ma partire
-  // gia' dalla schermata giusta evita un lampo del portale prima del redirect.
+  // Si punta direttamente a /controllo (non alla radice): la radice comunque
+  // reindirizza qui, ma partire gia' dalla schermata giusta evita un giro in piu'.
   mainWindow.loadURL(`http://127.0.0.1:${PORT}/controllo`);
 
   // Una modifica a uno scenario non salvata registra un `beforeunload`. In una

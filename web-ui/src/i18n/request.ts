@@ -14,8 +14,7 @@ function linguaValida(valore: string | undefined): valore is Lingua {
 
 /**
  * Nessuna lingua nell'indirizzo: il guscio desktop non deve mai vedere un
- * `/en/...` o `/it/...`, sennò si rompono il redirect dalla radice e il
- * portale del catalogo. La scelta viaggia in un cookie, che la finestra
+ * `/en/...` o `/it/...`, sennò si rompono il redirect dalla radice. La scelta viaggia in un cookie, che la finestra
  * Electron conserva da un'apertura all'altra come farebbe un browser.
  */
 export default getRequestConfig(async () => {

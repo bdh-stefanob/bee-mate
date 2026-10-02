@@ -20,13 +20,12 @@ export const metadata: Metadata = {
   description: 'Gherkin authoring tool for QA automation',
 };
 
-// Layout radice: solo html/body/providers. La navigazione vive nei layout dei
-// singoli gruppi (portale) e (cruscotto), altrimenti ogni schermata del
-// cruscotto si ritroverebbe con due barre di navigazione sovrapposte.
+// Layout radice: solo html/body/providers. La navigazione vive nel layout del
+// gruppo (cruscotto): la barra laterale sta li', non qui.
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Il cruscotto (non il vecchio portale) legge la lingua da qui: nessun
+  // Il cruscotto legge la lingua da qui: nessun
   // instradamento per lingua, solo il cookie che src/i18n/request.ts legge.
   const locale = await getLocale();
 

@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react';
  * che anche il controllo accetta. Non c'e' nessun gestore di proposte: un passo nuovo
  * non si crea da qui, e un clic su un passo sconosciuto non si inghiotte.
  *
- * L'editor usa i colori del cruscotto, non quelli del vecchio portale: qui sotto si
+ * L'editor usa i colori del cruscotto, non i suoi di partenza: qui sotto si
  * rimappano le variabili che `GherkinEditor` legge sui token del cruscotto, chiari e scuri.
  */
 const GherkinEditor = dynamic(() => import('@/components/GherkinEditor'), {

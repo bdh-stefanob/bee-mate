@@ -3,8 +3,7 @@
  *
  * Questi tipi descrivono cosa risponde il motore (le rotte `/api/catalogo*`),
  * costruito in parallelo da un altro lavoro. Non sono un duplicato dei tipi in
- * `@/lib/types` (quelli descrivono il catalogo su disco, in inglese, per il
- * vecchio portale): questi sono la forma esatta del contratto, in italiano,
+ * `@/lib/types` (quelli descrivono il catalogo su disco, in inglese): questi sono la forma esatta del contratto, in italiano,
  * e vivono qui perche' il perimetro di questo lavoro non include `src/lib`.
  */
 

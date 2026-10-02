@@ -11,7 +11,7 @@ import { MARCATORE } from './marcatore';
  * cartella dove tutto sta insieme. Qui il tester dice a quale applicazione e
  * flusso appartiene e come si chiama, e il file va in
  * `src/features/<app>/<flusso>/<nome>.feature` — lo stesso albero degli
- * scenari scritti a mano, che il portale gia' mostra per applicazione e flusso.
+ * scenari scritti a mano, che la pagina Scenari mostra per applicazione e flusso.
  *
  * Tre regole, ciascuna con il suo caso:
  *  - si sposta solo cio' che e' uscito da una registrazione (cartella

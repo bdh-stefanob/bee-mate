@@ -16,9 +16,9 @@ interface Voce {
   Icona: typeof ClipboardCheck;
 }
 
-// Il vecchio portale (catalogo/editor step) non ha piu' una voce qui: la sua
-// mappa dei componenti e' entrata nel Catalogo, e il resto resta nel codice,
-// raggiungibile scrivendone l'indirizzo, ma non fa piu' parte del cruscotto.
+// Le cinque schermate del cruscotto. Il vecchio portale (catalogo/editor step)
+// e' stato tolto: la sua mappa dei componenti e' nel Catalogo, la modifica degli
+// scenari e' nella pagina Scenari.
 const VOCI: Voce[] = [
   { href: '/controllo', chiaveEtichetta: 'navCheck', Icona: ClipboardCheck },
   { href: '/registra', chiaveEtichetta: 'navRecord', Icona: CircleDot },
