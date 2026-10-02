@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { BarraLaterale } from '@/components/cruscotto/BarraLaterale';
+import { PuliziaResiduiPortale } from '@/components/cruscotto/PuliziaResiduiPortale';
 import { ProviderAmbiente } from '@/context/AmbienteContext';
 import { ProviderModifiche } from '@/context/ModificheContext';
 import { NOME_COOKIE_AMBIENTE, ambienteValido } from '@/lib/ambiente-corrente';
@@ -21,6 +22,7 @@ export default async function CruscottoLayout({
     <ProviderAmbiente ambienteIniziale={ambienteIniziale}>
       {/* "Ci sono modifiche non salvate": la barra laterale lo chiede prima di navigare. */}
       <ProviderModifiche>
+        <PuliziaResiduiPortale />
         <div className="flex flex-col min-[900px]:flex-row min-h-screen">
           <BarraLaterale />
           <main className="flex-1 min-w-0 p-6">{children}</main>
