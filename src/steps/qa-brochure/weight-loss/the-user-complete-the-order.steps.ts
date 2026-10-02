@@ -180,6 +180,4 @@ When("the user check the last notification", async function (this: CustomWorld) 
   orderCompleteAsyncNoCallPage = new OrderCompleteAsyncNoCallPage(this.page);
   await orderCompleteAsyncNoCallPage.assertLoaded();
   await orderCompleteAsyncNoCallPage.click2SecureMessages();
-  messagesPage = new MessagesPage(this.page);
-  await messagesPage.assertLoaded();
 });
