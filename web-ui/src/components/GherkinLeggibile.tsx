@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { Eye } from 'lucide-react';
 import { tokenizzaGherkin, type RigaGherkin } from '@/lib/gherkin-lettura';
+import { senzaPercorsi } from '@/lib/senza-percorsi';
 
 /**
  * Il testo di uno scenario, in sola lettura e con i colori del Gherkin.
@@ -37,7 +38,7 @@ export function GherkinLeggibile({
   etichettaRiga?: (riga: RigaGherkin) => string;
 }) {
   const t = useTranslations('Scenari');
-  const righe = useMemo(() => tokenizzaGherkin(testo), [testo]);
+  const righe = useMemo(() => tokenizzaGherkin(senzaPercorsi(testo)), [testo]);
   const larghezzeTabella = useMemo(() => larghezzePerRiga(righe), [righe]);
   const evidenziata = useRef<HTMLDivElement>(null);
 
