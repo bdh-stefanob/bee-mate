@@ -58,7 +58,7 @@ senzaBacktick("dom-probe", DOM_PROBE_SOURCE);
 senzaBacktick("recorder-overlay", RECORDER_OVERLAY_SOURCE);
 
 // Cio' che il resto del codice si aspetta di trovare esposto sulla finestra.
-for (const atteso of ["describeAny", "describe", "closestInteractive", "isVisible"]) {
+for (const atteso of ["describeAny", "describe", "describeSenzaRuolo", "contestoDi", "closestInteractive", "isVisible"]) {
   if (DOM_PROBE_SOURCE.includes(`${atteso}:`)) ok(`dom-probe espone ${atteso}`);
   else fail(`dom-probe non espone piu' ${atteso}`, "chi lo chiama fallirebbe solo a browser aperto");
 }

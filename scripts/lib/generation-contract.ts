@@ -67,6 +67,47 @@ export interface Step {
    * invece di indovinare.
    */
   url?: string;
+  /**
+   * Il gesto non ha un ancoraggio accessibile: nessun ruolo, nessun nome.
+   *
+   * E' il caso dei pin di una mappa (`div.custom-marker`). Prima questi gesti
+   * non venivano registrati affatto, e spariva il gesto piu' importante del
+   * percorso. Qui c'e' cio' che si e' potuto osservare — la classe CSS, quanti
+   * elementi uguali c'erano — che **non e' un'identita'** come role+name: e' un
+   * ripiego, e il generatore lo dichiara come tale.
+   */
+  ancoraggioAssente?: SenzaAncoraggio;
+  /**
+   * Dove e' avvenuto il gesto. Non e' un ancoraggio: e' il contesto che serve a
+   * chi scrive la frase Gherkin. Vedi `Contesto`.
+   */
+  contesto?: Contesto;
+}
+
+/** Quel poco che si puo' dire di un elemento senza ruolo ne' nome. */
+export interface SenzaAncoraggio {
+  tag: string;
+  /** Le classi CSS: l'unica identita' che ha, e non e' stabile come un ruolo. */
+  classi: string[];
+  /** Il selettore derivato dalle classi. Assente se non ne aveva nessuna. */
+  selettore?: string;
+  /** Quale fra quanti elementi uguali. Dice se il locator e' univoco. */
+  fra?: { indice: number; totale: number };
+}
+
+/**
+ * Il contesto di un gesto: la domanda a cui si risponde, il dialog in cui si era.
+ *
+ * Un campo numerico il cui nome accessibile e' il suo valore ("0") non dice
+ * niente, e la domanda sta nel titolo della pagina. Un gesto fatto dentro un
+ * modale va automatizzato in modo diverso da uno fatto sulla pagina. Nessuna
+ * delle due cose si deduce da role+name.
+ */
+export interface Contesto {
+  /** L'intestazione visibile piu' vicina che precede l'elemento. */
+  intestazione?: string;
+  /** Il nome accessibile del dialog, se il gesto e' avvenuto dentro un dialog. */
+  dialog?: string;
 }
 
 /** Cosa il tester ha indicato come "questo e' il risultato che mi aspetto". */

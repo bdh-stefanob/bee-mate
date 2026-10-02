@@ -12,7 +12,7 @@
 
 import { fold, tokenize, fingerprint, maskParams } from "./normalize";
 import { tokenSetRatio } from "./cluster";
-import { toComponent } from "./component-naming";
+import { componenteSenzaRuolo, toComponent } from "./component-naming";
 import { judge } from "./stability";
 // Gli avvisi sono dichiarati una volta sola, dove vive il gestore che li chiude:
 // `avvisoDelGesto` e' pura e non apre nessun browser, quindi questo file resta
@@ -217,6 +217,10 @@ function lookup(index: DictionaryIndex, url: string, role: string, name: string)
  * batte fermarsi, e batte anche tacere.
  */
 function synthesise(step: Step): Component {
+  // Un gesto senza ruolo ne' nome non si cerca con getByRole: non c'e' niente da
+  // cercare. Si ancora a cio' che la registrazione ha potuto osservare, e lo
+  // dichiara fragile. Vedi `componenteSenzaRuolo`.
+  if (step.ancoraggioAssente) return componenteSenzaRuolo(step.ancoraggioAssente);
   return toComponent(
     { role: step.role, name: step.name, ...(step.secret ? { secret: true } : {}) },
     1
@@ -374,9 +378,28 @@ export function resolveRecording(
       // Un campo password si cerca per tipo, sempre: anche quando il dizionario
       // ne ha uno, il nome che porta e' il segnaposto mascherato — pallini —
       // che non identifica niente. Il dizionario qui non aiuta, confonde.
-      const found = step.secret ? null : lookup(index, url, step.role, step.name);
+      // Un gesto senza ruolo ne' nome non si cerca nel dizionario: il dizionario
+      // inventaria cio' che ha un ruolo, quindi non lo contiene per definizione.
+      // Cercarlo comunque produrrebbe un avviso che parla di `""` e manda chi
+      // legge a rilanciare uno scout che non troverebbe niente.
+      const found =
+        step.secret || step.ancoraggioAssente ? null : lookup(index, url, step.role, step.name);
 
-      if (!found && !step.secret) {
+      if (step.ancoraggioAssente) {
+        const a = step.ancoraggioAssente;
+        gaps.push({
+          kind: "ancoraggio-instabile",
+          where: intent.label,
+          detail:
+            `Un gesto su ${a.tag}${a.selettore ?? ""} su ${id.className} non ha ne' ruolo ne' nome ` +
+            `accessibile: l'ancoraggio e' una classe CSS, cioe' un dettaglio di implementazione. ` +
+            (a.fra && a.fra.totale > 1
+              ? `Ce n'erano ${a.fra.totale} uguali, e si prende il primo. `
+              : "") +
+            (step.contesto?.intestazione ? `Il gesto e' avvenuto sotto «${step.contesto.intestazione}». ` : "") +
+            `Qui serve una ricetta: il comportamento dichiarato una volta, non un locator per elemento.`,
+        });
+      } else if (!found && !step.secret) {
         gaps.push({
           kind: "componente-non-nel-dizionario",
           where: intent.label,
@@ -395,7 +418,10 @@ export function resolveRecording(
       const chiaveComponente = `${id.key}\u0000${componentKey(fresco.role, fresco.name)}`;
       const component = canonici.get(chiaveComponente) ?? fresco;
       canonici.set(chiaveComponente, component);
-      if (component.stability !== "stable") {
+      // Il gesto senza ancoraggio ha gia' il suo avviso, sopra, scritto in modo
+      // che si capisca: ripeterlo qui darebbe due righe per lo stesso problema,
+      // e la seconda parlerebbe di un ruolo vuoto.
+      if (component.stability !== "stable" && !step.ancoraggioAssente) {
         gaps.push({
           kind: "ancoraggio-instabile",
           where: intent.label,

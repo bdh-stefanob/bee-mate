@@ -395,13 +395,37 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       return;
     }
 
+    const raw = ev.composedPath ? ev.composedPath()[0] : ev.target;
+    const contesto = window.__bddProbe.contestoDi(raw);
     const el = target(ev);
-    if (!el) return;
-    const d = window.__bddProbe.describe(el);
-    if (!d) return;
-    if (CLICKABLE.indexOf(d.role) < 0) return;
 
-    emit({ type: 'action', action: 'click', role: d.role, name: d.name, at: Date.now() });
+    if (el) {
+      const d = window.__bddProbe.describe(el);
+      if (!d) return;
+      if (CLICKABLE.indexOf(d.role) < 0) return;
+      emit({
+        type: 'action', action: 'click', role: d.role, name: d.name,
+        contesto: contesto, at: Date.now(),
+      });
+      return;
+    }
+
+    // NESSUN RUOLO INTERATTIVO LUNGO IL PERCORSO DELL'EVENTO.
+    //
+    // Prima si usciva qui, in silenzio, e il gesto spariva. Il caso visto sul
+    // campo e' il pin di una mappa — un div senza ruolo e senza nome — cioe' il
+    // gesto piu' importante del percorso: scegliere dove ritirare l'ordine. Il
+    // passo successivo esiste solo grazie a lui, e senza di lui lo scenario
+    // generato aspettava un pulsante che non sarebbe mai comparso.
+    //
+    // Non si inventa un ancoraggio: si registra cio' che c'e' (la classe CSS) e
+    // si lascia al generatore il compito di dichiarare che li' serve una ricetta.
+    const senzaRuolo = window.__bddProbe.describeSenzaRuolo(raw);
+    if (!senzaRuolo) return;
+    emit({
+      type: 'action', action: 'click', role: '', name: '',
+      ancoraggioAssente: senzaRuolo, contesto: contesto, at: Date.now(),
+    });
   }, true);
 
   /** Valori gia' registrati per ciascun campo, per non emettere due volte lo stesso. */
@@ -457,6 +481,10 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
       role: d.role, name: d.name,
       value: secret ? '<password>' : String(value).slice(0, 200),
       secret: secret,
+      // La domanda a cui si sta rispondendo. Serve quando il nome accessibile
+      // del campo non dice niente — un campo numerico che si chiama "0" — ed e'
+      // proprio il caso in cui lo scenario, senza, non si lascia leggere.
+      contesto: window.__bddProbe.contestoDi(el),
       at: Date.now(),
     });
   }

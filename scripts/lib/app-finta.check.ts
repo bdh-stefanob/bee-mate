@@ -591,6 +591,24 @@ function verificaRegistrazione(esito: EsitoRegistrazione): void {
     );
   }
 
+  // Il contesto: la domanda a cui si risponde, e l'essere dentro un dialog.
+  // Un campo il cui nome accessibile e' il suo valore ("0") non dice niente, e
+  // senza la domanda il passo generato non si lascia leggere da nessuno.
+  const campo = gesti.find((s) => s.action === "fill" && (s.url ?? "").includes("/questions/"));
+  if (campo?.contesto?.intestazione) {
+    ok(`il campo numerico porta la domanda a cui risponde («${campo.contesto.intestazione}»)`);
+  } else {
+    fail(
+      "il campo numerico porta la domanda a cui risponde",
+      `il gesto registrato e' ${JSON.stringify(campo)}: il nome accessibile e' il valore, ` +
+        `e senza la domanda non si capisce cosa si sta compilando.`
+    );
+  }
+
+  const cookie = gesti.find((s) => s.name === "Accept All");
+  if (cookie?.contesto?.dialog) ok(`il gesto dentro un dialog lo dichiara («${cookie.contesto.dialog}»)`);
+  else fail("il gesto dentro un dialog lo dichiara", `${JSON.stringify(cookie)}`);
+
   // n. 2 — lo scout dopo ogni azione: i componenti che compaiono senza navigare.
   const nomiFotocamera = nomiDi("/camera/");
   const mancanti = ["Take Picture", "Save", "That's me"].filter((n) => !nomiFotocamera.has(n));
@@ -678,6 +696,18 @@ function verificaGenerazione(manifesto: Manifesto, recording: Recording): void {
     );
   } else {
     ok("la risposta al questionario non e' scritta dentro lo step");
+  }
+
+  // Il contesto registrato serve a chi scrive la frase Gherkin: se non arriva
+  // fino al codice generato, e' un dato raccolto e buttato.
+  if (glue.includes("What is your weight in kg?")) {
+    ok("la domanda del questionario arriva nel codice generato");
+  } else {
+    fail(
+      "la domanda del questionario arriva nel codice generato",
+      `la glue non nomina la domanda: il passo compila un campo che si chiama "0", e chi deve ` +
+        `scrivere la frase Gherkin non ha modo di sapere cosa sia.`
+    );
   }
 
   if (gherkin.includes(ETICHETTE.ordine)) {

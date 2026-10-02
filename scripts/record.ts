@@ -142,6 +142,8 @@ export function group(events: RawEvent[]): { intents: Intent[]; unlabelled: numb
           ...(e.value !== undefined ? { value: e.value } : {}),
           ...(e.secret ? { secret: true } : {}),
           ...(e.url ? { url: e.url } : {}),
+          ...(e.ancoraggioAssente ? { ancoraggioAssente: e.ancoraggioAssente } : {}),
+          ...(e.contesto ? { contesto: e.contesto } : {}),
         };
         // Un campo compilato piu' volte nello stesso intento vale per il suo
         // valore FINALE: chi corregge un refuso non vuole ritrovarsi il refuso

@@ -171,9 +171,103 @@ export const DOM_PROBE_SOURCE = String.raw`
     return null;
   }
 
+  /**
+   * L'applicazione dice che qui si clicca?
+   *
+   * Un pin di una mappa e' un div: nessun ruolo, nessun nome accessibile. Ma il
+   * cursore a manina, o un gestore onclick, sono il modo in cui l'applicazione
+   * dichiara all'utente che quell'area e' interattiva. Senza questo filtro
+   * registreremmo anche un click a vuoto sul fondo della pagina, e una traccia
+   * piena di gesti che l'utente non ha inteso fare e' peggio di una incompleta.
+   */
+  function sembraCliccabile(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (typeof el.onclick === 'function') return true;
+    try {
+      return window.getComputedStyle(el).cursor === 'pointer';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Cio' che si puo' dire di un elemento che NON ha ne' ruolo ne' nome.
+   *
+   * IL CASO CHE L'HA FATTA NASCERE. I pin di una mappa sono
+   * div.custom-marker: closestInteractive non trova niente da cui risalire,
+   * quindi il click non veniva registrato **affatto**. Il gesto piu' importante
+   * del percorso — scegliere la farmacia — sparisce senza una riga di avviso, e
+   * il passo successivo ("Select Pharmacy") esiste solo grazie a lui.
+   *
+   * Quello che resta e' la classe CSS: non e' un'identita' come role+name, ed e'
+   * esattamente per questo che va **dichiarata** come tale. Il generatore ci
+   * scrive un locator e dice che li' serve una ricetta.
+   */
+  function describeSenzaRuolo(el) {
+    let node = el;
+    for (var depth = 0; node && depth < 4; depth++) {
+      if (node.nodeType === 1 && sembraCliccabile(node)) {
+        var grezze = typeof node.className === 'string' ? node.className.trim() : '';
+        var classi = grezze ? grezze.split(/\s+/).filter(Boolean) : [];
+        var risultato = { tag: node.tagName.toLowerCase(), classi: classi };
+        if (classi.length > 0) {
+          var selettore = '.' + classi.map(function (c) { return CSS.escape(c); }).join('.');
+          risultato.selettore = selettore;
+          try {
+            var simili = Array.prototype.slice.call(document.querySelectorAll(selettore));
+            var indice = simili.indexOf(node);
+            risultato.fra = { indice: indice < 0 ? 0 : indice, totale: simili.length || 1 };
+          } catch (e) { /* selettore non valido: resta senza conteggio */ }
+        }
+        return risultato;
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  /**
+   * Dove e' avvenuto il gesto: la domanda a cui si risponde, il dialog in cui si era.
+   *
+   * DUE BUCHI VISTI SUL CAMPO. Un campo numerico il cui nome accessibile e' il
+   * suo valore ("0") non dice niente: la domanda sta nel titolo della pagina, e
+   * senza di quello nello scenario finisce un passo che nessuno sa leggere. E un
+   * gesto fatto dentro un modale non si distingueva da uno fatto sulla pagina,
+   * mentre i due vanno automatizzati in modo diverso.
+   *
+   * Non e' un ancoraggio e non va usato come locator: e' contesto, e serve a chi
+   * scrive la frase Gherkin.
+   */
+  function contestoDi(el) {
+    if (!el || !el.closest) return null;
+    var out = {};
+    var dialog = el.closest('[role="dialog"], [role="alertdialog"], dialog');
+    if (dialog) out.dialog = accessibleName(dialog) || '(senza nome)';
+
+    // L'intestazione visibile piu' vicina FRA QUELLE CHE PRECEDONO: un titolo
+    // che viene dopo l'elemento non lo descrive.
+    var ambito = dialog || document.body;
+    var intestazioni = ambito.querySelectorAll('h1, h2, h3, h4, h5, h6, legend, [role="heading"]');
+    var scelta = '';
+    for (var i = 0; i < intestazioni.length; i++) {
+      var h = intestazioni[i];
+      if (!isVisible(h)) continue;
+      // 4 = DOCUMENT_POSITION_FOLLOWING: l'elemento viene dopo questa intestazione.
+      var relazione = h.compareDocumentPosition(el);
+      if (!(relazione & 4) && !(relazione & 16)) continue;
+      var testo = (h.textContent || '').trim().replace(/\s+/g, ' ');
+      if (testo) scelta = testo;
+    }
+    if (scelta) out.intestazione = scelta.length >= 160 ? scelta.slice(0, 160) : scelta;
+
+    return Object.keys(out).length > 0 ? out : null;
+  }
+
   window.__bddProbe = {
     describe: describe,
     describeAny: describeAny,
+    describeSenzaRuolo: describeSenzaRuolo,
+    contestoDi: contestoDi,
     isVisible: isVisible,
     closestInteractive: closestInteractive,
     roles: Array.from(KEEP),

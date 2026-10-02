@@ -406,12 +406,52 @@ export function emitSteps(
       ).size > 1;
       const componentKeys = new Set<string>();
       const componentLines: string[] = [];
+      const contestoVisto = new Set<string>();
+      const contestoLines: string[] = [];
       for (const r of intent.steps) {
         if (r.step.secret) continue;
         const owner = byKey.get(r.fromPage ?? intent.page ?? "") ?? page;
         const key = `${r.component.role}\u0000${r.component.name}\u0000${owner.key}`;
+        // IL CONTESTO, E PERCHE' STA SU UNA RIGA SUA.
+        //
+        // `@component` ha una forma fissa che il catalogo legge
+        // (`<ruolo> "<nome>" [page=...]`): aggiungerci del testo non darebbe un
+        // errore, farebbe scartare la riga in silenzio — e il componente
+        // scomparirebbe dal catalogo senza che nessuno se ne accorga.
+        //
+        // Serve perche' un campo il cui nome accessibile e' il suo valore ("0")
+        // non si lascia leggere: la domanda sta nel titolo della pagina, e senza
+        // di quella chi deve scrivere la frase Gherkin non sa cosa si compila.
+        //
+        // SOLO DOVE AGGIUNGE QUALCOSA. Un pulsante "Continue" sotto
+        // "Important information" non ha bisogno di spiegazioni, e una riga per
+        // ogni gesto sarebbe venti righe di rumore sopra ogni passo — cioe' il
+        // modo piu' sicuro di non farle leggere a nessuno. La riga serve quando
+        // il nome NON si spiega da solo (un campo che si chiama "0", un pin
+        // senza nome: tutti i casi in cui la stabilita' non e' `stable`) oppure
+        // quando il gesto e' avvenuto dentro un dialog, che cambia come si
+        // automatizza.
+        const serve = r.component.stability !== "stable" || Boolean(r.step.contesto?.dialog);
+        const pezzi: string[] = [];
+        if (serve && r.step.contesto?.intestazione) pezzi.push(`sotto "${r.step.contesto.intestazione}"`);
+        if (r.step.contesto?.dialog) pezzi.push(`nel dialog "${r.step.contesto.dialog}"`);
+        if (pezzi.length > 0) {
+          const descritto = r.component.role
+            ? `${r.component.role} ${ts(r.component.name)}`
+            : `${ts(r.component.name)} (senza ruolo)`;
+          const riga = ` * @contesto ${descritto}: ${pezzi.join(", ")}`;
+          if (!contestoVisto.has(riga)) {
+            contestoVisto.add(riga);
+            contestoLines.push(riga);
+          }
+        }
         if (componentKeys.has(key)) continue;
         componentKeys.add(key);
+        // Un componente senza ruolo non si dichiara come ancoraggio di catalogo:
+        // la forma di `@component` vuole un ruolo, e un'ancora che non e'
+        // un'identita' non deve entrare nel vocabolario condiviso. Resta nel
+        // `@contesto`, e nell'avviso che il generatore ha gia' emesso.
+        if (!r.component.role) continue;
         const pageSuffix = multiPagina ? ` page=${owner.className}` : "";
         componentLines.push(` * @component ${r.component.role} ${ts(r.component.name)}${pageSuffix}`);
       }
@@ -421,6 +461,7 @@ export function emitSteps(
           ` * @intent  ${phrase}\n` +
           ` * @page    ${page.className}\n` +
           (componentLines.length ? componentLines.join("\n") + "\n" : "") +
+          (contestoLines.length ? contestoLines.join("\n") + "\n" : "") +
           ` * @wanted\n` +
           ` *\n` +
           ` * Formulazione presa dall'etichetta del tester. Da portare nel catalogo:\n` +

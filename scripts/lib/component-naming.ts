@@ -113,6 +113,53 @@ const ARIA_ROLES = new Set([
   "time", "timer", "toolbar", "tooltip", "tree", "treegrid", "treeitem",
 ]);
 
+/**
+ * Il componente di un gesto che non ha ne' ruolo ne' nome accessibile.
+ *
+ * IL CASO: i pin di una mappa, `div.custom-marker`. Non c'e' niente che
+ * `getByRole` possa trovare, e fino a ieri il gesto non veniva nemmeno
+ * registrato. Ora c'e', e qualcosa bisogna scriverci: la classe CSS.
+ *
+ * E' un ancoraggio **peggiore** di role+name, e lo dice. Una classe e' un
+ * dettaglio di implementazione: cambia quando cambia il foglio di stile, senza
+ * che nessuno abbia toccato il comportamento. La stabilita' resta `unnamed` e la
+ * nota spiega cosa serve davvero — una ricetta, cioe' un comportamento
+ * dichiarato in un posto solo invece di un locator per ogni pin.
+ *
+ * Meglio di non registrarlo, pero': un gesto dichiarato fragile si corregge, un
+ * gesto che non c'e' non si vede nemmeno.
+ */
+export function componenteSenzaRuolo(raw: {
+  tag: string;
+  classi: string[];
+  selettore?: string;
+  fra?: { indice: number; totale: number };
+}): Component {
+  const nome = raw.classi[0] ?? raw.tag;
+  const totale = raw.fra?.totale ?? 1;
+  const base = raw.selettore
+    ? `locator('${escapeForLocator(raw.selettore)}')`
+    : `locator('${escapeForLocator(raw.tag)}')`;
+
+  const notes = [
+    "nessun ruolo e nessun nome accessibile: ancorato alla classe CSS, che e' un dettaglio di implementazione",
+    "serve una ricetta: un comportamento dichiarato, non un locator per ogni elemento",
+  ];
+  if (!raw.selettore) notes.push("nemmeno una classe: il locator ricade sul nome del tag, e non e' univoco");
+  if (totale > 1) notes.push(`${totale} elementi uguali sulla pagina: si prende il primo`);
+
+  return {
+    role: "",
+    name: nome,
+    kind: "action",
+    locator: totale > 1 ? `${base}.first()` : base,
+    method: `click${toPascalCase(nome) || "SenzaNome"}`,
+    occurrences: totale,
+    stability: "unnamed",
+    notes,
+  };
+}
+
 export function toComponent(raw: RawElement, occurrences: number): Component {
   const kind = kindOf(raw.role, raw.href ?? "");
 

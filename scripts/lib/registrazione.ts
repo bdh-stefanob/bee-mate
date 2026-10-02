@@ -23,7 +23,7 @@ import { DOM_PROBE_SOURCE } from "./dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./recorder-overlay";
 import { inventory, mergeInventories } from "./inventory";
 import { pageIdentity } from "./generate-core";
-import type { ScoutResult } from "./generation-contract";
+import type { Contesto, ScoutResult, SenzaAncoraggio } from "./generation-contract";
 
 /** Un evento come arriva dalla pagina, prima di diventare intento. */
 export interface RawEvent {
@@ -37,6 +37,10 @@ export interface RawEvent {
   secret?: boolean;
   text?: string;
   label?: string;
+  /** Il gesto non ha ruolo ne nome: vedi SenzaAncoraggio nel contratto. */
+  ancoraggioAssente?: SenzaAncoraggio;
+  /** Dove e avvenuto: la domanda, il dialog. Vedi Contesto nel contratto. */
+  contesto?: Contesto;
 }
 
 export interface OpzioniRegistrazione {
