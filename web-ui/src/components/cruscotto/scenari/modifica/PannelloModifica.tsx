@@ -331,7 +331,12 @@ export function PannelloModifica({
   const soloTesto = meta !== null && !meta.semplice;
   const puoiTornareGuidata = !soloTesto && valutaSemplicita(b.testo).semplice;
 
-  const suTesto = (testo: string) => applicaGesto(() => testo);
+  // Un editor che riceve dal di fuori il testo appena salvato lo riscrive e lo ridice: non e' una
+  // modifica del tester, e non deve cancellare l'esito ("Salvato", "Annulla") ne' sporcare la bozza.
+  const suTesto = (testo: string) => {
+    if (testo === b.testo) return;
+    applicaGesto(() => testo);
+  };
 
   const passaATesto = () => {
     setCampoTitolo(null);

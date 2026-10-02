@@ -12,9 +12,9 @@ import { Loader2 } from 'lucide-react';
  * Si carica con `next/dynamic` e senza rendering sul server: CodeMirror pesa, e la pagina
  * Scenari non se lo deve portare dietro finche' nessuno apre il testo. Le espressioni per
  * l'autocompletamento e per sottolineare i passi sconosciuti sono quelle del catalogo
- * che il server manda con la lettura dello scenario (`Contenuto.espressioni`): solo i
- * passi realizzati. Non c'e' nessun gestore di proposte: un passo nuovo non si crea da
- * qui, e un clic su un passo sconosciuto non si inghiotte.
+ * che il server manda con la lettura dello scenario (`Contenuto.espressioni`): quelle
+ * che anche il controllo accetta. Non c'e' nessun gestore di proposte: un passo nuovo
+ * non si crea da qui, e un clic su un passo sconosciuto non si inghiotte.
  *
  * L'editor usa i colori del cruscotto, non quelli del vecchio portale: qui sotto si
  * rimappano le variabili che `GherkinEditor` legge sui token del cruscotto, chiari e scuri.
@@ -50,7 +50,7 @@ export function EditorTesto({
   onCambia,
 }: {
   testo: string;
-  /** Le frasi dei passi che esistono nel catalogo (realizzati). */
+  /** Le frasi dei passi che esistono nel catalogo. */
   espressioni: string[];
   /** Si sta controllando o salvando: il testo non si muove sotto le dita (la bozza ignorerebbe cio' che si scrive). */
   occupato: boolean;

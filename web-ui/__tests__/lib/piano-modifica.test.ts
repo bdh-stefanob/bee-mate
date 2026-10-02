@@ -460,6 +460,21 @@ describe('leggiContenuto', () => {
     expect(frasi).not.toContain('the page shows {string}');
   });
 
+  it('le espressioni per il testo avanzato sono quelle che il controllo accetta: anche i passi wanted (una registrazione salvata ne e fatta), non i deprecati', () => {
+    const catalogo = JSON.parse(JSON.stringify(CATALOGO)) as typeof CATALOGO;
+    catalogo.steps.push(
+      { ...catalogo.steps[2], expression: 'the user is recorded', status: 'wanted' } as never,
+      { ...catalogo.steps[2], expression: 'the user is old', status: 'deprecated' } as never
+    );
+    scrivi('step-catalog.json', JSON.stringify(catalogo));
+    const c = leggiContenuto(radici, FILE);
+    expect(c.espressioni).toContain('the user is recorded');
+    expect(c.espressioni).toContain(DA);
+    expect(c.espressioni).not.toContain('the user is old');
+    // "Usa un altro passo" resta piu' stretto: un passo senza il suo codice fa partire il test e lo fa fallire.
+    expect(c.offribili.map((o) => o.frase)).not.toContain('the user is recorded');
+  });
+
   it('uno scenario in generated/ e uno che non e semplice dicono perche non si modificano', () => {
     expect(leggiContenuto(radici, 'generated/bozza.feature')).toMatchObject({ semplice: false, ragione: 'registrato' });
   });

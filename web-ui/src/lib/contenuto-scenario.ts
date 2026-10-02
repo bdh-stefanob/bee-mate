@@ -49,7 +49,7 @@ export interface Contenuto {
   passi: PassoDelPannello[];
   /** Solo passi `implemented` senza parametri: quelli che "Usa un altro passo" puo' offrire. */
   offribili: PassoOffribile[];
-  /** Tutte le espressioni `implemented` (per il testo avanzato). */
+  /** Le espressioni che il controllo accetta, tutte tranne le deprecate (per il testo avanzato: autocompletamento e passi sconosciuti). */
   espressioni: string[];
 }
 
@@ -144,6 +144,9 @@ export function leggiContenuto(radici: RadiciModifica, file: string): Contenuto 
     offribili: implementati
       .filter((s) => !haParametri(s.expression))
       .map((s) => ({ frase: s.expression, app: s.app, area: s.area, ...(s.doc?.intent ? { intento: s.doc.intent } : {}) })),
-    espressioni: implementati.map((s) => s.expression),
+    // Per il testo avanzato: tutto cio' che il controllo accetta. Non solo gli `implemented`: ogni passo
+    // di una registrazione salvata ha il suo codice ed e' `wanted` finche' il team non lo approva, e
+    // sottolinearli come "sconosciuti" farebbe credere che il testo di ogni scenario sia sbagliato.
+    espressioni: catalogo.filter((s) => s.status !== 'deprecated').map((s) => s.expression),
   };
 }
