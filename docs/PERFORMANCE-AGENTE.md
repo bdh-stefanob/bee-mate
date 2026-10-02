@@ -82,7 +82,7 @@ contenuto utile), in tutte le direzioni: e' quello che il tester sente di piu'.
 Con `curl -w` o dal browser, 10 chiamate ciascuna, mediana e peggiore:
 `/api/controllo`, `/api/configurazione`, `/api/scenari`, `/api/catalogo`,
 `/api/catalogo/stato`, `/api/catalogo/riconciliazione`, `/api/esegui` (GET),
-`/api/traccia/ultima`, `/api/passi`, `/api/features`, `/api/catalog`.
+`/api/traccia/ultima`, `/api/passi`, `/api/scenari/contenuto`.
 
 | Verifica | Atteso |
 |---|---|

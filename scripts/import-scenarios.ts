@@ -253,7 +253,7 @@ Uso: npx ts-node scripts/import-scenarios.ts --input <file> [--app <app>] [--are
     : [];
 
   // Nome Feature: dall'header. Se assente, NON usare il basename di un tmp file
-  // (es. "import-1750857600000" generato da /api/import) — ripiega sui tag o su "Imported".
+  // (es. "import-1750857600000", come li creava l'importazione dell'app, tolta il 2/10) — ripiega sui tag o su "Imported".
   const inputBasename = path.basename(resolvedInput, path.extname(resolvedInput));
   const isTempBasename = /^import-\d+$/.test(inputBasename);
   if (!feature.name) {
