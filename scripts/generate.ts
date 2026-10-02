@@ -34,6 +34,7 @@
  *   name=NOME      nome corto per i file generati (default: dalla registrazione)
  *   dry            prova a vuoto
  *   no-rules       produce anche brief-naive.md, per il confronto
+ *   no-catalog     non aggiorna il catalogo dopo la generazione (di norma lo fa)
  *   scout=DIR      dizionari da usare (default: reports/scout)
  *   catalog=F      catalogo da usare (default: step-catalog.json)
  *   manifest=F     scrive l'elenco di cio' che ha prodotto, in JSON. Serve ai
@@ -43,6 +44,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { spawnSync } from "child_process";
 import {
   indexDictionaries, resolveRecording, componentsForPage, assertionPage, type PageIdentity,
 } from "./lib/generate-core";
@@ -325,6 +327,34 @@ async function main(): Promise<void> {
     );
   }
 
+  // ── Gli step generati entrano SUBITO nel catalogo ────────────────────────
+  // Uno scenario generato non puo' essere bloccato da nessun vincolo: i suoi
+  // step sono gia' scritti, quindi il catalogo li deve avere appena nascono. Si
+  // potano dopo. Mai fatale: se la suite non compila per un motivo altrui, la
+  // generazione e' comunque riuscita e lo si dice. `no-catalog` lo salta.
+  if (!dry && outRoot === "src" && !hasFlag(args, "--no-catalog")) {
+    console.log(`\n  CATALOGO\n`);
+    const esito = spawnSync(
+      process.execPath,
+      [path.join("node_modules", "ts-node", "dist", "bin.js"), path.join("scripts", "rigenera-catalogo.ts")],
+      { encoding: "utf-8" }
+    );
+    if (esito.status === 0) {
+      console.log(`   Gli step di questo scenario sono nel catalogo (step-catalog.json, STEP_CATALOG.md).`);
+    } else {
+      const causa = (esito.stderr?.trim() ? esito.stderr : esito.stdout ?? "")
+        .split("\n")
+        .filter((r) => r.trim())
+        .slice(-3)
+        .join("\n       ");
+      console.log(
+        `   Catalogo NON aggiornato: la suite non compila per un motivo che non e' di questa registrazione.\n` +
+          `       ${causa}\n` +
+          `   Lo scenario e' generato e non e' bloccato. Appena la suite compila: npm run catalog`
+      );
+    }
+  }
+
   console.log(`\n  PROSSIMO PASSO\n`);
   if (dry) {
     console.log(`   Prova a vuoto: non e' stato scritto niente. Togli --dry per generare.\n`);
@@ -333,10 +363,9 @@ async function main(): Promise<void> {
   console.log(`   1. Il test gira gia' cosi' com'e', senza AI:`);
   console.log(`        npm run test:dry`);
   console.log(`        npx cucumber-js ${ctx.outRoot}/features/generated/${slug}.feature`);
-  console.log(`   2. Il commit non si blocca per queste frasi: il validatore rilegge il catalogo dal`);
-  console.log(`      codice, e gli step generati ci entrano subito (si potano dopo).`);
-  console.log(`      Per portarle nel vocabolario condiviso, dai ${path.join(briefDir, "brief.md")} a Kiro`);
-  console.log(`      (agente bdd-generate): cambia la frase nel feature e nello step definition.`);
+  console.log(`   2. Nessun vincolo: gli step sono nel catalogo e il commit non si blocca.`);
+  console.log(`      OPZIONALE — se vuoi le frasi del vocabolario condiviso, dai ${path.join(briefDir, "brief.md")}`);
+  console.log(`      a Kiro (agente bdd-generate): cambia la frase nel feature e nello step definition.`);
   console.log(`   3. E verifica il suo lavoro con giudici che non sono pareri:`);
   console.log(`        npx tsc --noEmit -p tsconfig.json && npm run test:dry\n`);
 }

@@ -18,6 +18,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { execSync, spawnSync } from "child_process";
 import { leggiJson } from "./lib/leggi-json";
+import { eRegistrato } from "./lib/registrati";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors step-catalog.json shape)
@@ -262,14 +263,37 @@ function main(): void {
    * Portarli nel vocabolario e' un lavoro suo (task 13), non il prezzo di un
    * commit che tocca altro.
    */
-  const featureFiles = candidati.filter((f) => {
+  const daValutare = candidati.filter((f) => {
     try {
       return !fs.readFileSync(f, "utf-8").includes("@non-automatizzato");
     } catch {
       return true;
     }
   });
-  const saltati = candidati.length - featureFiles.length;
+
+  /**
+   * UNO SCENARIO GENERATO NON SI BLOCCA, MAI.
+   *
+   * Esce da una registrazione con le frasi del tester e i suoi step gia' scritti:
+   * il catalogo li accoglie subito (lo fa la generazione) e si potano dopo.
+   * Nessun vincolo, nemmeno se il catalogo non si e' potuto aggiornare: portare le
+   * frasi nel vocabolario e' un suggerimento OPZIONALE, non il prezzo di un
+   * commit. Il controllo vale per gli scenari scritti a mano.
+   */
+  const generati = daValutare.filter((f) => {
+    try {
+      return eRegistrato(fs.readFileSync(f, "utf-8"));
+    } catch {
+      return false;
+    }
+  });
+  const featureFiles = daValutare.filter((f) => !generati.includes(f));
+  if (generati.length > 0) {
+    console.log(
+      `  ${generati.length} scenari generati (@generato): non si bloccano. Frasi nel vocabolario? Opzionale: Kiro, agente bdd-generate.`
+    );
+  }
+  const saltati = candidati.length - daValutare.length;
   if (saltati > 0) {
     console.log(`  ${saltati} file marcati @non-automatizzato: non si validano (sono documenti).`);
   }
