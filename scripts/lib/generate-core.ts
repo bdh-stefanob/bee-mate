@@ -19,6 +19,11 @@ import { judge } from "./stability";
 // quello che era. Due elenchi di avvisi divergerebbero, e divergendo farebbero
 // generare un passo che a tempo di esecuzione viene chiuso da solo.
 import { avvisoDelGesto } from "../../src/support/avvisi";
+// Stesso principio delle ricette: dichiarata una volta sola, dove vive l'azione
+// che le applica (src/actions/mappa.actions.ts), cosi' il generatore e
+// l'esecuzione non possono mai descrivere due identita' diverse per lo stesso
+// caso. Pura anche questa: nessun browser, solo un confronto su ruolo+nome.
+import { ricettaDelGesto } from "../../src/support/ricette";
 import { mergeInventories } from "./inventory";
 import type {
   Assertion, CatalogStep, Component, Gap, Intent, Recording,
@@ -543,6 +548,25 @@ export function resolveRecording(
       // su una pagina fuori dallo scout ne produceva uno nuovo a ogni occorrenza, e
       // tutti tranne uno venivano saltati in silenzio.
       const grezzo = found ?? synthesise(step);
+
+      // IL GESTO ASSOMIGLIA A UNA RICETTA NOTA? Solo per i gesti senza ancoraggio:
+      // una ricetta esiste perche' il codice generato normale (clicca il centro
+      // del rettangolo) non basta proprio li'. Dichiarato nel rapporto, MAI
+      // sostituito qui: vedi G2-ricette-mappa-e-ripetizioni.md, punto 4.
+      if (step.ancoraggioAssente) {
+        const ricetta = ricettaDelGesto({ role: grezzo.role, name: grezzo.name });
+        if (ricetta) {
+          gaps.push({
+            kind: "ricetta-disponibile",
+            where: intent.label,
+            detail:
+              `Questo gesto assomiglia alla ricetta "${ricetta.nome}" (${ricetta.dove}): ` +
+              `${ricetta.nota} Il codice generato resta quello di sempre finche' una persona ` +
+              `non sceglie a mano di usare la ricetta al suo posto.`,
+          });
+        }
+      }
+
       const chiaveComponente = `${id.key}\u0000${componentKey(grezzo.role, grezzo.name)}`;
       // Un campo inviato con Invio si invia SEMPRE, su quella pagina: la
       // decisione si prende guardando tutta la registrazione, non il gesto

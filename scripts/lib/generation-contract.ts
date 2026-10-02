@@ -366,7 +366,11 @@ export interface Gap {
     | "nessuno-step-di-catalogo"
     | "ancoraggio-instabile"
     | "intento-senza-etichetta"
-    | "asserzione-non-verificabile";
+    | "asserzione-non-verificabile"
+    // Il gesto assomiglia (per identita', mai per somiglianza) a una ricetta
+    // nota in src/support/ricette.ts. Dichiarato, MAI applicato da solo: vedi
+    // G2-ricette-mappa-e-ripetizioni.md, punto 4.
+    | "ricetta-disponibile";
   /** Cosa non e' andato, in una frase leggibile da chi non ha scritto il codice. */
   detail: string;
   /** Dove: l'etichetta dell'intento, oppure la pagina. */

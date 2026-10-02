@@ -29,9 +29,10 @@ import {
   looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates, componentsForPage,
 } from "./generate-core";
 import { componenteSenzaRuolo, toComponent } from "./component-naming";
+import { ricettaDelGesto } from "../../src/support/ricette";
 import { assertLoadedBody, emitPageObject, emitSteps, frasiDiIntento, phraseOf, rilevaRipetizione } from "./generate-emit";
 import type {
-  CatalogStep, Gap, Intent, Recording, ResolvedIntent, ResolvedStep, ScoutResult,
+  CatalogStep, Gap, Intent, Recording, ResolvedIntent, ResolvedStep, ScoutResult, Step,
 } from "./generation-contract";
 
 const ROOT = path.join(__dirname, "..", "..");
@@ -723,6 +724,61 @@ console.log("\n--- clic su un componente senza ancoraggio (G2, punto 3) ---\n");
     /async clickContinue\(\): Promise<void> \{\s*await this\.continueButton\.click\(\);/.test(file.contents),
     file.contents
   );
+}
+
+console.log("\n--- ricetta proposta, mai applicata da sola (G2, punto 4) ---\n");
+
+{
+  // IL CASO CHE CONTA. Un gesto sul livello che intercetta i clic sopra una
+  // mappa (id "map-overlay", nessuna classe: lo stesso caso che il fix del
+  // punto 3 ha scoperto) assomiglia alla ricetta "scelta-su-mappa". Il
+  // generatore lo DICHIARA in un buco "ricetta-disponibile" -- mai lo
+  // sostituisce: il codice che esce resta quello generico di sempre.
+  const url = "https://esempio.invalid/mappa";
+  const gestoMappa: Step = {
+    action: "click",
+    role: "",
+    name: "",
+    url,
+    ancoraggioAssente: { tag: "div", classi: [], id: "map-overlay", selettore: "#map-overlay" },
+  };
+  const registrazione: Recording = {
+    startUrl: url, recordedAt: "", durationSeconds: 1, pagesVisited: [url],
+    summary: { intents: 1, steps: 1, assertions: 0, unlabelled: 0 },
+    intents: [{ label: "il cliente sceglie una farmacia sulla mappa", pageUrl: url, steps: [gestoMappa], assertions: [], notes: [] }],
+  } as Recording;
+
+  const risolta = resolveRecording(registrazione, indexDictionaries([]), { catalog: [] });
+  const buchiRicetta = risolta.gaps.filter((g) => g.kind === "ricetta-disponibile");
+  eq("un gesto che assomiglia alla ricetta produce un solo buco di quel tipo", buchiRicetta.length, 1);
+  truthy(
+    "il buco nomina la ricetta e dove sta scritta",
+    buchiRicetta[0]?.detail.includes("scelta-su-mappa") && buchiRicetta[0]?.detail.includes("src/actions/mappa.actions.ts"),
+    buchiRicetta[0]?.detail ?? "(nessun buco)"
+  );
+
+  // Un elemento senza ruolo che NON assomiglia a nessuna ricetta nota (un id
+  // qualunque) non deve produrre il buco: il riconoscimento e' per identita'
+  // esatta, mai per "sembra un po' la stessa cosa".
+  const gestoAltro: Step = {
+    action: "click", role: "", name: "", url,
+    ancoraggioAssente: { tag: "div", classi: [], id: "qualcos-altro", selettore: "#qualcos-altro" },
+  };
+  const registrazioneAltro: Recording = {
+    ...registrazione,
+    intents: [{ ...registrazione.intents[0]!, steps: [gestoAltro] }],
+  };
+  const risoltaAltro = resolveRecording(registrazioneAltro, indexDictionaries([]), { catalog: [] });
+  eq(
+    "un elemento senza ruolo che non e' quello della ricetta non la propone",
+    risoltaAltro.gaps.filter((g) => g.kind === "ricetta-disponibile").length,
+    0
+  );
+
+  // La funzione pura usata dal generatore, isolata: e' per identita'
+  // (ruolo+nome), non per somiglianza di testo.
+  eq("ricettaDelGesto riconosce per identita' esatta", ricettaDelGesto({ role: "", name: "map-overlay" })?.nome, "scelta-su-mappa");
+  eq("e non per un nome quasi uguale", ricettaDelGesto({ role: "", name: "Map Overlay" }), null);
 }
 
 // ---------------------------------------------------------------------------
