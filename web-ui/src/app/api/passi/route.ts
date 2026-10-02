@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import * as path from 'path';
 import { REPO_ROOT } from '@/lib/repo';
 import { stato } from '@/lib/registro';
-import { leggiPassiTest } from '@/lib/artefatti';
+import { leggiPassiTestIncrementale } from '@/lib/passi-incrementali';
 
 /**
  * GET /api/passi?id=<id>
@@ -21,6 +21,7 @@ export async function GET(request: Request) {
   }
 
   const percorso = path.join(REPO_ROOT, 'reports', 'cruscotto', `${id}.ndjson`);
-  const passi = leggiPassiTest(percorso);
+  // Incrementale: ogni secondo si legge solo cio' che il file ha guadagnato.
+  const passi = await leggiPassiTestIncrementale(percorso);
   return NextResponse.json({ passi });
 }

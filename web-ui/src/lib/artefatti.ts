@@ -210,6 +210,24 @@ function raccogliDefinizioni(nodi: NodoScenario[] | undefined, nomi: Map<string,
  * arriva). Mai un'eccezione: un testo illeggibile da' un'analisi vuota.
  */
 export function analizzaMessaggi(testo: string): AnalisiMessaggi {
+  const analizzatore = creaAnalizzatore();
+  for (const riga of testo.split('\n')) analizzatore.aggiungiRiga(riga);
+  return analizzatore.risultato();
+}
+
+/**
+ * Lo stesso lavoro di `analizzaMessaggi`, una riga alla volta: chi legge un
+ * file che cresce (i passi di un test mentre gira, ogni secondo) puo' dargli
+ * solo le righe nuove invece di rifare tutto da capo. Una riga e' un messaggio
+ * intero: non si passano mai righe a meta'.
+ */
+export interface AnalizzatoreMessaggi {
+  aggiungiRiga(riga: string): void;
+  /** Lo stato di adesso. Le strutture sono vive: una riga aggiunta dopo le cambia. */
+  risultato(): AnalisiMessaggi;
+}
+
+export function creaAnalizzatore(): AnalizzatoreMessaggi {
   const sorgenti = new Map<string, string>();
   const definizioni = new Map<string, string>();
   const picklePerId = new Map<string, NonNullable<MessaggioCucumber['pickle']>>();
@@ -222,15 +240,15 @@ export function analizzaMessaggi(testo: string): AnalisiMessaggi {
   const testoPerId = new Map<string, string>();
   const pickleStepPerTestStep = new Map<string, string>();
 
-  for (const riga of testo.split('\n')) {
-    if (!riga.trim()) continue;
+  function aggiungiRiga(riga: string): void {
+    if (!riga.trim()) return;
     let m: MessaggioCucumber;
     try {
       m = JSON.parse(riga) as MessaggioCucumber;
     } catch {
-      continue;
+      return;
     }
-    if (m === null || typeof m !== 'object') continue;
+    if (m === null || typeof m !== 'object') return;
 
     if (m.source?.uri !== undefined && typeof m.source.data === 'string') {
       sorgenti.set(m.source.uri, m.source.data);
@@ -315,16 +333,18 @@ export function analizzaMessaggi(testo: string): AnalisiMessaggi {
     }
   }
 
-  return { casi, sorgenti, passi, schermatePerCaso };
+  return { aggiungiRiga, risultato: () => ({ casi, sorgenti, passi, schermatePerCaso }) };
 }
 
-export function leggiPassiTest(percorsoMessaggi: string): Array<{
+export type PassoLetto = {
   testo: string;
   esito: Esito;
   messaggio?: string;
   riepilogo?: RiepilogoErrore;
   schermata?: string;
-}> {
+};
+
+export function leggiPassiTest(percorsoMessaggi: string): PassoLetto[] {
   let contenuto: string;
   try {
     contenuto = fs.readFileSync(percorsoMessaggi, 'utf-8');
@@ -332,7 +352,11 @@ export function leggiPassiTest(percorsoMessaggi: string): Array<{
     return [];
   }
 
-  const analisi = analizzaMessaggi(contenuto);
+  return passiDaAnalisi(analizzaMessaggi(contenuto));
+}
+
+/** I passi nella forma che la finestra mostra, da un'analisi dei messaggi (intera o in corso). */
+export function passiDaAnalisi(analisi: AnalisiMessaggi): PassoLetto[] {
   return analisi.passi.map((p) => {
     // Il messaggio grezzo puo' portare i codici colore che Playwright si
     // mette da solo quando chi lo lancia sembra un terminale a colori: qui
