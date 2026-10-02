@@ -30,6 +30,38 @@
 
 import { chromium, type Browser, type LaunchOptions } from "@playwright/test";
 
+/**
+ * Una fotocamera e un microfono finti, e il permesso gia' concesso.
+ *
+ * PERCHE' STA QUI, IN UN POSTO SOLO
+ * Serve a tre lati diversi — il browser che esegue gli scenari (`world.ts`), il
+ * browser che registra, e il controllo che li misura — e sono tre lati che
+ * devono vedere la stessa applicazione. Un flag scritto in due posti con una
+ * lettera di differenza da' un browser con la fotocamera e uno senza, e il
+ * secondo fallisce con "elemento non trovato": il sintomo piu' lontano dalla
+ * causa che si possa immaginare.
+ *
+ * COSA FANNO I DUE FLAG, PERCHE' NON SONO LA STESSA COSA
+ *   --use-fake-device-for-media-stream  da' un flusso video sintetico al posto
+ *                                       della telecamera. Senza, `getUserMedia`
+ *                                       rifiuta su una macchina senza camera —
+ *                                       e in CI non c'e' mai.
+ *   --use-fake-ui-for-media-stream      salta la richiesta di permesso, che in
+ *                                       headless nessuno puo' accettare.
+ *
+ * `permissions` vale sul contesto, non sul browser: e' la via di Playwright per
+ * dire "il permesso e' gia' stato dato", e va insieme ai flag, non al loro posto.
+ *
+ * Non si attiva a richiesta: una pagina che non chiede `getUserMedia` non si
+ * accorge di niente, e farne un'opzione vorrebbe dire che qualcuno deve sapere
+ * in anticipo che lo scenario passa da una fotocamera. Il generatore non lo sa,
+ * e non deve saperlo.
+ */
+export const MEDIA_FINTI = {
+  args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
+  permissions: ["camera"],
+} as const;
+
 /** I canali che proviamo, in ordine. Il primo e' quello di Playwright. */
 const CANALI = ["chromium", "chrome", "msedge"] as const;
 export type Canale = (typeof CANALI)[number];

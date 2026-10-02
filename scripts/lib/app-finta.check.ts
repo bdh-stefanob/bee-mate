@@ -42,7 +42,7 @@ import * as path from "path";
 import * as http from "http";
 import { spawn, spawnSync, type ChildProcess } from "child_process";
 import type { Browser, Page } from "@playwright/test";
-import { avviaBrowser } from "./browser";
+import { avviaBrowser, MEDIA_FINTI } from "./browser";
 import { apriRegistrazione, type RawEvent } from "./registrazione";
 import { group } from "../record";
 import type { Recording, ScoutResult, Step } from "./generation-contract";
@@ -252,7 +252,7 @@ interface EsitoRegistrazione {
 async function registra(base: string, browser: Browser): Promise<EsitoRegistrazione> {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 900 },
-    permissions: ["camera"],
+    permissions: [...MEDIA_FINTI.permissions],
   });
   const sessione = await apriRegistrazione(context, { attesaInventarioMs: 300 });
   const page = sessione.page;
@@ -367,7 +367,7 @@ async function main(): Promise<void> {
     const { browser } = await avviaBrowser({
       headless: true,
       // La fotocamera finta, da questo lato solo: vedi la nota in testa al file.
-      args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
+      args: [...MEDIA_FINTI.args],
     });
     let esito: EsitoRegistrazione;
     try {
@@ -422,6 +422,9 @@ async function main(): Promise<void> {
 
     console.log("\n--- cosa il generatore ha prodotto ---\n");
     verificaGenerazione(manifesto, esito.recording);
+
+    console.log("\n--- la fotocamera del browser che esegue ---\n");
+    await verificaFotocamera(base);
 
     // ── 3. ESEGUI ──────────────────────────────────────────────────────────
     console.log("\n--- lo scenario generato, eseguito ---\n");
@@ -490,6 +493,73 @@ function righeUtili(uscita: string): string[] {
   const utili = primo >= 0 ? righe.slice(primo + 1) : righe;
   const fine = utili.findIndex((r) => /^\d+ scenario/.test(r));
   return (fine > 0 ? utili.slice(0, fine) : utili).slice(0, 18);
+}
+
+// ---------------------------------------------------------------------------
+// La fotocamera (perdita n. 5)
+// ---------------------------------------------------------------------------
+
+/**
+ * Una pagina che chiede `getUserMedia` non si automatizza senza una fotocamera.
+ *
+ * In un browser senza telecamera `getUserMedia` rifiuta, e la pagina resta a
+ * guardare: non compare ne' "Take Picture" ne' niente da cliccare. Il test
+ * fallisce con "elemento non trovato", che e' il sintomo piu' lontano dalla
+ * causa che si possa immaginare.
+ *
+ * Due casi, perche' uno solo non dimostrerebbe niente: con i media finti la
+ * fotocamera si apre, senza non si apre. Il secondo e' quello che rende il
+ * primo una misura invece di un'affermazione.
+ *
+ * E un terzo caso, statico: che sia `world.ts` — il browser con cui girano
+ * davvero gli scenari — a chiederli. Avere la costante giusta e non usarla
+ * la' e' esattamente il difetto.
+ */
+async function verificaFotocamera(base: string): Promise<void> {
+  const apre = async (conMediaFinti: boolean): Promise<string> => {
+    const { browser } = await avviaBrowser({
+      headless: true,
+      ...(conMediaFinti ? { args: [...MEDIA_FINTI.args] } : {}),
+    });
+    try {
+      const context = await browser.newContext(
+        conMediaFinti ? { permissions: [...MEDIA_FINTI.permissions] } : {}
+      );
+      const page = await context.newPage();
+      await page.goto(`${base}/camera/visit/`, { waitUntil: "domcontentloaded" });
+      await page.getByRole("button", { name: "Open camera" }).click({ timeout: ATTESA });
+      const aperta = await page
+        .getByRole("button", { name: "Take Picture" })
+        .waitFor({ state: "visible", timeout: 3000 })
+        .then(() => true, () => false);
+      if (aperta) return "";
+      const avviso = (await page.getByRole("alert").textContent().catch(() => ""))?.trim();
+      return avviso || "la fotocamera non si e' aperta, e la pagina non dice perche'";
+    } finally {
+      await browser.close().catch(() => { /* gia' chiuso */ });
+    }
+  };
+
+  const con = await apre(true);
+  if (con === "") ok("con i media finti la fotocamera si apre");
+  else fail("con i media finti la fotocamera si apre", con);
+
+  const senza = await apre(false);
+  if (senza !== "") ok(`senza i media finti non si apre: la prova misura qualcosa (${senza})`);
+  else fail("senza i media finti non si apre", "si e' aperta comunque: questa prova non misura niente");
+
+  // Il browser degli scenari lo apre world.ts: se non chiede i media finti, la
+  // costante giusta non serve a nessuno.
+  const world = fs.readFileSync(path.join(RADICE, "src", "support", "world.ts"), "utf-8");
+  if (/MEDIA_FINTI/.test(world)) {
+    ok("world.ts apre il browser degli scenari con i media finti");
+  } else {
+    fail(
+      "world.ts apre il browser degli scenari con i media finti",
+      `src/support/world.ts non nomina MEDIA_FINTI: gli scenari girano in un browser senza ` +
+        `fotocamera, e una pagina che chiede getUserMedia non arriva da nessuna parte.`
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

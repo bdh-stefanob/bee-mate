@@ -6,7 +6,7 @@
 
 import { setWorldConstructor, World, IWorldOptions } from "@cucumber/cucumber";
 import { Browser, BrowserContext, Page } from "@playwright/test";
-import { avviaBrowser } from "../../scripts/lib/browser";
+import { avviaBrowser, MEDIA_FINTI } from "../../scripts/lib/browser";
 import { aspettaPresenza } from "./presenza";
 import { registraAvvisi } from "./avvisi";
 import { loadEnv } from "../../scripts/lib/atlassian";
@@ -119,6 +119,13 @@ export class CustomWorld extends World {
     const avvio = await avviaBrowser({
       headless: process.env["HEADED"] !== "1",
       ...(Number.isInteger(slowMo) && slowMo > 0 ? { slowMo } : {}),
+      // Una fotocamera finta, sempre. Una pagina che chiede `getUserMedia` —
+      // la verifica dell'identita' con una foto — in un browser senza
+      // telecamera non apre niente, e lo scenario fallisce con "elemento non
+      // trovato": il sintomo piu' lontano dalla causa che si possa immaginare.
+      // I flag stanno in MEDIA_FINTI, in un posto solo, perche' li vogliono
+      // anche il recorder e il controllo. Vedi scripts/lib/browser.ts.
+      args: [...MEDIA_FINTI.args],
     });
     this.browser = avvio.browser;
     this.context = await this.browser.newContext({
@@ -127,6 +134,9 @@ export class CustomWorld extends World {
       // scenario. Assente, si parte da un browser pulito — e su un'applicazione
       // dietro autenticazione questo significa fallire al primo passo.
       ...(AMBIENTE.storageState ? { storageState: AMBIENTE.storageState } : {}),
+      // Il permesso va dato al contesto: i flag del browser danno la telecamera
+      // finta, questo evita la richiesta che in headless nessuno puo' accettare.
+      permissions: [...MEDIA_FINTI.permissions],
     });
     this.page = await this.context.newPage();
     // Gli avvisi che compaiono quando vogliono loro: vedi avvisi.ts.
