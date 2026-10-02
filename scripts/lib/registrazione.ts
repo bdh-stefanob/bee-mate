@@ -64,7 +64,14 @@ export interface SessioneDiRegistrazione {
   dizionari: Map<string, ScoutResult>;
   /** Inventaria subito la pagina corrente, senza aspettare che si assesti. */
   inventariaOra(): Promise<void>;
-  /** Annulla un inventario in coda: si chiama prima di chiudere. */
+  /**
+   * Le pagine di cui si e' chiesto l'inventario e che non si e' fatto in tempo a
+   * leggere: attraversate in meno del tempo di assestamento. Si dichiarano, non
+   * si colmano — un dizionario piu' povero di quel che sembra e' un difetto che
+   * si scopre molto piu' tardi, quando i locator non trovano niente.
+   */
+  pagineMancate(): string[];
+  /** Annulla gli inventari in coda: si chiama prima di chiudere. */
   ferma(): void;
   /** Il tester ha premuto «Fine registrazione». */
   fermato(): boolean;
@@ -87,6 +94,13 @@ export async function apriRegistrazione(
   const pagine = new Set<string>();
   const dizionari = new Map<string, ScoutResult>();
   let fermato = false;
+  /**
+   * Cosa fare quando arriva un gesto: inventariare la pagina.
+   *
+   * Si assegna piu' sotto perche' la binding si espone prima che la pagina
+   * esista — e la binding e' il solo punto che sa quando un gesto e' avvenuto.
+   */
+  let dopoOgniAzione: () => void = () => { /* assegnata dopo l'apertura della pagina */ };
 
   /**
    * I totali tornano alla pagina come risposta alla binding.
@@ -124,6 +138,8 @@ export async function apriRegistrazione(
     // due pagine finirebbe tutto nella prima.
     event.url = source.page.url();
     eventi.push(event);
+    // Un gesto cambia la pagina anche senza navigare: si chiede l'inventario.
+    if (event.type === "action") dopoOgniAzione();
     return counts();
   });
 
@@ -144,34 +160,79 @@ export async function apriRegistrazione(
     const key = pageIdentity(d.url).key;
     const gia = dizionari.get(key);
     dizionari.set(key, gia ? mergeInventories(gia, d) : d);
+    mancate.delete(key);
   };
 
-  let attesa: NodeJS.Timeout | null = null;
+  /** Una scansione in attesa per ciascuna pagina, con la chiave di chi l'ha chiesta. */
+  const attese = new Map<string, NodeJS.Timeout>();
+  /** Le pagine di cui si e' chiesto l'inventario e che si e' lasciate prima di leggerle. */
+  const mancate = new Set<string>();
+  /** Le scansioni si fanno una per volta: due `evaluate` sovrapposti non aiutano nessuno. */
+  let coda: Promise<void> = Promise.resolve();
+
+  const chiaveCorrente = (): string => {
+    try {
+      const url = page.url();
+      // about:blank e' la pagina su cui nasce ogni scheda: non l'ha visitata
+      // nessuno, e inventariarla produrrebbe un dizionario vuoto per una pagina
+      // che non esiste — o, peggio, un avviso di pagina non inventariata.
+      if (!url || url === "about:blank") return "";
+      return pageIdentity(url).key;
+    } catch {
+      return "";
+    }
+  };
 
   // ── L'inventario, preso mentre si registra ────────────────────────────────
   //
-  // Con un ritardo, e annullabile: su un'applicazione a pagina singola le
-  // navigazioni arrivano a raffica, e inventariare a ogni cambio di rotta
-  // rallenterebbe chi sta lavorando — che e' la cosa da non fare mai, perche' un
-  // tester rallentato torna a fare il test senza lo strumento.
+  // DOPO OGNI AZIONE, NON SOLO QUANDO SI NAVIGA. E' la correzione che conta di
+  // piu': un sacco di stato compare senza cambiare pagina. Dopo "Open camera"
+  // nascono "Take Picture", "Save", "That's me"; dopo una ricerca per postcode
+  // nascono i pin e il pulsante che li conferma. Legandosi a `framenavigated` il
+  // dizionario di quelle pagine conteneva solo cio' che c'era all'arrivo — cioe'
+  // non conteneva nessuno dei componenti che il tester ha davvero toccato.
+  //
+  // UNA CODA PER PAGINA, E NESSUNA RICHIESTA ANNULLATA. Prima c'era un solo
+  // timer, riazzerato a ogni navigazione: una pagina attraversata in fretta non
+  // veniva mai inventariata, e la scansione guardava la pagina aperta al momento
+  // dello scatto, non quella che l'aveva chiesta. Ora la richiesta porta con se'
+  // l'identita' di chi l'ha fatta, e se nel frattempo si e' andati altrove non
+  // si legge la pagina sbagliata: si **dichiara** di non avere letto quella
+  // giusta. Una richiesta gia' in attesa non si riazzera, cosi' una raffica di
+  // gesti non sposta in avanti la scansione all'infinito.
   //
   // Ogni errore qui e' silenzioso di proposito: una pagina non inventariata e'
-  // un dizionario piu' povero, non una sessione persa.
-  const inventaria = (): void => {
-    if (attesa) clearTimeout(attesa);
-    attesa = setTimeout(() => {
-      void inventory(page)
-        .then(assorbi)
-        .catch(() => { /* pagina che naviga mentre si legge: si riprovera' */ });
-    }, attesaInventarioMs);
+  // un dizionario piu' povero, non una sessione persa. Fermare la registrazione
+  // di qualcuno a meta' per un dettaglio tecnico sarebbe sproporzionato.
+  const chiediInventario = (): void => {
+    const chiave = chiaveCorrente();
+    if (!chiave || attese.has(chiave)) return;
+    attese.set(
+      chiave,
+      setTimeout(() => {
+        attese.delete(chiave);
+        if (chiaveCorrente() !== chiave) {
+          // Si e' lasciata la pagina prima di riuscire a leggerla. Se non ne
+          // abbiamo nemmeno una versione precedente, e' un buco: va detto.
+          if (!dizionari.has(chiave)) mancate.add(chiave);
+          return;
+        }
+        coda = coda.then(() =>
+          inventory(page)
+            .then(assorbi)
+            .catch(() => { /* pagina che naviga mentre si legge: si riprovera' */ })
+        );
+      }, attesaInventarioMs)
+    );
   };
 
   page.on("framenavigated", (frame) => {
     if (frame !== page.mainFrame()) return;
     if (frame.url() !== "about:blank") pagine.add(frame.url());
-    inventaria();
+    chiediInventario();
   });
-  inventaria();
+  chiediInventario();
+  dopoOgniAzione = chiediInventario;
 
   return {
     page,
@@ -179,11 +240,13 @@ export async function apriRegistrazione(
     pagine,
     dizionari,
     inventariaOra: async () => {
+      await coda;
       await inventory(page).then(assorbi).catch(() => { /* browser gia' chiuso */ });
     },
+    pagineMancate: () => [...mancate],
     ferma: () => {
-      if (attesa) clearTimeout(attesa);
-      attesa = null;
+      for (const t of attese.values()) clearTimeout(t);
+      attese.clear();
     },
     fermato: () => fermato,
     barraPresente: () =>

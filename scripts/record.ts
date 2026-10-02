@@ -225,6 +225,8 @@ export function group(events: RawEvent[]): { intents: Intent[]; unlabelled: numb
 interface Sessione {
   recording: Recording;
   dizionari: Map<string, ScoutResult>;
+  /** Le pagine attraversate troppo in fretta per essere inventariate. */
+  pagineMancate: string[];
 }
 
 async function record(target: Target, browserName: string): Promise<Sessione> {
@@ -354,6 +356,7 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
       ...(/^https?:\/\//i.test(target.name) || target.name === "(url diretto)" ? {} : { target: target.name }),
     },
     dizionari,
+    pagineMancate: sessione.pagineMancate(),
   };
 }
 
@@ -361,7 +364,7 @@ async function record(target: Target, browserName: string): Promise<Sessione> {
 // Report
 // ---------------------------------------------------------------------------
 
-function report(rec: Recording, outPath: string, dizionari?: Map<string, ScoutResult>): void {
+function report(rec: Recording, outPath: string, pagineMancate: string[] = []): void {
   const s = rec.summary;
 
   console.log(`\nREGISTRAZIONE CONCLUSA\n`);
@@ -428,6 +431,22 @@ function report(rec: Recording, outPath: string, dizionari?: Map<string, ScoutRe
         `  non cosa deve succedere. Vale la pena rifare la registrazione usando "Verifica".`
     );
   }
+  // PAGINE ATTRAVERSATE TROPPO IN FRETTA.
+  //
+  // L'inventario aspetta che la pagina si assesti: una pagina lasciata prima non
+  // si legge. Non si colma, si dichiara — un dizionario piu' povero di quel che
+  // sembra si scopre molto piu' tardi, quando i locator non trovano niente, e
+  // allora sembra un altro problema.
+  if (pagineMancate.length > 0) {
+    console.log(
+      `\n  ${pagineMancate.length} PAGINE NON INVENTARIATE: attraversate prima che si assestassero.\n` +
+        pagineMancate.map((p) => `      ${p}`).join("\n") +
+        `\n  I gesti fatti li' ci sono, ma i loro componenti vanno sintetizzati dalla\n` +
+        `  registrazione: non sapremo se i locator sono univoci. Per avere il dizionario:\n` +
+        `      npm run scout <indirizzo>`
+    );
+  }
+
   if (s.unlabelled > 0) {
     console.log(
       `\n  NOTA: gli ultimi gesti non sono stati chiusi con "Fine intento".\n` +
@@ -627,7 +646,7 @@ async function main(): Promise<void> {
     fs.writeFileSync(file, JSON.stringify(unione, null, 2), "utf-8");
   }
 
-  report(finale, outPath, sessione.dizionari);
+  report(finale, outPath, sessione.pagineMancate);
 }
 
 // Solo lanciato come script: importarlo da un controllo non deve aprire un browser.

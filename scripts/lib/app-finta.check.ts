@@ -247,6 +247,8 @@ interface EsitoRegistrazione {
   dizionari: Map<string, ScoutResult>;
   /** I gesti che non e' stato possibile compiere: l'app finta non e' come credevamo. */
   nonRiusciti: string[];
+  /** Le pagine attraversate prima che si assestassero: dichiarate, non colmate. */
+  pagineMancate: string[];
 }
 
 async function registra(base: string, browser: Browser): Promise<EsitoRegistrazione> {
@@ -307,6 +309,7 @@ async function registra(base: string, browser: Browser): Promise<EsitoRegistrazi
     },
     dizionari: sessione.dizionari,
     nonRiusciti,
+    pagineMancate: sessione.pagineMancate(),
   };
 }
 
@@ -619,6 +622,18 @@ function verificaRegistrazione(esito: EsitoRegistrazione): void {
       "il dizionario della fotocamera contiene i componenti comparsi senza navigazione",
       `mancano ${JSON.stringify(mancanti)}; nel dizionario ci sono ${JSON.stringify([...nomiFotocamera])}. ` +
         `L'inventario parte solo su framenavigated, e dopo "Open camera" la pagina non naviga.`
+    );
+  }
+
+  // Le pagine lasciate prima che si assestassero: il generatore sintetizzera' i
+  // loro componenti senza sapere se i locator sono univoci.
+  if (esito.pagineMancate.length === 0) {
+    ok("nessuna pagina attraversata e non inventariata");
+  } else {
+    fail(
+      "nessuna pagina attraversata e non inventariata",
+      `${esito.pagineMancate.join(", ")}: lasciate prima che si assestassero. I gesti ci sono, ` +
+        `ma i loro componenti vanno sintetizzati, e non sapremo se i locator sono univoci.`
     );
   }
 
