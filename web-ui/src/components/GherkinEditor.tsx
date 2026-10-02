@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   EditorView,
   keymap,
@@ -13,14 +13,13 @@ import {
   type ViewUpdate,
 } from '@codemirror/view';
 import { EditorState, RangeSetBuilder } from '@codemirror/state';
-import { defaultKeymap, history, historyKeymap, undo, redo } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
 import { foldGutter, foldService, foldKeymap } from '@codemirror/language';
 import { lintGutter } from '@codemirror/lint';
 import { gherkinLanguage, gherkinTheme, gherkinLinter } from '@/lib/gherkin-cm';
 import { GHERKIN_PREFIX_RE } from '@/lib/autocomplete';
 import { matchesCatalog } from '@/lib/catalog-match';
-import { passoSconosciutoDaProporre } from '@/lib/passo-sconosciuto';
 
 // Fold ranges for Gherkin: each Scenario/Scenario Outline block is collapsible
 const gherkinFoldService = foldService.of((state, _lineStart, lineEnd) => {
@@ -114,41 +113,6 @@ function createHoverTooltip(expressionsRef: { current: string[] }, testoRef: { c
   });
 }
 
-function createClickToPropose(
-  expressionsRef: { current: string[] },
-  onProposeStepRef: { current: ((expression: string, keyword: 'Given' | 'When' | 'Then') => void) | undefined }
-) {
-  return EditorView.domEventHandlers({
-    mousedown(event, view) {
-      const gestore = onProposeStepRef.current;
-      // Senza un gestore delle proposte il clic non va inghiottito: il cursore si mette dove si clicca.
-      if (!gestore) return false;
-      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
-      if (pos === null) return false;
-      const sconosciuto = passoSconosciutoDaProporre(view.state.doc.lineAt(pos).text, expressionsRef.current, true);
-      if (!sconosciuto) return false;
-      // Unknown step — trigger proposal
-      gestore(sconosciuto.frase, sconosciuto.parolaChiave);
-      return true;
-    },
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Public ref handle
-// ---------------------------------------------------------------------------
-
-export interface GherkinEditorHandle {
-  /** Insert text at the current cursor position */
-  insertAtCursor: (text: string) => void;
-  /** Get the underlying EditorView instance */
-  getView: () => EditorView | null;
-  /** Undo one step */
-  undo: () => void;
-  /** Redo one step */
-  redo: () => void;
-}
-
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
@@ -160,14 +124,9 @@ export interface GherkinEditorProps {
   stepExpressions: string[];
   /** Legacy: initialValue for backward compatibility */
   initialValue?: string;
-  /**
-   * Called when a colleague clicks an unknown-step underline. Without it, a click on an
-   * unknown step is NOT swallowed: the cursor goes where one clicks, as in any text field.
-   */
-  onProposeStep?: (expression: string, keyword: 'Given' | 'When' | 'Then') => void;
   /** The accessible name of the text field (a field without a name is read as nothing). */
   etichetta?: string;
-  /** Tooltip of an unknown step. Default: the proposal text if `onProposeStep` is set, else a plain notice. */
+  /** Tooltip of an unknown step. Default: a plain notice. */
   etichettaPassoSconosciuto?: string;
 }
 
@@ -182,16 +141,13 @@ export interface GherkinEditorProps {
  *  - Gherkin syntax highlighting (teal keywords, green steps, gray comments, orange tags)
  *  - Inline Gherkin linter (errors/warnings)
  *  - Autocomplete from step expressions (prefix-match, case-insensitive, max 8)
- *  - Unknown-step inline decoration (orange underline) with hover tooltip + click-to-propose
+ *  - Unknown-step inline decoration (orange underline) with hover tooltip
  *  - Line numbers, active-line gutter, undo/redo history
  *  - Controlled value: syncs from outside (value prop) and emits to onChange
- *  - Exposes GherkinEditorHandle ref for toolbar/stepBrowser inserts
  */
-const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
-  function GherkinEditor(
-    { value, onChange, stepExpressions, initialValue, onProposeStep, etichetta, etichettaPassoSconosciuto },
-    ref
-  ) {
+const GherkinEditor = function GherkinEditor({
+    value, onChange, stepExpressions, initialValue, etichetta, etichettaPassoSconosciuto,
+  }: GherkinEditorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<EditorView | null>(null);
     // Track last value sent/received to avoid infinite loops
@@ -200,13 +156,9 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
     const stepExpressionsRef = useRef<string[]>(stepExpressions);
     // WR-03: keep latest onChange in a ref so the init closure never goes stale
     const onChangeRef = useRef(onChange);
-    // Keep latest onProposeStep in a ref (Pitfall 2 — avoid stale closure)
-    const onProposeStepRef = useRef(onProposeStep);
     // The tooltip text is read when the tooltip opens, so a ref keeps it current
     const etichettaRef = useRef(etichetta);
-    const tooltipRef = useRef(
-      etichettaPassoSconosciuto ?? (onProposeStep ? 'Step not in catalog — click to propose' : 'Step not in catalog')
-    );
+    const tooltipRef = useRef(etichettaPassoSconosciuto ?? 'Step not in catalog');
 
     // Update refs when props change
     useEffect(() => {
@@ -218,13 +170,8 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
     }, [onChange]);
 
     useEffect(() => {
-      onProposeStepRef.current = onProposeStep;
-    }, [onProposeStep]);
-
-    useEffect(() => {
-      tooltipRef.current =
-        etichettaPassoSconosciuto ?? (onProposeStep ? 'Step not in catalog — click to propose' : 'Step not in catalog');
-    }, [etichettaPassoSconosciuto, onProposeStep]);
+      tooltipRef.current = etichettaPassoSconosciuto ?? 'Step not in catalog';
+    }, [etichettaPassoSconosciuto]);
 
     // ---------------------------------------------------------------------------
     // Autocomplete source
@@ -282,7 +229,6 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
       // Unknown-step plugin instances (created once; read refs dynamically)
       const unknownStepPlugin = createUnknownStepPlugin(stepExpressionsRef);
       const unknownStepHover  = createHoverTooltip(stepExpressionsRef, tooltipRef);
-      const unknownStepClick  = createClickToPropose(stepExpressionsRef, onProposeStepRef);
 
       const view = new EditorView({
         state: EditorState.create({
@@ -302,7 +248,6 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
             // Unknown-step decoration extensions (after autocompletion)
             unknownStepPlugin,
             unknownStepHover,
-            unknownStepClick,
             updateListener,
             // The text field gets a name: an editor nobody can name is read as nothing.
             EditorView.contentAttributes.of({ 'aria-label': etichettaRef.current ?? 'Gherkin Editor' }),
@@ -344,7 +289,6 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
               // Unknown-step decoration styles
               '.cm-unknown-step': {
                 borderBottom: '2px solid oklch(0.65 0.2 35)',
-                cursor: 'pointer',
               },
               '.cm-unknown-tooltip': {
                 padding: '2px 8px',
@@ -385,34 +329,6 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
     }, [value]);
 
     // ---------------------------------------------------------------------------
-    // Imperative handle
-    // ---------------------------------------------------------------------------
-
-    useImperativeHandle(ref, () => ({
-      insertAtCursor(text: string) {
-        const view = viewRef.current;
-        if (!view) return;
-        const pos = view.state.selection.main.head;
-        view.dispatch({
-          changes: { from: pos, insert: text },
-          selection: { anchor: pos + text.length },
-        });
-        view.focus();
-      },
-      getView() {
-        return viewRef.current;
-      },
-      undo() {
-        const view = viewRef.current;
-        if (view) undo(view);
-      },
-      redo() {
-        const view = viewRef.current;
-        if (view) redo(view);
-      },
-    }));
-
-    // ---------------------------------------------------------------------------
     // Render
     // ---------------------------------------------------------------------------
 
@@ -423,8 +339,7 @@ const GherkinEditor = forwardRef<GherkinEditorHandle, GherkinEditorProps>(
         style={{ minHeight: '400px', fontFamily: 'var(--font-mono, ui-monospace, monospace)' }}
       />
     );
-  }
-);
+  };
 
 GherkinEditor.displayName = 'GherkinEditor';
 
