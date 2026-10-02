@@ -135,6 +135,23 @@ export function pageIdentity(url: string): PageIdentity {
 }
 
 /**
+ * Il nome di una pagina che si tiene distinta dalle sue sorelle.
+ *
+ * `/questions/1` non puo' chiamarsi `QuestionsPage` come `/questions/2`: il
+ * numero fa parte dell'identita', perche' si e' deciso che quelle due pagine
+ * sono due. `Questions1Page` e' un nome brutto, e va bene cosi': lo si legge e
+ * si capisce di quale passo si parla. Un nome bello che indica la pagina
+ * sbagliata e' molto peggio.
+ */
+export function nomiDaPercorsoEsatto(id: PageIdentity): { className: string; slug: string } {
+  const segmenti = id.path.split("/").filter(Boolean);
+  const nome = pascal(segmenti.filter((s) => !looksLikeId(s)).pop() ?? "") || "Home";
+  const numeri = segmenti.filter((s) => looksLikeId(s)).join("-");
+  const base = numeri ? `${nome}${pascal(numeri)}` : nome;
+  return { className: `${base}Page`, slug: kebab(base) };
+}
+
+/**
  * Rende i nomi di classe univoci.
  *
  * Due pagine diverse che finiscono con lo stesso segmento — `/admin/settings` e
@@ -302,11 +319,12 @@ export function resolveRecording(
   options: ResolveOptions
 ): ResolveResult {
   const gaps: Gap[] = [];
-  const seenKeys = new Map<string, PageIdentity>();
+  /** Le pagine incontrate, per percorso vero: niente e' ancora stato unito. */
+  const viste = new Map<string, PageIdentity>();
 
   const remember = (url: string): PageIdentity => {
     const id = pageIdentity(url);
-    if (!seenKeys.has(id.key)) seenKeys.set(id.key, id);
+    if (!viste.has(id.keyEsatta)) viste.set(id.keyEsatta, id);
     return id;
   };
 
@@ -318,10 +336,81 @@ export function resolveRecording(
     if (intent.pageUrl) remember(intent.pageUrl);
     if (intent.endUrl) remember(intent.endUrl);
   }
-  if (seenKeys.size === 0) remember(recording.startUrl);
+  if (viste.size === 0) remember(recording.startUrl);
 
-  const pages = uniqueNames([...seenKeys.values()]);
-  const nameByKey = new Map(pages.map((p) => [p.key, p]));
+  // ── Due indirizzi sono la stessa pagina? LO DECIDONO I COMPONENTI ────────
+  //
+  // `/questions/1` e `/questions/3` cadono entrambi su `/questions/:id`, ed e'
+  // quasi sempre giusto: `/orders/1830941` e `/orders/1830942` sono la stessa
+  // pagina con dentro un ordine diverso. Su una procedura a passi no: ogni passo
+  // ha domande sue, e una Page Object sola prende l'unione dei componenti di
+  // tutti — con locator che sulla pagina corrente non esistono.
+  //
+  // Dalla forma dell'indirizzo i due casi non si distinguono, ed e' per questo
+  // che non si guarda l'indirizzo. Si guarda cio' che la sessione ha osservato:
+  // i componenti del dizionario di quel percorso, piu' i gesti che il tester ci
+  // ha fatto. Se coincidono, e' la stessa pagina con dentro un dato diverso e si
+  // uniscono; se differiscono, sono due pagine e restano due. E' un dato, non
+  // un'euristica — ed e' la ragione per cui `pageIdentity` tiene entrambe le
+  // chiavi (decisione del proprietario, 2026-10-02; vedi T4 in docs/OVERVIEW.md).
+  const gestiPerPercorso = new Map<string, Set<string>>();
+  for (const intent of recording.intents) {
+    const tocca = (url: string, role: string, name: string): void => {
+      const k = pageIdentity(url).keyEsatta;
+      if (!gestiPerPercorso.has(k)) gestiPerPercorso.set(k, new Set());
+      gestiPerPercorso.get(k)!.add(componentKey(role, name));
+    };
+    for (const s of intent.steps) tocca(s.url ?? intent.pageUrl ?? recording.startUrl, s.role, s.name);
+    for (const a of intent.assertions) tocca(a.url ?? intent.pageUrl ?? recording.startUrl, a.role, a.name);
+  }
+
+  /** Cio' che si e' osservato su un percorso: dizionario piu' gesti. */
+  const osservatoSu = (id: PageIdentity): string => {
+    const dal = index.byPath.get(id.keyEsatta)?.components ?? [];
+    const insieme = new Set<string>(dal.map((c) => componentKey(c.role, c.name)));
+    for (const g of gestiPerPercorso.get(id.keyEsatta) ?? []) insieme.add(g);
+    return [...insieme].sort().join("\u0000");
+  };
+
+  const perMascherata = new Map<string, PageIdentity[]>();
+  for (const id of viste.values()) {
+    perMascherata.set(id.key, [...(perMascherata.get(id.key) ?? []), id]);
+  }
+
+  const scelte: PageIdentity[] = [];
+  /** Da percorso vero all'identita' scelta: unita o separata. */
+  const sceltaPerPercorso = new Map<string, PageIdentity>();
+  const unite: Array<{ key: string; percorsi: string[] }> = [];
+
+  for (const [key, gruppo] of perMascherata) {
+    const diverse = new Set(gruppo.map(osservatoSu)).size > 1;
+    if (gruppo.length === 1 || !diverse) {
+      // Una sola, oppure tutte con gli stessi componenti: una Page Object, con
+      // il percorso mascherato. E' il comportamento di sempre.
+      const rappresentante = gruppo[0]!;
+      scelte.push(rappresentante);
+      for (const id of gruppo) sceltaPerPercorso.set(id.keyEsatta, rappresentante);
+      if (gruppo.length > 1) unite.push({ key, percorsi: gruppo.map((g) => g.path) });
+      continue;
+    }
+    // Componenti diversi: sono pagine diverse. Ognuna tiene la sua identita', e
+    // la chiave diventa quella esatta — altrimenti due Page Object con la stessa
+    // chiave e la seconda sovrascriverebbe la prima.
+    for (const id of gruppo) {
+      const separata: PageIdentity = { ...id, key: id.keyEsatta, ...nomiDaPercorsoEsatto(id) };
+      scelte.push(separata);
+      sceltaPerPercorso.set(id.keyEsatta, separata);
+    }
+  }
+
+  const pages = uniqueNames(scelte);
+  // `uniqueNames` puo' aver rinominato: la mappa si rifa' sui risultati.
+  const perChiaveScelta = new Map(pages.map((p) => [p.key, p]));
+  const identitaDi = (url: string): PageIdentity => {
+    const id = pageIdentity(url);
+    const scelta = sceltaPerPercorso.get(id.keyEsatta);
+    return scelta ? perChiaveScelta.get(scelta.key) ?? scelta : id;
+  };
 
   // UN PERCORSO CHE ATTRAVERSA PIU' DOMINI.
   //
@@ -333,33 +422,23 @@ export function resolveRecording(
   //
   // Non lo indovino e non lo aggiro: lo dichiaro. Il codice generato resta buono
   // per tutto il resto, e chi legge sa che li' serve una decisione.
-  // PIU' INDIRIZZI CHE DIVENTANO UNA PAGINA SOLA.
+  // PIU' INDIRIZZI UNITI IN UNA PAGINA SOLA.
   //
-  // `/questions/1` e `/questions/3` collassano su `/questions/:id`, ed e' quasi
-  // sempre giusto: `/orders/1830941` e `/orders/1830942` sono la stessa pagina
-  // con dentro un ordine diverso. Ma su una procedura a passi non lo e': ogni
-  // passo ha domande diverse, e una Page Object sola prenderebbe l'unione dei
-  // componenti di tutti — con locator che sulla pagina corrente non esistono.
-  //
-  // Dall'esterno non si distingue un identificativo da un numero di passo, e
-  // indovinare qui vorrebbe dire sbagliare in silenzio. Si dichiara.
-  const perChiave = new Map<string, Set<string>>();
-  for (const [key, id] of seenKeys) {
-    if (!perChiave.has(key)) perChiave.set(key, new Set());
-    perChiave.get(key)!.add(id.path);
-  }
-  for (const [key, percorsi] of perChiave) {
-    if (percorsi.size > 1) {
-      gaps.push({
-        kind: "ancoraggio-instabile",
-        where: key,
-        detail:
-          `${percorsi.size} indirizzi diversi finiscono sulla stessa Page Object, perche' ` +
-          `il segmento numerico e' stato letto come un identificativo. Giusto per un ` +
-          `dettaglio ("l'ordine 123"), sbagliato per una procedura a passi ("la domanda 3"), ` +
-          `dove ogni passo ha componenti suoi. Se e' il secondo caso, vanno tenute separate.`,
-      });
-    }
+  // Non e' piu' un buco — la decisione la prendono i componenti osservati, qui
+  // sopra — ma e' una decisione, e va detta: se la sessione ha attraversato quei
+  // percorsi in uno stato che li faceva sembrare uguali, l'unione puo' essere
+  // sbagliata, e chi legge deve poterla smentire.
+  for (const { key, percorsi } of unite) {
+    gaps.push({
+      kind: "ancoraggio-instabile",
+      where: key,
+      detail:
+        `${percorsi.length} indirizzi (${percorsi.join(", ")}) sono una Page Object sola: ` +
+        `sulla registrazione mostravano gli stessi componenti, quindi sono la stessa pagina ` +
+        `con dentro un dato diverso. Se invece sono passi diversi di una procedura, la ` +
+        `sessione li ha attraversati in uno stato che li faceva sembrare uguali: rifai la ` +
+        `registrazione passando da tutti, o lancia lo scout su ognuno.`,
+    });
   }
 
   const hosts = [...new Set(pages.map((p) => p.host))];
@@ -411,7 +490,7 @@ export function resolveRecording(
 
     const steps: ResolvedStep[] = gesti.map((step) => {
       const url = step.url ?? fallbackUrl;
-      const id = nameByKey.get(pageIdentity(url).key) ?? pageIdentity(url);
+      const id = identitaDi(url);
       // Un campo password si cerca per tipo, sempre: anche quando il dizionario
       // ne ha uno, il nome che porta e' il segnaposto mascherato — pallini —
       // che non identifica niente. Il dizionario qui non aiuta, confonde.
@@ -497,9 +576,9 @@ export function resolveRecording(
       });
     }
 
-    const pageId = nameByKey.get(pageIdentity(fallbackUrl).key) ?? pageIdentity(fallbackUrl);
+    const pageId = identitaDi(fallbackUrl);
     const endId = intent.endUrl
-      ? nameByKey.get(pageIdentity(intent.endUrl).key) ?? pageIdentity(intent.endUrl)
+      ? identitaDi(intent.endUrl)
       : null;
 
     const candidates = rankCandidates(intent, steps, options.catalog, options.shortlist ?? 5);

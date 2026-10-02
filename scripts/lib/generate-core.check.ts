@@ -282,6 +282,56 @@ eq(
   );
 }
 
+{
+  // DUE INDIRIZZI CON LA STESSA CHIAVE MASCHERATA: UNA PAGINA O DUE?
+  //
+  // Lo decidono i componenti osservati, non la forma dell'indirizzo (decisione
+  // del proprietario, 2026-10-02). Il caso che conta e' che la stessa funzione
+  // dia le due risposte opposte sui due casi veri: un dettaglio di risorsa
+  // (`/orders/1830941`) e un passo di procedura (`/questions/1`).
+  const sessione = (percorsi: Array<[string, string]>): Recording => ({
+    startUrl: `https://esempio.invalid${percorsi[0]![0]}`,
+    recordedAt: "", durationSeconds: 1,
+    pagesVisited: percorsi.map(([p]) => `https://esempio.invalid${p}`),
+    summary: { intents: 1, steps: percorsi.length, assertions: 0, unlabelled: 0 },
+    intents: [{
+      label: "il cliente attraversa due pagine",
+      pageUrl: `https://esempio.invalid${percorsi[0]![0]}`,
+      steps: percorsi.map(([p, nome]) => ({
+        action: "click" as const, role: "button", name: nome, url: `https://esempio.invalid${p}`,
+      })),
+      assertions: [], notes: [],
+    }],
+  }) as Recording;
+
+  const uguali = resolveRecording(
+    sessione([["/orders/1830941", "Pay"], ["/orders/1830942", "Pay"]]),
+    indexDictionaries([]),
+    { catalog: [] }
+  );
+  eq(
+    "due indirizzi con gli stessi componenti sono una Page Object sola",
+    uguali.pages.map((p) => p.className),
+    ["OrdersPage"]
+  );
+
+  const diversi = resolveRecording(
+    sessione([["/questions/1", "Next"], ["/questions/2", "No GP"]]),
+    indexDictionaries([]),
+    { catalog: [] }
+  );
+  eq(
+    "due indirizzi con componenti diversi restano due Page Object, col numero nel nome",
+    diversi.pages.map((p) => p.className).sort(),
+    ["Questions1Page", "Questions2Page"]
+  );
+  truthy(
+    "e le due Page Object non hanno la stessa chiave: la seconda non sovrascrive la prima",
+    new Set(diversi.pages.map((p) => p.key)).size === diversi.pages.length,
+    "stessa chiave: un file sovrascriverebbe l'altro in silenzio"
+  );
+}
+
 const kinds = (g: readonly Gap[]): string[] => [...new Set(g.map((x) => x.kind))].sort();
 eq(
   "i buchi dichiarati sono quelli veri",
