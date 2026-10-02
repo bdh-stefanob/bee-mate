@@ -445,11 +445,9 @@ function pianificaElimina(radici: RadiciModifica, op: Extract<Operazione, { oper
       resta('parametri');
       continue;
     }
-    // Una richiesta del team (non ancora realizzata) non si perde con uno scenario.
-    if (s.status !== 'implemented') {
-      resta('richiesto');
-      continue;
-    }
+    // Attenzione: `wanted` non vuol dire "senza codice". Ogni passo di una registrazione salvata ha il
+    // suo codice ed e' `wanted` finche' il team non lo approva: va con lo scenario come ogni altro.
+    // Solo una richiesta senza codice (nessuna definizione da togliere) resta, e si dice che e' del team.
     const percorso = cartella === 'generated' ? null : percorsoDefinizione(radici.repoRoot, s.sourceRef);
     let definizione = percorso ? steps.get(percorso) : undefined;
     if (percorso && !definizione) {
@@ -466,7 +464,7 @@ function pianificaElimina(radici: RadiciModifica, op: Extract<Operazione, { oper
     }
     // Non trovata esattamente una volta: non si indovina, il passo resta.
     if (!percorso || !definizione || !rimossa || rimossa.rimosse !== 1) {
-      resta('altro');
+      resta(s.status !== 'implemented' && !definizione ? 'richiesto' : 'altro');
       continue;
     }
     steps.set(percorso, { ...definizione, nuovo: rimossa.testo });

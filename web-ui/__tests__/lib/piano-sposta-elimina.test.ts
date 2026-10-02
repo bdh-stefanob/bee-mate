@@ -77,8 +77,6 @@ const SPEDIZIONE_STEPS = [
   '',
   'When("the user types {string} in the form", async function (_v: string) {});',
   '',
-  'When("the user waits for the review", async function () {});',
-  '',
 ].join('\n');
 
 const SOLO_STEPS = [
@@ -112,11 +110,13 @@ const CATALOGO = {
     voce('the page shows {string}', 'common\\verifica.steps.ts', 1),
     voce(DA, 'shop\\order\\pagamento.steps.ts', 7),
     voce('the user pays by card', 'shop\\order\\pagamento.steps.ts', 12),
-    voce('the user ships the parcel', 'shop\\order\\spedizione.steps.ts', 7),
+    // Un passo registrato: ha il suo codice ma e' ancora `wanted` (in attesa del team). Va con lo scenario, come ogni altro.
+    voce('the user ships the parcel', 'shop\\order\\spedizione.steps.ts', 7, { status: 'wanted' }),
     voce('the user tracks the parcel', 'shop\\order\\spedizione.steps.ts', 12),
     voce('the user types {string} in the form', 'shop\\order\\spedizione.steps.ts', 15),
-    voce('the user waits for the review', 'shop\\order\\spedizione.steps.ts', 17, { status: 'wanted' }),
-    voce('the user does a solo thing', 'shop\\lonely\\solo.steps.ts', 7),
+    // Una richiesta del team che nessuno ha ancora costruito: niente codice, quindi niente da togliere.
+    voce('the user waits for the review', 'shop\\order\\spedizione.steps.ts', 17, { status: 'wanted', sourceRef: '' }),
+    voce('the user does a solo thing', 'shop\\lonely\\solo.steps.ts', 7, { status: 'wanted' }),
   ],
 };
 

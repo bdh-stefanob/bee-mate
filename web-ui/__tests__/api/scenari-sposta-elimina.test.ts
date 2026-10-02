@@ -70,7 +70,8 @@ const CATALOGO = {
     voce('the user is logged in', 'common\\accesso.steps.ts'),
     voce('the page shows {string}', 'common\\verifica.steps.ts'),
     voce(DA, 'shop\\order\\pagamento.steps.ts'),
-    voce('the user does a solo thing', 'shop\\lonely\\solo.steps.ts'),
+    // Come ogni passo registrato: ha il suo codice ed e' `wanted` finche' il team non lo approva.
+    voce('the user does a solo thing', 'shop\\lonely\\solo.steps.ts', { status: 'wanted' }),
   ],
 };
 
@@ -298,13 +299,19 @@ describe('POST /api/scenari/modifica: elimina', () => {
     expect((c.passi as { vanno: string[] }).vanno).toEqual(['the user does a solo thing']);
     expect(esiste('src/steps/shop/lonely/solo.steps.ts')).toBe(false);
     expect(c.catalogoRigenerato).toBe(true);
+    // La rigenerazione conserva le voci `wanted` anche senza codice: senza questo resterebbe un fantasma "da realizzare".
+    const voci = (JSON.parse(leggi('step-catalog.json')) as typeof CATALOGO).steps.map((s) => s.expression);
+    expect(voci).not.toContain('the user does a solo thing');
+    expect(voci).toContain(DA);
 
     const a = await annulla(post('/api/scenari/annulla', {}));
     const ca = await corpo(a);
     expect(a.status).toBe(200);
     expect((ca.attuale as { testo: string }).testo).toBe(SOLO);
-    expect(istantanea()).toEqual(prima);
     expect(rigenera.chiamate).toBe(2);
+    // La rigenerazione (qui finta) rifa' dal codice la voce che l'eliminazione aveva tolto.
+    scrivi('step-catalog.json', JSON.stringify(CATALOGO));
+    expect(istantanea()).toEqual(prima);
   });
 
   it('un file con piu\' scenari non si elimina da qui: 403 con la ragione', async () => {

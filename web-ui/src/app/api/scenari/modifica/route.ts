@@ -47,8 +47,12 @@ export async function POST(request: Request) {
   const radici = { repoRoot: REPO_ROOT, featuresDir: FEATURES_DIR };
   try {
     const esito = await conLaSerratura(async () => applica(radici, pianifica(radici, op)));
-    // La frase vecchia non c'e' piu' nel codice: la sua voce `wanted` non va conservata dalla rigenerazione.
-    if (esito.catalogoDaTogliere) togliVoceDalCatalogo(REPO_ROOT, esito.catalogoDaTogliere);
+    // Le frasi che non ci sono piu' nel codice (la vecchia di una rinomina, i passi di uno scenario eliminato):
+    // la rigenerazione conserva le voci `wanted`, e senza questo resterebbero nel catalogo come fantasmi.
+    // Una voce `implemented` non si tocca: la rigenerazione la rifa' dal codice.
+    for (const frase of [...(esito.catalogoDaTogliere ? [esito.catalogoDaTogliere] : []), ...(esito.passi?.vanno ?? [])]) {
+      togliVoceDalCatalogo(REPO_ROOT, frase);
+    }
     const catalogoRigenerato = esito.rigeneraCatalogo ? await tentaRigenerazioneCatalogo() : null;
     // Uno scenario spostato porta con se' l'esito dell'ultima prova (risultera' "modificato dopo").
     if (esito.spostamento) {
