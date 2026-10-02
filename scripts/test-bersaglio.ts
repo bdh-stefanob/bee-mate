@@ -85,6 +85,10 @@ function main(): void {
   // modi diversi di cominciare, e qui si sceglie quale provare.
   const pulito = args.includes("pulito");
 
+  // "solo-traduzione": Cucumber non ricontrolla i tipi degli step (lo chiede la
+  // finestra; vedi `lancio-test.ts`). A mano, senza, tutto come prima.
+  const soloTraduzione = args.includes("solo-traduzione");
+
   // "messaggi=<file>": Cucumber scrive l'esito di ogni passo in quel file, in
   // formato messages — una riga JSON per messaggio. E' quello che legge il
   // cruscotto: mai la prosa che Cucumber stampa a schermo.
@@ -139,7 +143,7 @@ function main(): void {
     // scelto finiva eseguito insieme a tutti gli altri.
     execFileSync(process.execPath, [cucumber, ...formato], {
       stdio: "inherit",
-      env: ambienteDiCucumber({ base: process.env, ambiente, percorsi, messaggi, vedi, rallenta, pulito }),
+      env: ambienteDiCucumber({ base: process.env, ambiente, percorsi, messaggi, vedi, rallenta, pulito, soloTraduzione }),
     });
   } catch (err) {
     // Cucumber ha gia' stampato cosa e' fallito: qui si propaga solo l'esito,

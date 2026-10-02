@@ -165,14 +165,20 @@ function scenariDi(p?: Parametri): string[] | undefined {
  */
 const NODE = process.execPath;
 const TS_NODE = 'node_modules/ts-node/dist/bin.js';
-// Sola traduzione, senza controllo dei tipi: la meta' del tempo. Solo per la
-// diagnosi, che gira a ogni apertura del Controllo; i tipi li controllano gia'
-// `tsc` e `check:all`.
+// Sola traduzione, senza controllo dei tipi: da 2,5 a 6,7 s in meno secondo quanti
+// file `.steps.ts` ha il progetto (il costo dei tipi cresce con ogni scenario
+// salvato). Per la diagnosi, che gira a ogni apertura del Controllo, e per il
+// lancio di un test; i tipi li controllano gia' `tsc`, `check:all` e il
+// salvataggio dal cruscotto (`controllaTipi` in `convalida-scenario.ts`).
 const TS_NODE_SOLO_TRADUZIONE = 'node_modules/ts-node/dist/bin-transpile.js';
 const PLAYWRIGHT = 'node_modules/playwright/cli.js';
 
 function script(nome: string, ...argomenti: string[]) {
   return { eseguibile: NODE, argomenti: [TS_NODE, `scripts/${nome}`, ...argomenti] };
+}
+
+function scriptSoloTraduzione(nome: string, ...argomenti: string[]) {
+  return { eseguibile: NODE, argomenti: [TS_NODE_SOLO_TRADUZIONE, `scripts/${nome}`, ...argomenti] };
 }
 
 export function rigaDiComando(
@@ -207,7 +213,12 @@ export function rigaDiComando(
       if (p?.vedi && rallenta > 0) argomenti.push(`rallenta=${rallenta}`);
       if (p?.pulito) argomenti.push('pulito');
       if (p?.messaggi) argomenti.push(`messaggi=${percorsoDi(p.messaggi, 'messaggi')}`);
-      return script('test-bersaglio.ts', ...argomenti);
+      // Il programma parte con la sola traduzione, e "solo-traduzione" dice a
+      // Cucumber di fare lo stesso: due ricontrolli dei tipi a ogni lancio erano
+      // 9,2 s di attesa con 56 file di step. A mano (`npm run test:bersaglio`)
+      // restano i tipi.
+      argomenti.push('solo-traduzione');
+      return scriptSoloTraduzione('test-bersaglio.ts', ...argomenti);
     }
     default:
       throw new Error(`${String(nome)} non e' un comando previsto`);

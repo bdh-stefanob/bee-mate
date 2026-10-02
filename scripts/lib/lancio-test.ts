@@ -6,7 +6,7 @@
  */
 
 /** Le opzioni nude di `test-bersaglio`: non sono percorsi. */
-const OPZIONI_NUDE = new Set(["vedi", "pulito", "generati"]);
+const OPZIONI_NUDE = new Set(["vedi", "pulito", "generati", "solo-traduzione"]);
 const PREFISSI_OPZIONE = ["messaggi=", "rallenta="];
 
 /**
@@ -43,6 +43,14 @@ export interface OpzioniAmbiente {
   vedi: boolean;
   rallenta: number;
   pulito: boolean;
+  /**
+   * Cucumber carica gli step con la sola traduzione, senza ricontrollare i tipi di
+   * tutti i file a ogni lancio (circa +0,085 s per ogni file `.steps.ts`, e il
+   * progetto ne aggiunge uno a ogni scenario salvato). Lo chiede la finestra; chi
+   * lancia a mano (`npm run test:bersaglio`) non lo passa e i tipi si controllano
+   * come prima. I tipi li controllano `tsc` e il salvataggio dal cruscotto.
+   */
+  soloTraduzione?: boolean;
 }
 
 /** L'ambiente del processo Cucumber. */
@@ -56,5 +64,6 @@ export function ambienteDiCucumber(o: OpzioniAmbiente): NodeJS.ProcessEnv {
     ...(o.vedi ? { HEADED: "1" } : {}),
     ...(o.rallenta > 0 ? { BDD_SLOWMO: String(o.rallenta) } : {}),
     ...(o.pulito ? { BDD_NO_SESSION: "1" } : {}),
+    ...(o.soloTraduzione ? { TS_NODE_TRANSPILE_ONLY: "true" } : {}),
   };
 }

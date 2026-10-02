@@ -11,9 +11,25 @@ describe('elenco chiuso dei comandi', () => {
   it('un test si lancia con le opzioni in forma nuda', () => {
     const r = rigaDiComando('test', { bersaglio: 'lavoro', vedi: true, pulito: true });
     expect(r.argomenti).toEqual([
-      'node_modules/ts-node/dist/bin.js',
-      'scripts/test-bersaglio.ts', 'lavoro', 'generati', 'vedi', 'pulito',
+      'node_modules/ts-node/dist/bin-transpile.js',
+      'scripts/test-bersaglio.ts', 'lavoro', 'generati', 'vedi', 'pulito', 'solo-traduzione',
     ]);
+  });
+
+  it('un test lanciato dalla finestra non ricontrolla i tipi (ne il programma ne Cucumber)', () => {
+    const r = rigaDiComando('test', { bersaglio: 'lavoro' });
+    // Il programma parte con la sola traduzione...
+    expect(r.argomenti[0]).toBe('node_modules/ts-node/dist/bin-transpile.js');
+    // ...e dice a Cucumber di fare lo stesso (lo trasforma in TS_NODE_TRANSPILE_ONLY).
+    expect(r.argomenti).toContain('solo-traduzione');
+  });
+
+  it('gli altri comandi con ts-node restano con i tipi (il catalogo, la generazione)', () => {
+    for (const nome of ['catalogo', 'generazione', 'registrazione', 'sessione', 'scansione', 'sincronizza-regole'] as const) {
+      const r = rigaDiComando(nome, { bersaglio: 'x', manifesto: 'reports/m.json' });
+      expect(r.argomenti[0]).toBe('node_modules/ts-node/dist/bin.js');
+      expect(r.argomenti).not.toContain('solo-traduzione');
+    }
   });
 
   it('nessuna opzione con i trattini, mai', () => {
@@ -127,8 +143,8 @@ describe('uno scenario scelto dalla finestra', () => {
   it('un file intero sostituisce "tutti gli scenari registrati"', () => {
     const r = rigaDiComando('test', { bersaglio: 'lavoro', scenario: 'src/features/app/flusso/ordine.feature' });
     expect(r.argomenti).toEqual([
-      'node_modules/ts-node/dist/bin.js',
-      'scripts/test-bersaglio.ts', 'lavoro', 'src/features/app/flusso/ordine.feature',
+      'node_modules/ts-node/dist/bin-transpile.js',
+      'scripts/test-bersaglio.ts', 'lavoro', 'src/features/app/flusso/ordine.feature', 'solo-traduzione',
     ]);
   });
 
@@ -171,8 +187,8 @@ describe('la velocita\' con cui si guarda il browser', () => {
   it('un test lento porta i millisecondi in forma nuda', () => {
     const r = rigaDiComando('test', { bersaglio: 'demo', vedi: true, rallenta: 500 });
     expect(r.argomenti).toEqual([
-      'node_modules/ts-node/dist/bin.js',
-      'scripts/test-bersaglio.ts', 'demo', 'generati', 'vedi', 'rallenta=500',
+      'node_modules/ts-node/dist/bin-transpile.js',
+      'scripts/test-bersaglio.ts', 'demo', 'generati', 'vedi', 'rallenta=500', 'solo-traduzione',
     ]);
   });
 
@@ -191,12 +207,12 @@ describe('la velocita\' con cui si guarda il browser', () => {
 describe('una lista di scenari scelta dalla finestra', () => {
   const A = 'src/features/app/flusso/a.feature';
   const B = 'src/features/app/flusso/b.feature';
-  const dopoIlBersaglio = (argomenti: string[]) => argomenti.slice(3); // [ts-node, script, bersaglio, ...]
+  const dopoIlBersaglio = (argomenti: string[]) => argomenti.slice(3).filter((a) => a !== 'solo-traduzione'); // [ts-node, script, bersaglio, ...]
 
   it('due scenari sono due argomenti separati, nell\'ordine dato, e nessuno comincia con un trattino', () => {
     const r = rigaDiComando('test', { bersaglio: 'lavoro', scenari: [B, A] });
     expect(r.argomenti).toEqual([
-      'node_modules/ts-node/dist/bin.js', 'scripts/test-bersaglio.ts', 'lavoro', B, A,
+      'node_modules/ts-node/dist/bin-transpile.js', 'scripts/test-bersaglio.ts', 'lavoro', B, A, 'solo-traduzione',
     ]);
     expect(r.argomenti.some((x) => x.startsWith('-'))).toBe(false);
     expect(r.argomenti).not.toContain('generati');
@@ -227,7 +243,7 @@ describe('una lista di scenari scelta dalla finestra', () => {
 
   it('piu\' di cento voci sono un errore, cento passano', () => {
     const voci = (n: number) => Array.from({ length: n }, (_, i) => `src/features/app/f${i}.feature`);
-    expect(rigaDiComando('test', { bersaglio: 'x', scenari: voci(100) }).argomenti.length).toBe(3 + 100);
+    expect(rigaDiComando('test', { bersaglio: 'x', scenari: voci(100) }).argomenti.length).toBe(4 + 100);
     expect(() => rigaDiComando('test', { bersaglio: 'x', scenari: voci(101) })).toThrow(/al massimo 100/);
   });
 
@@ -305,6 +321,6 @@ describe('la diagnosi non ricontrolla i tipi', () => {
   });
 
   it('gli altri script restano con il controllo dei tipi', () => {
-    expect(rigaDiComando('test', { bersaglio: 'x' }).argomenti[0]).toBe('node_modules/ts-node/dist/bin.js');
+    expect(rigaDiComando('catalogo').argomenti[0]).toBe('node_modules/ts-node/dist/bin.js');
   });
 });

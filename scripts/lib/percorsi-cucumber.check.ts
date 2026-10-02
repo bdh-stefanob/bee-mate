@@ -153,6 +153,11 @@ try {
   eq("senza file dei messaggi, BDD_HTML non c'e': il nome di sempre", "BDD_HTML" in amb(), false);
   eq("un percorso senza .ndjson non perde pezzi", reportHtmlPer("reports/x/messaggi"), "reports/x/messaggi.html");
   eq("i percorsi dati arrivano in BDD_PATHS nell'ordine dato", ambienteDiCucumber({ base: {}, ambiente: {}, percorsi: ["b", "a"], vedi: false, rallenta: 0, pulito: false })["BDD_PATHS"], "b;a");
+  const base = { base: {}, ambiente: {}, percorsi: ["x"], vedi: false, rallenta: 0, pulito: false };
+  eq("lanciato dalla finestra: Cucumber con la sola traduzione", ambienteDiCucumber({ ...base, soloTraduzione: true })["TS_NODE_TRANSPILE_ONLY"], "true");
+  eq("a mano (npm run test:bersaglio): i tipi si controllano ancora", "TS_NODE_TRANSPILE_ONLY" in ambienteDiCucumber(base), false);
+  eq("a mano: nemmeno un valore ereditato dall'ambiente viene aggiunto", "TS_NODE_TRANSPILE_ONLY" in ambienteDiCucumber({ ...base, base: {} }), false);
+  eq("l'opzione nuda solo-traduzione non e' un percorso", percorsiDaArgomenti(["demo", "a.feature", "solo-traduzione"]), ["a.feature"]);
   eq(
     "dagli argomenti: i percorsi in ordine, senza le opzioni nude",
     percorsiDaArgomenti(["demo", "src/features/b.feature", "vedi", "rallenta=500", "src/features/a.feature:3", "src/features/a.feature:9", "pulito", "messaggi=reports/m.ndjson"]),
