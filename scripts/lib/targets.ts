@@ -117,6 +117,27 @@ export interface Target {
    * mano nello stesso browser.
    */
   login?: LoginRecipe;
+  /**
+   * L'ambiente e' di collaudo — MAI presunto da nome o indirizzo (N10, difesa 2
+   * del collaudo da copione). Lo scrive la persona che amministra l'ambiente,
+   * sapendo che non e' produzione: ne' il copione ne' il codice possono
+   * dedurlo. Un ambiente senza questo segno e' trattato come "non di collaudo",
+   * e un copione contro di lui viene rifiutato (vedi `copione-difese.ts`).
+   */
+  collaudo?: boolean;
+  /**
+   * L'ambiente e' di produzione. Se e' vero insieme a `collaudo`, il rifiuto e'
+   * immediato: questo segno non si allenta mai, per nessun ambiente.
+   */
+  produzione?: boolean;
+  /**
+   * L'ambiente e' raggiungibile pubblicamente (un sito di pratica, come
+   * l'ambiente di esempio `demo`), non un ambiente aziendale. Decide la difesa
+   * 5 (conferma umana): contro un ambiente non pubblico un copione non parte
+   * senza che una persona l'abbia confermato a mano (nessun avvio non
+   * presidiato contro un ambiente aziendale).
+   */
+  pubblico?: boolean;
 }
 
 const CONFIG = "bdd-targets.json";
@@ -209,6 +230,12 @@ export function loadTargets(file = CONFIG): Target[] {
         session: t.session ?? path.join("reports", "sessions", `${name}.json`),
         ...(t.hint ? { hint: t.hint } : {}),
         ...(t.login ? { login: t.login as LoginRecipe } : {}),
+        // Booleani: MAI presunti. Si copia solo `=== true` esplicito, cosi' un
+        // valore scritto per sbaglio come stringa ("true") o assente resta "non
+        // di collaudo" invece di passare per caso (difesa 2).
+        ...(t.collaudo === true ? { collaudo: true } : {}),
+        ...(t.produzione === true ? { produzione: true } : {}),
+        ...(t.pubblico === true ? { pubblico: true } : {}),
       };
     });
 }

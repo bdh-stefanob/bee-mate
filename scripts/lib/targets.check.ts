@@ -115,5 +115,49 @@ eq(
   false
 );
 
+console.log("\n--- N10: collaudo/produzione/pubblico si leggono solo se espliciti (mai presunti) ---\n");
+
+{
+  const fs = require("fs") as typeof import("fs");
+  const path = require("path") as typeof import("path");
+  const { loadTargets } = require("./targets") as typeof import("./targets");
+  const file = path.join("reports", "check-targets-n10.json");
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(
+    file,
+    JSON.stringify({
+      demo: { url: "https://demo.invalid", collaudo: true, pubblico: true },
+      collaudoAziendale: { url: "https://collaudo.invalid", collaudo: true },
+      produzione: { url: "https://prod.invalid", produzione: true },
+      entrambi: { url: "https://x.invalid", collaudo: true, produzione: true },
+      senzaSegni: { url: "https://y.invalid" },
+      stringaNonBooleana: { url: "https://z.invalid", collaudo: "true" },
+    }),
+    "utf-8"
+  );
+  try {
+    const letti = new Map(loadTargets(file).map((t) => [t.name, t]));
+    eq("demo: collaudo e pubblico letti", [letti.get("demo")?.collaudo, letti.get("demo")?.pubblico], [true, true]);
+    eq(
+      "collaudoAziendale: collaudo si', pubblico assente (non presunto)",
+      [letti.get("collaudoAziendale")?.collaudo, letti.get("collaudoAziendale")?.pubblico],
+      [true, undefined]
+    );
+    eq("produzione: produzione si', collaudo assente", letti.get("produzione")?.collaudo, undefined);
+    eq("entrambi: produzione e collaudo arrivano entrambi (decide copione-difese, non targets)", [
+      letti.get("entrambi")?.collaudo,
+      letti.get("entrambi")?.produzione,
+    ], [true, true]);
+    eq("senzaSegni: nessuno dei tre campi compare", letti.get("senzaSegni")?.collaudo, undefined);
+    eq(
+      'una stringa "true" non e\' un booleano: non si legge come collaudo (mai presunto)',
+      letti.get("stringaNonBooleana")?.collaudo,
+      undefined
+    );
+  } finally {
+    fs.rmSync(file, { force: true });
+  }
+}
+
 console.log(failures === 0 ? "\nTutti i controlli passano.\n" : `\n${failures} controlli falliti.\n`);
 process.exit(failures === 0 ? 0 : 1);
