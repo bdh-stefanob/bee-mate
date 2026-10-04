@@ -6,6 +6,7 @@ import type { CoppiaArricchita } from '@/lib/catalogo-numeri';
 import { CoppiaLato } from './CoppiaLato';
 import { TESTO_LETTURA, TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 /**
  * Due varianti di coppia SENZA gesto, apposta:
  *  - "da verificare" (testo quasi uguale ma almeno uno dei due senza
@@ -18,8 +19,8 @@ export function CoppiaDaVerificare({ coppia }: { coppia: CoppiaArricchita }) {
   const t = useTranslations('Catalogo');
   return (
     <Scheda
-      colore="var(--bordo)"
-      icona={<HelpCircle size={18} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} className="mt-0.5 shrink-0" />}
+      classeBordo="border-bordo"
+      icona={<HelpCircle size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-testo-tenue" />}
       titolo={t('daVerificareTitolo')}
       testo={t('daVerificareTesto')}
       coppia={coppia}
@@ -31,8 +32,8 @@ export function CoppiaSoloDaSapere({ coppia }: { coppia: CoppiaArricchita }) {
   const t = useTranslations('Catalogo');
   return (
     <Scheda
-      colore="var(--blu)"
-      icona={<Info size={18} aria-hidden="true" style={{ color: 'var(--blu)' }} className="mt-0.5 shrink-0" />}
+      classeBordo="border-blu"
+      icona={<Info size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-blu" />}
       titolo={t('informativaTitolo')}
       testo={t('informativaSpiegazione')}
       coppia={coppia}
@@ -41,27 +42,27 @@ export function CoppiaSoloDaSapere({ coppia }: { coppia: CoppiaArricchita }) {
 }
 
 function Scheda({
-  colore,
+  classeBordo,
   icona,
   titolo,
   testo,
   coppia,
 }: {
-  colore: string;
+  classeBordo: string;
   icona: React.ReactNode;
   titolo: string;
   testo: string;
   coppia: CoppiaArricchita;
 }) {
   return (
-    <div className="rounded-scheda border p-4" style={{ borderColor: colore, background: 'var(--superficie)' }}>
+    <div className={cn('rounded-scheda border bg-superficie p-4', classeBordo)}>
       <div className="flex items-start gap-2">
         {icona}
         <div className="flex-1">
-          <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo)' }}>
+          <h3 className={cn(TITOLO_GRUPPO, 'text-testo')}>
             {titolo}
           </h3>
-          <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+          <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
             {testo}
           </p>
         </div>

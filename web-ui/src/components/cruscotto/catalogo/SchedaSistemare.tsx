@@ -23,6 +23,7 @@ import { StrisciaEsito } from './StrisciaEsito';
 import type { EsitoOperazione, RispostaCatalogo, RispostaRiconciliazione } from './tipi';
 import { TESTO_LETTURA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 const selCatalogo = (i: Istantanea<RispostaCatalogo>) => i;
 const selCoppie = (i: Istantanea<RispostaRiconciliazione>) => i;
 
@@ -86,10 +87,10 @@ export function SchedaSistemare() {
   return (
     <section aria-labelledby="catalogo-sistemare-titolo" className="flex flex-col gap-4">
       <div>
-        <h2 id="catalogo-sistemare-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+        <h2 id="catalogo-sistemare-titolo" className={cn(TITOLO_SEZIONE, 'text-testo')}>
           {t('sistemareDomanda')}
         </h2>
-        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
           {t('sistemareIntro')}
         </p>
       </div>
@@ -113,8 +114,7 @@ export function SchedaSistemare() {
           {coppie.dati?.troncato && (
             <p
               role="status"
-              className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm"
-              style={{ color: 'var(--testo)', borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+              className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm text-testo border-bordo bg-superficie"
             >
               <Info aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
               <span>
@@ -153,7 +153,7 @@ export function SchedaSistemare() {
           )}
 
           {filtrate.length === 0 ? (
-            <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+            <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
               {t('nessunRisultato')}
             </p>
           ) : (
@@ -207,14 +207,13 @@ function GruppoDiCoppie({
         aria-expanded={aperto}
         aria-controls={id}
         onClick={() => setAperto((a) => !a)}
-        className="flex min-h-10 w-full items-center gap-2 rounded-controllo px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ outlineColor: 'var(--blu)' }}
+        className="flex min-h-10 w-full items-center gap-2 rounded-controllo px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 outline-blu"
       >
-        <Chevron size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} />
-        <span className="flex-1 text-sm font-semibold" style={{ color: 'var(--testo)' }}>
+        <Chevron size={16} aria-hidden="true" className="text-testo-tenue" />
+        <span className="flex-1 text-sm font-semibold text-testo">
           {t(titolo, { n: coppie.length })}
         </span>
-        <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <span className="text-sm text-testo-tenue">
           {aperto ? t('nascondiGruppo') : t('mostraGruppo')}
         </span>
       </button>

@@ -8,8 +8,7 @@ export function ScheletroCatalogo({ etichetta }: { etichetta: string }) {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-12 animate-pulse motion-reduce:animate-none rounded-scheda border"
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+          className="h-12 animate-pulse motion-reduce:animate-none rounded-scheda border border-bordo bg-superficie-tenue"
           aria-hidden="true"
         />
       ))}

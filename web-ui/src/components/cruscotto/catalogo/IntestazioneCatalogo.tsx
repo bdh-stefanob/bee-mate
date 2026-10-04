@@ -11,6 +11,7 @@ import type { Istantanea } from '@/lib/risorsa';
 import type { RispostaCatalogo, RispostaRiconciliazione } from './tipi';
 import type { FileScenariRidotto, StatoAggiornamentoCatalogo } from '@/lib/risorse-catalogo';
 
+import { cn } from '@/lib/utils';
 // I selettori stanno FUORI dal componente e restituiscono l'istantanea stessa
 // (gia' condivisa dallo store): vedi il commento di `useRisorsa`.
 const selCatalogo = (i: Istantanea<RispostaCatalogo>) => i;
@@ -77,9 +78,9 @@ export function IntestazioneCatalogo() {
           <>
             <span className="flex items-center gap-2">
               {numeriC.azionabili > 0 ? (
-                <AlertTriangle size={20} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+                <AlertTriangle size={20} aria-hidden="true" className="text-ambra" />
               ) : (
-                <CheckCircle2 size={20} aria-hidden="true" style={{ color: 'var(--verde)' }} />
+                <CheckCircle2 size={20} aria-hidden="true" className="text-verde" />
               )}
               <Numero valore={numeriC.azionabili} />
             </span>
@@ -104,7 +105,7 @@ export function IntestazioneCatalogo() {
 
 function Numero({ valore }: { valore: number }) {
   return (
-    <span className="text-3xl font-semibold leading-none" style={{ color: 'var(--testo)' }}>
+    <span className="text-3xl font-semibold leading-none text-testo">
       {valore}
     </span>
   );
@@ -112,7 +113,7 @@ function Numero({ valore }: { valore: number }) {
 
 function Riga({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+    <span className="text-sm text-testo-tenue">
       {children}
     </span>
   );
@@ -139,30 +140,24 @@ function Casella({
       <Link
         href={href}
         aria-busy={stato === 'caricamento'}
-        className="flex h-full min-h-32 flex-col gap-1 rounded-scheda border p-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{
-          borderColor: attenzione ? 'var(--ambra)' : 'var(--bordo)',
-          background: 'var(--superficie)',
-          outlineColor: 'var(--blu)',
-        }}
+        className={cn('flex h-full min-h-32 flex-col gap-1 rounded-scheda border p-4 focus-visible:outline-2 focus-visible:outline-offset-2 bg-superficie outline-blu', attenzione ? 'border-ambra' : 'border-bordo')}
       >
-        <span className="text-sm font-semibold" style={{ color: 'var(--testo-tenue)' }}>
+        <span className="text-sm font-semibold text-testo-tenue">
           {titolo}
         </span>
         {stato === 'caricamento' && (
           <>
-            <span aria-hidden="true" className="h-8 w-16 animate-pulse motion-reduce:animate-none rounded-dettaglio"
-              style={{ background: 'var(--superficie-tenue)' }} />
+            <span aria-hidden="true" className="h-8 w-16 animate-pulse motion-reduce:animate-none rounded-dettaglio bg-superficie-tenue" />
             <span className="sr-only">{t('caricamento')}</span>
           </>
         )}
         {stato === 'errore' && (
-          <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <span className="text-sm text-testo-tenue">
             {t('numeroNonDisponibile')}
           </span>
         )}
         {stato === 'pronto' && children}
-        <span className="mt-auto flex items-center gap-1 pt-2 text-sm font-medium" style={{ color: 'var(--blu)' }}>
+        <span className="mt-auto flex items-center gap-1 pt-2 text-sm font-medium text-blu">
           {vai}
           <ChevronRight size={14} aria-hidden="true" />
         </span>

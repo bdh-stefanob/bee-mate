@@ -26,7 +26,7 @@ export function RigaAggiornamento() {
   if (!stato) return null;
   if (stato.stato === 'in-corso') {
     return (
-      <p role="status" className="flex items-center gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p role="status" className="flex items-center gap-2 text-sm text-testo-tenue">
         <Loader2 size={14} aria-hidden="true" className="animate-spin motion-reduce:animate-none shrink-0" />
         {t('aggiornamentoInCorsoRiga')}
       </p>
@@ -34,7 +34,7 @@ export function RigaAggiornamento() {
   }
   if (stato.stato === 'ok') {
     return (
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('aggiornatoIl', { data: formatoData(stato.concluseIl, lingua) ?? '?' })}
       </p>
     );
@@ -57,7 +57,7 @@ export function AvvisoAggiornamento() {
 
   if (stato.stato === 'in-corso') {
     return (
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('aggiornamentoInCorso')}
       </p>
     );
@@ -75,14 +75,13 @@ export function AvvisoAggiornamento() {
 
   return (
     <div
-      className="flex flex-wrap items-start gap-3 rounded-scheda border p-3 text-sm"
-      style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+      className="flex flex-wrap items-start gap-3 rounded-scheda border p-3 text-sm border-ambra bg-superficie-tenue text-testo"
     >
-      <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
+      <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-ambra" />
       <div className="flex-1 min-w-48">
         <p>{t('aggiornamentoFallito', { dettaglio: stato.messaggio ?? '?' })}</p>
         {rifiutato && (
-          <p role="status" className="mt-1" style={{ color: 'var(--testo-tenue)' }}>
+          <p role="status" className="mt-1 text-testo-tenue">
             {t('aggiornamentoOccupato')}
           </p>
         )}

@@ -70,11 +70,10 @@ export function StrisciaEsito({
       ref={ref}
       role="status"
       tabIndex={-1}
-      className="flex flex-col gap-2 rounded-scheda border p-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={{ borderColor: 'var(--verde)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+      className="flex flex-col gap-2 rounded-scheda border p-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 border-verde bg-superficie text-testo outline-blu"
     >
       <div className="flex flex-wrap items-start gap-2">
-        <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--verde)' }} />
+        <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-verde" />
         <p className="min-w-48 flex-1 break-words">{testo}</p>
         {esito.annullabile && (
           <Button variant="outline" className="min-h-10 h-auto" onClick={annulla} disabled={inCorso}>
@@ -92,20 +91,20 @@ export function StrisciaEsito({
       </div>
 
       {esito.annullabile && (
-        <p style={{ color: 'var(--testo-tenue)' }}>{t('soloUltimaFusione')}</p>
+        <p className="text-testo-tenue">{t('soloUltimaFusione')}</p>
       )}
 
       {esito.catalogoRigenerato === false && (
         <div className="flex flex-wrap items-center gap-2">
-          <AlertTriangle size={16} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
-          <p className="flex-1" style={{ color: 'var(--testo)' }}>
+          <AlertTriangle size={16} aria-hidden="true" className="text-ambra" />
+          <p className="flex-1 text-testo">
             {t('catalogoNonRigenerato')}
           </p>
           <Button variant="outline" className="min-h-10 h-auto" onClick={riprova} disabled={rilancio === 'in-corso'}>
             {t('riprovaAggiornamento')}
           </Button>
           {rilancio === 'rifiutato' && (
-            <p className="w-full" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="w-full text-testo-tenue">
               {t('aggiornamentoOccupato')}
             </p>
           )}
@@ -113,7 +112,7 @@ export function StrisciaEsito({
       )}
 
       {problema && (
-        <p role="alert" style={{ color: 'var(--rosso)' }}>
+        <p role="alert" className="text-rosso">
           {problema}
         </p>
       )}

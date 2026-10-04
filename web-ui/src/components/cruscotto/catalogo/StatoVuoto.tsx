@@ -26,20 +26,19 @@ export function StatoVuoto({
 }) {
   return (
     <div
-      className="rounded-scheda border p-6 flex flex-col items-start gap-2"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      className="rounded-scheda border p-6 flex flex-col items-start gap-2 border-bordo bg-superficie"
     >
-      <Icona size={24} aria-hidden="true" style={{ color: 'var(--blu)' }} />
-      <p className="font-medium" style={{ color: 'var(--testo)' }}>
+      <Icona size={24} aria-hidden="true" className="text-blu" />
+      <p className="font-medium text-testo">
         {titolo}
       </p>
       {testo && (
-        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
           {testo}
         </p>
       )}
       {dettaglio && (
-        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
           {dettaglio}
         </p>
       )}

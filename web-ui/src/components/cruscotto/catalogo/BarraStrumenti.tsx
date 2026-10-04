@@ -74,8 +74,7 @@ export function BarraStrumenti({
         <label htmlFor={idCampo} className="sr-only">
           {t('cerca')}
         </label>
-        <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-          style={{ color: 'var(--testo-tenue)' }} />
+        <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-testo-tenue" />
         <input
           id={idCampo}
           ref={campo}
@@ -83,14 +82,13 @@ export function BarraStrumenti({
           value={testo}
           onChange={(e) => setTesto(e.target.value)}
           placeholder={segnaposto}
-          className="min-h-10 w-full rounded-controllo border pl-9 pr-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="min-h-10 w-full rounded-controllo border pl-9 pr-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
         />
       </div>
 
       {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-testo-tenue">
         <p role="status" aria-live="polite">
           {t('mostrati', { mostrati, totale })}
         </p>
@@ -122,14 +120,11 @@ export function PulsanteFiltro({
       className={cn(
         'inline-flex min-h-10 items-center gap-1.5 rounded-controllo border px-3 text-sm',
         'focus-visible:outline-2 focus-visible:outline-offset-2',
-        attivo && 'font-semibold'
+        attivo && 'font-semibold',
+        'text-testo outline-blu',
+        attivo ? 'border-blu' : 'border-bordo',
+        attivo ? 'bg-superficie-tenue' : 'bg-superficie',
       )}
-      style={{
-        borderColor: attivo ? 'var(--blu)' : 'var(--bordo)',
-        background: attivo ? 'var(--superficie-tenue)' : 'var(--superficie)',
-        color: 'var(--testo)',
-        outlineColor: 'var(--blu)',
-      }}
     >
       {attivo && <Check size={14} aria-hidden="true" />}
       {children}
@@ -152,15 +147,14 @@ export function SelezioneFiltro({
   const id = useId();
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor={id} className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <label htmlFor={id} className="text-sm text-testo-tenue">
         {etichetta}
       </label>
       <select
         id={id}
         value={valore}
         onChange={(e) => onCambia(e.target.value)}
-        className="min-h-10 rounded-controllo border px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        className="min-h-10 rounded-controllo border px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
       >
         {opzioni.map((o) => (
           <option key={o.valore} value={o.valore}>

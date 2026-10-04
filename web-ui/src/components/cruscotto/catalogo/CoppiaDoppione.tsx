@@ -11,6 +11,7 @@ import { CoppiaLato } from './CoppiaLato';
 import type { AnteprimaFusione, EsitoOperazione } from './tipi';
 import { TESTO_LETTURA, TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 /**
  * Doppione: stesso componente dietro due frasi. Si fa in TRE PASSI numerati
  * nella stessa scheda, il secondo e il terzo nascosti finche' il precedente non
@@ -91,21 +92,21 @@ export function CoppiaDoppione({
   }
 
   return (
-    <div className="rounded-scheda border p-4" style={{ borderColor: 'var(--ambra)', background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border p-4 border-ambra bg-superficie">
       <div className="flex items-start gap-2">
-        <GitMerge size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} className="mt-0.5 shrink-0" />
+        <GitMerge size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-ambra" />
         <div className="flex-1">
-          <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo)' }}>
+          <h3 className={cn(TITOLO_GRUPPO, 'text-testo')}>
             {t('doppioneTitolo')}
           </h3>
-          <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+          <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
             {t('doppioneSpiegazione')}
           </p>
         </div>
       </div>
 
       <fieldset className="mt-3 flex flex-col gap-2">
-        <legend className="mb-1 text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        <legend className="mb-1 text-sm font-medium text-testo">
           {t('passo1Tieni')}
         </legend>
         {(['a', 'b'] as const).map((l) => (
@@ -120,28 +121,28 @@ export function CoppiaDoppione({
 
       {vincente && (
         <section className="mt-4 flex flex-col gap-3" aria-live="polite">
-          <h4 className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <h4 className="text-sm font-medium text-testo">
             {t('passo2Succede')}
           </h4>
 
           {caricamento && (
-            <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="flex items-center gap-2 text-sm text-testo-tenue">
               <Loader2 className="animate-spin motion-reduce:animate-none" size={14} aria-hidden="true" />
               {t('fraseCaricamentoAnteprima')}
             </p>
           )}
           {errore && (
-            <p role="alert" className="text-sm" style={{ color: 'var(--rosso)' }}>
+            <p role="alert" className="text-sm text-rosso">
               {t('anteprimaErrore', { dettaglio: errore })}
             </p>
           )}
 
           {anteprima && frasePersa && fraseTenuta && (
             <>
-              <div className="rounded-scheda border p-3 text-sm" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-                <p style={{ color: 'var(--testo)' }}>{t('anteprimaRighe', { righe: anteprima.righeCoinvolte, frase: frasePersa })}</p>
+              <div className="rounded-scheda border p-3 text-sm border-bordo bg-superficie-tenue">
+                <p className="text-testo">{t('anteprimaRighe', { righe: anteprima.righeCoinvolte, frase: frasePersa })}</p>
                 {anteprima.scenariCoinvolti.length > 0 && (
-                  <ul className="mt-1 flex list-inside list-disc flex-col gap-0.5" style={{ color: 'var(--testo-tenue)' }}>
+                  <ul className="mt-1 flex list-inside list-disc flex-col gap-0.5 text-testo-tenue">
                     {anteprima.scenariCoinvolti.map((u, i) => {
                       const { app, flusso } = percorsoScenario(u.file);
                       return <li key={i}>{t('scenarioInFlusso', { scenario: u.scenario, app, flusso })}</li>;
@@ -151,29 +152,29 @@ export function CoppiaDoppione({
               </div>
 
               {anteprima.equivalenti ? (
-                <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+                <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
                   {t('corpiUguali')}
                 </p>
               ) : (
-                <div className="rounded-scheda border p-3" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
-                  <p className="flex items-center gap-2 font-medium" style={{ color: 'var(--rosso)' }}>
+                <div className="rounded-scheda border p-3 border-rosso bg-superficie">
+                  <p className="flex items-center gap-2 font-medium text-rosso">
                     <AlertTriangle size={16} aria-hidden="true" />
                     {t('corpiDiversiTitolo')}
                   </p>
-                  <p className="mt-1 text-sm" style={{ color: 'var(--testo)' }}>
+                  <p className="mt-1 text-sm text-testo">
                     {t('corpiDiversiSpiegazione', { frase: frasePersa })}
                   </p>
-                  <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+                  <p className="mt-1 text-sm text-testo-tenue">
                     {t('corpiDiversiSuggerimento')}
                   </p>
-                  <p className="mt-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+                  <p className="mt-2 text-sm text-testo-tenue">
                     {t('confrontoSpiegazione')}
                   </p>
                   <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <Confronto titolo={t('confrontoA', { frase: fraseTenuta })} corpo={anteprima.corpoA} />
                     <Confronto titolo={t('confrontoDa', { frase: frasePersa })} corpo={anteprima.corpoDa} />
                   </div>
-                  <label className="mt-3 flex min-h-10 cursor-pointer items-start gap-2 text-sm" style={{ color: 'var(--testo)' }}>
+                  <label className="mt-3 flex min-h-10 cursor-pointer items-start gap-2 text-sm text-testo">
                     <input
                       type="checkbox"
                       checked={capito}
@@ -191,7 +192,7 @@ export function CoppiaDoppione({
 
       {vincente && anteprima && fraseTenuta && (
         <section className="mt-4 flex flex-col gap-2">
-          <h4 className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <h4 className="text-sm font-medium text-testo">
             {t('passo3Conferma')}
           </h4>
           {/* Il testo con i nomi in chiaro e' lungo: a capo, a tutta larghezza sullo schermo stretto. */}
@@ -211,7 +212,7 @@ export function CoppiaDoppione({
             {anteprima.equivalenti ? t('fondiTieni', { frase: fraseTenuta }) : t('fondiComunque')}
           </Button>
           {fallita && (
-            <p role="alert" className="text-sm" style={{ color: 'var(--rosso)' }}>
+            <p role="alert" className="text-sm text-rosso">
               {fallita}
             </p>
           )}
@@ -223,11 +224,11 @@ export function CoppiaDoppione({
 
 function Confronto({ titolo, corpo }: { titolo: string; corpo: string | null }) {
   return (
-    <div className="rounded-scheda border p-2" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-      <p className="mb-1 text-sm font-medium" style={{ color: 'var(--testo)' }}>
+    <div className="rounded-scheda border p-2 border-bordo bg-superficie-tenue">
+      <p className="mb-1 text-sm font-medium text-testo">
         {titolo}
       </p>
-      <pre className="whitespace-pre-wrap break-words font-mono text-sm" style={{ color: 'var(--testo)' }}>
+      <pre className="whitespace-pre-wrap break-words font-mono text-sm text-testo">
         {corpo ?? ''}
       </pre>
     </div>

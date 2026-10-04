@@ -65,13 +65,12 @@ export function ErroreCatalogoIlleggibile() {
   return (
     <div
       role="alert"
-      className="rounded-scheda border p-4 text-sm flex flex-wrap items-center gap-3"
-      style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)', color: 'var(--testo)' }}
+      className="rounded-scheda border p-4 text-sm flex flex-wrap items-center gap-3 border-rosso bg-superficie text-testo"
     >
       <div className="flex-1 min-w-48">
         <p>{inCorso ? t('catalogoRicostruzione') : t('catalogoNonSiLegge')}</p>
         {(esito === 'rifiutato' || esito === 'rete') && (
-          <p role="status" className="mt-1" style={{ color: 'var(--testo-tenue)' }}>
+          <p role="status" className="mt-1 text-testo-tenue">
             {esito === 'rete' ? t('nonRaggiungibile') : t('aggiornamentoOccupato')}
           </p>
         )}

@@ -39,27 +39,26 @@ export const RigaComponente = memo(function RigaComponente({
   const Chevron = aperto ? ChevronDown : ChevronRight;
 
   return (
-    <div className="rounded-scheda border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border border-bordo bg-superficie">
       <button
         type="button"
         onClick={() => onCommuta(chiave)}
         aria-expanded={aperto}
         aria-controls={idDettaglio}
-        className="flex w-full min-h-10 items-start gap-2 px-3 py-2 text-left focus-visible:outline-2 focus-visible:-outline-offset-2"
-        style={{ outlineColor: 'var(--blu)' }}
+        className="flex w-full min-h-10 items-start gap-2 px-3 py-2 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 outline-blu"
       >
-        <Chevron size={16} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--testo-tenue)' }} />
+        <Chevron size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-testo-tenue" />
         <span className="grid min-w-0 flex-1 gap-1 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_auto_auto] md:items-center md:gap-3">
-          <span className="break-words text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <span className="break-words text-sm font-medium text-testo">
             {ruolo(componente.role)} &laquo;{componente.name}&raquo;
           </span>
           {componente.pagineAmbigue ? (
-            <span className="flex items-start gap-1 text-sm" style={{ color: 'var(--testo)' }}>
-              <AlertTriangle size={14} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
+            <span className="flex items-start gap-1 text-sm text-testo">
+              <AlertTriangle size={14} aria-hidden="true" className="mt-0.5 shrink-0 text-ambra" />
               {t('paginaAmbigua', { pagine: nomiLeggibiliPagine(componente.pagineAmbigue) })}
             </span>
           ) : (
-            <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <span className="text-sm text-testo-tenue">
               {componente.page ? nomeLeggibilePagina(componente.page) : '—'}
             </span>
           )}
@@ -68,7 +67,7 @@ export const RigaComponente = memo(function RigaComponente({
               <EtichettaApplicazione key={app} app={app} />
             ))}
           </span>
-          <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <span className="text-sm text-testo-tenue">
             {t('nStep', { n: componente.step.length })} · {t('nScenari', { n: impatto })}
           </span>
         </span>
@@ -77,7 +76,7 @@ export const RigaComponente = memo(function RigaComponente({
       {aperto && (
         <div id={idDettaglio} className="flex flex-col gap-3 px-3 pb-3 pl-9 text-sm">
           <div>
-            <p className="mb-1 font-medium" style={{ color: 'var(--testo)' }}>
+            <p className="mb-1 font-medium text-testo">
               {t('fraseCheLoToccano')}
             </p>
             <ul className="flex flex-col gap-1">
@@ -85,8 +84,7 @@ export const RigaComponente = memo(function RigaComponente({
                 <li key={espressione}>
                   <Link
                     href={urlCatalogo({ scheda: 'step', q: espressione })}
-                    className="inline-flex min-h-10 items-center break-words font-mono text-sm underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{ color: 'var(--blu)', outlineColor: 'var(--blu)' }}
+                    className="inline-flex min-h-10 items-center break-words font-mono text-sm underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 text-blu outline-blu"
                     aria-label={t('vediLaFrase', { frase: espressione })}
                   >
                     {espressione}
@@ -107,24 +105,24 @@ function DettaglioScenari({ componente, step }: { componente: ComponenteConStep;
   const scenari = scenariDelComponente(componente, step);
   return (
     <div>
-      <p className="mb-1 font-medium" style={{ color: 'var(--testo)' }}>
+      <p className="mb-1 font-medium text-testo">
         {t('scenariCheNeDipendono')}
       </p>
       {scenari.length === 0 ? (
-        <p style={{ color: 'var(--testo-tenue)' }}>{t('nessunoScenarioDipende')}</p>
+        <p className="text-testo-tenue">{t('nessunoScenarioDipende')}</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {scenari.map((s) => {
             const { app, flusso } = percorsoScenario(s.file);
             return (
-              <li key={`${s.file}\u0000${s.scenario}`} style={{ color: 'var(--testo-tenue)' }}>
+              <li key={`${s.file}\u0000${s.scenario}`} className="text-testo-tenue">
                 {t('scenarioInFlusso', { scenario: s.scenario, app, flusso })}
               </li>
             );
           })}
         </ul>
       )}
-      <p className="mt-1" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="mt-1 text-testo-tenue">
         {t('soloScenariDelCatalogo')}
       </p>
     </div>

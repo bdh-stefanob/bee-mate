@@ -11,6 +11,7 @@ import { CoppiaLato } from './CoppiaLato';
 import type { EsitoOperazione } from './tipi';
 import { TESTO_LETTURA, TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 /**
  * Equivoco di denominazione: stessa frase (quasi), componenti diversi. Il
  * gesto e' distinguere, mai fondere. Tre passi: 1 quale frase rinomini, 2 la
@@ -61,21 +62,21 @@ export function CoppiaEquivoco({
   }
 
   return (
-    <div className="rounded-scheda border p-4" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border p-4 border-rosso bg-superficie">
       <div className="flex items-start gap-2">
-        <Signpost size={18} aria-hidden="true" style={{ color: 'var(--rosso)' }} className="mt-0.5 shrink-0" />
+        <Signpost size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-rosso" />
         <div className="flex-1">
-          <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo)' }}>
+          <h3 className={cn(TITOLO_GRUPPO, 'text-testo')}>
             {t('equivocoTitolo')}
           </h3>
-          <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+          <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
             {t('equivocoSpiegazione')}
           </p>
         </div>
       </div>
 
       <fieldset className="mt-3 flex flex-col gap-2">
-        <legend className="mb-1 text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        <legend className="mb-1 text-sm font-medium text-testo">
           {t('passo1Rinomina')}
         </legend>
         {(['a', 'b'] as const).map((l) => (
@@ -85,10 +86,10 @@ export function CoppiaEquivoco({
 
       {originale && (
         <section className="mt-4 flex flex-col gap-2">
-          <h4 className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <h4 className="text-sm font-medium text-testo">
             {t('passo2NuovaFrase')}
           </h4>
-          <label htmlFor={idCampo} className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <label htmlFor={idCampo} className="text-sm text-testo-tenue">
             {t('nuovaFraseLabel')}
           </label>
           <input
@@ -96,18 +97,17 @@ export function CoppiaEquivoco({
             type="text"
             value={nuovaFrase}
             onChange={(e) => setNuovaFrase(e.target.value)}
-            className="min-h-10 rounded-controllo border px-3 font-mono text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 rounded-controllo border px-3 font-mono text-sm focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie-tenue text-testo outline-blu"
           />
-          <div className="rounded-scheda border p-3 text-sm" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-            <p className="font-medium" style={{ color: 'var(--testo)' }}>
+          <div className="rounded-scheda border p-3 text-sm border-bordo bg-superficie-tenue">
+            <p className="font-medium text-testo">
               {t('cosaCambieraTitolo')}
             </p>
-            <p style={{ color: 'var(--testo-tenue)' }}>
+            <p className="text-testo-tenue">
               {t('cosaCambieraEquivoco', { righe: originale.usatoIn.length, frase: originale.espressione })}
             </p>
             {originale.usatoIn.length > 0 && (
-              <ul className="mt-1 flex list-inside list-disc flex-col gap-0.5" style={{ color: 'var(--testo-tenue)' }}>
+              <ul className="mt-1 flex list-inside list-disc flex-col gap-0.5 text-testo-tenue">
                 {originale.usatoIn.map((u, i) => {
                   const { app, flusso } = percorsoScenario(u.file);
                   return <li key={i}>{t('scenarioInFlusso', { scenario: u.scenario, app, flusso })}</li>;
@@ -115,7 +115,7 @@ export function CoppiaEquivoco({
               </ul>
             )}
           </div>
-          <p className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <p className="text-sm font-medium text-testo">
             {t('distinguiNonAnnullabile')}
           </p>
         </section>
@@ -123,7 +123,7 @@ export function CoppiaEquivoco({
 
       {originale && (
         <section className="mt-4 flex flex-col gap-2">
-          <h4 className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <h4 className="text-sm font-medium text-testo">
             {t('passo3Conferma')}
           </h4>
           <Button
@@ -139,7 +139,7 @@ export function CoppiaEquivoco({
             {t('distinguiPulsante', { frase: originale.espressione })}
           </Button>
           {fallita && (
-            <p role="alert" className="text-sm" style={{ color: 'var(--rosso)' }}>
+            <p role="alert" className="text-sm text-rosso">
               {fallita}
             </p>
           )}

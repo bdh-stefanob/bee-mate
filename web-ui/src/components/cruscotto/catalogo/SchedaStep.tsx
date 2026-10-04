@@ -30,6 +30,7 @@ import { StatoVuoto } from './StatoVuoto';
 import type { RispostaCatalogo } from './tipi';
 import { TESTO_LETTURA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 const selCatalogo = (i: Istantanea<RispostaCatalogo>) => i;
 const selNumeroScenari = (i: Istantanea<{ scenari: unknown[] }[]>) => (i.dati ? i.dati.reduce((n, f) => n + f.scenari.length, 0) : null);
 
@@ -78,10 +79,10 @@ export function SchedaStep() {
   return (
     <section aria-labelledby="catalogo-step-titolo" className="flex flex-col gap-4">
       <div>
-        <h2 id="catalogo-step-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+        <h2 id="catalogo-step-titolo" className={cn(TITOLO_SEZIONE, 'text-testo')}>
           {t('stepDomanda')}
         </h2>
-        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
           {t('stepIntro')}
         </p>
       </div>
@@ -154,7 +155,7 @@ export function SchedaStep() {
           )}
 
           {filtrati.length === 0 ? (
-            <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+            <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
               {t('nessunRisultato')}
             </p>
           ) : (

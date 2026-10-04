@@ -17,7 +17,7 @@ export function EtichettaApplicazione({ app }: { app: string }) {
   const t = useTranslations('Catalogo');
   const etichetta = app === 'common' ? t('appComune') : app === 'generated' ? t('appNonSalvata') : app;
   return (
-    <Badge variant="outline" style={{ borderColor: 'var(--bordo)', color: 'var(--testo-tenue)' }}>
+    <Badge variant="outline" className="border-bordo text-testo-tenue">
       {etichetta}
     </Badge>
   );
