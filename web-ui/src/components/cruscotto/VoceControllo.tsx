@@ -6,6 +6,7 @@ import { AlertTriangle, Check, CheckCircle2, Copy, Loader2, Play, Square, XCircl
 import { comeComandoEseguibile } from '@/lib/rimedi';
 import type { VoceDiagnosi } from '@/lib/controllo';
 
+import { cn } from '@/lib/utils';
 type StatoRimedio = 'inattivo' | 'avvio' | 'in corso' | 'conclusa' | 'fallita' | 'interrotta' | 'errore';
 
 interface Props {
@@ -25,9 +26,9 @@ const CHIAVE_PAROLA: Record<VoceDiagnosi['esito'], 'esitoOk' | 'esitoAttenzione'
 };
 
 const ASPETTO: Record<VoceDiagnosi['esito'], { Icona: typeof CheckCircle2; colore: string }> = {
-  ok: { Icona: CheckCircle2, colore: 'var(--verde)' },
-  attenzione: { Icona: AlertTriangle, colore: 'var(--ambra)' },
-  manca: { Icona: XCircle, colore: 'var(--rosso)' },
+  ok: { Icona: CheckCircle2, colore: 'text-verde' },
+  attenzione: { Icona: AlertTriangle, colore: 'text-ambra' },
+  manca: { Icona: XCircle, colore: 'text-rosso' },
 };
 
 /**
@@ -130,37 +131,36 @@ export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: 
 
   return (
     <li
-      className="flex flex-col gap-3 rounded-scheda border p-3 sm:flex-row sm:items-start sm:justify-between"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      className="flex flex-col gap-3 rounded-scheda border p-3 sm:flex-row sm:items-start sm:justify-between border-bordo bg-superficie"
     >
       <div className="flex min-w-0 items-start gap-3">
-        <Icona size={22} aria-hidden="true" style={{ color: colore }} className="mt-0.5 shrink-0" />
+        <Icona size={22} aria-hidden="true" className={cn('mt-0.5 shrink-0', colore)} />
         <div className="min-w-0">
-          <p className="font-medium break-words" style={{ color: 'var(--testo)' }}>
-            {nome} <span style={{ color: colore }}>— {tv(CHIAVE_PAROLA[voce.esito])}</span>
+          <p className="font-medium break-words text-testo">
+            {nome} <span className={colore}>— {tv(CHIAVE_PAROLA[voce.esito])}</span>
           </p>
-          <p className="text-sm break-words" style={{ color: 'var(--testo-tenue)' }}>{dettaglio}</p>
+          <p className="text-sm break-words text-testo-tenue">{dettaglio}</p>
 
           <p className="mt-1 text-xs break-words" aria-live="polite">
-            {statoRimedio === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{tv('avvioInCorso')}</span>}
+            {statoRimedio === 'avvio' && <span className="text-testo-tenue">{tv('avvioInCorso')}</span>}
             {statoRimedio === 'in corso' && (
-              <span style={{ color: 'var(--testo-tenue)' }}>{ultimaRiga || tv('inCorso')}</span>
+              <span className="text-testo-tenue">{ultimaRiga || tv('inCorso')}</span>
             )}
             {statoRimedio === 'conclusa' && (
-              <span style={{ color: 'var(--verde)' }}>{tv('conclusa')}</span>
+              <span className="text-verde">{tv('conclusa')}</span>
             )}
             {(statoRimedio === 'fallita' || statoRimedio === 'interrotta') && (
-              <span style={{ color: 'var(--rosso)' }}>{tv('nonAndata')}</span>
+              <span className="text-rosso">{tv('nonAndata')}</span>
             )}
             {statoRimedio === 'errore' && messaggioErrore && (
-              <span style={{ color: 'var(--rosso)' }}>{messaggioErrore}</span>
+              <span className="text-rosso">{messaggioErrore}</span>
             )}
           </p>
         </div>
       </div>
 
       {dallaFinestra && (
-        <span className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <span className="text-sm text-testo-tenue">
           {dallaFinestra}
         </span>
       )}
@@ -173,8 +173,7 @@ export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: 
                 type="button"
                 onClick={ferma}
                 aria-label={tv('fermaAria', { nome })}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
               >
                 <Square size={16} aria-hidden="true" />
                 {tv('ferma')}
@@ -185,8 +184,7 @@ export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: 
                 onClick={avvia}
                 disabled={statoRimedio === 'avvio'}
                 aria-label={tv('rimediaAria', { nome })}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-3 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-3 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
               >
                 {statoRimedio === 'avvio' ? (
                   <Loader2 size={16} className="animate-spin" aria-hidden="true" />
@@ -199,8 +197,7 @@ export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: 
           ) : (
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <code
-                className="max-w-[16rem] truncate rounded-dettaglio px-2 py-1.5 text-xs"
-                style={{ background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+                className="max-w-[16rem] truncate rounded-dettaglio px-2 py-1.5 text-xs bg-superficie-tenue text-testo"
                 title={voce.rimedio.comando}
               >
                 {voce.rimedio.comando}
@@ -209,8 +206,7 @@ export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: 
                 type="button"
                 onClick={copiaComando}
                 aria-label={tv('copiaComandoAria', { nome, comando: voce.rimedio.comando })}
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
               >
                 {copiato ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
                 {copiato ? tv('copiato') : tv('copiaComando')}

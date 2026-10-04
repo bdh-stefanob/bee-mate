@@ -9,6 +9,14 @@
  */
 export type ColoreSintesi = 'rosso' | 'ambra' | 'blu' | 'verde';
 
+/** Le classi del riquadro (bordo e testo) per ciascun colore: nomi interi, perche' Tailwind li trovi. */
+export const CLASSE_SINTESI: Record<ColoreSintesi, string> = {
+  rosso: 'border-rosso text-rosso',
+  ambra: 'border-ambra text-ambra',
+  blu: 'border-blu text-blu',
+  verde: 'border-verde text-verde',
+};
+
 export function coloreSintesi(c: { mancanti: number; daGuardare: number; perIniziare: boolean }): ColoreSintesi {
   if (c.mancanti > 0) return 'rosso';
   if (c.daGuardare > 0) return 'ambra';

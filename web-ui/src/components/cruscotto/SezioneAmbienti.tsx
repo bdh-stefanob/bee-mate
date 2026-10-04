@@ -10,6 +10,7 @@ import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 import { DialogoModale } from '@/components/cruscotto/scenari/modifica/DialogoModale';
 import { Bottone } from '@/components/cruscotto/scenari/modifica/stile';
 
+import { cn } from '@/lib/utils';
 export type { AmbienteVisibile };
 
 const NESSUN_AMBIENTE: AmbienteVisibile[] = [];
@@ -44,7 +45,7 @@ function ConfermaAmbiente({
   const t = useTranslations('Ambienti');
   return (
     <DialogoModale titolo={titolo} onEsc={onIndietro}>
-      <div className="flex flex-col gap-2 text-sm" style={{ color: 'var(--testo)' }}>
+      <div className="flex flex-col gap-2 text-sm text-testo">
         {righe.map((r) => (
           <p key={r}>{r}</p>
         ))}
@@ -53,7 +54,7 @@ function ConfermaAmbiente({
         <Bottone
           primario={!distruttiva}
           onClick={onConferma}
-          style={distruttiva ? { borderColor: 'var(--rosso)', color: 'var(--rosso)' } : undefined}
+          className={distruttiva ? 'border-rosso text-rosso' : undefined}
         >
           {etichettaConferma}
         </Bottone>
@@ -152,7 +153,7 @@ function CredenzialiMancanti({
   if (!aperto) {
     return (
       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-        <span className="inline-flex items-center gap-1.5 break-words" style={{ color: 'var(--ambra)' }}>
+        <span className="inline-flex items-center gap-1.5 break-words text-ambra">
           <KeyRound size={13} aria-hidden="true" />
           {t('credenzialiMancanti', { n: variabiliMancanti.length, elenco: variabiliMancanti.join(', ') })}
         </span>
@@ -160,13 +161,12 @@ function CredenzialiMancanti({
           type="button"
           onClick={() => setAperto(true)}
           aria-label={t('compilaCredenzialiAria', { nome: nomeAmbiente })}
-          className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
         >
           {t('compilaCredenziali')}
         </button>
         {stato === 'parziale' && (
-          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--ambra)' }}>
+          <span className="inline-flex items-center gap-1.5 text-ambra">
             <XCircle size={13} aria-hidden="true" />
             {t('credenzialiParzialmenteSalvate')}
           </span>
@@ -176,10 +176,10 @@ function CredenzialiMancanti({
   }
 
   return (
-    <form onSubmit={(e) => void salva(e)} className="mt-2 flex flex-col gap-2 rounded-scheda border p-2" style={{ borderColor: 'var(--bordo)' }}>
+    <form onSubmit={(e) => void salva(e)} className="mt-2 flex flex-col gap-2 rounded-scheda border p-2 border-bordo">
       {variabiliMancanti.map((chiave) => (
         <div key={chiave} className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-          <label htmlFor={`cred-${nomeAmbiente}-${chiave}`} className="min-w-0 shrink-0 text-xs font-mono break-all" style={{ color: 'var(--testo)' }}>
+          <label htmlFor={`cred-${nomeAmbiente}-${chiave}`} className="min-w-0 shrink-0 text-xs font-mono break-all text-testo">
             {chiave}
           </label>
           <input
@@ -188,8 +188,7 @@ function CredenzialiMancanti({
             autoComplete="off"
             value={valori[chiave] ?? ''}
             onChange={(e) => setValori((v) => ({ ...v, [chiave]: e.target.value }))}
-            className="min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo outline-blu"
           />
         </div>
       ))}
@@ -197,8 +196,7 @@ function CredenzialiMancanti({
         <button
           type="submit"
           disabled={stato === 'salvo'}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
         >
           {stato === 'salvo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : null}
           {stato === 'salvo' ? t('salvandoCredenziali') : t('salvaCredenziali')}
@@ -206,13 +204,12 @@ function CredenzialiMancanti({
         <button
           type="button"
           onClick={() => { setAperto(false); setValori({}); setStato('inattivo'); }}
-          className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
         >
           {t('annullaCompilazione')}
         </button>
         {stato === 'errore' && (
-          <span className="inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--rosso)' }}>
+          <span className="inline-flex items-center gap-1.5 text-xs text-rosso">
             <XCircle size={14} aria-hidden="true" />
             {t('credenzialiNonSalvate')}
           </span>
@@ -342,8 +339,7 @@ function RegistraAccesso({
           onClick={() => (ambiente.haLogin ? setInConferma(true) : void avvia())}
           disabled={inCorso}
           aria-label={t('registraAccessoAria', { nome: ambiente.nome })}
-          className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
         >
           {inCorso ? (
             <Loader2 size={16} className="animate-spin" aria-hidden="true" />
@@ -367,21 +363,21 @@ function RegistraAccesso({
         />
       )}
       <p className="text-xs break-words" aria-live="polite">
-        {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
+        {stato === 'avvio' && <span className="text-testo-tenue">{t('avvioInCorso')}</span>}
         {stato === 'in corso' && (
-          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--testo-tenue)' }}>
+          <span className="inline-flex items-center gap-1.5 text-testo-tenue">
             <Loader2 size={14} className="animate-spin" aria-hidden="true" />
             {t('browserApertoRegistrazione')}
           </span>
         )}
         {stato === 'derivando' && (
-          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--testo-tenue)' }}>
+          <span className="inline-flex items-center gap-1.5 text-testo-tenue">
             <Loader2 size={14} className="animate-spin" aria-hidden="true" />
             {t('derivandoAccesso')}
           </span>
         )}
         {stato === 'fatto' && (
-          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--verde)' }}>
+          <span className="inline-flex items-center gap-1.5 text-verde">
             <CheckCircle2 size={14} aria-hidden="true" />
             {variabili.length > 0
               ? t('accessoRegistratoConVariabili', { n: variabili.length, elenco: variabili.join(', ') })
@@ -389,13 +385,13 @@ function RegistraAccesso({
           </span>
         )}
         {stato === 'fallita' && (
-          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
+          <span className="inline-flex items-center gap-1.5 text-rosso">
             <XCircle size={14} aria-hidden="true" />
             {t('nonAndata')}
           </span>
         )}
         {stato === 'errore' && messaggioErrore && (
-          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
+          <span className="inline-flex items-center gap-1.5 text-rosso">
             <XCircle size={14} aria-hidden="true" />
             {messaggioErrore}
           </span>
@@ -440,11 +436,10 @@ function AvvisoIrraggiungibile({
   return (
     <div
       role="alert"
-      className="flex min-w-0 flex-col items-start gap-2 rounded-scheda border p-2 text-sm"
-      style={{ borderColor: 'var(--ambra)', color: 'var(--testo)' }}
+      className="flex min-w-0 flex-col items-start gap-2 rounded-scheda border p-2 text-sm border-ambra text-testo"
     >
       <p className="flex items-start gap-1.5 break-words">
-        <AlertTriangle size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} aria-hidden="true" />
+        <AlertTriangle size={16} className="mt-0.5 shrink-0 text-ambra" aria-hidden="true" />
         <span>
           {testi[motivo]} {t('irraggiungibileNonSalvato')}
         </span>
@@ -453,8 +448,7 @@ function AvvisoIrraggiungibile({
         type="button"
         onClick={onSalvaComunque}
         disabled={inCorso}
-        className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
       >
         {inCorso ? t('salvando') : t('salvaComunque')}
       </button>
@@ -530,8 +524,7 @@ function ModificaIndirizzo({
           setAperto(true);
         }}
         aria-label={t('modificaIndirizzoAria', { nome: ambiente.nome })}
-        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo border px-3 text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo border px-3 text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
       >
         <Pencil size={13} aria-hidden="true" />
         {t('modificaIndirizzo')}
@@ -545,14 +538,13 @@ function ModificaIndirizzo({
         e.preventDefault();
         void salva(false);
       }}
-      className="flex min-w-0 flex-1 flex-col gap-2 rounded-scheda border p-2"
-      style={{ borderColor: 'var(--bordo)' }}
+      className="flex min-w-0 flex-1 flex-col gap-2 rounded-scheda border p-2 border-bordo"
     >
-      <p className="text-xs break-words" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-xs break-words text-testo-tenue">
         {t('nomeNonModificabileNota')}
       </p>
       <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-        <label htmlFor={`url-${ambiente.nome}`} className="shrink-0 text-xs" style={{ color: 'var(--testo)' }}>
+        <label htmlFor={`url-${ambiente.nome}`} className="shrink-0 text-xs text-testo">
           {t('indirizzo')}
         </label>
         <input
@@ -564,16 +556,14 @@ function ModificaIndirizzo({
             setIrraggiungibile(null);
           }}
           placeholder={t('placeholderIndirizzo')}
-          className="min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+          className="min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo outline-blu"
         />
       </div>
       <div className="flex items-center gap-2">
         <button
           type="submit"
           disabled={stato === 'salvo' || !url}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
         >
           {stato === 'salvo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : null}
           {stato === 'salvo' ? t('salvando') : t('salvaIndirizzo')}
@@ -581,13 +571,12 @@ function ModificaIndirizzo({
         <button
           type="button"
           onClick={() => { setAperto(false); setStato('inattivo'); setMessaggioErrore(''); setIrraggiungibile(null); }}
-          className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
         >
           {t('annullaCompilazione')}
         </button>
         {stato === 'errore' && messaggioErrore && (
-          <span className="inline-flex items-center gap-1.5 text-xs break-words" style={{ color: 'var(--rosso)' }}>
+          <span className="inline-flex items-center gap-1.5 text-xs break-words text-rosso">
             <XCircle size={14} aria-hidden="true" />
             {messaggioErrore}
           </span>
@@ -731,14 +720,12 @@ const RigaAmbiente = memo(function RigaAmbiente({
 
   return (
     <li
-      className="flex flex-col gap-2 rounded-scheda border p-3"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      className="flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie"
     >
       <div className="min-w-0">
-        <p className="font-medium break-words" style={{ color: 'var(--testo)' }}>{ambiente.nome}</p>
+        <p className="font-medium break-words text-testo">{ambiente.nome}</p>
         <p
-          className="text-sm break-words"
-          style={{ color: indirizzoMancante ? 'var(--ambra)' : 'var(--testo-tenue)' }}
+          className={cn('text-sm break-words', indirizzoMancante ? 'text-ambra' : 'text-testo-tenue')}
         >
           {indirizzoMancante
             ? t('indirizzoNonRisolto', { variabile })
@@ -749,7 +736,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
 
         {variabiliRichieste.length > 0 && (
           credenzialiOk ? (
-            <p className="mt-1 inline-flex items-center gap-1.5 text-xs" style={{ color: 'var(--verde)' }}>
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-verde">
               <CheckCircle2 size={13} aria-hidden="true" />
               {t('credenzialiConfigurate')}
             </p>
@@ -784,8 +771,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
                 onClick={() => void accediAdesso()}
                 disabled={stato === 'avvio' || stato === 'in corso'}
                 aria-label={t('accediAria', { nome: ambiente.nome })}
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
               >
                 {stato === 'avvio' || stato === 'in corso' ? (
                   <Loader2 size={16} className="animate-spin" aria-hidden="true" />
@@ -804,8 +790,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
               onClick={() => setInConfermaElimina(true)}
               disabled={eliminazione === 'in corso'}
               aria-label={t('eliminaAria', { nome: ambiente.nome })}
-              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-rosso outline-blu"
             >
               {eliminazione === 'in corso' ? (
                 <Loader2 size={13} className="animate-spin" aria-hidden="true" />
@@ -817,7 +802,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
           </div>
         </RegistraAccesso>
         {eliminazione === 'errore' && messaggioEliminazione && (
-          <p className="mt-1 text-xs break-words" style={{ color: 'var(--rosso)' }}>
+          <p className="mt-1 text-xs break-words text-rosso">
             {messaggioEliminazione}
           </p>
         )}
@@ -836,27 +821,27 @@ const RigaAmbiente = memo(function RigaAmbiente({
         )}
 
         <p className="mt-1 text-xs break-words" aria-live="polite">
-          {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
+          {stato === 'avvio' && <span className="text-testo-tenue">{t('avvioInCorso')}</span>}
           {stato === 'in corso' && (
-            <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--testo-tenue)' }}>
+            <span className="inline-flex items-center gap-1.5 text-testo-tenue">
               <Loader2 size={14} className="animate-spin" aria-hidden="true" />
               {t('browserAperto')}
             </span>
           )}
           {stato === 'conclusa' && (
-            <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--verde)' }}>
+            <span className="inline-flex items-center gap-1.5 text-verde">
               <CheckCircle2 size={14} aria-hidden="true" />
               {t('sessioneSalvata')}
             </span>
           )}
           {stato === 'fallita' && (
-            <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
+            <span className="inline-flex items-center gap-1.5 text-rosso">
               <XCircle size={14} aria-hidden="true" />
               {t('nonAndata')}
             </span>
           )}
           {stato === 'errore' && messaggioErrore && (
-            <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--rosso)' }}>
+            <span className="inline-flex items-center gap-1.5 text-rosso">
               <XCircle size={14} aria-hidden="true" />
               {messaggioErrore}
             </span>
@@ -932,7 +917,7 @@ function AggiungiAmbiente() {
         }}
         className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <label htmlFor="ambiente-nome" className="text-sm" style={{ color: 'var(--testo)' }}>
+          <label htmlFor="ambiente-nome" className="text-sm text-testo">
             {t('nomeAmbiente')}
           </label>
           <input
@@ -943,12 +928,11 @@ function AggiungiAmbiente() {
               setIrraggiungibile(null);
             }}
             placeholder={t('placeholderNome')}
-            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo outline-blu"
           />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <label htmlFor="ambiente-url" className="text-sm" style={{ color: 'var(--testo)' }}>
+          <label htmlFor="ambiente-url" className="text-sm text-testo">
             {t('indirizzo')}
           </label>
           <input
@@ -959,21 +943,19 @@ function AggiungiAmbiente() {
               setIrraggiungibile(null);
             }}
             placeholder={t('placeholderIndirizzo')}
-            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo outline-blu"
           />
         </div>
         <button
           type="submit"
           disabled={!nome || !url || inCorso}
-          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
         >
           <Plus size={16} aria-hidden="true" />
           {inCorso ? t('salvando') : t('aggiungi')}
         </button>
       </form>
-      <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-xs text-testo-tenue">
         {t('nomeNonModificabileNota')}
       </p>
 
@@ -999,7 +981,7 @@ function AggiungiAmbiente() {
       )}
 
       {messaggio && (
-        <p role="status" className="flex items-center gap-1.5 text-sm" style={{ color: messaggio.ok ? 'var(--verde)' : 'var(--rosso)' }}>
+        <p role="status" className={cn('flex items-center gap-1.5 text-sm', messaggio.ok ? 'text-verde' : 'text-rosso')}>
           {messaggio.ok ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
           {messaggio.testo}
         </p>
@@ -1022,15 +1004,14 @@ export function SezioneAmbienti() {
 
   return (
     <section
-      className="flex flex-col gap-3 rounded-scheda border p-4"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      className="flex flex-col gap-3 rounded-scheda border p-4 border-bordo bg-superficie"
       aria-labelledby="ambienti-titolo"
     >
       <div>
-        <h2 id="ambienti-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+        <h2 id="ambienti-titolo" className={cn(TITOLO_SEZIONE, 'text-testo')}>
           {t('titolo')}
         </h2>
-        <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="mt-1 text-sm text-testo-tenue">
           {t('descrizione')}
         </p>
       </div>
@@ -1042,7 +1023,7 @@ export function SezioneAmbienti() {
           ))}
         </ul>
       ) : (
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="text-sm text-testo-tenue">
           {t('nessunoConfigurato')}
         </p>
       )}

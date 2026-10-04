@@ -1,6 +1,7 @@
 'use client';
 
 import type { ButtonHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
 /**
  * Lo stile dei controlli del pannello di modifica: gli stessi token del resto del
@@ -24,19 +25,17 @@ export const STILE_CAMPO = {
 export function Bottone({
   primario = false,
   className = '',
-  style,
   ...resto
 }: ButtonHTMLAttributes<HTMLButtonElement> & { primario?: boolean }) {
   return (
     <button
       type="button"
       {...resto}
-      className={`${CLASSE_BOTTONE} ${className}`}
-      style={
-        primario
-          ? { borderColor: 'var(--blu-fondo)', background: 'var(--blu-fondo)', color: '#fff', outlineColor: 'var(--blu)', ...style }
-          : { borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--blu)', outlineColor: 'var(--blu)', ...style }
-      }
+      className={cn(
+        CLASSE_BOTTONE,
+        primario ? 'border-blu-fondo bg-blu-fondo text-white outline-blu' : 'border-bordo bg-superficie text-blu outline-blu',
+        className
+      )}
     />
   );
 }

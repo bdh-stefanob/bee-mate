@@ -7,10 +7,11 @@ import { VoceControllo } from '@/components/cruscotto/VoceControllo';
 import { SezioneAmbienti } from '@/components/cruscotto/SezioneAmbienti';
 import { useRisorsa } from '@/hooks/useRisorsa';
 import { diagnosi, dopoUnaModifica, type Diagnosi } from '@/lib/stato-controllo';
-import { coloreSintesi } from '@/lib/colore-sintesi';
+import { CLASSE_SINTESI, coloreSintesi } from '@/lib/colore-sintesi';
 import type { Istantanea } from '@/lib/risorsa';
 import { TITOLO_PAGINA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 const tutta = (i: Istantanea<Diagnosi>): Istantanea<Diagnosi> => i;
 const riprova = (): void => void diagnosi.carica();
 
@@ -21,15 +22,13 @@ function ScheletroControllo() {
     <div role="status" aria-live="polite" className="flex flex-col gap-2">
       <span className="sr-only">{t('controllando')}</span>
       <div
-        className="h-12 animate-pulse rounded-scheda"
-        style={{ background: 'var(--superficie-tenue)' }}
+        className="h-12 animate-pulse rounded-scheda bg-superficie-tenue"
         aria-hidden="true"
       />
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-16 animate-pulse rounded-scheda border"
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+          className="h-16 animate-pulse rounded-scheda border border-bordo bg-superficie-tenue"
           aria-hidden="true"
         />
       ))}
@@ -82,16 +81,16 @@ function ConfiguraCredenziale() {
 
   return (
     <section aria-labelledby="configura-credenziale-titolo">
-      <h2 id="configura-credenziale-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+      <h2 id="configura-credenziale-titolo" className={cn(TITOLO_SEZIONE, 'text-testo')}>
         {t('credenzialeTitolo')}
       </h2>
-      <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="mt-1 text-sm text-testo-tenue">
         {t('credenzialeDescrizione')}
       </p>
 
       <form onSubmit={salva} className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <label htmlFor="credenziale-chiave" className="text-sm" style={{ color: 'var(--testo)' }}>
+          <label htmlFor="credenziale-chiave" className="text-sm text-testo">
             {t('nomeVariabile')}
           </label>
           <input
@@ -99,12 +98,11 @@ function ConfiguraCredenziale() {
             value={chiave}
             onChange={(e) => setChiave(e.target.value.toUpperCase())}
             placeholder="ES_UTENTE"
-            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo outline-blu"
           />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <label htmlFor="credenziale-valore" className="text-sm" style={{ color: 'var(--testo)' }}>
+          <label htmlFor="credenziale-valore" className="text-sm text-testo">
             {t('valore')}
           </label>
           <input
@@ -113,22 +111,20 @@ function ConfiguraCredenziale() {
             autoComplete="off"
             value={valore}
             onChange={(e) => setValore(e.target.value)}
-            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo outline-blu"
           />
         </div>
         <button
           type="submit"
           disabled={!chiave || !valore || inCorso}
-          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
         >
           {inCorso ? t('salvando') : t('salva')}
         </button>
       </form>
 
       {messaggio && (
-        <p role="status" className="mt-2 flex items-center gap-1.5 text-sm" style={{ color: messaggio.ok ? 'var(--verde)' : 'var(--rosso)' }}>
+        <p role="status" className={cn('mt-2 flex items-center gap-1.5 text-sm', messaggio.ok ? 'text-verde' : 'text-rosso')}>
           {messaggio.ok ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
           {messaggio.testo}
         </p>
@@ -178,11 +174,10 @@ export default function ControlloPage() {
   const { essenziali, avanzate, mancanti, daGuardare, daUsoTotale, daUsoFatte, perIniziare } = riepilogo;
   // Il riquadro di sintesi prende il colore dell'esito peggiore (lib/colore-sintesi.ts).
   const colore = coloreSintesi({ mancanti, daGuardare, perIniziare });
-  const coloreVar = `var(--${colore})`;
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
+      <h1 className={cn(TITOLO_PAGINA, 'text-testo')}>
         {t('titolo')}
       </h1>
 
@@ -191,18 +186,16 @@ export default function ControlloPage() {
       {stato === 'errore' && (
         <div
           role="alert"
-          className="flex flex-col items-start gap-3 rounded-scheda border p-4"
-          style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}
+          className="flex flex-col items-start gap-3 rounded-scheda border p-4 border-rosso bg-superficie"
         >
-          <p className="flex items-center gap-2 font-medium" style={{ color: 'var(--rosso)' }}>
+          <p className="flex items-center gap-2 font-medium text-rosso">
             <XCircle size={20} aria-hidden="true" />
             {t('erroreTitolo')}
           </p>
           <button
             type="button"
             onClick={riprova}
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
           >
             <RefreshCw size={16} aria-hidden="true" />
             {t('riprova')}
@@ -214,8 +207,7 @@ export default function ControlloPage() {
         <div className="flex flex-col gap-4" aria-busy={aggiornando}>
           <div
             role="status"
-            className="flex items-center gap-2 rounded-scheda border p-3 font-medium"
-            style={{ borderColor: coloreVar, color: coloreVar, background: 'var(--superficie)' }}
+            className={cn('flex items-center gap-2 rounded-scheda border bg-superficie p-3 font-medium', CLASSE_SINTESI[colore])}
           >
             {colore === 'rosso' || colore === 'ambra' ? (
               <AlertTriangle size={22} aria-hidden="true" />
@@ -244,10 +236,9 @@ export default function ControlloPage() {
           Ordine della pagina (F15): stato, Ambienti, un solo blocco Avanzate. */}
       <SezioneAmbienti />
 
-      <details className="rounded-scheda border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+      <details className="rounded-scheda border border-bordo bg-superficie">
         <summary
-          className="min-h-10 cursor-pointer select-none rounded-controllo px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="min-h-10 cursor-pointer select-none rounded-controllo px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-testo outline-blu"
         >
           {t('avanzateTitolo')}
         </summary>
