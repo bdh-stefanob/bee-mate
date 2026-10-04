@@ -41,7 +41,7 @@ export function Avanzate({
   const t = useTranslations('ModificaScenario');
   const id = useId();
   return (
-    <details className="rounded-md border" style={{ borderColor: 'var(--bordo)' }} open={aperto || undefined}>
+    <details className="rounded-scheda border" style={{ borderColor: 'var(--bordo)' }} open={aperto || undefined}>
       <summary
         className="flex min-h-10 cursor-pointer items-center gap-2 px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}

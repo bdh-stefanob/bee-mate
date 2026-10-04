@@ -39,7 +39,7 @@ const STILE_CAMPO = {
   outlineColor: 'var(--blu)',
 } as const;
 const CLASSE_CAMPO =
-  'min-h-10 w-full min-w-0 rounded-md border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+  'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 /**
  * Dopo "Genera il test": a quale applicazione e flusso appartiene lo scenario,
@@ -115,7 +115,7 @@ export function SalvaScenario({
 
   return (
     <section
-      className="flex flex-col gap-4 rounded-lg border p-4"
+      className="flex flex-col gap-4 rounded-scheda border p-4"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
       aria-labelledby={`${id}-titolo`}
     >
@@ -212,7 +212,7 @@ export function SalvaScenario({
           type="button"
           onClick={() => void salva()}
           disabled={!pronto || salvando}
-          className="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           {salvando ? (
@@ -226,7 +226,7 @@ export function SalvaScenario({
           type="button"
           onClick={onTieni}
           disabled={salvando}
-          className="inline-flex min-h-10 items-center rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+          className="inline-flex min-h-10 items-center rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {t('tieni')}

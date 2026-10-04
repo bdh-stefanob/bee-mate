@@ -47,7 +47,7 @@ export function CoppiaLato({
   if (!scelta) {
     return (
       <div
-        className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2"
+        className="flex min-h-10 items-center gap-2 rounded-controllo border px-3 py-2"
         style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
       >
         {contenuto}
@@ -57,7 +57,7 @@ export function CoppiaLato({
 
   return (
     <label
-      className="flex min-h-10 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
+      className="flex min-h-10 cursor-pointer items-center gap-3 rounded-controllo border px-3 py-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
       style={{
         borderColor: scelta.selezionata ? 'var(--blu)' : 'var(--bordo)',
         background: 'var(--superficie-tenue)',

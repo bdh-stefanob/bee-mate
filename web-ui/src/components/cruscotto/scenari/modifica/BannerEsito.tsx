@@ -37,7 +37,7 @@ export function BannerSalvata({
     <div
       role="status"
       aria-live="polite"
-      className="flex flex-col gap-3 rounded-lg border p-4"
+      className="flex flex-col gap-3 rounded-scheda border p-4"
       style={{ borderColor: 'var(--verde)', background: 'var(--superficie)' }}
     >
       <p className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--verde)' }}>
@@ -82,7 +82,7 @@ export function BannerRifiuto({ errore }: { errore: ErroreServer }) {
   const t = useTranslations('ModificaScenario');
   const f = frasiRifiuto(t, errore);
   return (
-    <div role="alert" className="flex flex-col gap-2 rounded-lg border p-4 text-sm" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
+    <div role="alert" className="flex flex-col gap-2 rounded-scheda border p-4 text-sm" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
       <p className="flex items-start gap-2 font-semibold" style={{ color: 'var(--rosso)' }}>
         <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
         {f.principale}

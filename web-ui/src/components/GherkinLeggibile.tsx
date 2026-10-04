@@ -51,7 +51,7 @@ export function GherkinLeggibile({
     <div
       role="region"
       aria-label={ariaLabel}
-      className="max-w-[calc(2.75rem+3px+90ch)] overflow-x-hidden rounded-lg border py-2 font-mono text-sm leading-6 [counter-reset:riga]"
+      className="max-w-[calc(2.75rem+3px+90ch)] overflow-x-hidden rounded-scheda border py-2 font-mono text-sm leading-6 [counter-reset:riga]"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)' }}
     >
       {righe.map((r) => {
@@ -175,7 +175,7 @@ function Contenuto({
     case 'verifica':
       return (
         <span
-          className="inline-flex items-start gap-1.5 rounded px-2 py-0.5"
+          className="inline-flex items-start gap-1.5 rounded-dettaglio px-2 py-0.5"
           style={{ background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
         >
           <Eye size={16} aria-hidden="true" className="mt-1 shrink-0" style={BLU} />

@@ -293,7 +293,7 @@ const GherkinEditor = function GherkinEditor({
               '.cm-unknown-tooltip': {
                 padding: '2px 8px',
                 fontSize: '0.75rem',
-                borderRadius: '4px',
+                borderRadius: 'var(--radius-dettaglio)',
               },
             }),
           ],
@@ -335,7 +335,7 @@ const GherkinEditor = function GherkinEditor({
     return (
       <div
         ref={containerRef}
-        className="w-full rounded-md border border-border bg-background text-foreground overflow-hidden"
+        className="w-full rounded-scheda border border-border bg-background text-foreground overflow-hidden"
         style={{ minHeight: '400px', fontFamily: 'var(--font-mono, ui-monospace, monospace)' }}
       />
     );

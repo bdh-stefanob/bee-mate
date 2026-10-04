@@ -9,10 +9,10 @@ import type { ButtonHTMLAttributes } from 'react';
  */
 
 export const CLASSE_BOTTONE =
-  'inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-h-10 items-center justify-center gap-2 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const CLASSE_CAMPO =
-  'min-h-10 w-full min-w-0 rounded-md border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+  'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 export const STILE_CAMPO = {
   borderColor: 'var(--bordo)',

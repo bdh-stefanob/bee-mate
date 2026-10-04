@@ -14,7 +14,7 @@ export function StatoVuotoScenari({ soloDescritti }: { soloDescritti: number }) 
   const t = useTranslations('Scenari');
   return (
     <div
-      className="flex flex-col items-center gap-3 rounded-lg border px-6 py-12 text-center"
+      className="flex flex-col items-center gap-3 rounded-scheda border px-6 py-12 text-center"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <FolderPlus size={40} aria-hidden="true" style={{ color: 'var(--blu)' }} />
@@ -26,7 +26,7 @@ export function StatoVuotoScenari({ soloDescritti }: { soloDescritti: number }) 
       </p>
       <Link
         href="/registra"
-        className="inline-flex min-h-10 items-center justify-center rounded-md px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex min-h-10 items-center justify-center rounded-controllo px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ background: 'var(--blu-fondo)', color: '#fff', outlineColor: 'var(--blu)' }}
       >
         {t('vuotoAzione')}

@@ -69,7 +69,7 @@ export function RigaPasso({
   const altri = meta?.condivisoCon.length ?? 0;
 
   return (
-    <li className="flex flex-col gap-2 rounded-lg border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+    <li className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
       <div className="flex items-baseline gap-3">
         <span className="shrink-0 text-xs font-semibold tabular-nums" style={{ color: 'var(--testo-tenue)' }} aria-hidden="true">
           {indice}

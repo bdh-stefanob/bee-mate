@@ -47,7 +47,7 @@ export function SelettorePasso({
   };
 
   return (
-    <div onKeyDown={suTasto} className="flex flex-col gap-2 rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+    <div onKeyDown={suTasto} className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
       <label htmlFor={`${id}-cerca`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
         {t('cercaPasso')}
       </label>
@@ -67,7 +67,7 @@ export function SelettorePasso({
               type="button"
               aria-label={t('usaAria', { frase: o.frase })}
               onClick={() => onScegli(o.frase)}
-              className="flex min-h-10 w-full flex-col items-start gap-0.5 rounded-md border px-3 py-1.5 text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="flex min-h-10 w-full flex-col items-start gap-0.5 rounded-controllo border px-3 py-1.5 text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
             >
               <span className="break-words font-medium [overflow-wrap:anywhere]">{o.frase}</span>

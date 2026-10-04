@@ -54,7 +54,7 @@ function Scheda({
   coppia: CoppiaArricchita;
 }) {
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: colore, background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border p-4" style={{ borderColor: colore, background: 'var(--superficie)' }}>
       <div className="flex items-start gap-2">
         {icona}
         <div className="flex-1">

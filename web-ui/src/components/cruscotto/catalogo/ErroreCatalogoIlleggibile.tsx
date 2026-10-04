@@ -65,7 +65,7 @@ export function ErroreCatalogoIlleggibile() {
   return (
     <div
       role="alert"
-      className="rounded-lg border p-4 text-sm flex flex-wrap items-center gap-3"
+      className="rounded-scheda border p-4 text-sm flex flex-wrap items-center gap-3"
       style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)', color: 'var(--testo)' }}
     >
       <div className="flex-1 min-w-48">

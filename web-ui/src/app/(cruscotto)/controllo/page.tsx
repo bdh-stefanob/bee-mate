@@ -21,14 +21,14 @@ function ScheletroControllo() {
     <div role="status" aria-live="polite" className="flex flex-col gap-2">
       <span className="sr-only">{t('controllando')}</span>
       <div
-        className="h-12 animate-pulse rounded-lg"
+        className="h-12 animate-pulse rounded-scheda"
         style={{ background: 'var(--superficie-tenue)' }}
         aria-hidden="true"
       />
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-16 animate-pulse rounded-lg border"
+          className="h-16 animate-pulse rounded-scheda border"
           style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
           aria-hidden="true"
         />
@@ -99,7 +99,7 @@ function ConfiguraCredenziale() {
             value={chiave}
             onChange={(e) => setChiave(e.target.value.toUpperCase())}
             placeholder="ES_UTENTE"
-            className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
         </div>
@@ -113,14 +113,14 @@ function ConfiguraCredenziale() {
             autoComplete="off"
             value={valore}
             onChange={(e) => setValore(e.target.value)}
-            className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
         </div>
         <button
           type="submit"
           disabled={!chiave || !valore || inCorso}
-          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           {inCorso ? t('salvando') : t('salva')}
@@ -191,7 +191,7 @@ export default function ControlloPage() {
       {stato === 'errore' && (
         <div
           role="alert"
-          className="flex flex-col items-start gap-3 rounded-lg border p-4"
+          className="flex flex-col items-start gap-3 rounded-scheda border p-4"
           style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}
         >
           <p className="flex items-center gap-2 font-medium" style={{ color: 'var(--rosso)' }}>
@@ -201,7 +201,7 @@ export default function ControlloPage() {
           <button
             type="button"
             onClick={riprova}
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             <RefreshCw size={16} aria-hidden="true" />
@@ -214,7 +214,7 @@ export default function ControlloPage() {
         <div className="flex flex-col gap-4" aria-busy={aggiornando}>
           <div
             role="status"
-            className="flex items-center gap-2 rounded-lg border p-3 font-medium"
+            className="flex items-center gap-2 rounded-scheda border p-3 font-medium"
             style={{ borderColor: coloreVar, color: coloreVar, background: 'var(--superficie)' }}
           >
             {colore === 'rosso' || colore === 'ambra' ? (
@@ -244,9 +244,9 @@ export default function ControlloPage() {
           Ordine della pagina (F15): stato, Ambienti, un solo blocco Avanzate. */}
       <SezioneAmbienti />
 
-      <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+      <details className="rounded-scheda border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
         <summary
-          className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="min-h-10 cursor-pointer select-none rounded-controllo px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {t('avanzateTitolo')}

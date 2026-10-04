@@ -55,7 +55,7 @@ export function ProvaPassata({ id }: { id: string }) {
   const ritorno = (
     <Link
       href="/scenari"
-      className="inline-flex min-h-10 w-fit items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
     >
       {t('provaVaiAScenari')}
@@ -65,7 +65,7 @@ export function ProvaPassata({ id }: { id: string }) {
   const avviso = (titolo: string, testo: string, azione: React.ReactNode = ritorno) => (
     <section
       role="status"
-      className="flex flex-col gap-2 rounded-lg border p-4 text-sm"
+      className="flex flex-col gap-2 rounded-scheda border p-4 text-sm"
       style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
     >
       <p className="flex items-center gap-2 font-semibold">
@@ -96,7 +96,7 @@ export function ProvaPassata({ id }: { id: string }) {
       t('provaInCorsoTesto'),
       <Link
         href="/esecuzione"
-        className="inline-flex min-h-10 w-fit items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
       >
         {t('provaVaiAEsecuzione')}
@@ -111,7 +111,7 @@ export function ProvaPassata({ id }: { id: string }) {
       <>
         <p
           role="status"
-          className="flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+          className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm"
           style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
         >
           <History size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--testo-tenue)' }} />

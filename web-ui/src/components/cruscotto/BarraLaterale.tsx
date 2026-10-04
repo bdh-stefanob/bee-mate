@@ -54,7 +54,7 @@ function VoceNav({
         }}
         className={cn(
           'flex flex-col min-[900px]:flex-row items-center justify-center min-[900px]:justify-start gap-0.5 min-[900px]:gap-2',
-          'min-h-10 px-0.5 min-[900px]:px-3 py-1 min-[900px]:py-0 rounded-md text-xs min-[900px]:text-sm font-medium transition-colors',
+          'min-h-10 px-0.5 min-[900px]:px-3 py-1 min-[900px]:py-0 rounded-controllo text-xs min-[900px]:text-sm font-medium transition-colors',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
           attivo
             ? 'font-semibold'
@@ -69,7 +69,7 @@ function VoceNav({
         <span>{t(chiaveEtichetta)}</span>
         {conPunto && (
           <>
-            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ background: 'var(--ambra)' }} />
+            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-pillola" style={{ background: 'var(--ambra)' }} />
             <span className="sr-only min-[900px]:not-sr-only text-xs font-normal">{tm('voceNonSalvate')}</span>
           </>
         )}

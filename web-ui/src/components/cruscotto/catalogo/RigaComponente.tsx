@@ -39,7 +39,7 @@ export const RigaComponente = memo(function RigaComponente({
   const Chevron = aperto ? ChevronDown : ChevronRight;
 
   return (
-    <div className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
       <button
         type="button"
         onClick={() => onCommuta(chiave)}

@@ -40,7 +40,7 @@ export function RiepilogoEsiti({
             aria-pressed={premuto}
             onClick={() => onScegli(premuto ? null : categoria)}
             className={cn(
-              'inline-flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors',
+              'inline-flex min-h-10 items-center gap-2 rounded-controllo border px-3 text-sm font-medium transition-colors',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
               premuto ? 'border-2 font-semibold' : 'hover:bg-black/5 dark:hover:bg-white/10'
             )}

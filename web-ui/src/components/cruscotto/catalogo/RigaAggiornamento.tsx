@@ -75,7 +75,7 @@ export function AvvisoAggiornamento() {
 
   return (
     <div
-      className="flex flex-wrap items-start gap-3 rounded-lg border p-3 text-sm"
+      className="flex flex-wrap items-start gap-3 rounded-scheda border p-3 text-sm"
       style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
     >
       <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />

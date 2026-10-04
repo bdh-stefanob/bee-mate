@@ -269,7 +269,7 @@ function ScenariContenuto() {
       {dati.esiti === 'illeggibile' && (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+          className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm"
           style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
         >
           <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
@@ -306,7 +306,7 @@ function ScenariContenuto() {
           ) : selezione.tipo === 'non-trovato' ? (
             <section
               aria-label={t('pannelloAria')}
-              className="flex flex-col items-start gap-3 rounded-lg border p-6"
+              className="flex flex-col items-start gap-3 rounded-scheda border p-6"
               style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
             >
               <h2 className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
@@ -318,7 +318,7 @@ function ScenariContenuto() {
               <button
                 type="button"
                 onClick={() => router.replace('/scenari', { scroll: false })}
-                className="inline-flex min-h-10 items-center rounded-md border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex min-h-10 items-center rounded-controllo border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ borderColor: 'var(--bordo)', color: 'var(--blu)', outlineColor: 'var(--blu)' }}
               >
                 {t('tornaElenco')}

@@ -42,7 +42,7 @@ export const RigaStep = memo(function RigaStep({
   const stato = step.stato ? ICONA_STATO[step.stato] : null;
 
   return (
-    <div className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
       <button
         type="button"
         onClick={() => onCommuta(step.espressione)}
@@ -152,7 +152,7 @@ export const RigaStep = memo(function RigaStep({
                 </ol>
               ) : (
                 <pre
-                  className="whitespace-pre-wrap rounded-md border p-2 font-mono text-sm"
+                  className="whitespace-pre-wrap rounded-scheda border p-2 font-mono text-sm"
                   style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
                 >
                   {step.comportamento.corpo}

@@ -91,7 +91,7 @@ export function CoppiaDoppione({
   }
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--ambra)', background: 'var(--superficie)' }}>
+    <div className="rounded-scheda border p-4" style={{ borderColor: 'var(--ambra)', background: 'var(--superficie)' }}>
       <div className="flex items-start gap-2">
         <GitMerge size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} className="mt-0.5 shrink-0" />
         <div className="flex-1">
@@ -138,7 +138,7 @@ export function CoppiaDoppione({
 
           {anteprima && frasePersa && fraseTenuta && (
             <>
-              <div className="rounded-md border p-3 text-sm" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+              <div className="rounded-scheda border p-3 text-sm" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
                 <p style={{ color: 'var(--testo)' }}>{t('anteprimaRighe', { righe: anteprima.righeCoinvolte, frase: frasePersa })}</p>
                 {anteprima.scenariCoinvolti.length > 0 && (
                   <ul className="mt-1 flex list-inside list-disc flex-col gap-0.5" style={{ color: 'var(--testo-tenue)' }}>
@@ -155,7 +155,7 @@ export function CoppiaDoppione({
                   {t('corpiUguali')}
                 </p>
               ) : (
-                <div className="rounded-md border p-3" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
+                <div className="rounded-scheda border p-3" style={{ borderColor: 'var(--rosso)', background: 'var(--superficie)' }}>
                   <p className="flex items-center gap-2 font-medium" style={{ color: 'var(--rosso)' }}>
                     <AlertTriangle size={16} aria-hidden="true" />
                     {t('corpiDiversiTitolo')}
@@ -223,7 +223,7 @@ export function CoppiaDoppione({
 
 function Confronto({ titolo, corpo }: { titolo: string; corpo: string | null }) {
   return (
-    <div className="rounded-md border p-2" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+    <div className="rounded-scheda border p-2" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
       <p className="mb-1 text-sm font-medium" style={{ color: 'var(--testo)' }}>
         {titolo}
       </p>

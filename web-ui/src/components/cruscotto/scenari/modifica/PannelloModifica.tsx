@@ -667,7 +667,7 @@ export function PannelloModifica({
                       }}
                     />
                   ) : aperta?.tipo === 'rinomina' && rinomina ? (
-                    <div className="ml-6 flex flex-col gap-2 rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+                    <div className="ml-6 flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
                       <label htmlFor={`${id}-rinomina`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
                         {t('rinominaCampo')}
                       </label>
@@ -725,7 +725,7 @@ export function PannelloModifica({
         )}
 
         {apertura?.tipo === 'verifica' ? (
-          <div className="flex flex-col gap-2 rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+          <div className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
             <label htmlFor={`${id}-verifica`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
               {t('verificaCampo')}
             </label>
@@ -780,7 +780,7 @@ export function PannelloModifica({
         </p>
       )}
       {sposta && (fase === 'pulita' || fase === 'salvata' || fase === 'conferma') && (
-        <div className="flex flex-col gap-2 rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
+        <div className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
           <label htmlFor={`${id}-sposta`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
             {t('spostaCampo', { app: file.split('/')[0] })}
           </label>

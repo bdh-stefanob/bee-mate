@@ -118,7 +118,7 @@ export function ElencoScenari({
           {t('cerca')}
         </label>
         <div
-          className="flex items-center gap-2 rounded-md border px-2"
+          className="flex items-center gap-2 rounded-controllo border px-2"
           style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
         >
           <Search size={16} aria-hidden="true" className="shrink-0" style={{ color: 'var(--testo-tenue)' }} />
@@ -144,7 +144,7 @@ export function ElencoScenari({
               type="button"
               aria-label={t('cancellaRicerca')}
               onClick={() => onTesto('')}
-              className="inline-flex size-10 shrink-0 items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex size-10 shrink-0 items-center justify-center rounded-controllo focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={STILE_PULSANTE_TESTO}
             >
               <X size={16} aria-hidden="true" />
@@ -158,7 +158,7 @@ export function ElencoScenari({
 
       {quanti === 0 ? (
         <div
-          className="flex flex-col items-start gap-2 rounded-md border p-3 text-sm"
+          className="flex flex-col items-start gap-2 rounded-scheda border p-3 text-sm"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}
         >
           <p>{testoCerca.trim() ? t('nessunRisultato', { testo: testoCerca.trim() }) : t('nessunoInQuelloStato')}</p>
@@ -169,7 +169,7 @@ export function ElencoScenari({
                 onTesto('');
                 onCancellaFiltro();
               }}
-              className="inline-flex min-h-10 items-center rounded-md border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ borderColor: 'var(--bordo)', ...STILE_PULSANTE_TESTO }}
             >
               {testoCerca.trim() ? t('cancellaRicerca') : t('mostraTutti')}
@@ -183,7 +183,7 @@ export function ElencoScenari({
           role="listbox"
           aria-label={t('elencoAria')}
           onKeyDown={suTasto}
-          className={`${CLASSE_ELENCO_ALTEZZA} min-h-0 overflow-y-auto rounded-md border`}
+          className={`${CLASSE_ELENCO_ALTEZZA} min-h-0 overflow-y-auto rounded-scheda border`}
           style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
         >
           {gruppi.map((g) => {

@@ -61,6 +61,14 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Un raggio per tipo di elemento (S5). controllo: tutto cio' che si preme o in cui si scrive.
+     scheda: ogni contenitore con bordo o fondo. pillola: etichette, contatori, forme tonde.
+     dettaglio: segni piccoli dentro una riga di testo. Nei componenti si usa solo
+     rounded-<tipo>, mai un raggio scritto a mano (lo controlla raggi-coerenti.test.ts). */
+  --radius-controllo: var(--radius-md);
+  --radius-scheda: var(--radius-lg);
+  --radius-pillola: 9999px;
+  --radius-dettaglio: var(--radius-sm);
 }
 
 :root {

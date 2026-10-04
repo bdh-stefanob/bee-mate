@@ -175,7 +175,7 @@ export function Suggerimenti() {
   return (
     <section
       aria-label={t('titolo')}
-      className="flex flex-col gap-3 rounded-lg border p-4"
+      className="flex flex-col gap-3 rounded-scheda border p-4"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
     >
       {/* L'annuncio dei cambi di stato: educato, mai invadente. */}
@@ -215,7 +215,7 @@ export function Suggerimenti() {
       {(risposta.stato === 'pronte' || applicate) && (
         <details className="group" open={aperto} onToggle={(e) => setAperto(e.currentTarget.open)}>
           <summary
-            className={`flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-md text-sm font-medium ${FOCUS}`}
+            className={`flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-controllo text-sm font-medium ${FOCUS}`}
             style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           >
             <ChevronDown size={18} aria-hidden="true" className="shrink-0 transition-transform group-open:rotate-180" />
@@ -257,7 +257,7 @@ export function Suggerimenti() {
                   type="button"
                   onClick={() => void applica()}
                   disabled={scelteFatte === 0 || lavoro !== null}
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white disabled:opacity-50 ${FOCUS}`}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-50 ${FOCUS}`}
                   style={STILE_BOTTONE_PIENO}
                 >
                   {lavoro === 'applico' && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}
@@ -269,7 +269,7 @@ export function Suggerimenti() {
                   type="button"
                   onClick={() => void annulla()}
                   disabled={lavoro !== null}
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium disabled:opacity-50 ${FOCUS}`}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium disabled:opacity-50 ${FOCUS}`}
                   style={STILE_BOTTONE_VUOTO}
                 >
                   {lavoro === 'annullo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Undo2 size={16} aria-hidden="true" />}
@@ -301,7 +301,7 @@ function RigaSuggerimento({
   const motivo = riga.motivoNonApplicabile;
 
   return (
-    <li className="flex flex-col gap-2 rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+    <li className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
       <h3 className={`${TITOLO_GRUPPO} m-0`} style={{ color: 'var(--testo)' }}>
         {t('passo', { n: riga.passo })}
         {riga.anche.length > 0 && (

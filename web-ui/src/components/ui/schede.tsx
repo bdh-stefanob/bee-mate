@@ -123,7 +123,7 @@ function Schede({
                 <>
                   <span
                     aria-hidden="true"
-                    className="inline-flex min-w-5 items-center justify-center gap-1 rounded-full border px-1.5 text-xs font-semibold"
+                    className="inline-flex min-w-5 items-center justify-center gap-1 rounded-pillola border px-1.5 text-xs font-semibold"
                     style={{
                       borderColor: attenzione ? "var(--ambra)" : "var(--bordo)",
                       color: attenzione ? "var(--ambra)" : "var(--testo-tenue)",

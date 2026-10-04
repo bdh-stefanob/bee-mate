@@ -34,7 +34,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
 
   return (
     <li
-      className="flex flex-col gap-2 rounded-md border p-3 min-h-10"
+      className="flex flex-col gap-2 rounded-scheda border p-3 min-h-10"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <div className="flex items-start gap-2">
@@ -70,7 +70,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
               {t('dettagliTecnici')}
             </summary>
             <pre
-              className="mt-2 whitespace-pre-wrap break-words rounded-md p-2 m-0 font-mono"
+              className="mt-2 whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono"
               style={{ background: 'var(--superficie-tenue)', color: 'var(--rosso)' }}
             >
               {passo.messaggio}
@@ -84,7 +84,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
         <img
           src={passo.schermata}
           alt={t('altSchermata', { testo: passo.testo })}
-          className="max-w-full h-auto rounded-md border"
+          className="max-w-full h-auto rounded-scheda border"
           style={{ borderColor: 'var(--bordo)' }}
         />
       )}

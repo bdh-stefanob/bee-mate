@@ -28,7 +28,7 @@ export function ErrorFallback() {
       <p className="text-sm text-muted-foreground">Something went wrong</p>
       <button
         onClick={() => window.location.reload()}
-        className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:opacity-90 transition-opacity"
+        className="px-4 py-2 rounded-controllo bg-primary text-primary-foreground text-sm hover:opacity-90 transition-opacity"
       >
         Ricarica pagina
       </button>

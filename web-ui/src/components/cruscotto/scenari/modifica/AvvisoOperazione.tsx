@@ -36,7 +36,7 @@ export function AvvisoOperazione({
       <div
         role="status"
         aria-live="polite"
-        className="flex flex-wrap items-center gap-3 rounded-lg border p-3"
+        className="flex flex-wrap items-center gap-3 rounded-scheda border p-3"
         style={{ borderColor: 'var(--verde)', background: 'var(--superficie)' }}
       >
         <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium" style={{ color: 'var(--testo)' }}>

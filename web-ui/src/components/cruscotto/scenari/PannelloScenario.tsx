@@ -15,7 +15,7 @@ import type { Istantanea } from '@/lib/risorsa';
 import type { RigaGherkin } from '@/lib/gherkin-lettura';
 import { TESTO_LETTURA, TITOLO_GRUPPO, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
-const CLASSE_AZIONE = `inline-flex min-h-10 ${CLASSE_AZIONE_FLESSIBILE} items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`;
+const CLASSE_AZIONE = `inline-flex min-h-10 ${CLASSE_AZIONE_FLESSIBILE} items-center justify-center gap-2 rounded-controllo px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`;
 
 const tutto = <T,>(i: Istantanea<T>): Istantanea<T> => i;
 
@@ -143,7 +143,7 @@ export function PannelloScenario({
             <button
               type="button"
               onClick={() => void risorsa.carica()}
-              className="inline-flex min-h-10 items-center rounded-md border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ borderColor: 'var(--bordo)', color: 'var(--blu)', outlineColor: 'var(--blu)' }}
             >
               {t('riprova')}

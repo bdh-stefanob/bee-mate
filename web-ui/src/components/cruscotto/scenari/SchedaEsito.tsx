@@ -118,7 +118,7 @@ export function SchedaEsito({ stato, ambiente }: { stato: StatoScenario; ambient
   return (
     <section
       aria-label={t('esitoTitolo')}
-      className="flex flex-col gap-2 rounded-lg border p-4"
+      className="flex flex-col gap-2 rounded-scheda border p-4"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo-tenue)' }}>

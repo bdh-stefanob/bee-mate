@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { CLASSE_DUE_COLONNE, CLASSE_SOLO_DUE_COLONNE } from './layout';
 
-const BLOCCO = 'animate-pulse motion-reduce:animate-none rounded-md';
+const BLOCCO = 'animate-pulse motion-reduce:animate-none rounded-scheda';
 const FONDO = { background: 'var(--bordo)' } as const;
 
 /**

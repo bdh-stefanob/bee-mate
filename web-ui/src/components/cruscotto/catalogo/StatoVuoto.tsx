@@ -26,7 +26,7 @@ export function StatoVuoto({
 }) {
   return (
     <div
-      className="rounded-lg border p-6 flex flex-col items-start gap-2"
+      className="rounded-scheda border p-6 flex flex-col items-start gap-2"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <Icona size={24} aria-hidden="true" style={{ color: 'var(--blu)' }} />

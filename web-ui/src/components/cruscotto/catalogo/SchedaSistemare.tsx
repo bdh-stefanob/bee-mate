@@ -113,7 +113,7 @@ export function SchedaSistemare() {
           {coppie.dati?.troncato && (
             <p
               role="status"
-              className="flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+              className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm"
               style={{ color: 'var(--testo)', borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
             >
               <Info aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
@@ -207,7 +207,7 @@ function GruppoDiCoppie({
         aria-expanded={aperto}
         aria-controls={id}
         onClick={() => setAperto((a) => !a)}
-        className="flex min-h-10 w-full items-center gap-2 rounded-md px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="flex min-h-10 w-full items-center gap-2 rounded-controllo px-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ outlineColor: 'var(--blu)' }}
       >
         <Chevron size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} />

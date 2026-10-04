@@ -51,7 +51,7 @@ export function SelettoreLingua() {
       <div
         role="group"
         aria-label={t('languageLabel')}
-        className="flex items-center gap-1 rounded-md border p-1"
+        className="flex items-center gap-1 rounded-scheda border p-1"
         style={{ borderColor: 'var(--bordo)' }}
       >
         <Languages size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} className="ml-1 shrink-0" />
@@ -65,7 +65,7 @@ export function SelettoreLingua() {
               disabled={inCorso}
               aria-pressed={attiva}
               className={cn(
-                'min-h-10 min-w-0 flex-1 rounded border px-2 text-sm transition-colors',
+                'min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm transition-colors',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
                 'disabled:opacity-60',
                 attiva ? 'font-semibold' : 'font-medium hover:bg-black/5 dark:hover:bg-white/10'

@@ -160,7 +160,7 @@ function CredenzialiMancanti({
           type="button"
           onClick={() => setAperto(true)}
           aria-label={t('compilaCredenzialiAria', { nome: nomeAmbiente })}
-          className="inline-flex min-h-10 items-center rounded-md border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {t('compilaCredenziali')}
@@ -176,7 +176,7 @@ function CredenzialiMancanti({
   }
 
   return (
-    <form onSubmit={(e) => void salva(e)} className="mt-2 flex flex-col gap-2 rounded-md border p-2" style={{ borderColor: 'var(--bordo)' }}>
+    <form onSubmit={(e) => void salva(e)} className="mt-2 flex flex-col gap-2 rounded-scheda border p-2" style={{ borderColor: 'var(--bordo)' }}>
       {variabiliMancanti.map((chiave) => (
         <div key={chiave} className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
           <label htmlFor={`cred-${nomeAmbiente}-${chiave}`} className="min-w-0 shrink-0 text-xs font-mono break-all" style={{ color: 'var(--testo)' }}>
@@ -188,7 +188,7 @@ function CredenzialiMancanti({
             autoComplete="off"
             value={valori[chiave] ?? ''}
             onChange={(e) => setValori((v) => ({ ...v, [chiave]: e.target.value }))}
-            className="min-h-10 min-w-0 flex-1 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
         </div>
@@ -197,7 +197,7 @@ function CredenzialiMancanti({
         <button
           type="submit"
           disabled={stato === 'salvo'}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           {stato === 'salvo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : null}
@@ -206,7 +206,7 @@ function CredenzialiMancanti({
         <button
           type="button"
           onClick={() => { setAperto(false); setValori({}); setStato('inattivo'); }}
-          className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {t('annullaCompilazione')}
@@ -342,7 +342,7 @@ function RegistraAccesso({
           onClick={() => (ambiente.haLogin ? setInConferma(true) : void avvia())}
           disabled={inCorso}
           aria-label={t('registraAccessoAria', { nome: ambiente.nome })}
-          className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {inCorso ? (
@@ -440,7 +440,7 @@ function AvvisoIrraggiungibile({
   return (
     <div
       role="alert"
-      className="flex min-w-0 flex-col items-start gap-2 rounded-md border p-2 text-sm"
+      className="flex min-w-0 flex-col items-start gap-2 rounded-scheda border p-2 text-sm"
       style={{ borderColor: 'var(--ambra)', color: 'var(--testo)' }}
     >
       <p className="flex items-start gap-1.5 break-words">
@@ -453,7 +453,7 @@ function AvvisoIrraggiungibile({
         type="button"
         onClick={onSalvaComunque}
         disabled={inCorso}
-        className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
       >
         {inCorso ? t('salvando') : t('salvaComunque')}
@@ -530,7 +530,7 @@ function ModificaIndirizzo({
           setAperto(true);
         }}
         aria-label={t('modificaIndirizzoAria', { nome: ambiente.nome })}
-        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md border px-3 text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo border px-3 text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
       >
         <Pencil size={13} aria-hidden="true" />
@@ -545,7 +545,7 @@ function ModificaIndirizzo({
         e.preventDefault();
         void salva(false);
       }}
-      className="flex min-w-0 flex-1 flex-col gap-2 rounded-md border p-2"
+      className="flex min-w-0 flex-1 flex-col gap-2 rounded-scheda border p-2"
       style={{ borderColor: 'var(--bordo)' }}
     >
       <p className="text-xs break-words" style={{ color: 'var(--testo-tenue)' }}>
@@ -564,7 +564,7 @@ function ModificaIndirizzo({
             setIrraggiungibile(null);
           }}
           placeholder={t('placeholderIndirizzo')}
-          className="min-h-10 min-w-0 flex-1 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
         />
       </div>
@@ -572,7 +572,7 @@ function ModificaIndirizzo({
         <button
           type="submit"
           disabled={stato === 'salvo' || !url}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           {stato === 'salvo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : null}
@@ -581,7 +581,7 @@ function ModificaIndirizzo({
         <button
           type="button"
           onClick={() => { setAperto(false); setStato('inattivo'); setMessaggioErrore(''); setIrraggiungibile(null); }}
-          className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {t('annullaCompilazione')}
@@ -731,7 +731,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
 
   return (
     <li
-      className="flex flex-col gap-2 rounded-lg border p-3"
+      className="flex flex-col gap-2 rounded-scheda border p-3"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <div className="min-w-0">
@@ -784,7 +784,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
                 onClick={() => void accediAdesso()}
                 disabled={stato === 'avvio' || stato === 'in corso'}
                 aria-label={t('accediAria', { nome: ambiente.nome })}
-                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
               >
                 {stato === 'avvio' || stato === 'in corso' ? (
@@ -804,7 +804,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
               onClick={() => setInConfermaElimina(true)}
               disabled={eliminazione === 'in corso'}
               aria-label={t('eliminaAria', { nome: ambiente.nome })}
-              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
             >
               {eliminazione === 'in corso' ? (
@@ -943,7 +943,7 @@ function AggiungiAmbiente() {
               setIrraggiungibile(null);
             }}
             placeholder={t('placeholderNome')}
-            className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
         </div>
@@ -959,14 +959,14 @@ function AggiungiAmbiente() {
               setIrraggiungibile(null);
             }}
             placeholder={t('placeholderIndirizzo')}
-            className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 min-w-0 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
         </div>
         <button
           type="submit"
           disabled={!nome || !url || inCorso}
-          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
         >
           <Plus size={16} aria-hidden="true" />
@@ -1022,7 +1022,7 @@ export function SezioneAmbienti() {
 
   return (
     <section
-      className="flex flex-col gap-3 rounded-lg border p-4"
+      className="flex flex-col gap-3 rounded-scheda border p-4"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
       aria-labelledby="ambienti-titolo"
     >

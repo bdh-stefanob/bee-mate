@@ -45,7 +45,7 @@ export function SelettoreAmbiente() {
         {t('environmentLabel')}
       </label>
       <div
-        className="flex items-center gap-2 rounded-md border px-2"
+        className="flex items-center gap-2 rounded-controllo border px-2"
         style={{ borderColor: 'var(--bordo)' }}
       >
         <Server size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} className="shrink-0" />

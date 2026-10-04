@@ -43,7 +43,7 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div
-        className="flex flex-wrap items-center gap-4 rounded-lg border p-4 text-sm"
+        className="flex flex-wrap items-center gap-4 rounded-scheda border p-4 text-sm"
         style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
       >
         <span className="flex items-center gap-2" style={{ color: 'var(--testo)' }}>
@@ -60,7 +60,7 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
         {passi.map((passo, i) => (
           <li
             key={`${passo.nome}-${i}`}
-            className="rounded-lg border p-4"
+            className="rounded-scheda border p-4"
             style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
           >
             <p className="font-medium" style={{ color: 'var(--testo)' }}>
@@ -87,7 +87,7 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
           {buchi.map((buco, i) => (
             <div
               key={`${buco.pagina}-${i}`}
-              className="flex items-start gap-2 rounded-lg border p-3 text-sm"
+              className="flex items-start gap-2 rounded-scheda border p-3 text-sm"
               style={{
                 borderColor: 'var(--bordo)',
                 background: 'var(--superficie-tenue)',
