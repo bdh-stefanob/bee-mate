@@ -7,6 +7,7 @@ import { VoceControllo } from '@/components/cruscotto/VoceControllo';
 import { SezioneAmbienti } from '@/components/cruscotto/SezioneAmbienti';
 import { useRisorsa } from '@/hooks/useRisorsa';
 import { diagnosi, dopoUnaModifica, type Diagnosi } from '@/lib/stato-controllo';
+import { coloreSintesi } from '@/lib/colore-sintesi';
 import type { Istantanea } from '@/lib/risorsa';
 
 const tutta = (i: Istantanea<Diagnosi>): Istantanea<Diagnosi> => i;
@@ -174,9 +175,12 @@ export default function ControlloPage() {
     };
   }, [dati]);
   const { essenziali, avanzate, mancanti, daGuardare, daUsoTotale, daUsoFatte, perIniziare } = riepilogo;
+  // Il riquadro di sintesi prende il colore dell'esito peggiore (lib/colore-sintesi.ts).
+  const colore = coloreSintesi({ mancanti, daGuardare, perIniziare });
+  const coloreVar = `var(--${colore})`;
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
         {t('titolo')}
       </h1>
@@ -210,16 +214,12 @@ export default function ControlloPage() {
           <div
             role="status"
             className="flex items-center gap-2 rounded-lg border p-3 font-medium"
-            style={{
-              borderColor: dati.pronto ? (perIniziare ? 'var(--blu)' : 'var(--verde)') : 'var(--rosso)',
-              color: dati.pronto ? (perIniziare ? 'var(--blu)' : 'var(--verde)') : 'var(--rosso)',
-              background: 'var(--superficie)',
-            }}
+            style={{ borderColor: coloreVar, color: coloreVar, background: 'var(--superficie)' }}
           >
-            {dati.pronto ? (
-              <CheckCircle2 size={22} aria-hidden="true" />
-            ) : (
+            {colore === 'rosso' || colore === 'ambra' ? (
               <AlertTriangle size={22} aria-hidden="true" />
+            ) : (
+              <CheckCircle2 size={22} aria-hidden="true" />
             )}
             {mancanti > 0
               ? t('statoMancante', { mancanti })
@@ -235,27 +235,12 @@ export default function ControlloPage() {
               <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={dopoUnaModifica} />
             ))}
           </ul>
-
-          {avanzate.length > 0 && (
-            <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
-              <summary
-                className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
-              >
-                {t('avanzate', { n: avanzate.length })}
-              </summary>
-              <ul className="flex flex-col gap-2 p-3 pt-0">
-                {avanzate.map((voce) => (
-                  <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={dopoUnaModifica} />
-                ))}
-              </ul>
-            </details>
-          )}
         </div>
       )}
 
-      {/* Ambienti e credenziali non dipendono dalla diagnosi: si mostrano subito,
-          invece di aspettare quasi un secondo che la macchina sia stata controllata. */}
+      {/* Ambienti non dipende dalla diagnosi: si mostra subito, invece di
+          aspettare quasi un secondo che la macchina sia stata controllata.
+          Ordine della pagina (F15): stato, Ambienti, un solo blocco Avanzate. */}
       <SezioneAmbienti />
 
       <details className="rounded-lg border" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
@@ -263,9 +248,16 @@ export default function ControlloPage() {
           className="min-h-10 cursor-pointer select-none rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
-          {t('credenzialeApri')}
+          {t('avanzateTitolo')}
         </summary>
-        <div className="p-3 pt-0">
+        <div className="flex flex-col gap-4 p-3 pt-0">
+          {avanzate.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {avanzate.map((voce) => (
+                <VoceControllo key={voce.chiaveNome} voce={voce} onRimediato={dopoUnaModifica} />
+              ))}
+            </ul>
+          )}
           <ConfiguraCredenziale />
         </div>
       </details>

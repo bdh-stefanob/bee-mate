@@ -661,7 +661,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
 
   return (
     <li
-      className="flex max-w-2xl flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-2 rounded-lg border p-3"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <div className="min-w-0">
@@ -723,21 +723,43 @@ const RigaAmbiente = memo(function RigaAmbiente({
         </p>
 
         {/*
-          Modifica ed elimina stanno qui, piccole e in una riga a parte —
-          lontane dal pulsante "Accedi adesso" (grande, blu, sulla destra) di
-          proposito: la prima e' l'azione frequente, elimina e' distruttiva, e
-          non devono poter essere confuse da chi clicca in fretta.
+          Le azioni stanno in una riga sola, sotto l'ambiente a cui si
+          riferiscono: "Accedi adesso" (l'azione frequente, blu) per prima,
+          "Modifica indirizzo" (secondaria, col bordo) accanto, e "Elimina"
+          (distruttiva) staccata a destra, senza bordo e senza riempimento —
+          non pesa quanto le altre e non si clicca per sbaglio.
         */}
         <div className="mt-2 flex flex-wrap items-start gap-2">
+          {prontoPerAccesso && (
+            // Nessun pulsante finche' manca anche una sola variabile (credenziale
+            // o indirizzo) o finche' l'indirizzo e' vuoto: prometterebbe una
+            // strada che fallirebbe di sicuro (il browser si aprirebbe su
+            // niente). Il modo per risolvere e' proprio sopra, nella stessa riga.
+            <button
+              type="button"
+              onClick={() => void accediAdesso()}
+              disabled={stato === 'avvio' || stato === 'in corso'}
+              aria-label={t('accediAria', { nome: ambiente.nome })}
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+            >
+              {stato === 'avvio' || stato === 'in corso' ? (
+                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+              ) : (
+                <LogIn size={16} aria-hidden="true" />
+              )}
+              {t('accediAdesso')}
+            </button>
+          )}
           <ModificaIndirizzo ambiente={ambiente} onSalvato={onSessioneConclusa} />
-          <div>
+          <div className="ml-auto">
             <button
               type="button"
               onClick={() => void elimina()}
               disabled={eliminazione === 'in corso'}
               aria-label={t('eliminaAria', { nome: ambiente.nome })}
-              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md border px-3 text-xs font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
             >
               {eliminazione === 'in corso' ? (
                 <Loader2 size={13} className="animate-spin" aria-hidden="true" />
@@ -754,27 +776,6 @@ const RigaAmbiente = memo(function RigaAmbiente({
           </div>
         </div>
       </div>
-      {prontoPerAccesso && (
-        // Nessun pulsante finche' manca anche una sola variabile (credenziale
-        // o indirizzo) o finche' l'indirizzo e' vuoto: prometterebbe una
-        // strada che fallirebbe di sicuro (il browser si aprirebbe su
-        // niente). Il modo per risolvere e' proprio sopra, nella stessa riga.
-        <button
-          type="button"
-          onClick={() => void accediAdesso()}
-          disabled={stato === 'avvio' || stato === 'in corso'}
-          aria-label={t('accediAria', { nome: ambiente.nome })}
-          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
-        >
-          {stato === 'avvio' || stato === 'in corso' ? (
-            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-          ) : (
-            <LogIn size={16} aria-hidden="true" />
-          )}
-          {t('accediAdesso')}
-        </button>
-      )}
     </li>
   );
 });

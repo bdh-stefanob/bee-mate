@@ -130,7 +130,7 @@ export const VoceControllo = memo(function VoceControllo({ voce, onRimediato }: 
 
   return (
     <li
-      className="flex max-w-2xl flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-start sm:justify-between"
+      className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-start sm:justify-between"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <div className="flex min-w-0 items-start gap-3">

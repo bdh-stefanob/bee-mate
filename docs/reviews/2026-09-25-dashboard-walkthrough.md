@@ -274,7 +274,7 @@ but a tester would not understand it without help · **P3** polish.
   environment row with the same consequence list.
 - [ ] **F14 — empty states without a way forward.** Record and Run without an
   environment: add **Go to Check-up**.
-- [ ] **F15 — Check-up layout.** Status cards narrower than the banner and the
+- [x] **F15 — Check-up layout.** _Closed on 4 Oct (job S2): one width for the whole page (the layout of the dashboard centres it), order status, Environments, one Advanced fold with the advanced checks and Other variables; the summary box takes the colour of the worst outcome._ Status cards narrower than the banner and the
   sections; Environments below *Advanced*; two advanced folds. One width; order
   status → Environments → one Advanced fold including Other variables
   (`web-ui/src/app/(cruscotto)/controllo/page.tsx`).

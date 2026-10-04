@@ -38,7 +38,8 @@
     "statoPronto": "Pronto",
     "statoDaGuardare": "{daGuardare, plural, one {Pronto — # cosa da guardare} other {Pronto — # cose da guardare}}",
     "statoPerIniziare": "Per iniziare · {fatte} di {totale}",
-    "statoMancante": "{mancanti, plural, one {Manca # cosa} other {Mancano # cose}}"
+    "statoMancante": "{mancanti, plural, one {Manca # cosa} other {Mancano # cose}}",
+    "avanzateTitolo": "Avanzate"
   },
   "Ambienti": {
     "titolo": "Ambienti",

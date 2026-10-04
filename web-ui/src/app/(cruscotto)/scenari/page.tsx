@@ -41,7 +41,7 @@ import {
 
 const tutto = (i: Istantanea<RispostaScenari>): Istantanea<RispostaScenari> => i;
 
-const CLASSE_PAGINA = 'max-w-screen-xl mx-auto flex flex-col gap-4 min-w-0';
+const CLASSE_PAGINA = 'flex flex-col gap-4 min-w-0';
 
 /**
  * Scenari: i test che il tester ha registrato e come sono andati l'ultima volta.

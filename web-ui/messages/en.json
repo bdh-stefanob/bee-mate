@@ -38,7 +38,8 @@
     "statoPronto": "Ready",
     "statoDaGuardare": "{daGuardare, plural, one {Ready — # thing worth a look} other {Ready — # things worth a look}}",
     "statoPerIniziare": "Getting started · {fatte} of {totale}",
-    "statoMancante": "{mancanti, plural, one {Missing # thing} other {Missing # things}}"
+    "statoMancante": "{mancanti, plural, one {Missing # thing} other {Missing # things}}",
+    "avanzateTitolo": "Advanced"
   },
   "Ambienti": {
     "titolo": "Environments",

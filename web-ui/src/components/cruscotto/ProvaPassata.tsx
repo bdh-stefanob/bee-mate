@@ -147,7 +147,7 @@ export function ProvaPassata({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-3xl min-w-0">
+    <div className="flex min-w-0 flex-col gap-6">
       <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
         {t('provaTitolo')}
       </h1>

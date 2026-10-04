@@ -64,7 +64,7 @@ function CatalogoContenuto() {
   ];
 
   return (
-    <div className="max-w-screen-xl mx-auto flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
