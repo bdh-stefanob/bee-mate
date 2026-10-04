@@ -40,7 +40,7 @@ export function SelettoreAmbiente() {
   }, [ambienti, ambiente, impostaAmbiente]);
 
   return (
-    <div className="flex flex-col gap-1 p-2">
+    <div className="flex flex-col gap-1">
       <label htmlFor="selettore-ambiente" className="sr-only">
         {t('environmentLabel')}
       </label>
@@ -52,6 +52,7 @@ export function SelettoreAmbiente() {
         <select
           id="selettore-ambiente"
           value={ambiente}
+          title={ambiente || undefined}
           onChange={(e) => impostaAmbiente(e.target.value)}
           disabled={ambienti.length === 0}
           className="min-h-10 w-full min-w-0 bg-transparent text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"

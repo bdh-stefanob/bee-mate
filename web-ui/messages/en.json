@@ -15,7 +15,9 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "environmentLabel": "Environment",
-    "environmentNone": "No environment configured"
+    "environmentNone": "No environment",
+    "settingsLabel": "Settings",
+    "titoloScheda": "Tester dashboard"
   },
   "Controllo": {
     "titolo": "Check-up",

@@ -89,19 +89,28 @@ export function BarraLaterale() {
   return (
     <nav
       aria-label={t('navAriaLabel')}
-      className="shrink-0 border-b min-[900px]:border-b-0 min-[900px]:border-r min-[900px]:w-60"
+      className="flex shrink-0 flex-col border-b min-[900px]:border-b-0 min-[900px]:border-r min-[900px]:w-60 min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-y-auto"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
     >
       <ul className="flex flex-row min-[900px]:flex-col p-2 gap-1">
         {VOCI.map((voce) => <VoceNav key={voce.href} {...voce} pathname={pathname} t={t} />)}
       </ul>
-      <div className="border-t" style={{ borderColor: 'var(--bordo)' }}>
+      {/*
+        * Le impostazioni (ambiente, lingua, tema) non sono navigazione: un solo
+        * gruppo in fondo alla barra, separato dalle cinque voci, con controlli
+        * piu' leggeri (niente blu pieno: quello resta all'azione della pagina).
+        */}
+      <div
+        role="group"
+        aria-label={t('settingsLabel')}
+        className="mt-auto flex flex-col gap-2 border-t p-2"
+        style={{ borderColor: 'var(--bordo)' }}
+      >
+        <span aria-hidden="true" className="px-1 text-xs font-medium" style={{ color: 'var(--testo-tenue)' }}>
+          {t('settingsLabel')}
+        </span>
         <SelettoreAmbiente />
-      </div>
-      <div className="border-t" style={{ borderColor: 'var(--bordo)' }}>
         <SelettoreLingua />
-      </div>
-      <div className="border-t" style={{ borderColor: 'var(--bordo)' }}>
         <SelettoreTema />
       </div>
     </nav>

@@ -26,7 +26,7 @@ export function SelettoreTema() {
   useEffect(() => setMontato(true), []);
 
   return (
-    <div className="flex flex-col gap-1 p-2">
+    <div className="flex flex-col gap-1">
       <div
         role="group"
         aria-label={t('themeLabel')}
@@ -43,19 +43,22 @@ export function SelettoreTema() {
               onClick={() => setTheme(tema)}
               aria-pressed={attivo}
               className={cn(
-                'min-h-10 min-w-0 flex-1 rounded px-1 text-xs font-medium transition-colors',
-                'flex flex-col items-center justify-center gap-0.5 min-[900px]:flex-row min-[900px]:gap-1 min-[900px]:text-sm',
+                // Icona sopra la parola, sempre: a 240 px tre bottoni affiancati non
+                // ospitano "Sistema" accanto all'icona. Mai troncata.
+                'flex min-h-10 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded border px-1 py-1 text-xs transition-colors',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-                !attivo && 'hover:bg-black/5 dark:hover:bg-white/10'
+                attivo ? 'font-semibold' : 'font-medium hover:bg-black/5 dark:hover:bg-white/10'
               )}
               style={{
-                background: attivo ? 'var(--blu-fondo)' : 'transparent',
-                color: attivo ? '#fff' : 'var(--testo)',
+                // Scelto = peso, bordo e fondo della superficie: si vede anche senza colore.
+                background: attivo ? 'var(--superficie)' : 'transparent',
+                borderColor: attivo ? 'var(--testo-tenue)' : 'transparent',
+                color: attivo ? 'var(--testo)' : 'var(--testo-tenue)',
                 outlineColor: 'var(--blu)',
               }}
             >
               <Icona size={16} aria-hidden="true" className="shrink-0" />
-              <span className="truncate">{t(chiave)}</span>
+              <span>{t(chiave)}</span>
             </button>
           );
         })}

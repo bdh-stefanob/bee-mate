@@ -281,8 +281,9 @@ but a tester would not understand it without help · **P3** polish.
 - [ ] **F16 — add-environment form.** The helper text under *Environment name*
   pushes *Address* lower; Add floats. Helper text under the whole row, one
   baseline.
-- [ ] **F17 — sidebar selector truncates** *No environment configur…* at
+- [x] **F17 — sidebar selector truncates** *No environment configur…* at
   1280 px and on phone. Shorter label or wrap.
+  _Fixed 4 Oct (job S4): empty label is now "No environment" / "Nessun ambiente"; nothing in the sidebar is clipped at 240 px (1280, 1920) nor at 390 px, in both languages._
 - [ ] **F18 — Run results.** One card per step with uppercase PASSED; the total
   at the bottom, off-screen on long scenarios; steps and checks look the same.
   Compact rows, checks indented, total at the top.

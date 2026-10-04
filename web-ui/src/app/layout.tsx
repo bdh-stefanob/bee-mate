@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Providers } from '@/providers/Providers';
 import './globals.css';
 
@@ -15,10 +15,14 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Cruscotto del tester',
-  description: 'Gherkin authoring tool for QA automation',
-};
+// Il titolo della scheda segue la lingua dell'interfaccia (cookie, come il resto).
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Cruscotto');
+  return {
+    title: t('titoloScheda'),
+    description: 'Gherkin authoring tool for QA automation',
+  };
+}
 
 // Layout radice: solo html/body/providers. La navigazione vive nel layout del
 // gruppo (cruscotto): la barra laterale sta li', non qui.

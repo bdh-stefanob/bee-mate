@@ -46,7 +46,7 @@ export function SelettoreLingua() {
   }
 
   return (
-    <div className="flex flex-col gap-1 p-2">
+    <div className="flex flex-col gap-1">
       <span className="sr-only">{t('languageLabel')}</span>
       <div
         role="group"
@@ -65,14 +65,16 @@ export function SelettoreLingua() {
               disabled={inCorso}
               aria-pressed={attiva}
               className={cn(
-                'min-h-10 flex-1 rounded px-2 text-sm font-medium transition-colors',
+                'min-h-10 min-w-0 flex-1 rounded border px-2 text-sm transition-colors',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
                 'disabled:opacity-60',
-                !attiva && 'hover:bg-black/5 dark:hover:bg-white/10'
+                attiva ? 'font-semibold' : 'font-medium hover:bg-black/5 dark:hover:bg-white/10'
               )}
               style={{
-                background: attiva ? 'var(--blu-fondo)' : 'transparent',
-                color: attiva ? '#fff' : 'var(--testo)',
+                // Scelta = peso, bordo e fondo della superficie: si vede anche senza colore.
+                background: attiva ? 'var(--superficie)' : 'transparent',
+                borderColor: attiva ? 'var(--testo-tenue)' : 'transparent',
+                color: attiva ? 'var(--testo)' : 'var(--testo-tenue)',
                 outlineColor: 'var(--blu)',
               }}
             >

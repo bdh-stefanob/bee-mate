@@ -15,7 +15,9 @@
     "themeDark": "Scuro",
     "themeSystem": "Sistema",
     "environmentLabel": "Ambiente",
-    "environmentNone": "Nessun ambiente configurato"
+    "environmentNone": "Nessun ambiente",
+    "settingsLabel": "Impostazioni",
+    "titoloScheda": "Cruscotto del tester"
   },
   "Controllo": {
     "titolo": "Controllo",
