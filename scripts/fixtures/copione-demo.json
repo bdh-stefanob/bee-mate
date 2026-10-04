@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "ambiente": "demo",
+  "intenti": [
+    {
+      "nome": "the user logs in and adds a backpack to the cart",
+      "azioni": [
+        { "azione": "fill", "ruolo": "textbox", "nome": "Username", "valore": "${DEMO_USER}" },
+        { "azione": "fill", "ruolo": "textbox", "nome": "Password", "valore": "${DEMO_PASS}" },
+        { "azione": "click", "ruolo": "button", "nome": "Login" },
+        { "azione": "click", "ruolo": "button", "nome": "Add to cart" }
+      ],
+      "verifiche": [
+        { "ruolo": "status", "nome": "Products", "dopoAzione": 3 },
+        { "ruolo": "button", "nome": "Remove" }
+      ]
+    },
+    {
+      "nome": "the user logs out",
+      "azioni": [
+        { "azione": "click", "ruolo": "button", "nome": "Open Menu" },
+        { "azione": "click", "ruolo": "button", "nome": "Logout" }
+      ],
+      "verifiche": [
+        { "ruolo": "button", "nome": "Login" }
+      ]
+    }
+  ],
+  "verificaFinale": { "ruolo": "textbox", "nome": "Username" }
+}

@@ -3,12 +3,17 @@
     "Copia questo file in bdd-targets.json e mettici i tuoi ambienti.",
     "bdd-targets.json e' GITIGNORATO: indirizzi e selettori aziendali non finiscono nel repository.",
     "Le CREDENZIALI non vanno nemmeno qui: si scrivono come ${VARIABILE} e si risolvono da .env.",
-    "Il blocco 'login' e' facoltativo: senza, si accede a mano una volta e la sessione si salva."
+    "Il blocco 'login' e' facoltativo: senza, si accede a mano una volta e la sessione si salva.",
+    "collaudo/produzione/pubblico (N10): MAI presunti da nome o indirizzo. Li scrive la persona",
+    "che amministra l'ambiente. Un copione gira solo contro collaudo:true; produzione:true lo",
+    "rifiuta subito anche insieme a collaudo:true. pubblico:true salta la conferma umana (difesa 5)."
   ],
 
   "demo": {
     "url": "https://www.saucedemo.com",
     "readyWhen": "/inventory.html",
+    "collaudo": true,
+    "pubblico": true,
     "login": {
       "steps": [
         { "fill": { "role": "textbox", "name": "Username" }, "value": "standard_user" },
@@ -17,6 +22,18 @@
       ]
     },
     "hint": "sito pubblico di pratica: le credenziali qui sono innocue e stanno in chiaro apposta"
+  },
+
+  "collaudo-aziendale-esempio": {
+    "url": "${AZIENDA_COLLAUDO_URL}",
+    "collaudo": true,
+    "hint": "un ambiente aziendale di collaudo (Q-A7): collaudo:true lo scrive chi lo amministra, sapendo che non e' produzione. Senza pubblico:true, un copione richiede conferma umana prima di partire (difesa 5)."
+  },
+
+  "produzione-esempio": {
+    "url": "${AZIENDA_PRODUZIONE_URL}",
+    "produzione": true,
+    "hint": "mai di collaudo, qualunque altro segno porti: un copione contro questo ambiente e' rifiutato subito (difesa 2)."
   },
 
   "app-a": {

@@ -39,13 +39,22 @@ export interface VerificaCopione {
   ruolo: string;
   nome: string;
   testo?: string;
+  /**
+   * Dopo quante azioni di QUESTO intento e' stata dichiarata: 0 = prima di
+   * qualunque azione, come premere "Verifica" subito. Assente = dopo l'ultima
+   * (il comportamento normale). Riproduce le verifiche a meta' passo che un
+   * tester dichiara premendo "Verifica" senza aver ancora premuto "Fine
+   * intento" — la correzione del 30/9 che la posizione (`afterStep`) deve
+   * rispettare.
+   */
+  dopoAzione?: number;
 }
 
 export interface IntentoCopione {
   /** Il nome del passo: diventa l'etichetta dell'intento, come "Fine intento" nella barra. */
   nome: string;
   azioni: AzioneCopione[];
-  /** Verifiche dichiarate alla fine dell'intento, come "Verifica" nella barra. Facoltative. */
+  /** Verifiche dichiarate durante o alla fine dell'intento, come "Verifica" nella barra. Facoltative. */
   verifiche?: VerificaCopione[];
 }
 
@@ -54,6 +63,13 @@ export interface Copione {
   /** Il nome di un ambiente in bdd-targets.json. Mai un URL diretto (difesa 2: serve un bersaglio dichiarato). */
   ambiente: string;
   intenti: IntentoCopione[];
+  /**
+   * Una verifica dichiarata DOPO l'ultimo "Fine intento", senza un nuovo
+   * intento che la accolga: riproduce l'altra correzione del 30/9, dove una
+   * verifica cosi' si attacca al passo precedente invece di diventare un
+   * intento senza nome.
+   */
+  verificaFinale?: VerificaCopione;
 }
 
 /** Tutti gli errori insieme, mai solo il primo: vedi la nota in testa al file. */
@@ -113,6 +129,9 @@ function validaVerifica(v: unknown, dove: string, errori: string[]): void {
   if (a.testo !== undefined && typeof a.testo !== "string") {
     errori.push(`${dove}.testo: deve essere una stringa, trovato ${JSON.stringify(a.testo)}`);
   }
+  if (a.dopoAzione !== undefined && (typeof a.dopoAzione !== "number" || a.dopoAzione < 0 || !Number.isInteger(a.dopoAzione))) {
+    errori.push(`${dove}.dopoAzione: deve essere un intero >= 0, trovato ${JSON.stringify(a.dopoAzione)}`);
+  }
 }
 
 function validaIntento(v: unknown, dove: string, errori: string[]): void {
@@ -161,6 +180,7 @@ export function validaCopione(valore: unknown): Copione {
   } else {
     c.intenti.forEach((i, j) => validaIntento(i, `intenti[${j}]`, errori));
   }
+  if (c.verificaFinale !== undefined) validaVerifica(c.verificaFinale, "verificaFinale", errori);
 
   if (errori.length > 0) throw new CopioneNonValido(errori);
   return valore as unknown as Copione;

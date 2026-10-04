@@ -143,6 +143,29 @@ function methodsLost(file: GeneratedFile): string[] {
   return [...before].filter((m) => !after.has(m));
 }
 
+/**
+ * Il ponte verso `support/`, per un'uscita fuori da `src/` (vedi la nota
+ * dove si chiama). Non tocca niente se l'uscita e' `src` (li' il percorso
+ * relativo dei file generati e' gia' giusto, ed e' il caso normale).
+ */
+function scriviPonteSupport(outRoot: string): void {
+  const normalizzato = outRoot.replace(/\\/g, "/").replace(/\/+$/, "");
+  if (normalizzato === "src" || normalizzato.startsWith("src/")) return;
+  const dir = path.join(outRoot, "support");
+  fs.mkdirSync(dir, { recursive: true });
+  const relativo = path.relative(dir, path.join("src", "support")).replace(/\\/g, "/");
+  fs.writeFileSync(
+    path.join(dir, "base.page.ts"),
+    `// Ponte verso il vero support/, condiviso e non generato: vedi scriviPonteSupport in generate.ts.\nexport * from "${relativo}/base.page";\n`,
+    "utf-8"
+  );
+  fs.writeFileSync(
+    path.join(dir, "world.ts"),
+    `// Ponte verso il vero support/, condiviso e non generato: vedi scriviPonteSupport in generate.ts.\nexport * from "${relativo}/world";\n`,
+    "utf-8"
+  );
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const dry = hasFlag(args, "--dry");
@@ -243,6 +266,15 @@ async function main(): Promise<void> {
       console.log(`       Un'altra registrazione li aveva prodotti. Rigenera anche da quella.`);
     }
   }
+
+  // Un'uscita fuori da src/ (difesa 4, N10) sposta pagine e step, ma
+  // `support/` resta condiviso e vive solo in src/support/: i percorsi
+  // relativi dei file generati (`../../../support/base.page`,
+  // `../../support/world`) lo presuppongono. Senza un ponte, uno scenario
+  // generato fuori da src/ non si avvia da solo (MODULE_NOT_FOUND). Il ponte
+  // RI-ESPORTA dal posto vero (stesso percorso assoluto -> stesso modulo in
+  // cache: `setWorldConstructor` non si richiama due volte), non duplica.
+  if (!dry) scriviPonteSupport(outRoot);
 
   if (skipped.length > 0) {
     console.log(
