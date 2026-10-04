@@ -24,8 +24,6 @@
     "controllando": "Checking the machine…",
     "erroreTitolo": "Couldn't check the machine",
     "riprova": "Retry",
-    "avanzate": "Advanced ({n})",
-    "credenzialeApri": "Other variables (advanced)",
     "credenzialeTitolo": "Other variables",
     "credenzialeDescrizione": "For variables that don't belong to any environment — for instance tokens for other integrations (Jira, Confluence). An environment's own credentials are configured in the Environments section above, in that environment's row.",
     "nomeVariabile": "Variable name",
@@ -105,7 +103,11 @@
     "accessoRegistrato": "sign-in recorded",
     "accessoRegistratoConVariabili": "{n, plural, one {sign-in recorded — fill in the variable above} other {sign-in recorded — fill in the # variables above}}",
     "erroreAvvioRegistrazioneAccesso": "couldn't start recording the sign-in",
-    "erroreDerivazioneAccesso": "couldn't derive the sign-in from the recording"
+    "erroreDerivazioneAccesso": "couldn't derive the sign-in from the recording",
+    "tornaIndietro": "Go back",
+    "continua": "Continue",
+    "titoloSostituzioneAccesso": "Record the sign-in of \"{nome}\" again?",
+    "titoloSovrascritturaIndirizzo": "Update the address of \"{nome}\"?"
   },
   "Registra": {
     "titolo": "Record",

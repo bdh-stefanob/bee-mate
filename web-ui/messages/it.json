@@ -24,8 +24,6 @@
     "controllando": "Sto controllando la macchina…",
     "erroreTitolo": "Non sono riuscito a controllare la macchina",
     "riprova": "Riprova",
-    "avanzate": "Avanzate ({n})",
-    "credenzialeApri": "Altre variabili (avanzato)",
     "credenzialeTitolo": "Altre variabili",
     "credenzialeDescrizione": "Per le variabili che non appartengono a nessun ambiente — per esempio i token di altre integrazioni (Jira, Confluence). Le credenziali di un ambiente si configurano nella sezione Ambienti qui sopra, nella riga di quell'ambiente.",
     "nomeVariabile": "Nome variabile",
@@ -105,7 +103,11 @@
     "accessoRegistrato": "accesso registrato",
     "accessoRegistratoConVariabili": "{n, plural, one {accesso registrato — compila la variabile qui sopra} other {accesso registrato — compila le # variabili qui sopra}}",
     "erroreAvvioRegistrazioneAccesso": "non sono riuscito ad avviare la registrazione dell'accesso",
-    "erroreDerivazioneAccesso": "non sono riuscito a ricavare l'accesso dalla registrazione"
+    "erroreDerivazioneAccesso": "non sono riuscito a ricavare l'accesso dalla registrazione",
+    "tornaIndietro": "Torna indietro",
+    "continua": "Continua",
+    "titoloSostituzioneAccesso": "Registrare di nuovo l'accesso di «{nome}»?",
+    "titoloSovrascritturaIndirizzo": "Aggiornare l'indirizzo di «{nome}»?"
   },
   "Registra": {
     "titolo": "Registra",

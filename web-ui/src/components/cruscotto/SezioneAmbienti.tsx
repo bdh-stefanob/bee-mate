@@ -7,6 +7,8 @@ import { useRisorsa } from '@/hooks/useRisorsa';
 import { configurazione, dopoUnaModifica, type AmbienteVisibile, type Configurazione } from '@/lib/stato-controllo';
 import type { Istantanea } from '@/lib/risorsa';
 import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
+import { DialogoModale } from '@/components/cruscotto/scenari/modifica/DialogoModale';
+import { Bottone } from '@/components/cruscotto/scenari/modifica/stile';
 
 export type { AmbienteVisibile };
 
@@ -16,6 +18,51 @@ const soloAmbienti = (i: Istantanea<Configurazione>): AmbienteVisibile[] => i.da
 interface RispostaEsegui {
   id?: string;
   errore?: string;
+}
+
+/**
+ * La conferma di un'azione che cambia o toglie qualcosa: dentro la pagina, mai
+ * la finestrella del browser (stessa scelta di "Elimina lo scenario"). Esc e il fuoco
+ * iniziale stanno su "Torna indietro", la scelta che non cambia niente.
+ * "Elimina" resta rosso; le altre conferme sono il pulsante pieno.
+ */
+function ConfermaAmbiente({
+  titolo,
+  righe,
+  etichettaConferma,
+  distruttiva = false,
+  onConferma,
+  onIndietro,
+}: {
+  titolo: string;
+  righe: string[];
+  etichettaConferma: string;
+  distruttiva?: boolean;
+  onConferma: () => void;
+  onIndietro: () => void;
+}) {
+  const t = useTranslations('Ambienti');
+  return (
+    <DialogoModale titolo={titolo} onEsc={onIndietro}>
+      <div className="flex flex-col gap-2 text-sm" style={{ color: 'var(--testo)' }}>
+        {righe.map((r) => (
+          <p key={r}>{r}</p>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Bottone
+          primario={!distruttiva}
+          onClick={onConferma}
+          style={distruttiva ? { borderColor: 'var(--rosso)', color: 'var(--rosso)' } : undefined}
+        >
+          {etichettaConferma}
+        </Bottone>
+        <Bottone data-iniziale onClick={onIndietro}>
+          {t('tornaIndietro')}
+        </Bottone>
+      </div>
+    </DialogoModale>
+  );
 }
 
 type StatoAccesso = 'inattivo' | 'avvio' | 'in corso' | 'conclusa' | 'fallita' | 'errore';
@@ -204,12 +251,19 @@ interface RispostaLogin {
 function RegistraAccesso({
   ambiente,
   onRegistrato,
+  prima,
+  children,
 }: {
   ambiente: AmbienteVisibile;
   onRegistrato: () => void;
+  /** Le azioni che stanno nella stessa riga, prima del pulsante. */
+  prima?: React.ReactNode;
+  /** Le azioni che stanno nella stessa riga, dopo il pulsante. */
+  children?: React.ReactNode;
 }) {
   const t = useTranslations('Ambienti');
   const [stato, setStato] = useState<StatoRegistrazioneAccesso>('inattivo');
+  const [inConferma, setInConferma] = useState(false);
   const [messaggioErrore, setMessaggioErrore] = useState('');
   const [variabili, setVariabili] = useState<string[]>([]);
   const sorgenteRef = useRef<EventSource | null>(null);
@@ -240,8 +294,6 @@ function RegistraAccesso({
   }, [ambiente.nome, onRegistrato, t]);
 
   const avvia = useCallback(async () => {
-    if (ambiente.haLogin && !window.confirm(t('confermaSostituzioneAccesso'))) return;
-
     setStato('avvio');
     setMessaggioErrore('');
     try {
@@ -277,27 +329,43 @@ function RegistraAccesso({
       setStato('errore');
       setMessaggioErrore(t('erroreParlareCruscotto'));
     }
-  }, [ambiente.haLogin, ambiente.nome, deriva, t]);
+  }, [ambiente.nome, deriva, t]);
 
   const inCorso = stato === 'avvio' || stato === 'in corso' || stato === 'derivando';
 
   return (
-    <div className="mt-1 flex flex-col gap-1">
-      <button
-        type="button"
-        onClick={() => void avvia()}
-        disabled={inCorso}
-        aria-label={t('registraAccessoAria', { nome: ambiente.nome })}
-        className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
-      >
-        {inCorso ? (
-          <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-        ) : (
-          <CircleDot size={16} aria-hidden="true" />
-        )}
-        {ambiente.haLogin ? t('registraDiNuovoAccesso') : t('registraAccesso')}
-      </button>
+    <div className="mt-2 flex flex-col gap-1">
+      <div className="flex flex-wrap items-start gap-2">
+        {prima}
+        <button
+          type="button"
+          onClick={() => (ambiente.haLogin ? setInConferma(true) : void avvia())}
+          disabled={inCorso}
+          aria-label={t('registraAccessoAria', { nome: ambiente.nome })}
+          className="inline-flex min-h-10 w-fit shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        >
+          {inCorso ? (
+            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+          ) : (
+            <CircleDot size={16} aria-hidden="true" />
+          )}
+          {ambiente.haLogin ? t('registraDiNuovoAccesso') : t('registraAccesso')}
+        </button>
+        {children}
+      </div>
+      {inConferma && (
+        <ConfermaAmbiente
+          titolo={t('titoloSostituzioneAccesso', { nome: ambiente.nome })}
+          righe={[t('confermaSostituzioneAccesso')]}
+          etichettaConferma={t('continua')}
+          onConferma={() => {
+            setInConferma(false);
+            void avvia();
+          }}
+          onIndietro={() => setInConferma(false)}
+        />
+      )}
       <p className="text-xs break-words" aria-live="polite">
         {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
         {stato === 'in corso' && (
@@ -556,6 +624,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
   const [messaggioErrore, setMessaggioErrore] = useState('');
   const [eliminazione, setEliminazione] = useState<'inattivo' | 'in corso' | 'errore'>('inattivo');
   const [messaggioEliminazione, setMessaggioEliminazione] = useState('');
+  const [inConfermaElimina, setInConfermaElimina] = useState(false);
   const sorgenteRef = useRef<EventSource | null>(null);
   const variabile = variabileNonRisolta(ambiente.url);
   const variabiliMancanti = ambiente.variabiliMancanti ?? [];
@@ -628,17 +697,17 @@ const RigaAmbiente = memo(function RigaAmbiente({
     }
   }, [ambiente.nome, onSessioneConclusa, t]);
 
-  const elimina = useCallback(async () => {
-    // Una conferma che dice cosa si perde DAVVERO, non una generica "sei
-    // sicuro?": un accesso registrato e una sessione salvata sono lavoro del
-    // tester, e sparirebbero insieme all'ambiente senza preavviso altrimenti.
-    const righe = [t('confermaEliminazioneTitolo', { nome: ambiente.nome })];
-    if (ambiente.haLogin) righe.push(t('confermaEliminazioneLogin'));
-    if (ambiente.haSessione) righe.push(t('confermaEliminazioneSessione'));
-    righe.push(t('confermaEliminazioneEnv'));
-    righe.push(t('confermaEliminazioneIrreversibile'));
-    if (!window.confirm(righe.join('\n\n'))) return;
+  // Una conferma che dice cosa si perde DAVVERO, non una generica "sei sicuro?":
+  // un accesso registrato e una sessione salvata sono lavoro del tester, e
+  // sparirebbero insieme all'ambiente senza preavviso altrimenti.
+  const righeConfermaElimina = [
+    ...(ambiente.haLogin ? [t('confermaEliminazioneLogin')] : []),
+    ...(ambiente.haSessione ? [t('confermaEliminazioneSessione')] : []),
+    t('confermaEliminazioneEnv'),
+    t('confermaEliminazioneIrreversibile'),
+  ];
 
+  const elimina = useCallback(async () => {
     setEliminazione('in corso');
     setMessaggioEliminazione('');
     try {
@@ -658,7 +727,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
       setEliminazione('errore');
       setMessaggioEliminazione(t('erroreParlareCruscotto'));
     }
-  }, [ambiente.haLogin, ambiente.haSessione, ambiente.nome, onSessioneConclusa, t]);
+  }, [ambiente.nome, onSessioneConclusa, t]);
 
   return (
     <li
@@ -693,7 +762,78 @@ const RigaAmbiente = memo(function RigaAmbiente({
           )
         )}
 
-        <RegistraAccesso ambiente={ambiente} onRegistrato={onSessioneConclusa} />
+        {/*
+          Le azioni stanno in una riga sola, sotto l'ambiente a cui si
+          riferiscono: "Accedi adesso" (l'azione frequente, blu) per prima,
+          poi "Registra l'accesso" e "Modifica indirizzo" (secondarie, col
+          bordo), e "Elimina" (distruttiva) staccata a destra, senza bordo e
+          senza riempimento — non pesa quanto le altre e non si clicca per
+          sbaglio. La riga la disegna RegistraAccesso, che ne conosce lo stato.
+        */}
+        <RegistraAccesso
+          ambiente={ambiente}
+          onRegistrato={onSessioneConclusa}
+          prima={
+            prontoPerAccesso && (
+              // Nessun pulsante finche' manca anche una sola variabile (credenziale
+              // o indirizzo) o finche' l'indirizzo e' vuoto: prometterebbe una
+              // strada che fallirebbe di sicuro (il browser si aprirebbe su
+              // niente). Il modo per risolvere e' proprio sopra, nella stessa riga.
+              <button
+                type="button"
+                onClick={() => void accediAdesso()}
+                disabled={stato === 'avvio' || stato === 'in corso'}
+                aria-label={t('accediAria', { nome: ambiente.nome })}
+                className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+              >
+                {stato === 'avvio' || stato === 'in corso' ? (
+                  <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                ) : (
+                  <LogIn size={16} aria-hidden="true" />
+                )}
+                {t('accediAdesso')}
+              </button>
+            )
+          }
+        >
+          <ModificaIndirizzo ambiente={ambiente} onSalvato={onSessioneConclusa} />
+          <div className="ml-auto">
+            <button
+              type="button"
+              onClick={() => setInConfermaElimina(true)}
+              disabled={eliminazione === 'in corso'}
+              aria-label={t('eliminaAria', { nome: ambiente.nome })}
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
+            >
+              {eliminazione === 'in corso' ? (
+                <Loader2 size={13} className="animate-spin" aria-hidden="true" />
+              ) : (
+                <Trash2 size={13} aria-hidden="true" />
+              )}
+              {t('elimina')}
+            </button>
+          </div>
+        </RegistraAccesso>
+        {eliminazione === 'errore' && messaggioEliminazione && (
+          <p className="mt-1 text-xs break-words" style={{ color: 'var(--rosso)' }}>
+            {messaggioEliminazione}
+          </p>
+        )}
+        {inConfermaElimina && (
+          <ConfermaAmbiente
+            titolo={t('confermaEliminazioneTitolo', { nome: ambiente.nome })}
+            righe={righeConfermaElimina}
+            etichettaConferma={t('elimina')}
+            distruttiva
+            onConferma={() => {
+              setInConfermaElimina(false);
+              void elimina();
+            }}
+            onIndietro={() => setInConfermaElimina(false)}
+          />
+        )}
 
         <p className="mt-1 text-xs break-words" aria-live="polite">
           {stato === 'avvio' && <span style={{ color: 'var(--testo-tenue)' }}>{t('avvioInCorso')}</span>}
@@ -722,60 +862,6 @@ const RigaAmbiente = memo(function RigaAmbiente({
             </span>
           )}
         </p>
-
-        {/*
-          Le azioni stanno in una riga sola, sotto l'ambiente a cui si
-          riferiscono: "Accedi adesso" (l'azione frequente, blu) per prima,
-          "Modifica indirizzo" (secondaria, col bordo) accanto, e "Elimina"
-          (distruttiva) staccata a destra, senza bordo e senza riempimento —
-          non pesa quanto le altre e non si clicca per sbaglio.
-        */}
-        <div className="mt-2 flex flex-wrap items-start gap-2">
-          {prontoPerAccesso && (
-            // Nessun pulsante finche' manca anche una sola variabile (credenziale
-            // o indirizzo) o finche' l'indirizzo e' vuoto: prometterebbe una
-            // strada che fallirebbe di sicuro (il browser si aprirebbe su
-            // niente). Il modo per risolvere e' proprio sopra, nella stessa riga.
-            <button
-              type="button"
-              onClick={() => void accediAdesso()}
-              disabled={stato === 'avvio' || stato === 'in corso'}
-              aria-label={t('accediAria', { nome: ambiente.nome })}
-              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-4 text-sm font-medium text-white disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
-            >
-              {stato === 'avvio' || stato === 'in corso' ? (
-                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-              ) : (
-                <LogIn size={16} aria-hidden="true" />
-              )}
-              {t('accediAdesso')}
-            </button>
-          )}
-          <ModificaIndirizzo ambiente={ambiente} onSalvato={onSessioneConclusa} />
-          <div className="ml-auto">
-            <button
-              type="button"
-              onClick={() => void elimina()}
-              disabled={eliminazione === 'in corso'}
-              aria-label={t('eliminaAria', { nome: ambiente.nome })}
-              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-md px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ color: 'var(--rosso)', outlineColor: 'var(--blu)' }}
-            >
-              {eliminazione === 'in corso' ? (
-                <Loader2 size={13} className="animate-spin" aria-hidden="true" />
-              ) : (
-                <Trash2 size={13} aria-hidden="true" />
-              )}
-              {t('elimina')}
-            </button>
-            {eliminazione === 'errore' && messaggioEliminazione && (
-              <p className="mt-1 text-xs break-words" style={{ color: 'var(--rosso)' }}>
-                {messaggioEliminazione}
-              </p>
-            )}
-          </div>
-        </div>
       </div>
     </li>
   );
@@ -793,8 +879,9 @@ function AggiungiAmbiente() {
   const [inCorso, setInCorso] = useState(false);
   const [messaggio, setMessaggio] = useState<{ ok: boolean; testo: string } | null>(null);
   const [irraggiungibile, setIrraggiungibile] = useState<MotivoIrraggiungibile | null>(null);
+  const [inConfermaSovrascrivi, setInConfermaSovrascrivi] = useState(false);
 
-  async function aggiungi(comunque: boolean) {
+  async function aggiungi(comunque: boolean, confermato = false) {
     // Questo form scrive con la stessa rotta di "Modifica indirizzo": un nome
     // gia' in elenco non crea un duplicato, aggiorna quello esistente. E'
     // comodo per correggersi al volo, ma silenzioso — chi vuole aggiungerne
@@ -805,11 +892,8 @@ function AggiungiAmbiente() {
     // L'elenco si legge qui, al momento dell'invio, e non con un'iscrizione:
     // al modulo serve solo adesso, non a ogni suo cambiamento.
     const esistenti = configurazione.istantanea().dati?.ambienti ?? [];
-    if (
-      !comunque &&
-      esistenti.some((a) => a.nome === nome) &&
-      !window.confirm(t('confermaSovrascritturaIndirizzo', { nome }))
-    ) {
+    if (!comunque && !confermato && esistenti.some((a) => a.nome === nome)) {
+      setInConfermaSovrascrivi(true);
       return;
     }
     setInCorso(true);
@@ -862,9 +946,6 @@ function AggiungiAmbiente() {
             className="min-h-10 min-w-0 rounded-md border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', outlineColor: 'var(--blu)' }}
           />
-          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
-            {t('nomeNonModificabileNota')}
-          </p>
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <label htmlFor="ambiente-url" className="text-sm" style={{ color: 'var(--testo)' }}>
@@ -892,6 +973,22 @@ function AggiungiAmbiente() {
           {inCorso ? t('salvando') : t('aggiungi')}
         </button>
       </form>
+      <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+        {t('nomeNonModificabileNota')}
+      </p>
+
+      {inConfermaSovrascrivi && (
+        <ConfermaAmbiente
+          titolo={t('titoloSovrascritturaIndirizzo', { nome })}
+          righe={[t('confermaSovrascritturaIndirizzo', { nome })]}
+          etichettaConferma={t('continua')}
+          onConferma={() => {
+            setInConfermaSovrascrivi(false);
+            void aggiungi(false, true);
+          }}
+          onIndietro={() => setInConfermaSovrascrivi(false)}
+        />
+      )}
 
       {irraggiungibile && (
         <AvvisoIrraggiungibile
