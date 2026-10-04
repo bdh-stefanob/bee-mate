@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, ListChecks, AlertTriangle, Clock } from 'lucide-react';
+import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 export interface PassoRiepilogo {
   nome: string;
@@ -80,7 +81,7 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
 
       {buchi.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--testo)' }}>
+          <h2 className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
             {t('daSapere')}
           </h2>
           {buchi.map((buco, i) => (

@@ -38,6 +38,7 @@ import {
   CLASSE_ELENCO_STICKY,
   MEDIA_DUE_COLONNE,
 } from '@/components/cruscotto/scenari/layout';
+import { TITOLO_PAGINA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 const tutto = (i: Istantanea<RispostaScenari>): Istantanea<RispostaScenari> => i;
 
@@ -199,7 +200,7 @@ function ScenariContenuto() {
   const intestazione = (
     <>
       <div>
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+        <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
           {t('titolo')}
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
@@ -308,7 +309,7 @@ function ScenariContenuto() {
               className="flex flex-col items-start gap-3 rounded-lg border p-6"
               style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
             >
-              <h2 className="text-lg font-semibold" style={{ color: 'var(--testo)' }}>
+              <h2 className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
                 {t('nonTrovatoTitolo')}
               </h2>
               <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>

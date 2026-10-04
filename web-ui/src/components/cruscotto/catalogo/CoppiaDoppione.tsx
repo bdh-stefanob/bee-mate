@@ -9,6 +9,7 @@ import type { CoppiaArricchita } from '@/lib/catalogo-numeri';
 import { percorsoScenario } from '@/lib/percorso-scenario';
 import { CoppiaLato } from './CoppiaLato';
 import type { AnteprimaFusione, EsitoOperazione } from './tipi';
+import { TESTO_LETTURA, TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
 /**
  * Doppione: stesso componente dietro due frasi. Si fa in TRE PASSI numerati
@@ -94,10 +95,10 @@ export function CoppiaDoppione({
       <div className="flex items-start gap-2">
         <GitMerge size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} className="mt-0.5 shrink-0" />
         <div className="flex-1">
-          <h3 className="font-medium" style={{ color: 'var(--testo)' }}>
+          <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo)' }}>
             {t('doppioneTitolo')}
           </h3>
-          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
             {t('doppioneSpiegazione')}
           </p>
         </div>
@@ -150,7 +151,7 @@ export function CoppiaDoppione({
               </div>
 
               {anteprima.equivalenti ? (
-                <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+                <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
                   {t('corpiUguali')}
                 </p>
               ) : (
@@ -223,10 +224,10 @@ export function CoppiaDoppione({
 function Confronto({ titolo, corpo }: { titolo: string; corpo: string | null }) {
   return (
     <div className="rounded-md border p-2" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-      <p className="mb-1 text-xs font-medium" style={{ color: 'var(--testo)' }}>
+      <p className="mb-1 text-sm font-medium" style={{ color: 'var(--testo)' }}>
         {titolo}
       </p>
-      <pre className="whitespace-pre-wrap break-words font-mono text-xs" style={{ color: 'var(--testo)' }}>
+      <pre className="whitespace-pre-wrap break-words font-mono text-sm" style={{ color: 'var(--testo)' }}>
         {corpo ?? ''}
       </pre>
     </div>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { TESTO_LETTURA } from '@/lib/scala-tipografica';
 
 /**
  * Un elenco vuoto che spiega perche' e cosa fare, invece di una pagina che
@@ -33,12 +34,12 @@ export function StatoVuoto({
         {titolo}
       </p>
       {testo && (
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {testo}
         </p>
       )}
       {dettaglio && (
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {dettaglio}
         </p>
       )}

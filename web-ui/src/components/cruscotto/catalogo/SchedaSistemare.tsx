@@ -21,6 +21,7 @@ import { ScheletroCatalogo } from './Scheletro';
 import { StatoVuoto } from './StatoVuoto';
 import { StrisciaEsito } from './StrisciaEsito';
 import type { EsitoOperazione, RispostaCatalogo, RispostaRiconciliazione } from './tipi';
+import { TESTO_LETTURA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 const selCatalogo = (i: Istantanea<RispostaCatalogo>) => i;
 const selCoppie = (i: Istantanea<RispostaRiconciliazione>) => i;
@@ -85,10 +86,10 @@ export function SchedaSistemare() {
   return (
     <section aria-labelledby="catalogo-sistemare-titolo" className="flex flex-col gap-4">
       <div>
-        <h2 id="catalogo-sistemare-titolo" className="text-base font-semibold" style={{ color: 'var(--testo)' }}>
+        <h2 id="catalogo-sistemare-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
           {t('sistemareDomanda')}
         </h2>
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {t('sistemareIntro')}
         </p>
       </div>
@@ -152,7 +153,7 @@ export function SchedaSistemare() {
           )}
 
           {filtrate.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
               {t('nessunRisultato')}
             </p>
           ) : (

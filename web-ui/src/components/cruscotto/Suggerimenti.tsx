@@ -7,6 +7,7 @@ import type { RigaVista } from '@/lib/suggerimenti-regole';
 import type { Origin } from '@/lib/suggerimenti-contratto';
 import { riallineaCatalogo } from '@/lib/risorse-catalogo';
 import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
+import { TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
 type Risposta =
   | { stato: 'nessuno' }
@@ -301,7 +302,7 @@ function RigaSuggerimento({
 
   return (
     <li className="flex flex-col gap-2 rounded-md border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
-      <h3 className="m-0 text-sm font-semibold" style={{ color: 'var(--testo)' }}>
+      <h3 className={`${TITOLO_GRUPPO} m-0`} style={{ color: 'var(--testo)' }}>
         {t('passo', { n: riga.passo })}
         {riga.anche.length > 0 && (
           <span className="ml-2 text-xs font-normal" style={{ color: 'var(--testo-tenue)' }}>

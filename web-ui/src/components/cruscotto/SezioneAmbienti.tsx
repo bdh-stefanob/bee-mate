@@ -6,6 +6,7 @@ import { AlertTriangle, CheckCircle2, CircleDot, KeyRound, Loader2, LogIn, Penci
 import { useRisorsa } from '@/hooks/useRisorsa';
 import { configurazione, dopoUnaModifica, type AmbienteVisibile, type Configurazione } from '@/lib/stato-controllo';
 import type { Istantanea } from '@/lib/risorsa';
+import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 export type { AmbienteVisibile };
 
@@ -929,7 +930,7 @@ export function SezioneAmbienti() {
       aria-labelledby="ambienti-titolo"
     >
       <div>
-        <h2 id="ambienti-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
+        <h2 id="ambienti-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
           {t('titolo')}
         </h2>
         <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>

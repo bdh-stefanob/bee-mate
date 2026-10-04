@@ -17,6 +17,7 @@ import { useSchedaUrl } from '@/hooks/useSchedaUrl';
 import { numeriCoppie } from '@/lib/catalogo-numeri';
 import { riconciliazione } from '@/lib/risorse-catalogo';
 import type { Istantanea } from '@/lib/risorsa';
+import { TESTO_LETTURA, TITOLO_PAGINA } from '@/lib/scala-tipografica';
 
 /** Gli id stanno nell'indirizzo e restano uguali in ogni lingua: un link vale ovunque. */
 const SCHEDE = ['step', 'componenti', 'da-sistemare'] as const;
@@ -67,12 +68,12 @@ function CatalogoContenuto() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+          <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
             {t('titoloPagina')}
           </h1>
           <RigaAggiornamento />
         </div>
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {t('descrizionePagina')}
         </p>
       </div>

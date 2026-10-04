@@ -146,7 +146,7 @@ function Casella({
           outlineColor: 'var(--blu)',
         }}
       >
-        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--testo-tenue)' }}>
+        <span className="text-sm font-semibold" style={{ color: 'var(--testo-tenue)' }}>
           {titolo}
         </span>
         {stato === 'caricamento' && (

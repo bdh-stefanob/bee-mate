@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { FolderPlus } from 'lucide-react';
+import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 /**
  * Nessuno scenario: e' lo stato di un tester appena arrivato, e la prima
@@ -17,7 +18,7 @@ export function StatoVuotoScenari({ soloDescritti }: { soloDescritti: number }) 
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
       <FolderPlus size={40} aria-hidden="true" style={{ color: 'var(--blu)' }} />
-      <h2 className="text-lg font-semibold" style={{ color: 'var(--testo)' }}>
+      <h2 className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
         {t('vuotoTitolo')}
       </h2>
       <p className="max-w-md text-sm" style={{ color: 'var(--testo-tenue)' }}>

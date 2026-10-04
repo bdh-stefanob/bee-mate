@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { HelpCircle, Info } from 'lucide-react';
 import type { CoppiaArricchita } from '@/lib/catalogo-numeri';
 import { CoppiaLato } from './CoppiaLato';
+import { TESTO_LETTURA, TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
 /**
  * Due varianti di coppia SENZA gesto, apposta:
@@ -57,10 +58,10 @@ function Scheda({
       <div className="flex items-start gap-2">
         {icona}
         <div className="flex-1">
-          <h3 className="font-medium" style={{ color: 'var(--testo)' }}>
+          <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo)' }}>
             {titolo}
           </h3>
-          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
             {testo}
           </p>
         </div>

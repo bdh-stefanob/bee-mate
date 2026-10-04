@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AlertTriangle, History } from 'lucide-react';
 import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { formattaQuando, type Traduttore } from '@/lib/formato-quando';
+import { TITOLO_PAGINA } from '@/lib/scala-tipografica';
 
 type Risposta =
   | { stato: 'ok'; passi: Passo[]; quando: string | null; ambiente: string | null }
@@ -148,7 +149,7 @@ export function ProvaPassata({ id }: { id: string }) {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
         {t('provaTitolo')}
       </h1>
       {corpo}

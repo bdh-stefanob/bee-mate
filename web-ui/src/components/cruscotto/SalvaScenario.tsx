@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { AlertTriangle, FolderInput, Loader2 } from 'lucide-react';
 import type { CodiceErrore, EsitoSalvataggio } from '@/lib/salva-scenario';
 import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
+import { TESTO_LETTURA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 interface Cartella {
   app: string;
@@ -119,10 +120,10 @@ export function SalvaScenario({
       aria-labelledby={`${id}-titolo`}
     >
       <div className="flex flex-col gap-1">
-        <h2 id={`${id}-titolo`} className="text-base font-semibold" style={{ color: 'var(--testo)' }}>
+        <h2 id={`${id}-titolo`} className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
           {t('titolo')}
         </h2>
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {t('descrizione')}
         </p>
       </div>

@@ -45,6 +45,7 @@ import { DialogoConflitto } from './DialogoConflitto';
 import { BannerRifiuto, BannerSalvata } from './BannerEsito';
 import { ElencoMessaggi } from './MessaggiControllo';
 import { Bottone, CLASSE_CAMPO, STILE_CAMPO } from './stile';
+import { TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
 type Apertura = { tipo: 'rinomina' | 'selettore'; riga: number } | { tipo: 'verifica' } | null;
 
@@ -596,7 +597,7 @@ export function PannelloModifica({
   return (
     <section aria-labelledby={`${id}-titolo`} className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id={`${id}-titolo`} className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--testo-tenue)' }}>
+        <h3 id={`${id}-titolo`} className={TITOLO_GRUPPO} style={{ color: 'var(--testo-tenue)' }}>
           {t('modificaTitolo')}
         </h3>
         <Bottone disabled={occupato} onClick={() => dispatch({ tipo: 'vuole-uscire', verso: '' })}>

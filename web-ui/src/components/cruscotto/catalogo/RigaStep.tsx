@@ -54,7 +54,7 @@ export const RigaStep = memo(function RigaStep({
         <Chevron size={16} aria-hidden="true" className="mt-1 shrink-0" style={{ color: 'var(--testo-tenue)' }} />
         <span className="flex min-w-0 flex-1 flex-col gap-1 md:flex-row md:items-start md:justify-between md:gap-3">
           <span className="flex min-w-0 flex-col gap-0.5">
-            <span className="break-words font-mono text-xs" style={{ color: 'var(--testo)' }}>
+            <span className="break-words font-mono text-sm" style={{ color: 'var(--testo)' }}>
               {step.espressione}
             </span>
             <span className="line-clamp-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
@@ -138,21 +138,21 @@ export const RigaStep = memo(function RigaStep({
                 {t('dettagliTecnici')}
               </summary>
               {classiPagina.length > 0 && (
-                <p className="font-mono text-xs" style={{ color: 'var(--testo-tenue)' }}>
+                <p className="font-mono text-sm" style={{ color: 'var(--testo-tenue)' }}>
                   {t('classiDellePagine', { nomi: classiPagina.join(', ') })}
                 </p>
               )}
               {step.comportamento.chiamate ? (
                 <ol className="flex list-inside list-decimal flex-col gap-0.5">
                   {step.comportamento.chiamate.map((c, i) => (
-                    <li key={i} className="font-mono text-xs" style={{ color: 'var(--testo-tenue)' }}>
+                    <li key={i} className="font-mono text-sm" style={{ color: 'var(--testo-tenue)' }}>
                       {c}
                     </li>
                   ))}
                 </ol>
               ) : (
                 <pre
-                  className="whitespace-pre-wrap rounded-md border p-2 font-mono text-xs"
+                  className="whitespace-pre-wrap rounded-md border p-2 font-mono text-sm"
                   style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
                 >
                   {step.comportamento.corpo}

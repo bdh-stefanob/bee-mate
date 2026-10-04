@@ -85,7 +85,7 @@ export const RigaComponente = memo(function RigaComponente({
                 <li key={espressione}>
                   <Link
                     href={urlCatalogo({ scheda: 'step', q: espressione })}
-                    className="inline-flex min-h-10 items-center break-words font-mono text-xs underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="inline-flex min-h-10 items-center break-words font-mono text-sm underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ color: 'var(--blu)', outlineColor: 'var(--blu)' }}
                     aria-label={t('vediLaFrase', { frase: espressione })}
                   >

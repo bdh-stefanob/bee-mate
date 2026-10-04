@@ -25,6 +25,7 @@ import { ErroreCatalogoIlleggibile } from './ErroreCatalogoIlleggibile';
 import { ScheletroCatalogo } from './Scheletro';
 import { StatoVuoto } from './StatoVuoto';
 import type { RispostaCatalogo } from './tipi';
+import { TESTO_LETTURA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 const selCatalogo = (i: Istantanea<RispostaCatalogo>) => i;
 
@@ -77,10 +78,10 @@ export function SchedaComponenti() {
   return (
     <section aria-labelledby="catalogo-componenti-titolo" className="flex flex-col gap-4">
       <div>
-        <h2 id="catalogo-componenti-titolo" className="text-base font-semibold" style={{ color: 'var(--testo)' }}>
+        <h2 id="catalogo-componenti-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
           {t('componentiDomanda')}
         </h2>
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {t('componentiIntro')}
         </p>
       </div>
@@ -141,7 +142,7 @@ export function SchedaComponenti() {
           )}
 
           {filtrati.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
               {t('nessunRisultato')}
             </p>
           ) : (

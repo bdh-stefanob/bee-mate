@@ -17,6 +17,7 @@ import { Suggerimenti } from '@/components/cruscotto/Suggerimenti';
 import type { EsitoSalvataggio } from '@/lib/salva-scenario';
 import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 import { rilevaCausaFallimento, type CausaFallimento } from '@/lib/diagnosi-fallimento';
+import { TITOLO_PAGINA } from '@/lib/scala-tipografica';
 
 /** Quante righe finali tenere per il fallimento che non ha una causa nota: solo per mostrarle, non per capirne di piu' di quanto sappiamo davvero. */
 const MAX_RIGHE_TECNICHE = 20;
@@ -330,7 +331,7 @@ export default function RegistraPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
         {t('titolo')}
       </h1>
 

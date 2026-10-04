@@ -51,7 +51,7 @@ export function GherkinLeggibile({
     <div
       role="region"
       aria-label={ariaLabel}
-      className="overflow-x-hidden rounded-lg border py-2 text-sm leading-6 [counter-reset:riga]"
+      className="max-w-[calc(2.75rem+3px+90ch)] overflow-x-hidden rounded-lg border py-2 font-mono text-sm leading-6 [counter-reset:riga]"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)' }}
     >
       {righe.map((r) => {
@@ -142,23 +142,23 @@ function Contenuto({
       return <span aria-hidden="true">&nbsp;</span>;
     case 'tag':
       return (
-        <span className="text-xs" style={TENUE}>
+        <span style={TENUE}>
           {riga.tag.join(' ')}
         </span>
       );
     case 'intestazione':
       return (
         <>
-          <span className="font-bold" style={BLU}>
+          <span className="font-semibold" style={BLU}>
             {riga.parola}:
           </span>{' '}
-          <span className="font-bold">{riga.titolo}</span>
+          <span className="font-semibold">{riga.titolo}</span>
         </>
       );
     case 'passo':
       return (
         <>
-          <span className="inline-block min-w-[3.5rem] font-bold" style={BLU}>
+          <span className="inline-block min-w-[3.5rem] font-semibold" style={BLU}>
             {riga.parola}
           </span>{' '}
           {riga.parti.map((p, i) =>
@@ -184,13 +184,13 @@ function Contenuto({
       );
     case 'commento':
       return (
-        <span className="italic" style={TENUE}>
+        <span style={TENUE}>
           {riga.testo}
         </span>
       );
     case 'tabella':
       return (
-        <span className="font-mono text-xs">
+        <span>
           <span style={TENUE}>|</span>
           {riga.celle.map((c, i) => (
             <span key={i}>

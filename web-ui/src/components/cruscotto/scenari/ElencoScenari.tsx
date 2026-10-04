@@ -193,7 +193,7 @@ export function ElencoScenari({
               <div key={g.chiave} role="group" aria-labelledby={idGruppo}>
                 <div
                   id={idGruppo}
-                  className="sticky top-0 z-10 border-b px-3 py-1.5 text-xs font-semibold uppercase tracking-wide"
+                  className="sticky top-0 z-10 border-b px-3 py-1.5 text-sm font-semibold"
                   style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo-tenue)' }}
                 >
                   {etichettaGruppo(g)}

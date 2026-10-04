@@ -13,6 +13,7 @@ import { indirizzoEsecuzione } from '@/lib/percorso-esecuzione';
 import type { VoceScenario } from '@/lib/scenari-elenco';
 import type { Istantanea } from '@/lib/risorsa';
 import type { RigaGherkin } from '@/lib/gherkin-lettura';
+import { TESTO_LETTURA, TITOLO_GRUPPO, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 const CLASSE_AZIONE = `inline-flex min-h-10 ${CLASSE_AZIONE_FLESSIBILE} items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`;
 
@@ -60,12 +61,12 @@ export function PannelloScenario({
           id={idTitolo}
           ref={titoloRef}
           tabIndex={-1}
-          className="text-lg font-semibold break-words focus:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className={`${TITOLO_SEZIONE} break-words focus:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
           style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
         >
           {voce.nome}
         </h2>
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
           {voce.generato
             ? t('registratoNonSalvato')
             : voce.flusso
@@ -120,7 +121,7 @@ export function PannelloScenario({
 
       {sostituisciTesto ?? (
       <section aria-label={t('testoTitolo')} className="flex flex-col gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--testo-tenue)' }}>
+        <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo-tenue)' }}>
           {t('testoTitolo')}
         </h3>
         {nota && testo.dati !== null && (

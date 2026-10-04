@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 const FOCALIZZABILI = 'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -65,7 +66,7 @@ export function DialogoModale({
         className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-lg border p-5"
         style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)' }}
       >
-        <h2 id={id} className="text-base font-semibold">
+        <h2 id={id} className={TITOLO_SEZIONE}>
           {titolo}
         </h2>
         {children}

@@ -9,6 +9,7 @@ import type { CoppiaArricchita } from '@/lib/catalogo-numeri';
 import { percorsoScenario } from '@/lib/percorso-scenario';
 import { CoppiaLato } from './CoppiaLato';
 import type { EsitoOperazione } from './tipi';
+import { TESTO_LETTURA, TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
 /**
  * Equivoco di denominazione: stessa frase (quasi), componenti diversi. Il
@@ -64,10 +65,10 @@ export function CoppiaEquivoco({
       <div className="flex items-start gap-2">
         <Signpost size={18} aria-hidden="true" style={{ color: 'var(--rosso)' }} className="mt-0.5 shrink-0" />
         <div className="flex-1">
-          <h3 className="font-medium" style={{ color: 'var(--testo)' }}>
+          <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo)' }}>
             {t('equivocoTitolo')}
           </h3>
-          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
             {t('equivocoSpiegazione')}
           </p>
         </div>
@@ -95,7 +96,7 @@ export function CoppiaEquivoco({
             type="text"
             value={nuovaFrase}
             onChange={(e) => setNuovaFrase(e.target.value)}
-            className="min-h-10 rounded-md border px-3 font-mono text-xs focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-10 rounded-md border px-3 font-mono text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           />
           <div className="rounded-md border p-3 text-sm" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>

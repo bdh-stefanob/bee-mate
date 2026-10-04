@@ -15,6 +15,7 @@ import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 import { formattaDurata, type Traduttore } from '@/lib/formato-quando';
 import { leggiConLimite, leggiElencoScenari, statoElencoScenari, type EsitoElencoScenari } from '@/lib/lettura';
 import { ErroreLettura } from '@/components/cruscotto/ErroreLettura';
+import { TITOLO_PAGINA } from '@/lib/scala-tipografica';
 
 type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
 
@@ -386,7 +387,7 @@ function EsecuzioneContenuto() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
         {t('titolo')}
       </h1>
 

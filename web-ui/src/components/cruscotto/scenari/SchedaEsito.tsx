@@ -7,6 +7,7 @@ import { LinkSchermata } from '@/components/cruscotto/scenari/LinkSchermata';
 import { formattaDurata, formattaQuando, type Traduttore } from '@/lib/formato-quando';
 import type { StatoScenario } from '@/lib/scenari-elenco';
 import type { UltimoEsito } from '@/lib/esiti-tipi';
+import { TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
 /**
  * "Com'e' andata l'ultima volta" nei suoi quattro casi: superato, non superato,
@@ -120,7 +121,7 @@ export function SchedaEsito({ stato, ambiente }: { stato: StatoScenario; ambient
       className="flex flex-col gap-2 rounded-lg border p-4"
       style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
     >
-      <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--testo-tenue)' }}>
+      <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo-tenue)' }}>
         {t('esitoTitolo')}
       </h3>
       <p className="flex items-start gap-2 text-base font-semibold" style={{ color: 'var(--testo)' }}>

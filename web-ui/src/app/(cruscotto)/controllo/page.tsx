@@ -9,6 +9,7 @@ import { useRisorsa } from '@/hooks/useRisorsa';
 import { diagnosi, dopoUnaModifica, type Diagnosi } from '@/lib/stato-controllo';
 import { coloreSintesi } from '@/lib/colore-sintesi';
 import type { Istantanea } from '@/lib/risorsa';
+import { TITOLO_PAGINA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
 const tutta = (i: Istantanea<Diagnosi>): Istantanea<Diagnosi> => i;
 const riprova = (): void => void diagnosi.carica();
@@ -81,7 +82,7 @@ function ConfiguraCredenziale() {
 
   return (
     <section aria-labelledby="configura-credenziale-titolo">
-      <h2 id="configura-credenziale-titolo" className="font-medium" style={{ color: 'var(--testo)' }}>
+      <h2 id="configura-credenziale-titolo" className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
         {t('credenzialeTitolo')}
       </h2>
       <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
@@ -181,7 +182,7 @@ export default function ControlloPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold" style={{ color: 'var(--testo)' }}>
+      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
         {t('titolo')}
       </h1>
 

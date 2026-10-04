@@ -26,7 +26,7 @@ export function CoppiaLato({
   const contenuto = (
     <>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="break-words font-mono text-xs" style={{ color: 'var(--testo)' }}>
+        <span className="break-words font-mono text-sm" style={{ color: 'var(--testo)' }}>
           {lato.espressione}
         </span>
         <span className="flex flex-wrap items-center gap-1">

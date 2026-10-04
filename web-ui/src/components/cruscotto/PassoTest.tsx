@@ -44,7 +44,7 @@ export function PassoTest({ passo }: { passo: Passo }) {
             {passo.testo}
           </span>
           <span
-            className="text-xs font-semibold uppercase tracking-wide"
+            className="text-sm font-semibold"
             style={{ color: colore }}
           >
             {t(chiaveParola)}
