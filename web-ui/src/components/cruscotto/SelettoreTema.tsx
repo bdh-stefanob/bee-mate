@@ -30,8 +30,7 @@ export function SelettoreTema() {
       <div
         role="group"
         aria-label={t('themeLabel')}
-        className="flex items-center gap-1 rounded-scheda border p-1"
-        style={{ borderColor: 'var(--bordo)' }}
+        className="flex items-center gap-1 rounded-scheda border p-1 border-bordo"
       >
         {TEMI.map((tema) => {
           const { chiave, Icona } = OPZIONI[tema];
@@ -46,16 +45,12 @@ export function SelettoreTema() {
                 // Icona sopra la parola, sempre: a 240 px tre bottoni affiancati non
                 // ospitano "Sistema" accanto all'icona. Mai troncata.
                 'flex min-h-10 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-controllo border px-1 py-1 text-xs transition-colors',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-                attivo ? 'font-semibold' : 'font-medium hover:bg-black/5 dark:hover:bg-white/10'
-              )}
-              style={{
+                'outline-blu focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
                 // Scelto = peso, bordo e fondo della superficie: si vede anche senza colore.
-                background: attivo ? 'var(--superficie)' : 'transparent',
-                borderColor: attivo ? 'var(--testo-tenue)' : 'transparent',
-                color: attivo ? 'var(--testo)' : 'var(--testo-tenue)',
-                outlineColor: 'var(--blu)',
-              }}
+                attivo
+                  ? 'border-testo-tenue bg-superficie font-semibold text-testo'
+                  : 'border-transparent bg-transparent font-medium text-testo-tenue hover:bg-black/5 dark:hover:bg-white/10'
+              )}
             >
               <Icona size={16} aria-hidden="true" className="shrink-0" />
               <span>{t(chiave)}</span>

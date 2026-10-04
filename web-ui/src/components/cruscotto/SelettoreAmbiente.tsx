@@ -45,18 +45,16 @@ export function SelettoreAmbiente() {
         {t('environmentLabel')}
       </label>
       <div
-        className="flex items-center gap-2 rounded-controllo border px-2"
-        style={{ borderColor: 'var(--bordo)' }}
+        className="flex items-center gap-2 rounded-controllo border px-2 border-bordo"
       >
-        <Server size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} className="shrink-0" />
+        <Server size={16} aria-hidden="true" className="shrink-0 text-testo-tenue" />
         <select
           id="selettore-ambiente"
           value={ambiente}
           title={ambiente || undefined}
           onChange={(e) => impostaAmbiente(e.target.value)}
           disabled={ambienti.length === 0}
-          className="min-h-10 w-full min-w-0 bg-transparent text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
-          style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="min-h-10 w-full min-w-0 bg-transparent text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 text-testo outline-blu"
         >
           {ambienti.length === 0 && <option value="">{t('environmentNone')}</option>}
           {ambienti.map((a) => (

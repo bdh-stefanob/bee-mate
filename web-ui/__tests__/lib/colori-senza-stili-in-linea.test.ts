@@ -82,16 +82,9 @@ export const ECCEZIONI: Record<string, string> = {};
  */
 export const IN_ATTESA: string[] = [
   'app/(cruscotto)/catalogo/page.tsx',
-  'app/(cruscotto)/esecuzione/page.tsx',
   'app/(cruscotto)/scenari/page.tsx',
   'components/GherkinEditor.tsx',
   'components/GherkinLeggibile.tsx',
-  'components/cruscotto/BarraLaterale.tsx',
-  'components/cruscotto/ProvaPassata.tsx',
-  'components/cruscotto/RiepilogoTraccia.tsx',
-  'components/cruscotto/SelettoreAmbiente.tsx',
-  'components/cruscotto/SelettoreLingua.tsx',
-  'components/cruscotto/SelettoreTema.tsx',
   'components/cruscotto/catalogo/BarraStrumenti.tsx',
   'components/cruscotto/catalogo/CoppiaDoppione.tsx',
   'components/cruscotto/catalogo/CoppiaEquivoco.tsx',

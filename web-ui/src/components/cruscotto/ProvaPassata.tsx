@@ -8,6 +8,7 @@ import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
 import { formattaQuando, type Traduttore } from '@/lib/formato-quando';
 import { TITOLO_PAGINA } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 type Risposta =
   | { stato: 'ok'; passi: Passo[]; quando: string | null; ambiente: string | null }
   | { stato: 'assente' }
@@ -55,8 +56,7 @@ export function ProvaPassata({ id }: { id: string }) {
   const ritorno = (
     <Link
       href="/scenari"
-      className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+      className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
     >
       {t('provaVaiAScenari')}
     </Link>
@@ -65,14 +65,13 @@ export function ProvaPassata({ id }: { id: string }) {
   const avviso = (titolo: string, testo: string, azione: React.ReactNode = ritorno) => (
     <section
       role="status"
-      className="flex flex-col gap-2 rounded-scheda border p-4 text-sm"
-      style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+      className="flex flex-col gap-2 rounded-scheda border p-4 text-sm border-ambra bg-superficie-tenue text-testo"
     >
       <p className="flex items-center gap-2 font-semibold">
-        <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+        <AlertTriangle size={18} aria-hidden="true" className="text-ambra" />
         {titolo}
       </p>
-      <p style={{ color: 'var(--testo-tenue)' }}>{testo}</p>
+      <p className="text-testo-tenue">{testo}</p>
       {azione}
     </section>
   );
@@ -80,7 +79,7 @@ export function ProvaPassata({ id }: { id: string }) {
   let corpo: React.ReactNode;
   if (stato.tipo === 'carico') {
     corpo = (
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('provaCaricamento')}
       </p>
     );
@@ -96,8 +95,7 @@ export function ProvaPassata({ id }: { id: string }) {
       t('provaInCorsoTesto'),
       <Link
         href="/esecuzione"
-        className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
       >
         {t('provaVaiAEsecuzione')}
       </Link>
@@ -111,10 +109,9 @@ export function ProvaPassata({ id }: { id: string }) {
       <>
         <p
           role="status"
-          className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm"
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+          className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm border-bordo bg-superficie-tenue text-testo"
         >
-          <History size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--testo-tenue)' }} />
+          <History size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-testo-tenue" />
           <span>
             {ambiente
               ? t('provaIntestazione', { quando: quandoTesto, ambiente })
@@ -122,7 +119,7 @@ export function ProvaPassata({ id }: { id: string }) {
           </span>
         </p>
         {passi.length === 0 ? (
-          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p className="text-sm text-testo-tenue">
             {t('provaSenzaPassi')}
           </p>
         ) : (
@@ -133,8 +130,7 @@ export function ProvaPassata({ id }: { id: string }) {
               ))}
             </ul>
             <p
-              className="text-sm font-semibold border-t pt-3"
-              style={{ color: 'var(--testo-tenue)', borderColor: 'var(--bordo)' }}
+              className="text-sm font-semibold border-t pt-3 text-testo-tenue border-bordo"
             >
               {(['passato', 'fallito', 'saltato'] as const)
                 .map((e) => t(CHIAVE_ESITO[e], { n: conteggio[e] }))
@@ -149,7 +145,7 @@ export function ProvaPassata({ id }: { id: string }) {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
+      <h1 className={cn(TITOLO_PAGINA, 'text-testo')}>
         {t('provaTitolo')}
       </h1>
       {corpo}

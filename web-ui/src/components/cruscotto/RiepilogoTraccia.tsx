@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { CheckCircle2, ListChecks, AlertTriangle, Clock } from 'lucide-react';
 import { TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 export interface PassoRiepilogo {
   nome: string;
   gesti: number;
@@ -43,14 +44,13 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div
-        className="flex flex-wrap items-center gap-4 rounded-scheda border p-4 text-sm"
-        style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+        className="flex flex-wrap items-center gap-4 rounded-scheda border p-4 text-sm border-bordo bg-superficie-tenue"
       >
-        <span className="flex items-center gap-2" style={{ color: 'var(--testo)' }}>
+        <span className="flex items-center gap-2 text-testo">
           <Clock size={18} aria-hidden="true" />
           {t('durataLabel', { durata: formattaDurata(durata) })}
         </span>
-        <span className="flex items-center gap-2" style={{ color: 'var(--testo)' }}>
+        <span className="flex items-center gap-2 text-testo">
           <ListChecks size={18} aria-hidden="true" />
           {t('passiVerifiche', { passi: passi.length, verifiche: totaleVerifiche })}
         </span>
@@ -60,15 +60,13 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
         {passi.map((passo, i) => (
           <li
             key={`${passo.nome}-${i}`}
-            className="rounded-scheda border p-4"
-            style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+            className="rounded-scheda border p-4 border-bordo bg-superficie"
           >
-            <p className="font-medium" style={{ color: 'var(--testo)' }}>
+            <p className="font-medium text-testo">
               {i + 1}. {passo.nome}
             </p>
             <p
-              className="mt-1 flex items-center gap-2 text-sm"
-              style={{ color: 'var(--testo-tenue)' }}
+              className="mt-1 flex items-center gap-2 text-sm text-testo-tenue"
             >
               <CheckCircle2 size={16} aria-hidden="true" />
               {passo.verifiche === 0 ? t('passoNessunaVerifica') : t('passoVerifiche', { n: passo.verifiche })}
@@ -81,28 +79,23 @@ export function RiepilogoTraccia({ passi, durata, buchi }: Props) {
 
       {buchi.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+          <h2 className={cn(TITOLO_SEZIONE, 'text-testo')}>
             {t('daSapere')}
           </h2>
           {buchi.map((buco, i) => (
             <div
               key={`${buco.pagina}-${i}`}
-              className="flex items-start gap-2 rounded-scheda border p-3 text-sm"
-              style={{
-                borderColor: 'var(--bordo)',
-                background: 'var(--superficie-tenue)',
-                color: 'var(--testo)',
-              }}
+              className="flex items-start gap-2 rounded-scheda border p-3 text-sm border-bordo bg-superficie-tenue text-testo"
             >
               <AlertTriangle
                 size={18}
                 aria-hidden="true"
-                style={{ color: 'var(--rosso)', flexShrink: 0, marginTop: 2 }}
+                className="text-rosso" style={{ flexShrink: 0, marginTop: 2 }}
               />
               <span>
                 <strong>{t('attenzioneLabel')}</strong> — {buco.messaggio}.
                 <br />
-                <span style={{ color: 'var(--testo-tenue)' }}>
+                <span className="text-testo-tenue">
                   {t('rimedioScansione', { pagina: buco.pagina })}
                 </span>
               </span>

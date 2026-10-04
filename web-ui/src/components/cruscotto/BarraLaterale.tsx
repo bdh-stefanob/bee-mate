@@ -59,17 +59,15 @@ function VoceNav({
           attivo
             ? 'font-semibold'
             : 'hover:bg-black/5 dark:hover:bg-white/10',
+          'outline-blu',
+          attivo ? 'text-blu' : 'text-testo-tenue',
         )}
-        style={{
-          color: attivo ? 'var(--blu)' : 'var(--testo-tenue)',
-          outlineColor: 'var(--blu)',
-        }}
       >
         <Icona size={20} aria-hidden="true" />
         <span>{t(chiaveEtichetta)}</span>
         {conPunto && (
           <>
-            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-pillola" style={{ background: 'var(--ambra)' }} />
+            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-pillola bg-ambra" />
             <span className="sr-only min-[900px]:not-sr-only text-xs font-normal">{tm('voceNonSalvate')}</span>
           </>
         )}
@@ -89,8 +87,7 @@ export function BarraLaterale() {
   return (
     <nav
       aria-label={t('navAriaLabel')}
-      className="flex shrink-0 flex-col border-b min-[900px]:border-b-0 min-[900px]:border-r min-[900px]:w-60 min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-y-auto"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+      className="flex shrink-0 flex-col border-b min-[900px]:border-b-0 min-[900px]:border-r min-[900px]:w-60 min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-y-auto border-bordo bg-superficie-tenue"
     >
       <ul className="flex flex-row min-[900px]:flex-col p-2 gap-1">
         {VOCI.map((voce) => <VoceNav key={voce.href} {...voce} pathname={pathname} t={t} />)}
@@ -103,10 +100,9 @@ export function BarraLaterale() {
       <div
         role="group"
         aria-label={t('settingsLabel')}
-        className="mt-auto flex flex-col gap-2 border-t p-2"
-        style={{ borderColor: 'var(--bordo)' }}
+        className="mt-auto flex flex-col gap-2 border-t p-2 border-bordo"
       >
-        <span aria-hidden="true" className="px-1 text-xs font-medium" style={{ color: 'var(--testo-tenue)' }}>
+        <span aria-hidden="true" className="px-1 text-xs font-medium text-testo-tenue">
           {t('settingsLabel')}
         </span>
         <SelettoreAmbiente />

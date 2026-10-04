@@ -51,10 +51,9 @@ export function SelettoreLingua() {
       <div
         role="group"
         aria-label={t('languageLabel')}
-        className="flex items-center gap-1 rounded-scheda border p-1"
-        style={{ borderColor: 'var(--bordo)' }}
+        className="flex items-center gap-1 rounded-scheda border p-1 border-bordo"
       >
-        <Languages size={16} aria-hidden="true" style={{ color: 'var(--testo-tenue)' }} className="ml-1 shrink-0" />
+        <Languages size={16} aria-hidden="true" className="ml-1 shrink-0 text-testo-tenue" />
         {OPZIONI.map(({ lingua, chiaveEtichetta }) => {
           const attiva = lingua === locale;
           return (
@@ -66,17 +65,13 @@ export function SelettoreLingua() {
               aria-pressed={attiva}
               className={cn(
                 'min-h-10 min-w-0 flex-1 rounded-controllo border px-2 text-sm transition-colors',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                'outline-blu focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
                 'disabled:opacity-60',
-                attiva ? 'font-semibold' : 'font-medium hover:bg-black/5 dark:hover:bg-white/10'
-              )}
-              style={{
                 // Scelta = peso, bordo e fondo della superficie: si vede anche senza colore.
-                background: attiva ? 'var(--superficie)' : 'transparent',
-                borderColor: attiva ? 'var(--testo-tenue)' : 'transparent',
-                color: attiva ? 'var(--testo)' : 'var(--testo-tenue)',
-                outlineColor: 'var(--blu)',
-              }}
+                attiva
+                  ? 'border-testo-tenue bg-superficie font-semibold text-testo'
+                  : 'border-transparent bg-transparent font-medium text-testo-tenue hover:bg-black/5 dark:hover:bg-white/10'
+              )}
             >
               {t(chiaveEtichetta)}
             </button>
@@ -84,7 +79,7 @@ export function SelettoreLingua() {
         })}
       </div>
       {errore && (
-        <p role="alert" className="px-1 text-xs" style={{ color: 'var(--rosso)' }}>
+        <p role="alert" className="px-1 text-xs text-rosso">
           {t('erroreLingua')}
         </p>
       )}

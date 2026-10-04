@@ -121,15 +121,14 @@ function Interruttore({
       className={cn(
         'flex items-center justify-between gap-3 min-h-10 rounded-controllo border px-3 text-sm font-medium text-left',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-        'disabled:opacity-50 disabled:cursor-not-allowed'
+        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'border-bordo text-testo outline-blu',
       )}
-      style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
     >
       <span>{etichetta}</span>
       <span
         aria-hidden="true"
-        className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-pillola transition-colors"
-        style={{ background: attivo ? 'var(--blu)' : 'var(--bordo)' }}
+        className={cn('relative inline-flex h-6 w-11 shrink-0 items-center rounded-pillola transition-colors', attivo ? 'bg-blu' : 'bg-bordo')}
       >
         <span
           className="inline-block h-5 w-5 rounded-pillola bg-white transition-transform"
@@ -387,24 +386,22 @@ function EsecuzioneContenuto() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
+      <h1 className={cn(TITOLO_PAGINA, 'text-testo')}>
         {t('titolo')}
       </h1>
 
       {altrove && (
         <div
-          className="flex items-center gap-3 rounded-scheda border p-4 text-sm"
-          style={{ borderColor: 'var(--ambra)', color: 'var(--testo)', background: 'var(--superficie-tenue)' }}
+          className="flex items-center gap-3 rounded-scheda border p-4 text-sm border-ambra text-testo bg-superficie-tenue"
         >
-          <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+          <AlertTriangle size={18} aria-hidden="true" className="text-ambra" />
           <span className="flex-1">
             {t('altroInCorso', { comando: t(ALTROVE[altrove]?.chiaveComando ?? 'comandoSessione') })}
           </span>
           <button
             type="button"
             onClick={() => router.push(ALTROVE[altrove]?.percorso ?? '/controllo')}
-            className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
           >
             {t(ALTROVE[altrove]?.chiaveVai ?? 'vaiAControllo')}
           </button>
@@ -412,10 +409,9 @@ function EsecuzioneContenuto() {
       )}
 
       <section
-        className="flex flex-col gap-4 rounded-scheda border p-4"
-        style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+        className="flex flex-col gap-4 rounded-scheda border p-4 border-bordo bg-superficie"
       >
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="text-sm text-testo-tenue">
           {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunBersaglio')}
         </p>
         {/* F14: senza ambiente non si puo' lanciare niente; la strada per risolvere e' il Check-up. */}
@@ -423,15 +419,14 @@ function EsecuzioneContenuto() {
           <button
             type="button"
             onClick={() => router.push('/controllo')}
-            className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
           >
             {t('vaiAControllo')}
           </button>
         )}
 
         {(salvato === 'nuovo' || salvato === 'sovrascritto' || salvato === 'rinominato') && scelta && (
-          <p role="status" className="text-sm rounded-scheda border px-3 py-2" style={{ borderColor: 'var(--verde)', color: 'var(--testo)' }}>
+          <p role="status" className="text-sm rounded-scheda border px-3 py-2 border-verde text-testo">
             {t(
               salvato === 'nuovo' ? 'salvatoNuovo' : salvato === 'sovrascritto' ? 'salvatoSovrascritto' : 'salvatoRinominato',
               { file: scelta.replace(/^src\/features\//, '') }
@@ -440,7 +435,7 @@ function EsecuzioneContenuto() {
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="scenario-da-eseguire" className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <label htmlFor="scenario-da-eseguire" className="text-sm font-medium text-testo">
             {t('scenarioEtichetta')}
           </label>
           <select
@@ -451,14 +446,9 @@ function EsecuzioneContenuto() {
             className={cn(
               'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'border-bordo bg-superficie text-testo outline-blu',
             )}
-            style={{
-              borderColor: 'var(--bordo)',
-              background: 'var(--superficie)',
-              color: 'var(--testo)',
-              outlineColor: 'var(--blu)',
-            }}
           >
             <option value="">{t('tuttiIRegistrati')}</option>
             {(fileScenari ?? []).map((f) => (
@@ -486,7 +476,7 @@ function EsecuzioneContenuto() {
               onRiprova={() => setTentativoElenco((n) => n + 1)}
             />
           ) : (
-            <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="text-xs text-testo-tenue">
               {statoElenco === 'vuoto' ? t('nessunoScenario') : t('notaDocumentati')}
             </p>
           )}
@@ -499,7 +489,7 @@ function EsecuzioneContenuto() {
           disabilitato={inCorso}
         />
         {guardaIlBrowser && (
-          <div className="flex items-center justify-between gap-3 min-h-10 rounded-controllo border px-3 text-sm" style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}>
+          <div className="flex items-center justify-between gap-3 min-h-10 rounded-controllo border px-3 text-sm border-bordo text-testo">
             <label htmlFor="velocita-browser" className="font-medium">
               {t('velocita')}
             </label>
@@ -508,8 +498,7 @@ function EsecuzioneContenuto() {
               value={rallenta}
               onChange={(e) => setRallenta(Number(e.target.value))}
               disabled={inCorso}
-              className="min-h-10 rounded-controllo border px-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+              className="min-h-10 rounded-controllo border px-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
             >
               <option value={0}>{t('velocitaNormale')}</option>
               <option value={500}>{t('velocitaLenta')}</option>
@@ -532,9 +521,9 @@ function EsecuzioneContenuto() {
             className={cn(
               'inline-flex items-center justify-center gap-2 min-h-10 px-4 rounded-controllo text-sm font-semibold text-white transition-colors',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'bg-blu-fondo outline-blu',
             )}
-            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
           >
             {inCorso ? (
               <Loader2 size={18} aria-hidden="true" className="animate-spin" />
@@ -548,8 +537,7 @@ function EsecuzioneContenuto() {
             <button
               type="button"
               onClick={() => void interrompi()}
-              className="inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--rosso)' }}
+              className="inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-rosso text-rosso outline-rosso"
             >
               <Square size={16} aria-hidden="true" />
               {t('interrompi')}
@@ -558,7 +546,7 @@ function EsecuzioneContenuto() {
         </div>
 
         {errore && (
-          <p role="alert" className="text-sm font-medium" style={{ color: 'var(--rosso)' }}>
+          <p role="alert" className="text-sm font-medium text-rosso">
             {errore}
           </p>
         )}
@@ -573,8 +561,7 @@ function EsecuzioneContenuto() {
           </ul>
 
           <p
-            className="text-sm font-semibold border-t pt-3"
-            style={{ color: 'var(--testo-tenue)', borderColor: 'var(--bordo)' }}
+            className="text-sm font-semibold border-t pt-3 text-testo-tenue border-bordo"
           >
             {rigaEsito(passi, durataMs, locale, t)}
           </p>
@@ -585,29 +572,22 @@ function EsecuzioneContenuto() {
         <section
           role="alert"
           aria-label={t('esitoAriaLabel')}
-          className="flex flex-col gap-2 rounded-scheda border p-4 text-sm"
-          style={{
-            borderColor:
-              statoCorrente === 'fallita' ? 'var(--rosso)' : 'var(--testo-tenue)',
-            background: 'var(--superficie-tenue)',
-          }}
+          className={cn('flex flex-col gap-2 rounded-scheda border p-4 text-sm bg-superficie-tenue', statoCorrente === 'fallita' ? 'border-rosso' : 'border-testo-tenue')}
         >
           <p
-            className="flex items-center gap-2 font-semibold"
-            style={{ color: statoCorrente === 'fallita' ? 'var(--rosso)' : 'var(--testo-tenue)' }}
+            className={cn('flex items-center gap-2 font-semibold', statoCorrente === 'fallita' ? 'text-rosso' : 'text-testo-tenue')}
           >
             <AlertTriangle size={18} aria-hidden="true" />
             {fraseSenzaPassi(statoCorrente, t)}
           </p>
-          <p style={{ color: 'var(--testo-tenue)' }}>
+          <p className="text-testo-tenue">
             {codiceUscita !== null
               ? t('codiceUscita', { codice: codiceUscita })
               : t('nessunCodiceUscita')}
           </p>
           {righeOutput.length > 0 && (
             <pre
-              className="text-xs whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono"
-              style={{ background: 'var(--superficie)', color: 'var(--testo)' }}
+              className="text-xs whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono bg-superficie text-testo"
             >
               {righeOutput.join('\n')}
             </pre>
@@ -621,7 +601,7 @@ function EsecuzioneContenuto() {
 function ScheletroCaricamento() {
   const t = useTranslations('Esecuzione');
   return (
-    <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+    <p className="text-sm text-testo-tenue">
       {t('caricamento')}
     </p>
   );
