@@ -447,45 +447,161 @@ async function main(): Promise<void> {
       fail("lo scenario generato esiste", `${feature} non c'e'`);
       return;
     }
-    const esecuzione = spawnSync(
-      process.execPath,
-      [path.join("node_modules", "@cucumber", "cucumber", "bin", "cucumber.js")],
-      {
-        encoding: "utf-8",
-        cwd: RADICE,
-        env: {
-          ...process.env,
-          BASE_URL: base,
-          BDD_PATHS: feature,
-          BDD_TAGS: "",
-          // La suite non compila per un file generato da una versione vecchia del
-          // generatore, che non e' di questa registrazione: si traspila senza
-          // controllare i tipi. `tsc` resta il giudice dei tipi, qui si misura
-          // l'esecuzione.
-          TS_NODE_TRANSPILE_ONLY: "1",
-          BDD_HTML: path.join(LAVORO, "cucumber.html"),
-        },
-      }
-    );
-    const uscita = `${esecuzione.stdout ?? ""}${esecuzione.stderr ?? ""}`;
-    fs.writeFileSync(path.join(dirLavoro, "esecuzione.txt"), uscita, "utf-8");
-    if (esecuzione.status === 0) {
-      ok("lo scenario generato passa contro l'app finta");
+    // Il codice uscito dal generatore si conserva PRIMA di eseguirlo: il secondo
+    // giro lo modifica, e la copia da guardare e' quella che il generatore ha
+    // prodotto, non quella che il controllo ha ritoccato.
+    conserva(manifesto, dirLavoro);
+
+    // ── 3a. Come esce dal generatore ───────────────────────────────────────
+    //
+    // DEVE FERMARSI, E IL CONTROLLO NON E' ROSSO PER QUESTO.
+    //
+    // Sulla mappa dell'app finta un livello trasparente intercetta i clic e fa
+    // il proprio hit-test: il generatore vede un solo elemento cliccabile — quel
+    // livello — e cliccarne il centro non sceglie nessun pin. Scegliere IL pin
+    // giusto vuol dire sapere quale farmacia cercava il tester, e la
+    // registrazione non porta quell'informazione: e' il caso in cui la
+    // generazione deterministica, da sola, **non puo'** arrivare in fondo.
+    //
+    // Prima questo caso diceva "lo scenario generato passa", e da quando l'app
+    // finta contiene il caso difficile era rosso per sempre. Un controllo sempre
+    // rosso smette di essere un controllo: lo si guarda una volta e poi si
+    // impara a ignorarlo, e con lui tutti gli altri. Quindi il caso dice ora la
+    // cosa vera, che e' altrettanto utile: si ferma **li'**, e il generatore
+    // dichiara che li' serve una ricetta.
+    const primo = esegui(base, feature, path.join(dirLavoro, "esecuzione.txt"));
+    const seFermaSullaMappa = /Select Pharmacy/.test(primo.uscita);
+    if (primo.status !== 0 && seFermaSullaMappa) {
+      ok("lo scenario generato si ferma sulla mappa, dove la registrazione non basta");
+    } else if (primo.status === 0) {
+      fail(
+        "lo scenario generato si ferma sulla mappa, dove la registrazione non basta",
+        `e' passato: il clic generico ha scelto un pin. Allora l'app finta non contiene piu' ` +
+          `il caso difficile (il livello che intercetta i clic), e questo controllo non misura ` +
+          `piu' niente. Guarda /pharmacy-map-selection in bdd-app-finta.`
+      );
     } else {
       fail(
-        "lo scenario generato passa contro l'app finta",
-        righeUtili(uscita).join("\n       ") +
-          `\n       (per intero: ${path.join(LAVORO, "esecuzione.txt")})`
+        "lo scenario generato si ferma sulla mappa, dove la registrazione non basta",
+        `si e' fermato, ma non sulla mappa: atteso un fallimento su «Select Pharmacy».\n       ` +
+          righeUtili(primo.uscita).join("\n       ")
       );
+    }
+
+    // ── 3b. Con la ricetta applicata a mano ────────────────────────────────
+    //
+    // L'altra meta' della stessa prova. Che il generatore dichiari la ricetta
+    // (vedi sopra) vale solo se la ricetta, usata, funziona davvero: altrimenti
+    // si propone una strada che non porta da nessuna parte. Qui la sostituzione
+    // la fa il controllo — e' esattamente il gesto che farebbe una persona dopo
+    // aver letto il rapporto di generazione, e dopo il quale `isRegenerable`
+    // smette di sovrascrivere il file.
+    const glue = manifesto.files
+      .map((f) => f.path.replace(/\\/g, "/"))
+      .find((p) => p.includes("/steps/generated/"));
+    if (!glue) {
+      fail("la glue generata esiste", "nel manifesto non c'e' nessun file di step");
+    } else {
+      const applicata = applicaRicettaDellaMappa(path.join(RADICE, glue));
+      if (!applicata) {
+        fail(
+          "la ricetta si puo' applicare alla glue generata",
+          `nella glue non ho trovato la chiamata al clic generico sul livello della mappa. ` +
+            `Se il generatore ha cambiato il nome del metodo, va aggiornata la sostituzione ` +
+            `qui dentro (cerca CHIAMATA_GENERICA).`
+        );
+      } else {
+        fs.writeFileSync(
+          path.join(dirLavoro, "glue-con-ricetta.ts"),
+          fs.readFileSync(path.join(RADICE, glue), "utf-8"),
+          "utf-8"
+        );
+        const secondo = esegui(base, feature, path.join(dirLavoro, "esecuzione-con-ricetta.txt"));
+        if (secondo.status === 0) {
+          ok("con la ricetta applicata allo step, lo scenario passa");
+        } else {
+          fail(
+            "con la ricetta applicata allo step, lo scenario passa",
+            righeUtili(secondo.uscita).join("\n       ") +
+              `\n       (glue usata: ${path.join(LAVORO, "glue-con-ricetta.ts")})`
+          );
+        }
+      }
     }
 
     // I file generati non restano in src: li' li rigenera il tester, e uno
     // scenario che punta a un server spento farebbe fallire `npm test` a chi non
     // c'entra niente. Se servono, stanno nella cartella di lavoro.
-    conservaEPulisci(manifesto, dirLavoro);
+    pulisci(manifesto, dirLavoro);
   } finally {
     if (server && !server.killed) server.kill();
   }
+}
+
+/** Esegue lo scenario generato e scrive l'uscita per intero. */
+function esegui(base: string, feature: string, dove: string): { status: number | null; uscita: string } {
+  const esito = spawnSync(
+    process.execPath,
+    [path.join("node_modules", "@cucumber", "cucumber", "bin", "cucumber.js")],
+    {
+      encoding: "utf-8",
+      cwd: RADICE,
+      env: {
+        ...process.env,
+        BASE_URL: base,
+        BDD_PATHS: feature,
+        BDD_TAGS: "",
+        // Si traspila senza controllare i tipi: `tsc` resta il giudice dei tipi,
+        // qui si misura l'esecuzione. Serve anche perche' la glue, al secondo
+        // giro, e' stata ritoccata da questo controllo.
+        TS_NODE_TRANSPILE_ONLY: "1",
+        BDD_HTML: path.join(LAVORO, "cucumber.html"),
+      },
+    }
+  );
+  const uscita = `${esito.stdout ?? ""}${esito.stderr ?? ""}`;
+  fs.writeFileSync(dove, uscita, "utf-8");
+  return { status: esito.status, uscita };
+}
+
+/**
+ * Il clic generico che il generatore emette per il livello sopra la mappa.
+ *
+ * Non e' un selettore ne' un nome di file: e' la forma della chiamata che
+ * `componenteSenzaRuolo` produce per un elemento senza ruolo ne' nome. Se il
+ * generatore cambia come nomina quei metodi, questa sostituzione non trova piu'
+ * niente — e il controllo lo dice invece di passare per caso.
+ */
+const CHIAMATA_GENERICA = /^(\s*)await (\w*[Pp]harmacyMapSelectionPage)\.click\w*\(\);$/m;
+
+/**
+ * Sostituisce il clic generico con la ricetta, come farebbe una persona.
+ *
+ * E' il gesto che il rapporto di generazione propone: leggere il buco
+ * "ricetta-disponibile", aprire `src/actions/mappa.actions.ts`, e usare quella
+ * al posto della chiamata generata. Lo fa il controllo per poter misurare che la
+ * strada proposta porti davvero da qualche parte — proporre una ricetta che non
+ * funziona sarebbe peggio che non proporla.
+ *
+ * `indicePin: 1` — il secondo pin, non il primo: cosi' la prova dice che la
+ * ricetta sceglie IL pin chiesto, non "il primo che capita".
+ */
+function applicaRicettaDellaMappa(fileGlue: string): boolean {
+  const prima = fs.readFileSync(fileGlue, "utf-8");
+  if (!CHIAMATA_GENERICA.test(prima)) return false;
+
+  const dopo = prima
+    .replace(
+      CHIAMATA_GENERICA,
+      `$1// Ricetta applicata a mano al posto del clic generico (vedi src/support/ricette.ts).\n` +
+        `$1await sceltaSuMappa(this.page, { indicePin: 1 });`
+    )
+    .replace(
+      /^(import .*\n)/m,
+      `$1import { sceltaSuMappa } from "../../actions/mappa.actions";\n`
+    );
+  fs.writeFileSync(fileGlue, dopo, "utf-8");
+  return true;
 }
 
 /**
@@ -747,6 +863,21 @@ function verificaGenerazione(manifesto: Manifesto, recording: Recording): void {
     );
   }
 
+  // La ricetta si propone. E' l'altra meta' del caso sull'esecuzione: lo
+  // scenario generato si ferma sulla mappa (giusto), e il generatore deve dire
+  // perche' e dove guardare. Fermarsi senza dirlo sarebbe il difetto peggiore.
+  const proposte = manifesto.gaps.filter((g) => g.kind === "ricetta-disponibile");
+  if (proposte.length > 0) {
+    ok(`il generatore propone la ricetta invece di arrendersi (${proposte.map((p) => p.where).join(", ")})`);
+  } else {
+    fail(
+      "il generatore propone la ricetta invece di arrendersi",
+      `fra i buchi non c'e' nessun "ricetta-disponibile": il gesto sul livello della mappa ` +
+        `non e' stato riconosciuto. Buchi dichiarati: ` +
+        `${JSON.stringify([...new Set(manifesto.gaps.map((g) => g.kind))])}`
+    );
+  }
+
   if (gherkin.includes(ETICHETTE.ordine)) {
     ok("lo scenario porta le parole del tester");
   } else {
@@ -762,7 +893,7 @@ function verificaGenerazione(manifesto: Manifesto, recording: Recording): void {
 }
 
 /** I file generati si conservano nella cartella di lavoro e si togliono da src. */
-function conservaEPulisci(manifesto: Manifesto, dirLavoro: string): void {
+function conserva(manifesto: Manifesto, dirLavoro: string): void {
   const destinazione = path.join(dirLavoro, "generato");
   for (const f of manifesto.files) {
     const assoluto = path.join(RADICE, f.path);
@@ -770,7 +901,14 @@ function conservaEPulisci(manifesto: Manifesto, dirLavoro: string): void {
     const dove = path.join(destinazione, f.path.replace(/\\/g, "/").replace(/^src\//, ""));
     fs.mkdirSync(path.dirname(dove), { recursive: true });
     fs.copyFileSync(assoluto, dove);
-    fs.rmSync(assoluto);
+  }
+}
+
+/** I file generati si togliono da `src`: la copia conservata resta nella cartella di lavoro. */
+function pulisci(manifesto: Manifesto, dirLavoro: string): void {
+  for (const f of manifesto.files) {
+    const assoluto = path.join(RADICE, f.path);
+    if (fs.existsSync(assoluto)) fs.rmSync(assoluto);
   }
   // Una cartella rimasta vuota (`pages/generated/127.0.0.1`) non da' fastidio, ma
   // si toglie: cosi' `npm test` non trova niente di questo controllo.
@@ -778,7 +916,10 @@ function conservaEPulisci(manifesto: Manifesto, dirLavoro: string): void {
     const dir = path.dirname(path.join(RADICE, f.path));
     if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
   }
-  console.log(`\n  i file generati sono in ${path.relative(RADICE, destinazione)} (fuori da src, fuori da git)`);
+  console.log(
+    `\n  i file generati sono in ${path.relative(RADICE, path.join(dirLavoro, "generato"))}` +
+      ` (fuori da src, fuori da git); la glue con la ricetta applicata e' accanto`
+  );
 }
 
 main()
