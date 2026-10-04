@@ -272,7 +272,7 @@ but a tester would not understand it without help · **P3** polish.
 - [ ] **F13 — `window.confirm()`** for delete, replacing a recorded sign-in and
   overwriting an address (`SezioneAmbienti.tsx`). Inline confirmation in the
   environment row with the same consequence list.
-- [ ] **F14 — empty states without a way forward.** Record and Run without an
+- [x] **F14 — empty states without a way forward.** _Closed on 4 Oct (job S6): Record and Run without an environment show **Go to Check-up**; Record with an environment ready also explains the three steps (sign in, record, save)._ Record and Run without an
   environment: add **Go to Check-up**.
 - [x] **F15 — Check-up layout.** _Closed on 4 Oct (job S2): one width for the whole page (the layout of the dashboard centres it), order status, Environments, one Advanced fold with the advanced checks and Other variables; the summary box takes the colour of the worst outcome._ Status cards narrower than the banner and the
   sections; Environments below *Advanced*; two advanced folds. One width; order

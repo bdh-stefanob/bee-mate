@@ -137,7 +137,15 @@
     "erroreCausaIndirizzoIrraggiungibile": "The environment address could not be reached. Check it in Check-up.",
     "dettagliTecnici": "Technical details",
     "nienteRegistrato": "Nothing was recorded — 0 steps, 0 checks.",
-    "registraDiNuovo": "Record again"
+    "registraDiNuovo": "Record again",
+    "iniziaTitolo": "How it works",
+    "passo_accedi_titolo": "Sign in",
+    "passo_accedi_testo": "If this environment already has a recorded sign-in, the browser opens already inside the application. Otherwise you sign in yourself, as usual.",
+    "passo_registra_titolo": "Record",
+    "passo_registra_testo": "In the browser, do what you want to check, the way you would normally. Give each part a name and mark what must turn out true. When you are done, close the window.",
+    "passo_salva_titolo": "Save",
+    "passo_salva_testo": "Here you see what the system understood. If it looks right, you save it as a scenario and can run it again whenever you like.",
+    "senzaAmbienteSpiega": "Before recording you need an environment: the address of the application to try. You add it in the Check-up."
   },
   "Esecuzione": {
     "titolo": "Run",

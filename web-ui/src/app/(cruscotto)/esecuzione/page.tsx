@@ -418,6 +418,17 @@ function EsecuzioneContenuto() {
         <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
           {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunBersaglio')}
         </p>
+        {/* F14: senza ambiente non si puo' lanciare niente; la strada per risolvere e' il Check-up. */}
+        {!ambiente && (
+          <button
+            type="button"
+            onClick={() => router.push('/controllo')}
+            className="inline-flex min-h-10 w-fit items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          >
+            {t('vaiAControllo')}
+          </button>
+        )}
 
         {(salvato === 'nuovo' || salvato === 'sovrascritto' || salvato === 'rinominato') && scelta && (
           <p role="status" className="text-sm rounded-md border px-3 py-2" style={{ borderColor: 'var(--verde)', color: 'var(--testo)' }}>

@@ -137,7 +137,15 @@
     "erroreCausaIndirizzoIrraggiungibile": "Non sono riuscito a raggiungere l'indirizzo dell'ambiente. Controllalo nel Check-up.",
     "dettagliTecnici": "Dettagli tecnici",
     "nienteRegistrato": "Non è stato registrato niente — 0 passi, 0 verifiche.",
-    "registraDiNuovo": "Registra di nuovo"
+    "registraDiNuovo": "Registra di nuovo",
+    "iniziaTitolo": "Come funziona",
+    "passo_accedi_titolo": "Accedi",
+    "passo_accedi_testo": "Se per questo ambiente hai già un accesso registrato, il browser si apre già dentro l'applicazione. Altrimenti entri tu, come fai di solito.",
+    "passo_registra_titolo": "Registra",
+    "passo_registra_testo": "Nel browser fai ciò che vuoi controllare, come lo faresti tu. Dai un nome a ogni passaggio e segna cosa deve risultare vero. Quando hai finito, chiudi la finestra.",
+    "passo_salva_titolo": "Salva",
+    "passo_salva_testo": "Qui vedi cosa il sistema ha capito. Se ti torna, lo salvi come scenario e potrai rilanciarlo quando vuoi.",
+    "senzaAmbienteSpiega": "Prima di registrare serve un ambiente: l'indirizzo dell'applicazione da provare. Lo aggiungi dal Controllo."
   },
   "Esecuzione": {
     "titolo": "Esecuzione",

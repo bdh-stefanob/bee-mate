@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { AlertTriangle, CircleDot, Loader2, RotateCcw, Square } from 'lucide-react';
+import { AlertTriangle, Loader2, RotateCcw, Square } from 'lucide-react';
+import { StatoInizialeRegistra } from '@/components/cruscotto/StatoInizialeRegistra';
 import {
   RiepilogoTraccia,
   type BucoRiepilogo,
@@ -336,21 +337,11 @@ export default function RegistraPage() {
       </h1>
 
       {fase.tipo === 'scelta' && (
-        <div className="flex flex-col items-start gap-4">
-          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
-            {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunAmbiente')}
-          </p>
-          <button
-            type="button"
-            onClick={() => void avviaRegistrazione()}
-            disabled={!ambiente || inviando}
-            className="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-            style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
-          >
-            <CircleDot size={18} aria-hidden="true" />
-            {t('registraSessione')}
-          </button>
-        </div>
+        <StatoInizialeRegistra
+          ambiente={ambiente}
+          inviando={inviando}
+          onRegistra={() => void avviaRegistrazione()}
+        />
       )}
 
       {fase.tipo === 'in-corso' && (
