@@ -20,6 +20,7 @@ import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 import { rilevaCausaFallimento, type CausaFallimento } from '@/lib/diagnosi-fallimento';
 import { TITOLO_PAGINA } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 /** Quante righe finali tenere per il fallimento che non ha una causa nota: solo per mostrarle, non per capirne di piu' di quanto sappiamo davvero. */
 const MAX_RIGHE_TECNICHE = 20;
 
@@ -332,7 +333,7 @@ export default function RegistraPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
+      <h1 className={cn(TITOLO_PAGINA, 'text-testo')}>
         {t('titolo')}
       </h1>
 
@@ -346,12 +347,10 @@ export default function RegistraPage() {
 
       {fase.tipo === 'in-corso' && (
         <div
-          className="flex flex-col items-start gap-4 rounded-scheda border p-6"
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+          className="flex flex-col items-start gap-4 rounded-scheda border p-6 border-bordo bg-superficie-tenue"
         >
           <p
-            className="flex items-center gap-2 text-sm font-medium"
-            style={{ color: 'var(--testo)' }}
+            className="flex items-center gap-2 text-sm font-medium text-testo"
           >
             <Loader2 size={18} className="animate-spin" aria-hidden="true" />
             {fase.azione === 'registrazione'
@@ -359,18 +358,17 @@ export default function RegistraPage() {
               : t('generazioneInCorso')}
           </p>
           {fase.azione === 'registrazione' && (
-            <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="text-sm text-testo-tenue">
               {t('istruzioniRegistrazione')}
             </p>
           )}
-          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }} aria-live="polite">
+          <p className="text-xs text-testo-tenue" aria-live="polite">
             {t('eventiRicevuti', { n: righeRicevute })}
           </p>
           <button
             type="button"
             onClick={() => void interrompi()}
-            className="inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--rosso)' }}
+            className="inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-rosso text-rosso outline-rosso"
           >
             <Square size={16} aria-hidden="true" />
             {t('interrompi')}
@@ -387,18 +385,16 @@ export default function RegistraPage() {
             // test" qui produrrebbe uno scenario vuoto: si offre solo la
             // strada che ha senso, ricominciare.
             <div
-              className="flex flex-col items-start gap-3 rounded-scheda border p-4 text-sm"
-              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+              className="flex flex-col items-start gap-3 rounded-scheda border p-4 text-sm border-bordo bg-superficie-tenue text-testo"
             >
               <p className="flex items-center gap-2">
-                <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+                <AlertTriangle size={18} aria-hidden="true" className="text-ambra" />
                 {t('nienteRegistrato')}
               </p>
               <button
                 type="button"
                 onClick={registraDiNuovo}
-                className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-blu-fondo outline-blu"
               >
                 <RotateCcw size={16} aria-hidden="true" />
                 {t('registraDiNuovo')}
@@ -416,8 +412,7 @@ export default function RegistraPage() {
                   type="button"
                   onClick={() => void generaTest()}
                   disabled={inviando}
-                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-                  style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-blu-fondo outline-blu"
                 >
                   {t('generaTest')}
                 </button>
@@ -429,8 +424,7 @@ export default function RegistraPage() {
                   type="button"
                   onClick={registraDiNuovo}
                   disabled={inviando}
-                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-                  style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border-bordo text-testo outline-blu"
                 >
                   <RotateCcw size={16} aria-hidden="true" />
                   {t('registraDiNuovo')}
@@ -456,8 +450,7 @@ export default function RegistraPage() {
 
       {fase.tipo === 'errore' && (
         <div
-          className="flex flex-col gap-3 rounded-scheda border p-4 text-sm"
-          style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', background: 'var(--superficie-tenue)' }}
+          className="flex flex-col gap-3 rounded-scheda border p-4 text-sm border-rosso text-rosso bg-superficie-tenue"
         >
           <div className="flex items-start gap-3">
             <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
@@ -477,16 +470,14 @@ export default function RegistraPage() {
           </div>
 
           {!fase.causa && fase.righeTecniche && fase.righeTecniche.length > 0 && (
-            <details className="text-xs" style={{ color: 'var(--testo)' }}>
+            <details className="text-xs text-testo">
               <summary
-                className="cursor-pointer select-none font-medium min-h-10 flex items-center"
-                style={{ color: 'var(--testo-tenue)' }}
+                className="cursor-pointer select-none font-medium min-h-10 flex items-center text-testo-tenue"
               >
                 {t('dettagliTecnici')}
               </summary>
               <pre
-                className="mt-2 whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono"
-                style={{ background: 'var(--superficie)', color: 'var(--testo)' }}
+                className="mt-2 whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono bg-superficie text-testo"
               >
                 {fase.righeTecniche.join('\n')}
               </pre>
@@ -497,8 +488,7 @@ export default function RegistraPage() {
             <button
               type="button"
               onClick={() => setFase({ tipo: 'scelta' })}
-              className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+              className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
             >
               {t('riprova')}
             </button>
@@ -506,8 +496,7 @@ export default function RegistraPage() {
               <button
                 type="button"
                 onClick={() => router.push('/controllo')}
-                className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
               >
                 {t('vaiAControllo')}
               </button>
@@ -518,18 +507,16 @@ export default function RegistraPage() {
 
       {fase.tipo === 'altrove' && (
         <div
-          className="flex items-center gap-3 rounded-scheda border p-4 text-sm"
-          style={{ borderColor: 'var(--ambra)', color: 'var(--testo)', background: 'var(--superficie-tenue)' }}
+          className="flex items-center gap-3 rounded-scheda border p-4 text-sm border-ambra text-testo bg-superficie-tenue"
         >
-          <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+          <AlertTriangle size={18} aria-hidden="true" className="text-ambra" />
           <span className="flex-1">
             {t('altroInCorso', { comando: t(ALTROVE[fase.comando]?.chiaveComando ?? 'comandoTest') })}
           </span>
           <button
             type="button"
             onClick={() => router.push(ALTROVE[fase.comando]?.percorso ?? '/controllo')}
-            className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
           >
             {t(ALTROVE[fase.comando]?.chiaveVai ?? 'vaiAControllo')}
           </button>

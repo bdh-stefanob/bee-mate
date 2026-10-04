@@ -14,7 +14,7 @@ export function FraseFallimento({ riepilogo }: { riepilogo?: RiepilogoErrore }) 
   if (!riepilogo) return null;
 
   return (
-    <div className="flex flex-col gap-0.5 text-sm font-medium" style={{ color: 'var(--rosso)' }}>
+    <div className="flex flex-col gap-0.5 text-sm font-medium text-rosso">
       {riepilogo.elementoMancante ? (
         <span>{t('paginaGiustaElementoMancante', riepilogo.elementoMancante)}</span>
       ) : riepilogo.paginaAttesa || riepilogo.indirizzoOra ? (

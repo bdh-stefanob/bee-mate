@@ -7,6 +7,7 @@ import type { CodiceErrore, EsitoSalvataggio } from '@/lib/salva-scenario';
 import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
 import { TESTO_LETTURA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 interface Cartella {
   app: string;
   flussi: string[];
@@ -32,14 +33,8 @@ function comeCartella(valore: string): string {
   return valore.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
-const STILE_CAMPO = {
-  borderColor: 'var(--bordo)',
-  background: 'var(--superficie)',
-  color: 'var(--testo)',
-  outlineColor: 'var(--blu)',
-} as const;
 const CLASSE_CAMPO =
-  'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+  'min-h-10 w-full min-w-0 rounded-controllo border border-bordo bg-superficie px-3 text-sm text-testo outline-blu focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 /**
  * Dopo "Genera il test": a quale applicazione e flusso appartiene lo scenario,
@@ -115,22 +110,21 @@ export function SalvaScenario({
 
   return (
     <section
-      className="flex flex-col gap-4 rounded-scheda border p-4"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+      className="flex flex-col gap-4 rounded-scheda border p-4 border-bordo bg-superficie"
       aria-labelledby={`${id}-titolo`}
     >
       <div className="flex flex-col gap-1">
-        <h2 id={`${id}-titolo`} className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+        <h2 id={`${id}-titolo`} className={cn(TITOLO_SEZIONE, 'text-testo')}>
           {t('titolo')}
         </h2>
-        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
           {t('descrizione')}
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${id}-app`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <label htmlFor={`${id}-app`} className="text-sm font-medium text-testo">
             {t('app')}
           </label>
           <input
@@ -140,7 +134,6 @@ export function SalvaScenario({
             onChange={(e) => setApp(comeCartella(e.target.value))}
             placeholder={t('appEsempio')}
             className={CLASSE_CAMPO}
-            style={STILE_CAMPO}
             autoComplete="off"
           />
           <datalist id={`${id}-app-elenco`}>
@@ -150,7 +143,7 @@ export function SalvaScenario({
           </datalist>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${id}-flusso`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <label htmlFor={`${id}-flusso`} className="text-sm font-medium text-testo">
             {t('flusso')}
           </label>
           <input
@@ -160,7 +153,6 @@ export function SalvaScenario({
             onChange={(e) => setFlusso(comeCartella(e.target.value))}
             placeholder={t('flussoEsempio')}
             className={CLASSE_CAMPO}
-            style={STILE_CAMPO}
             autoComplete="off"
           />
           <datalist id={`${id}-flusso-elenco`}>
@@ -172,7 +164,7 @@ export function SalvaScenario({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${id}-nome`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        <label htmlFor={`${id}-nome`} className="text-sm font-medium text-testo">
           {t('nome')}
         </label>
         <input
@@ -181,24 +173,23 @@ export function SalvaScenario({
           maxLength={80}
           onChange={(e) => setTitolo(e.target.value)}
           className={CLASSE_CAMPO}
-          style={STILE_CAMPO}
         />
       </div>
 
       {app && flusso && (
-        <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="text-xs text-testo-tenue">
           {t('destinazione', { percorso: `src/features/${app}/${flusso}/` })}
         </p>
       )}
 
       {errore && (
-        <div role="alert" className="flex flex-col gap-1 text-sm" style={{ color: 'var(--rosso)' }}>
+        <div role="alert" className="flex flex-col gap-1 text-sm text-rosso">
           <p className="flex items-center gap-2 font-medium">
             <AlertTriangle size={16} aria-hidden="true" />
             {errore}
           </p>
           {dettagli.length > 0 && (
-            <ul className="list-disc pl-6 font-mono text-xs break-words" style={{ color: 'var(--testo)' }}>
+            <ul className="list-disc pl-6 font-mono text-xs break-words text-testo">
               {dettagli.map((d) => (
                 <li key={d}>{d}</li>
               ))}
@@ -212,8 +203,7 @@ export function SalvaScenario({
           type="button"
           onClick={() => void salva()}
           disabled={!pronto || salvando}
-          className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-          style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 bg-blu-fondo outline-blu"
         >
           {salvando ? (
             <Loader2 size={16} className="animate-spin" aria-hidden="true" />
@@ -226,8 +216,7 @@ export function SalvaScenario({
           type="button"
           onClick={onTieni}
           disabled={salvando}
-          className="inline-flex min-h-10 items-center rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="inline-flex min-h-10 items-center rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 border-bordo text-testo outline-blu"
         >
           {t('tieni')}
         </button>

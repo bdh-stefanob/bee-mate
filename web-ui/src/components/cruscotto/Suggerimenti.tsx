@@ -28,8 +28,6 @@ const CODICI_CON_MESSAGGIO = new Set([
   'file-a-mano', 'modificato-a-mano', 'gia-salvato', 'niente-da-annullare',
 ]);
 
-const STILE_BOTTONE_PIENO = { background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' } as const;
-const STILE_BOTTONE_VUOTO = { borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' } as const;
 const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 /**
@@ -175,8 +173,7 @@ export function Suggerimenti() {
   return (
     <section
       aria-label={t('titolo')}
-      className="flex flex-col gap-3 rounded-scheda border p-4"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
+      className="flex flex-col gap-3 rounded-scheda border p-4 border-bordo bg-superficie-tenue"
     >
       {/* L'annuncio dei cambi di stato: educato, mai invadente. */}
       <p
@@ -184,28 +181,27 @@ export function Suggerimenti() {
         id={idRiepilogo}
         tabIndex={-1}
         aria-live="polite"
-        className="flex items-start gap-2 text-sm focus-visible:outline focus-visible:outline-2"
-        style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        className="flex items-start gap-2 text-sm focus-visible:outline focus-visible:outline-2 text-testo outline-blu"
       >
         {avviso && (
           <>
             {avviso.tipo === 'applicate' || avviso.tipo === 'annullate' ? (
-              <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--verde)' }} />
+              <CheckCircle2 size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-verde" />
             ) : (
-              <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
+              <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-ambra" />
             )}
             <span>{testoAvviso(avviso)}</span>
           </>
         )}
       </p>
       {catalogoInRitardo && (avviso?.tipo === 'applicate' || avviso?.tipo === 'annullate') && (
-        <p className="m-0 flex items-start gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="m-0 flex items-start gap-2 text-sm text-testo-tenue">
           <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
           <span>{t('catalogoInRitardo')}</span>
         </p>
       )}
       {avviso?.tipo === 'errore' && avviso.dettagli.length > 0 && (
-        <ul className="m-0 list-disc pl-8 text-xs" style={{ color: 'var(--testo-tenue)' }} aria-label={t('dettagliTitolo')}>
+        <ul className="m-0 list-disc pl-8 text-xs text-testo-tenue" aria-label={t('dettagliTitolo')}>
           {avviso.dettagli.map((d) => (
             <li key={d}>{d}</li>
           ))}
@@ -215,23 +211,22 @@ export function Suggerimenti() {
       {(risposta.stato === 'pronte' || applicate) && (
         <details className="group" open={aperto} onToggle={(e) => setAperto(e.currentTarget.open)}>
           <summary
-            className={`flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-controllo text-sm font-medium ${FOCUS}`}
-            style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            className={`flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-controllo text-sm font-medium ${FOCUS} text-testo outline-blu`}
           >
             <ChevronDown size={18} aria-hidden="true" className="shrink-0 transition-transform group-open:rotate-180" />
             <span>{t('titolo')}</span>
-            <span className="font-normal" style={{ color: 'var(--testo-tenue)' }}>
+            <span className="font-normal text-testo-tenue">
               {applicate ? null : t('riepilogo', { n: conteggio })}
             </span>
           </summary>
 
           <div className="mt-3 flex flex-col gap-4">
-            <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="flex items-center gap-2 text-sm text-testo-tenue">
               <Info size={16} aria-hidden="true" className="shrink-0" />
               {t('suggeritoDa', { chi: risposta.stato === 'pronte' && risposta.origin === 'assistito' ? t('chiAssistente') : t('chiRegole') })}
             </p>
             {!applicate && (
-              <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+              <p className="text-sm text-testo-tenue">
                 {t('aiuto')}
               </p>
             )}
@@ -257,8 +252,7 @@ export function Suggerimenti() {
                   type="button"
                   onClick={() => void applica()}
                   disabled={scelteFatte === 0 || lavoro !== null}
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-50 ${FOCUS}`}
-                  style={STILE_BOTTONE_PIENO}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white disabled:opacity-50 ${FOCUS} bg-blu-fondo outline-blu`}
                 >
                   {lavoro === 'applico' && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}
                   {lavoro === 'applico' ? t('applicando') : t('applica', { n: scelteFatte })}
@@ -269,15 +263,14 @@ export function Suggerimenti() {
                   type="button"
                   onClick={() => void annulla()}
                   disabled={lavoro !== null}
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium disabled:opacity-50 ${FOCUS}`}
-                  style={STILE_BOTTONE_VUOTO}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium disabled:opacity-50 ${FOCUS} border-bordo text-testo outline-blu`}
                 >
                   {lavoro === 'annullo' ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Undo2 size={16} aria-hidden="true" />}
                   {lavoro === 'annullo' ? t('annullando') : t('annulla')}
                 </button>
               )}
             </div>
-            <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="text-xs text-testo-tenue">
               {t('nota')}
             </p>
           </div>
@@ -301,21 +294,21 @@ function RigaSuggerimento({
   const motivo = riga.motivoNonApplicabile;
 
   return (
-    <li className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
-      <h3 className={`${TITOLO_GRUPPO} m-0`} style={{ color: 'var(--testo)' }}>
+    <li className="flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie">
+      <h3 className={`${TITOLO_GRUPPO} m-0 text-testo`}>
         {t('passo', { n: riga.passo })}
         {riga.anche.length > 0 && (
-          <span className="ml-2 text-xs font-normal" style={{ color: 'var(--testo-tenue)' }}>
+          <span className="ml-2 text-xs font-normal text-testo-tenue">
             {t('ancheIn', { altri: riga.anche.join(', ') })}
           </span>
         )}
       </h3>
-      <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm" style={{ color: 'var(--testo)' }}>
-        <dt className="font-medium" style={{ color: 'var(--testo-tenue)' }}>{t('latuaFrase')}</dt>
+      <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm text-testo">
+        <dt className="font-medium text-testo-tenue">{t('latuaFrase')}</dt>
         <dd className="m-0 break-words">{riga.etichetta}</dd>
-        <dt className="font-medium" style={{ color: 'var(--testo-tenue)' }}>{t('nelCatalogo')}</dt>
+        <dt className="font-medium text-testo-tenue">{t('nelCatalogo')}</dt>
         <dd className="m-0 break-words">{riga.voce}</dd>
-        <dt className="font-medium" style={{ color: 'var(--testo-tenue)' }}>{t('perche')}</dt>
+        <dt className="font-medium text-testo-tenue">{t('perche')}</dt>
         <dd className="m-0">
           {riga.classe === 'stessi-componenti'
             ? t('prova')
@@ -323,7 +316,7 @@ function RigaSuggerimento({
               ? t('stima', { n: riga.somiglianza })
               : t('stimaSenzaNumero')}
           {riga.perche && (
-            <span className="block text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            <span className="block text-xs text-testo-tenue">
               {t('spiegazione', { testo: riga.perche })}
             </span>
           )}
@@ -331,8 +324,8 @@ function RigaSuggerimento({
       </dl>
 
       {motivo ? (
-        <p className="flex items-start gap-2 text-sm" style={{ color: 'var(--testo)' }}>
-          <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
+        <p className="flex items-start gap-2 text-sm text-testo">
+          <AlertTriangle size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-ambra" />
           <span>{t('nonApplicabile', { motivo: t(`motivo.${motivo}`) })}</span>
         </p>
       ) : (
@@ -343,8 +336,7 @@ function RigaSuggerimento({
           {(['mia', 'catalogo'] as const).map((valore) => (
             <label
               key={valore}
-              className="inline-flex min-h-10 cursor-pointer items-center gap-2 text-sm"
-              style={{ color: 'var(--testo)' }}
+              className="inline-flex min-h-10 cursor-pointer items-center gap-2 text-sm text-testo"
             >
               <input
                 type="radio"
@@ -353,8 +345,7 @@ function RigaSuggerimento({
                 checked={scelta === valore}
                 disabled={disabilitata}
                 onChange={() => onScelta(valore)}
-                className={`h-5 w-5 ${FOCUS}`}
-                style={{ outlineColor: 'var(--blu)' }}
+                className={`h-5 w-5 ${FOCUS} outline-blu`}
               />
               {valore === 'mia' ? t('tieniMia') : t('usaCatalogo')}
             </label>
