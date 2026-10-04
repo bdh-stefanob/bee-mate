@@ -39,6 +39,29 @@
  * La sessione finisce quando il tester preme "Fine registrazione" o chiude il
  * browser. L'output sta sotto reports/, gitignorato: una registrazione su
  * un'app aziendale contiene nomi di funzionalita' reali e dati digitati.
+ *
+ * REGISTRAZIONE DA COPIONE (N10)
+ * Al posto di una persona, un copione JSON (schema in `lib/copione-schema.ts`)
+ * puo' guidare gli stessi gesti da codice — con lo stesso cablaggio
+ * (`lib/registrazione.ts`): serve a provare la catena intera senza una
+ * persona accanto, e a misurare il recorder contro un bersaglio vero
+ * (`lib/copione-registratore.check.ts` lo usa cosi').
+ *
+ *   npm run record copione=reports/copioni/x.json
+ *
+ * Le cinque difese della spec (sezione 5(a)) si applicano in questo ordine:
+ * solo un ambiente con `collaudo: true` (mai `produzione: true`); conferma
+ * umana digitata a mano se l'ambiente non e' `pubblico: true` (nessun avvio
+ * non presidiato contro un ambiente aziendale); la traccia porta
+ * `origine: "copione"` (la generazione e il salvataggio la trattano di
+ * conseguenza — vedi `generate.ts` e la rotta `/api/scenari/salva`).
+ *
+ *   nascosto       apre il browser nascosto (default: visibile, come sempre).
+ *                  Un copione non ha bisogno di uno schermo: aprirne uno sul
+ *                  desktop di chi sta lavorando e' il modo piu' rapido di
+ *                  farsi odiare — ma resta un'opzione, non un comportamento
+ *                  automatico, perche' puo' servire guardarlo mentre si mette
+ *                  a punto un copione nuovo.
  */
 
 import { type Browser, type BrowserContext } from "@playwright/test";
@@ -59,6 +82,9 @@ import { resolveTarget, hasSession, sessionAgeHours, type Target } from "./lib/t
 import { argValue, hasFlag, positionals } from "./lib/args";
 import { attendiFineSessione } from "./lib/fine-sessione";
 import { loadEnv } from "./lib/atlassian";
+import { validaCopione, risolviValori, variabiliRichieste } from "./lib/copione-schema";
+import { verificaAmbienteDiCollaudo, richiedeConfermaUmana } from "./lib/copione-difese";
+import { eseguiCopione } from "./lib/copione";
 
 // Le variabili si leggono qui, come fanno gia' session.ts, scout.ts e
 // test-bersaglio.ts. Questo script era l'unico a non farlo: funzionava solo
@@ -600,8 +626,120 @@ async function nominaIntenti(rec: Recording): Promise<Recording> {
   };
 }
 
+/**
+ * Registra guidando un copione invece di una persona (N10). Vedi la nota in
+ * testa al file per le cinque difese, nell'ordine in cui questa funzione le
+ * applica.
+ */
+async function mainCopione(args: string[], copionePath: string): Promise<void> {
+  if (!fs.existsSync(copionePath)) {
+    console.error(`ERRORE: copione inesistente: ${copionePath}\n`);
+    process.exit(1);
+  }
+  const copione = validaCopione(JSON.parse(fs.readFileSync(copionePath, "utf-8")));
+
+  // Difesa 2 — solo un ambiente dichiarato di collaudo, mai presunto.
+  const target = resolveTarget(copione.ambiente);
+  try {
+    verificaAmbienteDiCollaudo(target);
+  } catch (err) {
+    console.error(`ERRORE: ${(err as Error).message}\n`);
+    process.exit(1);
+  }
+
+  // Le variabili ${VAR} dei valori di prova: si dichiarano quelle mancanti,
+  // non si prosegue con una stringa vuota che sembra un valore buono.
+  const mancanti = variabiliRichieste(copione).filter((v) => !process.env[v]);
+  if (mancanti.length > 0) {
+    console.error(
+      `ERRORE: il copione usa ${mancanti.join(", ")}, non definite.\n\n` +
+        `  Un copione non porta mai credenziali o dati veri: i valori di prova\n` +
+        `  arrivano da .env, come \${VARIABILE}.\n`
+    );
+    process.exit(1);
+  }
+
+  // Difesa 5 — conferma umana prima di un ambiente non pubblico. Nessun avvio
+  // non presidiato: senza un terminale da cui leggere la conferma, ci si
+  // ferma — non si procede "per sicurezza nel dubbio".
+  if (richiedeConfermaUmana(target)) {
+    if (!process.stdin.isTTY) {
+      console.error(
+        `ERRORE: l'ambiente "${target.name}" non e' pubblico (manca "pubblico": true):\n` +
+          `  un copione contro di lui parte solo dopo che una persona lo conferma a mano,\n` +
+          `  e qui non c'e' un terminale da cui farlo. Nessun avvio non presidiato contro\n` +
+          `  un ambiente aziendale.\n`
+      );
+      process.exit(1);
+    }
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const righe = copione.intenti.map((i) => `    - ${i.nome} (${i.azioni.length} azioni)`).join("\n");
+    const risposta = await rl.question(
+      `\nQuesto copione eseguira' contro "${target.name}", un ambiente NON pubblico:\n\n${righe}\n\n` +
+        `  Hai letto il copione e vuoi farlo partire? Scrivi "si": `
+    );
+    rl.close();
+    if (risposta.trim().toLowerCase() !== "si") {
+      console.log("\nAnnullato: non confermato.\n");
+      process.exit(1);
+    }
+  }
+
+  const risolto = risolviValori(copione);
+  const nascosto = hasFlag(args, "--nascosto");
+  const avvio = await avviaBrowser(
+    nascosto ? { headless: true } : { headless: false, args: ["--start-maximized"] },
+    argValue(args, "--browser") ?? "chrome"
+  );
+  const browser: Browser = avvio.browser;
+  const nota = noteRipiego(avvio);
+  if (nota) console.log(`\n${nota}`);
+
+  const conSessione = hasSession(target);
+  const context: BrowserContext = await browser.newContext({
+    viewport: nascosto ? { width: 1280, height: 900 } : null,
+    ...(conSessione ? { storageState: target.session } : {}),
+  });
+
+  let esito: Awaited<ReturnType<typeof eseguiCopione>>;
+  try {
+    esito = await eseguiCopione(context, risolto, { startUrl: target.url });
+  } finally {
+    await browser.close().catch(() => { /* gia' chiuso */ });
+  }
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const outPath = argValue(args, "--out") ?? path.join("reports", "recordings", `${copione.ambiente}-copione-${stamp}.json`);
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, JSON.stringify(esito.recording, null, 2), "utf-8");
+  scriviDizionari(esito.dizionari.values(), path.join("reports", "scout"));
+
+  console.log(`\nCOPIONE ESEGUITO — origine: copione, impronta ${esito.recording.copioneImpronta}\n`);
+  console.log(`  Ambiente        : ${target.name}`);
+  console.log(`  Intenti         : ${esito.recording.summary.intents}`);
+  console.log(`  Azioni          : ${esito.recording.summary.steps}`);
+  console.log(`  Verifiche       : ${esito.recording.summary.assertions}`);
+  if (esito.nonRiuscite.length > 0) {
+    console.log(`\n  ${esito.nonRiuscite.length} AZIONI NON RIUSCITE: il copione descrive una pagina diversa da quella vera.\n`);
+    for (const n of esito.nonRiuscite) console.log(`    - ${n}`);
+  }
+  console.log(
+    `\n  Scritto in: ${outPath}\n` +
+      `  Origine "copione": la generazione dovra' usare un'uscita fuori da src/\n` +
+      `  (es. out=reports/collaudo/${copione.ambiente}), e il salvataggio nel repository\n` +
+      `  la rifiutera' sempre — serve a provare la catena, non a scrivere scenari mai\n` +
+      `  eseguiti a mano.\n`
+  );
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  const copionePath = argValue(args, "--copione");
+  if (copionePath) {
+    await mainCopione(args, copionePath);
+    return;
+  }
+
   const which = positionals(args, ["senza-etichette"])[0];
 
   if (!which) {
