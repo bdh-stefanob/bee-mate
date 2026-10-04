@@ -38,6 +38,23 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  /*
+   * I colori del cruscotto (la spec del 22/9), come classi: text-testo, border-bordo,
+   * bg-superficie, outline-blu... Puntano alle variabili di :root e .dark, quindi il tema
+   * scuro li cambia da solo, e hover:, focus-visible: e dark: possono ridirli sullo stesso
+   * elemento (uno stile in linea li batterebbe sempre). Nei componenti non si scrive piu'
+   * var(--testo) a mano: lo controlla colori-senza-stili-in-linea.test.ts.
+   */
+  --color-blu: var(--blu);
+  --color-blu-fondo: var(--blu-fondo);
+  --color-testo: var(--testo);
+  --color-testo-tenue: var(--testo-tenue);
+  --color-bordo: var(--bordo);
+  --color-superficie: var(--superficie);
+  --color-superficie-tenue: var(--superficie-tenue);
+  --color-verde: var(--verde);
+  --color-rosso: var(--rosso);
+  --color-ambra: var(--ambra);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
