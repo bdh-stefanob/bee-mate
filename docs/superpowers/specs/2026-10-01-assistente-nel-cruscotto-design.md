@@ -1039,6 +1039,53 @@ e la misura del braccio R su un insieme d'oro. Dove il testo lasciava una scelta
   le persone (Q-A4); quello in `test-fixtures/assistente/` e' finto e dichiarato tale. Il
   criterio d'ingresso con le soglie confermate e' in `criterioDiIngresso`.
 
+### Fetta C: cosa e' stato costruito (N10, 2026-10-04)
+
+Costruita su quanto G1/G2 avevano gia' estratto (`lib/registrazione.ts`, e il
+meccanismo dimostrato da `app-finta.check.ts`): il formato dichiarativo (JSON,
+`scripts/lib/copione-schema.ts`), il runner che lo guida nel browser vero
+riusando lo stesso cablaggio (`scripts/lib/copione.ts`), il parametro
+`copione=` e l'opzione `nascosto` di `record.ts`, i campi `collaudo` /
+`produzione` / `pubblico` su `Target`, le cinque difese
+(`scripts/lib/copione-difese.ts`), e un controllo di regressione che guida il
+copione d'esempio contro il sito pubblico `demo` e ne esegue lo scenario
+generato per davvero (`scripts/lib/copione-registratore.check.ts`).
+
+- **Difesa 4, risolta per intero.** La sonda di Fetta 0 aveva verificato solo
+  che Cucumber regge un `.feature` fuori da `src/` quando la sua glue era
+  GIA' dentro `src/steps/**`. Con una glue NUOVA (generata per la prima volta
+  da un intento mai visto), quella non basta: i file generati fuori da `src/`
+  importano comunque `support/base.page` e `support/world` con un percorso
+  relativo che presuppone `outRoot === "src"`. `generate.ts` ora scrive, solo
+  quando l'uscita e' fuori da `src/`, due file-ponte (`outRoot/support/{base.page,world}.ts`)
+  che ri-esportano dal vero `src/support/`: stesso percorso assoluto, stesso
+  modulo in cache, nessuna duplicazione (`setWorldConstructor` non si
+  richiama due volte). Per eseguire davvero lo scenario serve anche aggiungere
+  `--require "<outRoot>/{steps,pages,support}/**/*.ts"` alla riga di Cucumber:
+  `cucumber.js` carica di default solo `src/steps/**` e `src/support/**`.
+- **La password di un'esecuzione diretta.** Il copione d'esempio gira con
+  `BDD_TARGET` assente (nessun `bdd-targets.json` reale non e' detto che
+  esista): `world.ts` ripiega gia' su `APP_PASSWORD` per un indirizzo
+  diretto — e' la stessa strada, non una nuova.
+- **Un gesto reale non previsto dalla spec.** L'overlay del recorder
+  (`#__bdd_recorder_host`) e' posizionato in alto a destra, lo stesso angolo
+  dove sta l'icona del carrello sul sito di pratica: un copione (e un tester
+  vero, senza trascinare la barra) non riesce a cliccarla li', perche' il
+  click viene intercettato dall'overlay. E' la stessa famiglia di difetto del
+  pin della mappa in `app-finta.check.ts` (un elemento reale coperto da
+  qualcos'altro), scoperta qui perche' il copione gira contro un sito vero.
+  Il copione d'esempio evita quell'angolo (passa dal menu, non dal carrello);
+  il difetto resta aperto e non e' stato corretto in questo lavoro — vedi il
+  rapporto `reports/lavori/rapporti/N10.md`.
+- **Confermato con un caso vero, non solo a tavolino**, che tutto questo
+  produce uno scenario che **gira verde** sul sito pubblico di pratica:
+  `check:copione-registratore` lo esegue per davvero (non un dry-run) a ogni
+  lancio.
+- **Non fatto**, lasciato come proposta nel rapporto: unificare
+  `app-finta.check.ts` sul formato copione (invece di tenere i due
+  meccanismi); il comando nell'elenco chiuso di `esecuzione.ts` per lanciare
+  un copione dalla finestra.
+
 ### Cosa non costruire
 
 - Una **chat libera** nel cruscotto, o un campo dove scrivere un'istruzione: e'
