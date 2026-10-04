@@ -405,6 +405,7 @@
     "erroreTitolo": "Il nome deve stare su una riga, con almeno una lettera o una cifra.",
     "erroreNonTrovato": "Non trovo lo scenario appena generato. Genera di nuovo il test.",
     "erroreNonRegistrato": "Questo file non viene da una registrazione, quindi non si sposta da qui.",
+    "erroreOrigineCopione": "Questo scenario è nato da un copione, non da un test eseguito a mano: non può essere salvato nel repository.",
     "erroreTroppi": "Ci sono già troppi scenari con questo nome: scegline un altro.",
     "erroreGenerico": "Non sono riuscito a salvare lo scenario.",
     "errorePassoDuplicato": "Queste frasi sono già definite da un altro scenario salvato. Due definizioni della stessa frase fermerebbero ogni esecuzione. Registra il passo con un altro nome, oppure allinealo prima al catalogo:",

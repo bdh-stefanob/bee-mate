@@ -160,6 +160,7 @@ const feature = render("feature.feature.tmpl", {
   SOURCE_RECORDING: "reports/recordings/esempio.json",
   RECORDED_AT: GENERATED_AT,
   DURATION: "72",
+  ORIGINE: "persona",
   INTENT_COUNT: "2",
   TAGS: "@generato @demo",
   FEATURE_TITLE: "Acquisto di un prodotto",

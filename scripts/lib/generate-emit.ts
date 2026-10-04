@@ -59,6 +59,14 @@ export interface EmitContext {
   outRoot: string;
   /** La registrazione e' partita gia' autenticata: lo scenario dichiara l'accesso. */
   startedWithSession?: boolean;
+  /**
+   * Chi ha prodotto la registrazione (N10, difesa 1): "persona" di default.
+   * Finisce in una riga del `.feature`, cosi' la provenienza sopravvive al
+   * salvataggio (anche se un'origine "copione" non si salva mai — difesa 3).
+   */
+  origine?: "persona" | "copione";
+  /** Solo con origine "copione": l'impronta del copione usato. */
+  copioneImpronta?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -762,6 +770,8 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
   });
 
   const path = `${ctx.outRoot}/features/generated/${ctx.slug}.feature`;
+  const origine =
+    ctx.origine === "copione" ? `copione (impronta: ${ctx.copioneImpronta ?? "?"})` : "persona";
   return {
     path,
     origin: "deterministico",
@@ -771,6 +781,7 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
       SOURCE_RECORDING: ctx.recordingPath,
       RECORDED_AT: ctx.recordedAt,
       DURATION: String(ctx.durationSeconds),
+      ORIGINE: origine,
       INTENT_COUNT: String(ctx.intents.length),
       TAGS: "@generato @da-rivedere",
       FEATURE_TITLE: title,

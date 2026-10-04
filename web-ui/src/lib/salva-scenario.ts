@@ -35,7 +35,7 @@ const MAX_COPIE = 99;
 /** Perche' non si e' salvato: la finestra lo traduce, il messaggio resta per i log e i test. */
 export type CodiceErrore =
   | 'non-registrato' | 'non-trovato' | 'app' | 'flusso' | 'titolo' | 'troppi'
-  | 'passo-duplicato' | 'pagina-a-mano';
+  | 'passo-duplicato' | 'pagina-a-mano' | 'origine-copione';
 
 export class ErroreSalvataggio extends Error {
   /** Cio' che la persona deve vedere per rimediare: le frasi in conflitto, le pagine toccate a mano. */

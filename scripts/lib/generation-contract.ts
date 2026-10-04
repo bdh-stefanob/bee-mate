@@ -183,6 +183,23 @@ export interface Recording {
    * nome non aiuta. Sono numeri, non frasi: si possono riportare fuori.
    */
   nominazione?: { proposti: number; accettati: number; rinominati: number; uniti: number };
+  /**
+   * Chi ha prodotto questa traccia (N10, difesa 1 del collaudo da copione).
+   * Assente = "persona", come tutte le registrazioni di prima di N10: un
+   * tester ha eseguito il test a mano, con il recorder aperto davanti a se'.
+   * `"copione"` = un copione JSON ha guidato gli stessi gesti da codice
+   * (`copione.ts`, sopra `registrazione.ts`): la traccia e' vera (sono eventi
+   * DOM veri), ma nessuna persona ha eseguito il test. Il generatore riporta
+   * questo campo nel manifesto e in una riga del `.feature`; il salvataggio
+   * nel repository lo rifiuta sempre (difesa 3).
+   */
+  origine?: "persona" | "copione";
+  /**
+   * Impronta del copione che ha prodotto questa traccia (solo se
+   * `origine === "copione"`): identifica IL copione usato, senza portarne il
+   * contenuto (valori di prova compresi) nella traccia.
+   */
+  copioneImpronta?: string;
 }
 
 // ---------------------------------------------------------------------------

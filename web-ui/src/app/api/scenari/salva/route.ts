@@ -52,9 +52,11 @@ export async function POST(request: Request) {
 
   let origine: string | undefined;
   let steps: string | undefined;
+  let origineRegistrazione: string | undefined;
   try {
     const manifesto = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, MANIFESTO), 'utf-8')) as {
       files?: Array<{ path?: string }>;
+      origine?: string;
     };
     const percorsi = (manifesto.files ?? []).map((f) => (f.path ?? '').replace(/\\/g, '/'));
     origine = percorsi
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
     steps = percorsi
       .find((p) => p.startsWith('src/steps/generated/') && p.endsWith('.steps.ts'))
       ?.slice('src/'.length);
+    origineRegistrazione = manifesto.origine;
   } catch {
     origine = undefined;
   }
@@ -70,6 +73,20 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { errore: 'non trovo lo scenario appena generato', codice: 'non-trovato' },
       { status: 404 }
+    );
+  }
+
+  // Difesa 3 (N10): uno scenario nato da un copione non entra MAI nel
+  // repository, qualunque sia l'ambiente. Nessuna persona lo ha eseguito a
+  // mano: puo' essere generato ed eseguito (serve a provare la catena), ma
+  // non si salva. Questa difesa non si allenta per nessun motivo.
+  if (origineRegistrazione === 'copione') {
+    return NextResponse.json(
+      {
+        errore: "uno scenario nato da un copione non si puo' salvare nel repository",
+        codice: 'origine-copione',
+      },
+      { status: 403 }
     );
   }
 

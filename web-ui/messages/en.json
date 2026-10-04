@@ -405,6 +405,7 @@
     "erroreTitolo": "The name must be one line with at least one letter or digit.",
     "erroreNonTrovato": "I can't find the scenario that was just generated. Generate the test again.",
     "erroreNonRegistrato": "This file does not come from a recording, so it can't be moved from here.",
+    "erroreOrigineCopione": "This scenario came from a script, not a test run by hand: it cannot be saved to the repository.",
     "erroreTroppi": "There are already too many scenarios with this name: choose another one.",
     "erroreGenerico": "I couldn't save the scenario.",
     "errorePassoDuplicato": "These step phrases are already defined by another saved scenario. Two definitions of the same phrase would stop every test run. Record the step with a different name, or align it to the catalog first:",

@@ -58,6 +58,7 @@ import type {
 } from "./lib/generation-contract";
 import { argValue, hasFlag, positionals } from "./lib/args";
 import { loadTargets } from "./lib/targets";
+import { verificaFuoriDaSrc } from "./lib/copione-difese";
 
 const RECORDINGS = path.join("reports", "recordings");
 const DEFAULT_SCOUT = path.join("reports", "scout");
@@ -157,6 +158,10 @@ async function main(): Promise<void> {
   }
 
   const recording = readJson<Recording>(recordingPath);
+  // Difesa 4 (N10): una registrazione da copione non puo' generare dentro src/
+  // — e' li' che la generazione aggiorna anche il catalogo, e un copione non
+  // deve poterlo sporcare ne' avvicinarsi al salvataggio versionato.
+  verificaFuoriDaSrc(recording.origine, outRoot);
   // --scout e --catalog esistono per i controlli e per il confronto: la stessa
   // generazione, ripetuta con ingressi fissi, deve dare lo stesso risultato.
   const { dicts, paths: dictPaths } = loadDictionaries(argValue(args, "--scout") ?? DEFAULT_SCOUT);
@@ -184,6 +189,8 @@ async function main(): Promise<void> {
     slug,
     outRoot,
     ...(recording.startedWithSession ? { startedWithSession: true } : {}),
+    ...(recording.origine ? { origine: recording.origine } : {}),
+    ...(recording.copioneImpronta ? { copioneImpronta: recording.copioneImpronta } : {}),
   };
 
   // ── Page Object, una per pagina toccata ─────────────────────────────────
@@ -322,6 +329,10 @@ async function main(): Promise<void> {
           slug,
           recording: recordingPath,
           generatedAt: ctx.generatedAt,
+          // Difesa 1 (N10): la provenienza arriva fino al manifesto, che e'
+          // dove la rotta di salvataggio del cruscotto la legge per applicare
+          // la difesa 3 (uno scenario da copione non si salva mai).
+          origine: recording.origine ?? "persona",
           dry,
           files: files.map((f) => ({ path: f.path, origin: f.origin, template: f.template })),
           skipped,

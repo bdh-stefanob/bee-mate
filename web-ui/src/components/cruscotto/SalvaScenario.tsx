@@ -22,6 +22,7 @@ const CHIAVE_ERRORE: Record<CodiceErrore, string> = {
   troppi: 'erroreTroppi',
   'passo-duplicato': 'errorePassoDuplicato',
   'pagina-a-mano': 'errorePaginaAMano',
+  'origine-copione': 'erroreOrigineCopione',
 };
 
 /**
