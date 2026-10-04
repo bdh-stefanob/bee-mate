@@ -346,7 +346,7 @@ export default function RegistraPage() {
 
       {fase.tipo === 'in-corso' && (
         <div
-          className="flex flex-col items-start gap-4 rounded-lg border p-6"
+          className="flex flex-col items-start gap-4 rounded-scheda border p-6"
           style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}
         >
           <p
@@ -369,7 +369,7 @@ export default function RegistraPage() {
           <button
             type="button"
             onClick={() => void interrompi()}
-            className="inline-flex min-h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', outlineColor: 'var(--rosso)' }}
           >
             <Square size={16} aria-hidden="true" />
@@ -387,7 +387,7 @@ export default function RegistraPage() {
             // test" qui produrrebbe uno scenario vuoto: si offre solo la
             // strada che ha senso, ricominciare.
             <div
-              className="flex flex-col items-start gap-3 rounded-lg border p-4 text-sm"
+              className="flex flex-col items-start gap-3 rounded-scheda border p-4 text-sm"
               style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
             >
               <p className="flex items-center gap-2">
@@ -397,7 +397,7 @@ export default function RegistraPage() {
               <button
                 type="button"
                 onClick={registraDiNuovo}
-                className="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
               >
                 <RotateCcw size={16} aria-hidden="true" />
@@ -416,7 +416,7 @@ export default function RegistraPage() {
                   type="button"
                   onClick={() => void generaTest()}
                   disabled={inviando}
-                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
                   style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
                 >
                   {t('generaTest')}
@@ -429,7 +429,7 @@ export default function RegistraPage() {
                   type="button"
                   onClick={registraDiNuovo}
                   disabled={inviando}
-                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
                   style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
                 >
                   <RotateCcw size={16} aria-hidden="true" />
@@ -456,7 +456,7 @@ export default function RegistraPage() {
 
       {fase.tipo === 'errore' && (
         <div
-          className="flex flex-col gap-3 rounded-lg border p-4 text-sm"
+          className="flex flex-col gap-3 rounded-scheda border p-4 text-sm"
           style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', background: 'var(--superficie-tenue)' }}
         >
           <div className="flex items-start gap-3">
@@ -485,7 +485,7 @@ export default function RegistraPage() {
                 {t('dettagliTecnici')}
               </summary>
               <pre
-                className="mt-2 whitespace-pre-wrap break-words rounded-md p-2 m-0 font-mono"
+                className="mt-2 whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono"
                 style={{ background: 'var(--superficie)', color: 'var(--testo)' }}
               >
                 {fase.righeTecniche.join('\n')}
@@ -497,7 +497,7 @@ export default function RegistraPage() {
             <button
               type="button"
               onClick={() => setFase({ tipo: 'scelta' })}
-              className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
             >
               {t('riprova')}
@@ -506,7 +506,7 @@ export default function RegistraPage() {
               <button
                 type="button"
                 onClick={() => router.push('/controllo')}
-                className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
               >
                 {t('vaiAControllo')}
@@ -518,7 +518,7 @@ export default function RegistraPage() {
 
       {fase.tipo === 'altrove' && (
         <div
-          className="flex items-center gap-3 rounded-lg border p-4 text-sm"
+          className="flex items-center gap-3 rounded-scheda border p-4 text-sm"
           style={{ borderColor: 'var(--ambra)', color: 'var(--testo)', background: 'var(--superficie-tenue)' }}
         >
           <AlertTriangle size={18} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
@@ -528,7 +528,7 @@ export default function RegistraPage() {
           <button
             type="button"
             onClick={() => router.push(ALTROVE[fase.comando]?.percorso ?? '/controllo')}
-            className="inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex min-h-10 items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           >
             {t(ALTROVE[fase.comando]?.chiaveVai ?? 'vaiAControllo')}

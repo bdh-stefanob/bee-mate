@@ -39,7 +39,7 @@ export const CLASSI_AMMESSE = new Set([
  * schede e riquadri, anche il blocco di testo a spaziatura fissa -> scheda) e toglie la riga
  * da qui: il controllo sotto fallisce se un file in elenco e' gia' a posto.
  */
-export const IN_ATTESA = new Set<string>(['app/(cruscotto)/registra/page.tsx']);
+export const IN_ATTESA = new Set<string>([]);
 
 // `rounded`, `rounded-md`, `rounded-[min(...)]`, anche dopo una variante (`hover:`, `in-data-[x]:`).
 const CLASSE_ROUNDED = /(?<![\w-])rounded(?:-(?:\[[^\]\s]*\]|[a-z0-9]+))?(?![\w-])/g;

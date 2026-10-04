@@ -29,7 +29,7 @@ export function StatoInizialeRegistra({ ambiente, inviando, onRegistra }: Props)
     <div className="flex flex-col gap-6">
       <section
         aria-labelledby="registra-come-funziona"
-        className="flex flex-col gap-4 rounded-lg border p-6"
+        className="flex flex-col gap-4 rounded-scheda border p-6"
         style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
       >
         <h2
@@ -44,7 +44,7 @@ export function StatoInizialeRegistra({ ambiente, inviando, onRegistra }: Props)
             <li key={passo} className="flex items-start gap-3">
               <span
                 aria-hidden="true"
-                className="flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold"
+                className="flex size-8 shrink-0 items-center justify-center rounded-pillola border text-sm font-semibold"
                 style={{ borderColor: 'var(--blu)', color: 'var(--blu)' }}
               >
                 {i + 1}
@@ -69,7 +69,7 @@ export function StatoInizialeRegistra({ ambiente, inviando, onRegistra }: Props)
           </p>
         ) : (
           <div
-            className="flex w-full items-start gap-3 rounded-lg border p-4 text-sm"
+            className="flex w-full items-start gap-3 rounded-scheda border p-4 text-sm"
             style={{ borderColor: 'var(--ambra)', color: 'var(--testo)', background: 'var(--superficie-tenue)' }}
           >
             <AlertTriangle
@@ -87,7 +87,7 @@ export function StatoInizialeRegistra({ ambiente, inviando, onRegistra }: Props)
             <button
               type="button"
               onClick={() => router.push('/controllo')}
-              className="inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: 'var(--blu-fondo)', outlineColor: 'var(--blu)' }}
             >
               <ClipboardCheck size={18} aria-hidden="true" />
@@ -100,8 +100,8 @@ export function StatoInizialeRegistra({ ambiente, inviando, onRegistra }: Props)
             disabled={!pronto || inviando}
             className={
               pronto
-                ? 'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50'
-                : 'inline-flex min-h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50'
+                ? 'inline-flex min-h-10 items-center gap-2 rounded-controllo px-4 text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50'
+                : 'inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50'
             }
             style={
               pronto

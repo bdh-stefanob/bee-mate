@@ -423,7 +423,7 @@ function EsecuzioneContenuto() {
           <button
             type="button"
             onClick={() => router.push('/controllo')}
-            className="inline-flex min-h-10 w-fit items-center rounded-md border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="inline-flex min-h-10 w-fit items-center rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: 'var(--bordo)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
           >
             {t('vaiAControllo')}
