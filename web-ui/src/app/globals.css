@@ -65,38 +65,39 @@
 
 :root {
   /* Tavolozza di base — chiara */
+  /* Token di shadcn ricondotti ai colori della spec (serie B): una sola palette. */
   --background: oklch(0.985 0 0);
-  --foreground: oklch(0.13 0.025 264);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.13 0.025 264);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.13 0.025 264);
-  --primary: oklch(0.6 0.118 184.704);          /* teal-600 #0D9488 */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.94 0.025 184);            /* light teal tint */
-  --secondary-foreground: oklch(0.437 0.079 188);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.702 0.191 41.116);           /* orange-500 #F97316 */
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.6 0.118 184.704);              /* teal ring */
-  --chart-1: oklch(0.6 0.118 184.704);
-  --chart-2: oklch(0.702 0.191 41.116);
-  --chart-3: oklch(0.704 0.14 182.503);
-  --chart-4: oklch(0.511 0.096 186.391);
-  --chart-5: oklch(0.437 0.079 188.216);
+  --foreground: var(--testo);
+  --card: var(--superficie);
+  --card-foreground: var(--testo);
+  --popover: var(--superficie);
+  --popover-foreground: var(--testo);
+  --primary: var(--blu-fondo);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--superficie-tenue);
+  --secondary-foreground: var(--testo);
+  --muted: var(--superficie-tenue);
+  --muted-foreground: var(--testo-tenue);
+  --accent: var(--superficie-tenue);
+  --accent-foreground: var(--testo);
+  --destructive: var(--rosso);
+  --border: var(--bordo);
+  --input: var(--bordo);
+  --ring: var(--blu);
+  --chart-1: var(--blu);
+  --chart-2: var(--verde);
+  --chart-3: var(--ambra);
+  --chart-4: var(--rosso);
+  --chart-5: var(--testo-tenue);
   --radius: 0.625rem;
-  --sidebar: oklch(0.94 0.025 184);
-  --sidebar-foreground: oklch(0.13 0.025 264);
-  --sidebar-primary: oklch(0.6 0.118 184.704);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.88 0.04 184);
-  --sidebar-accent-foreground: oklch(0.437 0.079 188);
-  --sidebar-border: oklch(0.88 0.03 184);
-  --sidebar-ring: oklch(0.6 0.118 184.704);
+  --sidebar: var(--superficie-tenue);
+  --sidebar-foreground: var(--testo);
+  --sidebar-primary: var(--blu-fondo);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: color-mix(in srgb, var(--blu) 12%, var(--superficie));
+  --sidebar-accent-foreground: var(--testo);
+  --sidebar-border: var(--bordo);
+  --sidebar-ring: var(--blu);
 
   /* Cruscotto tester — tavolozza dedicata */
   --blu: #1A56DB;
@@ -121,37 +122,38 @@
 
 .dark {
   /* Tavolozza di base — scura */
+  /* Token di shadcn ricondotti ai colori della spec (serie B): una sola palette. */
   --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.704 0.14 182.503);          /* teal-500, lighter for dark bg */
-  --primary-foreground: oklch(0.13 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.75 0.183 41.116);            /* orange-400, lighter for dark bg */
-  --accent-foreground: oklch(0.13 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.704 0.14 182.503);
-  --chart-1: oklch(0.704 0.14 182.503);
-  --chart-2: oklch(0.75 0.183 41.116);
-  --chart-3: oklch(0.6 0.118 184.704);
-  --chart-4: oklch(0.511 0.096 186.391);
-  --chart-5: oklch(0.437 0.079 188.216);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.704 0.14 182.503);
-  --sidebar-primary-foreground: oklch(0.13 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.704 0.14 182.503);
+  --foreground: var(--testo);
+  --card: var(--superficie);
+  --card-foreground: var(--testo);
+  --popover: var(--superficie);
+  --popover-foreground: var(--testo);
+  --primary: var(--blu-fondo);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--superficie-tenue);
+  --secondary-foreground: var(--testo);
+  --muted: var(--superficie-tenue);
+  --muted-foreground: var(--testo-tenue);
+  --accent: var(--superficie-tenue);
+  --accent-foreground: var(--testo);
+  --destructive: var(--rosso);
+  --border: var(--bordo);
+  --input: var(--bordo);
+  --ring: var(--blu);
+  --chart-1: var(--blu);
+  --chart-2: var(--verde);
+  --chart-3: var(--ambra);
+  --chart-4: var(--rosso);
+  --chart-5: var(--testo-tenue);
+  --sidebar: var(--superficie-tenue);
+  --sidebar-foreground: var(--testo);
+  --sidebar-primary: var(--blu-fondo);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: color-mix(in srgb, var(--blu) 12%, var(--superficie));
+  --sidebar-accent-foreground: var(--testo);
+  --sidebar-border: var(--bordo);
+  --sidebar-ring: var(--blu);
 }
 /*
  * La tavolozza del cruscotto, al buio.
@@ -219,19 +221,19 @@
   color: oklch(0.95 0 0);
 }
 .dark .cm-tooltip-autocomplete > ul > li[aria-selected] {
-  background: var(--accent);
-  color: var(--accent-foreground);
+  background: var(--blu-fondo);
+  color: #FFFFFF;
 }
 .dark .cm-completionLabel {
   color: inherit;
 }
 .dark .cm-completionMatchedText {
-  color: var(--accent);
+  color: var(--blu);
   text-decoration: none;
   font-weight: 600;
 }
 .dark .cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionMatchedText {
-  color: var(--accent-foreground);
+  color: #FFFFFF;
 }
 
 @layer base {
