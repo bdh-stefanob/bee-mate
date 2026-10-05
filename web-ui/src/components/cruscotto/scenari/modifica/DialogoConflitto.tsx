@@ -3,7 +3,7 @@
 import { useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DialogoModale } from './DialogoModale';
-import { Bottone, CLASSE_CAMPO, STILE_CAMPO } from './stile';
+import { Bottone, CLASSE_CAMPO } from './stile';
 
 /**
  * Il file e' cambiato sul disco mentre il tester modificava. Il suo testo non va
@@ -35,7 +35,7 @@ export function DialogoConflitto({
 
   return (
     <DialogoModale titolo={t('conflittoTitolo')} onEsc={onVediAttuale}>
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('conflittoTesto')}
       </p>
       <textarea
@@ -45,7 +45,6 @@ export function DialogoConflitto({
         rows={8}
         aria-label={t('miaBozzaTitolo')}
         className={`${CLASSE_CAMPO} font-mono text-xs`}
-        style={STILE_CAMPO}
       />
       <div className="flex flex-wrap items-center gap-2">
         <Bottone primario data-iniziale onClick={onVediAttuale}>
@@ -53,7 +52,7 @@ export function DialogoConflitto({
         </Bottone>
         <Bottone onClick={() => void copia()}>{t('conflittoCopia')}</Bottone>
         <Bottone onClick={onSalvaComunque}>{t('conflittoComunque')}</Bottone>
-        <span role="status" className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <span role="status" className="text-sm text-testo-tenue">
           {copiato ? t('conflittoCopiato') : ''}
         </span>
       </div>

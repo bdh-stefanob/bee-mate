@@ -63,8 +63,7 @@ export function DialogoModale({
         aria-modal="true"
         aria-labelledby={id}
         onKeyDown={suTasto}
-        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-scheda border p-5"
-        style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)' }}
+        className="flex max-h-[90vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-scheda border p-5 border-bordo bg-superficie text-testo"
       >
         <h2 id={id} className={TITOLO_SEZIONE}>
           {titolo}

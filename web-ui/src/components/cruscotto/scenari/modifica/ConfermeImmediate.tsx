@@ -44,29 +44,29 @@ export function ConfermaElimina({
     <DialogoModale titolo={t('eliminaTitolo', { nome })} onEsc={onIndietro}>
       {vanno.length > 0 ? (
         <div className="flex flex-col gap-1.5 text-sm">
-          <p style={{ color: 'var(--testo)' }}>{t('eliminaVanno')}</p>
-          <ul className="flex list-disc flex-col gap-1 pl-6" style={{ color: 'var(--testo)' }}>
+          <p className="text-testo">{t('eliminaVanno')}</p>
+          <ul className="flex list-disc flex-col gap-1 pl-6 text-testo">
             {vanno.map((f) => (
               <li key={f}>{f}</li>
             ))}
           </ul>
         </div>
       ) : (
-        <p className="text-sm" style={{ color: 'var(--testo)' }}>
+        <p className="text-sm text-testo">
           {t('eliminaNienteVa')}
         </p>
       )}
       {restano.length > 0 && (
         <div className="flex flex-col gap-1.5 text-sm">
-          <p style={{ color: 'var(--testo)' }}>{t('eliminaRestano')}</p>
-          <ul className="flex list-disc flex-col gap-1 pl-6" style={{ color: 'var(--testo)' }}>
+          <p className="text-testo">{t('eliminaRestano')}</p>
+          <ul className="flex list-disc flex-col gap-1 pl-6 text-testo">
             {restano.map((p) => (
               <li key={p.frase}>{fraseRimasto(t, p)}</li>
             ))}
           </ul>
         </div>
       )}
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('eliminaPagine')} {t('eliminaAnnullabile')}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -101,10 +101,10 @@ export function ConfermaSposta({
   const t = useTranslations('ModificaScenario');
   return (
     <DialogoModale titolo={t('spostaTitolo', { nome })} onEsc={onIndietro}>
-      <p className="text-sm" style={{ color: 'var(--testo)' }}>
+      <p className="text-sm text-testo">
         {t('spostaTesto', { da, a })}
       </p>
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('spostaEsiti')} {t('eliminaAnnullabile')}
       </p>
       <div className="flex flex-wrap gap-2">

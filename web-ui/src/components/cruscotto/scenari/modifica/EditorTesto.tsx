@@ -27,7 +27,7 @@ const GherkinEditor = dynamic(() => import('@/components/GherkinEditor'), {
 function CaricamentoEditor() {
   const t = useTranslations('ModificaScenario');
   return (
-    <p role="status" className="flex items-center gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+    <p role="status" className="flex items-center gap-2 text-sm text-testo-tenue">
       <Loader2 size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
       {t('caricamento')}
     </p>
@@ -59,7 +59,7 @@ export function EditorTesto({
   const t = useTranslations('ModificaScenario');
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('testoAvvertenza')}
       </p>
       {/* Il riquadro scorre da solo: mai la pagina in orizzontale. `inert` = niente fuoco ne' scrittura finche' si controlla. */}

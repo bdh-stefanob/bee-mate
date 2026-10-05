@@ -74,7 +74,10 @@ export function righeConColoreInLinea(testo: string): number[] {
  * Eccezioni giustificate: file -> motivo. Il numero di occorrenze non e' fissato, ma il file
  * deve avere almeno un caso, altrimenti l'eccezione va tolta.
  */
-export const ECCEZIONI: Record<string, string> = {};
+export const ECCEZIONI: Record<string, string> = {
+  'components/cruscotto/scenari/modifica/EditorTesto.tsx':
+    "Rimappa le variabili di shadcn (--background, --border...) sui colori del cruscotto per l'editor CodeMirror: sono variabili CSS locali, non colori di un elemento, e non hanno una classe.",
+};
 
 /**
  * File non ancora convertiti: si svuota un gruppo alla volta. Il controllo fallisce se un file
@@ -83,21 +86,6 @@ export const ECCEZIONI: Record<string, string> = {};
 export const IN_ATTESA: string[] = [
   'components/GherkinEditor.tsx',
   'components/GherkinLeggibile.tsx',
-  'components/cruscotto/scenari/modifica/Avanzate.tsx',
-  'components/cruscotto/scenari/modifica/AvvisoOperazione.tsx',
-  'components/cruscotto/scenari/modifica/BannerEsito.tsx',
-  'components/cruscotto/scenari/modifica/ConfermaConseguenze.tsx',
-  'components/cruscotto/scenari/modifica/ConfermeImmediate.tsx',
-  'components/cruscotto/scenari/modifica/DialogoConflitto.tsx',
-  'components/cruscotto/scenari/modifica/DialogoModale.tsx',
-  'components/cruscotto/scenari/modifica/DialogoNonSalvate.tsx',
-  'components/cruscotto/scenari/modifica/EditorTesto.tsx',
-  'components/cruscotto/scenari/modifica/MessaggiControllo.tsx',
-  'components/cruscotto/scenari/modifica/ModificaScenario.tsx',
-  'components/cruscotto/scenari/modifica/PannelloModifica.tsx',
-  'components/cruscotto/scenari/modifica/RigaPasso.tsx',
-  'components/cruscotto/scenari/modifica/SelettorePasso.tsx',
-  'components/cruscotto/scenari/modifica/stile.tsx',
   'components/ui/badge.tsx',
   'components/ui/button.tsx',
   'components/ui/schede.tsx',

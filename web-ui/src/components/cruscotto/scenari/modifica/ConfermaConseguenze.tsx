@@ -30,13 +30,13 @@ export function ConfermaConseguenze({
   const t = useTranslations('ModificaScenario');
   return (
     <DialogoModale titolo={t('confermaRinominaTitolo', { n: scenari.length })} onEsc={onIndietro}>
-      <p className="text-sm" style={{ color: 'var(--testo)' }}>
+      <p className="text-sm text-testo">
         {t('confermaDa', { da, a })}
       </p>
-      <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-sm text-testo-tenue">
         {t('confermaRinominaTesto')}
       </p>
-      <ul className="flex list-disc flex-col gap-1 pl-6 text-sm" style={{ color: 'var(--testo)' }}>
+      <ul className="flex list-disc flex-col gap-1 pl-6 text-sm text-testo">
         {scenari.map((s) => (
           <li key={s.file}>{s.diventaTuo ? t('confermaScenarioTuo', { nome: s.nome }) : t('confermaScenario', { nome: s.nome })}</li>
         ))}

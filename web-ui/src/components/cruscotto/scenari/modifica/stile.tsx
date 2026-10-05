@@ -13,14 +13,7 @@ export const CLASSE_BOTTONE =
   'inline-flex min-h-10 items-center justify-center gap-2 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const CLASSE_CAMPO =
-  'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
-
-export const STILE_CAMPO = {
-  borderColor: 'var(--bordo)',
-  background: 'var(--superficie)',
-  color: 'var(--testo)',
-  outlineColor: 'var(--blu)',
-} as const;
+  'min-h-10 w-full min-w-0 rounded-controllo border border-bordo bg-superficie px-3 text-sm text-testo outline-blu focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 export function Bottone({
   primario = false,

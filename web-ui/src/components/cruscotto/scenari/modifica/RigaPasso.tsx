@@ -22,7 +22,7 @@ function Frase({ testo }: { testo: string }) {
     <>
       {parti.map((p, i) =>
         p.startsWith('"') && p.endsWith('"') && p.length >= 2 ? (
-          <span key={i} className="underline decoration-1 underline-offset-2" style={{ color: 'var(--verde)' }}>
+          <span key={i} className="underline decoration-1 underline-offset-2 text-verde">
             {p}
           </span>
         ) : (
@@ -69,19 +69,18 @@ export function RigaPasso({
   const altri = meta?.condivisoCon.length ?? 0;
 
   return (
-    <li className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}>
+    <li className="flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie">
       <div className="flex items-baseline gap-3">
-        <span className="shrink-0 text-xs font-semibold tabular-nums" style={{ color: 'var(--testo-tenue)' }} aria-hidden="true">
+        <span className="shrink-0 text-xs font-semibold tabular-nums text-testo-tenue" aria-hidden="true">
           {indice}
         </span>
         <p
           ref={innescoRef}
           tabIndex={-1}
           aria-label={`${t('passoDi', { n: indice, totale })}: ${passo.parolaChiave} ${passo.frase}`}
-          className="min-w-0 break-words text-sm [overflow-wrap:anywhere] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className="min-w-0 break-words text-sm [overflow-wrap:anywhere] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-testo outline-blu"
         >
-          <span className="mr-2 inline-block min-w-[3.5rem] font-bold" style={{ color: 'var(--blu)' }}>
+          <span className="mr-2 inline-block min-w-[3.5rem] font-bold text-blu">
             {passo.parolaChiave}
           </span>
           <Frase testo={passo.frase} />
@@ -89,14 +88,14 @@ export function RigaPasso({
       </div>
 
       {passo.verifiche.map((v, i) => (
-        <p key={i} className="ml-6 flex items-start gap-1.5 text-sm" style={{ color: 'var(--testo)' }}>
-          <Eye size={16} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--blu)' }} />
+        <p key={i} className="ml-6 flex items-start gap-1.5 text-sm text-testo">
+          <Eye size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-blu" />
           <span>{t('verificaDelPasso', { testo: v })}</span>
         </p>
       ))}
 
       {meta && (
-        <p className="ml-6 text-xs" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="ml-6 text-xs text-testo-tenue">
           {altri > 0 ? t('usatoAnche', { n: altri }) : t('usatoSoloQui')}
           {meta.condivisoCon.length > 0 && ` · ${[...new Set(meta.condivisoCon.map((c) => c.scenario))].join(', ')}`}
         </p>
@@ -116,7 +115,7 @@ export function RigaPasso({
         </Bottone>
       </div>
       {meta && !meta.rinominabile && meta.motivo && (
-        <p className="ml-6 text-xs" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="ml-6 text-xs text-testo-tenue">
           {t(MOTIVO[meta.motivo])}
         </p>
       )}

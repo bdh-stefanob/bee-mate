@@ -41,10 +41,9 @@ export function Avanzate({
   const t = useTranslations('ModificaScenario');
   const id = useId();
   return (
-    <details className="rounded-scheda border" style={{ borderColor: 'var(--bordo)' }} open={aperto || undefined}>
+    <details className="rounded-scheda border border-bordo" open={aperto || undefined}>
       <summary
-        className="flex min-h-10 cursor-pointer items-center gap-2 px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+        className="flex min-h-10 cursor-pointer items-center gap-2 px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-testo outline-blu"
       >
         <ListChecks size={16} aria-hidden="true" />
         {t('avanzate')}
@@ -75,12 +74,12 @@ export function Avanzate({
           )}
         </div>
         {modo === 'testo' && !puoiTornareGuidata && (
-          <p id={`${id}-spenta`} className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p id={`${id}-spenta`} className="text-sm text-testo-tenue">
             {t('guidataSpenta')}
           </p>
         )}
         {!semplice && (
-          <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p className="text-sm text-testo-tenue">
             {t('eliminaComplesso')}
           </p>
         )}

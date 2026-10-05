@@ -56,7 +56,7 @@ export function ModificaScenario({
   };
 
   const azioneModifica = voce.generato ? (
-    <p className="basis-full text-sm" style={{ color: 'var(--testo-tenue)' }}>
+    <p className="basis-full text-sm text-testo-tenue">
       {t('nonModificabileRegistrato')}
     </p>
   ) : aperta ? null : (
@@ -65,8 +65,7 @@ export function ModificaScenario({
       type="button"
       aria-label={t('modificaAria', { nome: voce.nome })}
       onClick={() => setAperta({ focus: null })}
-      className={`${CLASSE_BOTTONE} flex-1 min-[1100px]:flex-none`}
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--blu)', outlineColor: 'var(--blu)' }}
+      className={`${CLASSE_BOTTONE} flex-1 min-[1100px]:flex-none border-bordo bg-superficie text-blu outline-blu`}
     >
       <Pencil size={16} aria-hidden="true" />
       {t('modifica')}

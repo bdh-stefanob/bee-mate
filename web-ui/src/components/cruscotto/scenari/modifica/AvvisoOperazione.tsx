@@ -36,11 +36,10 @@ export function AvvisoOperazione({
       <div
         role="status"
         aria-live="polite"
-        className="flex flex-wrap items-center gap-3 rounded-scheda border p-3"
-        style={{ borderColor: 'var(--verde)', background: 'var(--superficie)' }}
+        className="flex flex-wrap items-center gap-3 rounded-scheda border p-3 border-verde bg-superficie"
       >
-        <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium" style={{ color: 'var(--testo)' }}>
-          <CheckCircle2 size={18} aria-hidden="true" className="shrink-0" style={{ color: 'var(--verde)' }} />
+        <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-testo">
+          <CheckCircle2 size={18} aria-hidden="true" className="shrink-0 text-verde" />
           <span className="break-words">
             {tipo === 'eliminato' ? t('avvisoEliminato', { nome }) : t('avvisoSpostato', { nome, flusso: flusso ?? '' })}
           </span>

@@ -4,7 +4,7 @@ import { useId, useMemo, useState, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import type { PassoOffribile } from '@/lib/contenuto-scenario';
 import { normalizza } from '@/lib/scenari-elenco';
-import { Bottone, CLASSE_CAMPO, STILE_CAMPO } from './stile';
+import { Bottone, CLASSE_CAMPO } from './stile';
 
 /** Piu' di cosi' non si mostrano insieme: si restringe scrivendo. */
 const MASSIMO_VISIBILI = 50;
@@ -47,8 +47,8 @@ export function SelettorePasso({
   };
 
   return (
-    <div onKeyDown={suTasto} className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-      <label htmlFor={`${id}-cerca`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+    <div onKeyDown={suTasto} className="flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie-tenue">
+      <label htmlFor={`${id}-cerca`} className="text-sm font-medium text-testo">
         {t('cercaPasso')}
       </label>
       <input
@@ -58,7 +58,6 @@ export function SelettorePasso({
         onChange={(e) => setTesto(e.target.value)}
         autoComplete="off"
         className={CLASSE_CAMPO}
-        style={STILE_CAMPO}
       />
       <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto" aria-label={t('usaAltro')}>
         {corrispondenti.slice(0, MASSIMO_VISIBILI).map((o) => (
@@ -67,11 +66,10 @@ export function SelettorePasso({
               type="button"
               aria-label={t('usaAria', { frase: o.frase })}
               onClick={() => onScegli(o.frase)}
-              className="flex min-h-10 w-full flex-col items-start gap-0.5 rounded-controllo border px-3 py-1.5 text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+              className="flex min-h-10 w-full flex-col items-start gap-0.5 rounded-controllo border px-3 py-1.5 text-left text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
             >
               <span className="break-words font-medium [overflow-wrap:anywhere]">{o.frase}</span>
-              <span className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+              <span className="text-xs text-testo-tenue">
                 {o.app} / {o.area}
                 {o.intento ? ` · ${o.intento}` : ''}
               </span>
@@ -80,7 +78,7 @@ export function SelettorePasso({
         ))}
       </ul>
       {corrispondenti.length === 0 && (
-        <p role="status" className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p role="status" className="text-sm text-testo-tenue">
           {t('nessunPassoTrovato')}
         </p>
       )}

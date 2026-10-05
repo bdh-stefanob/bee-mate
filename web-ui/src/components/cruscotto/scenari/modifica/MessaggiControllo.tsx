@@ -45,12 +45,12 @@ export function ElencoMessaggi({ blocchi, avvisi }: { blocchi: Messaggio[]; avvi
   return (
     <div className="flex flex-col gap-3">
       {blocchi.length > 0 && (
-        <div role="alert" className="flex flex-col gap-1.5 text-sm" style={{ color: 'var(--rosso)' }}>
+        <div role="alert" className="flex flex-col gap-1.5 text-sm text-rosso">
           <p className="flex items-center gap-2 font-semibold">
             <AlertTriangle size={16} aria-hidden="true" />
             {t('bloccoIntestazione')}
           </p>
-          <ul className="flex list-disc flex-col gap-1 pl-8" style={{ color: 'var(--testo)' }}>
+          <ul className="flex list-disc flex-col gap-1 pl-8 text-testo">
             {blocchi.map((m, i) => (
               <li key={`${m.codice}-${i}`}>{fraseMessaggio(t, m)}</li>
             ))}
@@ -59,11 +59,11 @@ export function ElencoMessaggi({ blocchi, avvisi }: { blocchi: Messaggio[]; avvi
       )}
       {avvisi.length > 0 && (
         <div className="flex flex-col gap-1.5 text-sm">
-          <p className="flex items-center gap-2 font-semibold" style={{ color: 'var(--testo)' }}>
-            <Info size={16} aria-hidden="true" style={{ color: 'var(--ambra)' }} />
+          <p className="flex items-center gap-2 font-semibold text-testo">
+            <Info size={16} aria-hidden="true" className="text-ambra" />
             {t('avvisoIntestazione')}
           </p>
-          <ul className="flex list-disc flex-col gap-1 pl-8" style={{ color: 'var(--testo)' }}>
+          <ul className="flex list-disc flex-col gap-1 pl-8 text-testo">
             {avvisi.map((m, i) => (
               <li key={`${m.codice}-${i}`}>{fraseMessaggio(t, m)}</li>
             ))}

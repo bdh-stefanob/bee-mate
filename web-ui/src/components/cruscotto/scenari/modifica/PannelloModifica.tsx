@@ -44,9 +44,10 @@ import { DialogoNonSalvate } from './DialogoNonSalvate';
 import { DialogoConflitto } from './DialogoConflitto';
 import { BannerRifiuto, BannerSalvata } from './BannerEsito';
 import { ElencoMessaggi } from './MessaggiControllo';
-import { Bottone, CLASSE_CAMPO, STILE_CAMPO } from './stile';
+import { Bottone, CLASSE_CAMPO } from './stile';
 import { TITOLO_GRUPPO } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 type Apertura = { tipo: 'rinomina' | 'selettore'; riga: number } | { tipo: 'verifica' } | null;
 
 interface StatoRinomina {
@@ -557,7 +558,7 @@ export function PannelloModifica({
 
   if (fase === 'carico' || fase === 'lettura') {
     return (
-      <p role="status" className="flex items-center gap-2 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <p role="status" className="flex items-center gap-2 text-sm text-testo-tenue">
         <Loader2 size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
         {t('caricamento')}
       </p>
@@ -566,7 +567,7 @@ export function PannelloModifica({
 
   if (fase === 'errore' && b.letto === '') {
     return (
-      <div role="alert" className="flex flex-col items-start gap-2 text-sm" style={{ color: 'var(--rosso)' }}>
+      <div role="alert" className="flex flex-col items-start gap-2 text-sm text-rosso">
         <p>{t('letturaErrore')}</p>
         <Bottone onClick={() => dispatch({ tipo: 'apri' })}>{t('riprova')}</Bottone>
       </div>
@@ -575,7 +576,7 @@ export function PannelloModifica({
 
   if (fase === 'non-modificabile') {
     return (
-      <div className="flex flex-col items-start gap-3 text-sm" style={{ color: 'var(--testo)' }}>
+      <div className="flex flex-col items-start gap-3 text-sm text-testo">
         <p>
           {b.ragione === 'registrato'
             ? t('nonModificabileRegistrato')
@@ -597,7 +598,7 @@ export function PannelloModifica({
   return (
     <section aria-labelledby={`${id}-titolo`} className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id={`${id}-titolo`} className={TITOLO_GRUPPO} style={{ color: 'var(--testo-tenue)' }}>
+        <h3 id={`${id}-titolo`} className={cn(TITOLO_GRUPPO, 'text-testo-tenue')}>
           {t('modificaTitolo')}
         </h3>
         <Bottone disabled={occupato} onClick={() => dispatch({ tipo: 'vuole-uscire', verso: '' })}>
@@ -609,7 +610,7 @@ export function PannelloModifica({
       {modo === 'guidata' ? (
       <>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${id}-campo-titolo`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        <label htmlFor={`${id}-campo-titolo`} className="text-sm font-medium text-testo">
           {t('titoloCampo')}
         </label>
         <input
@@ -621,18 +622,17 @@ export function PannelloModifica({
           aria-invalid={titoloInvalido}
           aria-describedby={titoloInvalido ? `${id}-titolo-errore` : undefined}
           onChange={(e) => suTitolo(e.target.value)}
-          className={CLASSE_CAMPO}
-          style={titoloInvalido ? { ...STILE_CAMPO, borderColor: 'var(--rosso)' } : STILE_CAMPO}
+          className={cn(CLASSE_CAMPO, titoloInvalido && 'border-rosso')}
         />
         {titoloInvalido && (
-          <p id={`${id}-titolo-errore`} role="alert" className="text-sm" style={{ color: 'var(--rosso)' }}>
+          <p id={`${id}-titolo-errore`} role="alert" className="text-sm text-rosso">
             {t('titoloNonValido')}
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-2">
-        <h4 className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        <h4 className="text-sm font-medium text-testo">
           {t('passi')}
         </h4>
         <ol className="flex flex-col gap-2">
@@ -667,8 +667,8 @@ export function PannelloModifica({
                       }}
                     />
                   ) : aperta?.tipo === 'rinomina' && rinomina ? (
-                    <div className="ml-6 flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-                      <label htmlFor={`${id}-rinomina`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+                    <div className="ml-6 flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie-tenue">
+                      <label htmlFor={`${id}-rinomina`} className="text-sm font-medium text-testo">
                         {t('rinominaCampo')}
                       </label>
                       <input
@@ -686,7 +686,6 @@ export function PannelloModifica({
                           }
                         }}
                         className={CLASSE_CAMPO}
-                        style={STILE_CAMPO}
                       />
                       {rinomina.errore && <BannerRifiuto errore={rinomina.errore} />}
                       {rinomina.anteprima && rinomina.anteprima.blocchi.length > 0 && (
@@ -719,14 +718,14 @@ export function PannelloModifica({
           })}
         </ol>
         {b.avviso === 'salva-prima' && (
-          <p role="alert" className="text-sm" style={{ color: 'var(--ambra)' }}>
+          <p role="alert" className="text-sm text-ambra">
             {t('rinominaSalvaPrima')}
           </p>
         )}
 
         {apertura?.tipo === 'verifica' ? (
-          <div className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-            <label htmlFor={`${id}-verifica`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+          <div className="flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie-tenue">
+            <label htmlFor={`${id}-verifica`} className="text-sm font-medium text-testo">
               {t('verificaCampo')}
             </label>
             <input
@@ -740,7 +739,6 @@ export function PannelloModifica({
                 if (e.key === 'Escape') setApertura(null);
               }}
               className={CLASSE_CAMPO}
-              style={STILE_CAMPO}
             />
             <div className="flex flex-wrap gap-2">
               <Bottone primario disabled={!verifica.trim()} onClick={aggiungi}>
@@ -775,13 +773,13 @@ export function PannelloModifica({
         onElimina={() => void apriElimina()}
       />
       {(b.avviso === 'salva-prima-sposta' || b.avviso === 'salva-prima-elimina') && (
-        <p role="alert" className="text-sm" style={{ color: 'var(--ambra)' }}>
+        <p role="alert" className="text-sm text-ambra">
           {b.avviso === 'salva-prima-sposta' ? t('spostaSalvaPrima') : t('eliminaSalvaPrima')}
         </p>
       )}
       {sposta && (fase === 'pulita' || fase === 'salvata' || fase === 'conferma') && (
-        <div className="flex flex-col gap-2 rounded-scheda border p-3" style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)' }}>
-          <label htmlFor={`${id}-sposta`} className="text-sm font-medium" style={{ color: 'var(--testo)' }}>
+        <div className="flex flex-col gap-2 rounded-scheda border p-3 border-bordo bg-superficie-tenue">
+          <label htmlFor={`${id}-sposta`} className="text-sm font-medium text-testo">
             {t('spostaCampo', { app: file.split('/')[0] })}
           </label>
           <input
@@ -797,14 +795,13 @@ export function PannelloModifica({
               if (e.key === 'Escape') setSposta(null);
             }}
             className={CLASSE_CAMPO}
-            style={STILE_CAMPO}
           />
           <datalist id={`${id}-flussi`}>
             {flussi.map((f) => (
               <option key={f} value={f} />
             ))}
           </datalist>
-          <p id={`${id}-sposta-aiuto`} className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+          <p id={`${id}-sposta-aiuto`} className="text-xs text-testo-tenue">
             {t('spostaAiuto')}
           </p>
           {sposta.errore && <BannerRifiuto errore={sposta.errore} />}
@@ -819,7 +816,7 @@ export function PannelloModifica({
       )}
 
       {mostraTuo && (
-        <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="text-sm text-testo-tenue">
           {t('diventaTuo')}
         </p>
       )}
@@ -828,7 +825,7 @@ export function PannelloModifica({
         <ElencoMessaggi blocchi={controllo.blocchi} avvisi={controllo.avvisi} />
       )}
 
-      <div role="status" aria-live="polite" className="min-h-5 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+      <div role="status" aria-live="polite" className="min-h-5 text-sm text-testo-tenue">
         {stato && (
           <span className="flex items-center gap-2">
             <Loader2 size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
@@ -879,9 +876,9 @@ export function PannelloModifica({
       </div>
 
       {b.miaBozza !== null && (
-        <details className="text-sm" style={{ color: 'var(--testo)' }}>
+        <details className="text-sm text-testo">
           <summary className="min-h-10 cursor-pointer py-2 font-medium">{t('miaBozzaTitolo')}</summary>
-          <textarea readOnly value={b.miaBozza} rows={8} aria-label={t('miaBozzaTitolo')} className={`${CLASSE_CAMPO} font-mono text-xs`} style={STILE_CAMPO} />
+          <textarea readOnly value={b.miaBozza} rows={8} aria-label={t('miaBozzaTitolo')} className={`${CLASSE_CAMPO} font-mono text-xs`} />
         </details>
       )}
 

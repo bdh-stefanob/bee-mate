@@ -16,7 +16,7 @@ export function DialogoNonSalvate({
   const t = useTranslations('ModificaScenario');
   return (
     <DialogoModale titolo={t('nonSalvateTitolo')} onEsc={() => onScelta('resta')}>
-      <p className="text-sm" style={{ color: 'var(--testo)' }}>
+      <p className="text-sm text-testo">
         {t('nonSalvateTesto')}
       </p>
       <div className="flex flex-wrap gap-2">
