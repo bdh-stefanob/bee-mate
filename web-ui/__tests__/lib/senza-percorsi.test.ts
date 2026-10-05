@@ -44,6 +44,14 @@ describe('senzaPercorsi', () => {
     expect(senzaPercorsi(testo)).toBe(testo);
   });
 
+  // Visto dal vivo il 5/10: una registrazione indicata con il percorso assoluto
+  // (con spazi, come la cartella del progetto) restava intera nel pannello.
+  it('toglie anche un percorso assoluto di Windows o di Unix, con gli spazi', () => {
+    const win = '# (C:\\Users\\nome\\Desktop\\Make me Automation\\progetto\\test-fixtures\\generate\\recording.json, 61s, 2 intenti dichiarati dal tester).';
+    expect(senzaPercorsi(win)).toBe('# (61s, 2 intenti dichiarati dal tester).');
+    expect(senzaPercorsi('# (/home/nome/progetto/reports/recordings/x.json, 61s)')).toBe('# (61s)');
+  });
+
   it('tiene i ritorni a capo di Windows', () => {
     expect(senzaPercorsi('# src/features/a.feature\r\nFeature: A')).toBe('#\r\nFeature: A');
   });

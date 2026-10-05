@@ -14,7 +14,9 @@
  */
 
 /** Un percorso che comincia da una delle due cartelle del progetto, in una delle due scritture. */
-const PERCORSO = /\b(?:src|reports)[\\/][^\s,;)]*/g;
+// Un percorso assoluto di Windows (puo' contenere spazi: arriva fino alla virgola o
+// alla parentesi), uno assoluto di Unix, o uno relativo che parte da `src`/`reports`.
+const PERCORSO = /[A-Za-z]:[\\/][^,;)\r\n]*|(?<![\w.])\/(?:[\w.-]+\/)+[^\s,;)]*|\b(?:src|reports)[\\/][^\s,;)]*/g;
 
 export function senzaPercorsi(testo: string): string {
   return testo
