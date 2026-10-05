@@ -70,11 +70,11 @@ export function ConfermaElimina({
         {t('eliminaPagine')} {t('eliminaAnnullabile')}
       </p>
       <div className="flex flex-wrap gap-2">
-        <Bottone primario onClick={onConferma}>
-          {t('eliminaVa')}
-        </Bottone>
         <Bottone data-iniziale onClick={onIndietro}>
           {t('tornaIndietro')}
+        </Bottone>
+        <Bottone primario onClick={onConferma}>
+          {t('eliminaVa')}
         </Bottone>
       </div>
     </DialogoModale>
@@ -108,11 +108,11 @@ export function ConfermaSposta({
         {t('spostaEsiti')} {t('eliminaAnnullabile')}
       </p>
       <div className="flex flex-wrap gap-2">
-        <Bottone primario onClick={onConferma}>
-          {t('spostaVai')}
-        </Bottone>
         <Bottone data-iniziale onClick={onIndietro}>
           {t('tornaIndietro')}
+        </Bottone>
+        <Bottone primario onClick={onConferma}>
+          {t('spostaVai')}
         </Bottone>
       </div>
     </DialogoModale>

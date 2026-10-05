@@ -20,13 +20,13 @@ export function DialogoNonSalvate({
         {t('nonSalvateTesto')}
       </p>
       <div className="flex flex-wrap gap-2">
+        <Bottone data-iniziale onClick={() => onScelta('resta')}>
+          {t('nonSalvateResta')}
+        </Bottone>
         <Bottone primario onClick={() => onScelta('salva')}>
           {t('nonSalvateSalva')}
         </Bottone>
         <Bottone onClick={() => onScelta('scarta')}>{t('nonSalvateScarta')}</Bottone>
-        <Bottone data-iniziale onClick={() => onScelta('resta')}>
-          {t('nonSalvateResta')}
-        </Bottone>
       </div>
     </DialogoModale>
   );

@@ -51,15 +51,15 @@ function ConfermaAmbiente({
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
+        <Bottone data-iniziale onClick={onIndietro}>
+          {t('tornaIndietro')}
+        </Bottone>
         <Bottone
           primario={!distruttiva}
           onClick={onConferma}
           className={distruttiva ? 'border-rosso text-rosso' : undefined}
         >
           {etichettaConferma}
-        </Bottone>
-        <Bottone data-iniziale onClick={onIndietro}>
-          {t('tornaIndietro')}
         </Bottone>
       </div>
     </DialogoModale>
@@ -524,7 +524,7 @@ function ModificaIndirizzo({
           setAperto(true);
         }}
         aria-label={t('modificaIndirizzoAria', { nome: ambiente.nome })}
-        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo border px-3 text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
+        className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
       >
         <Pencil size={13} aria-hidden="true" />
         {t('modificaIndirizzo')}
@@ -790,7 +790,7 @@ const RigaAmbiente = memo(function RigaAmbiente({
               onClick={() => setInConfermaElimina(true)}
               disabled={eliminazione === 'in corso'}
               aria-label={t('eliminaAria', { nome: ambiente.nome })}
-              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo px-3 text-xs font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-rosso outline-blu"
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-controllo px-3 text-sm font-medium hover:underline disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-rosso outline-blu"
             >
               {eliminazione === 'in corso' ? (
                 <Loader2 size={13} className="animate-spin" aria-hidden="true" />

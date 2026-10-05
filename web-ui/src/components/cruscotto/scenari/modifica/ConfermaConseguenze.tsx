@@ -44,11 +44,11 @@ export function ConfermaConseguenze({
       {/* Solo cio' che riguarda la rinomina (la frase nuova assomiglia a un'altra): gli altri avvisi dello scenario non c'entrano con questa scelta. */}
       <ElencoMessaggi blocchi={[]} avvisi={avvisi.filter((m) => m.codice === 'simile')} />
       <div className="flex flex-wrap gap-2">
-        <Bottone primario onClick={onConferma}>
-          {t('conferma')}
-        </Bottone>
         <Bottone data-iniziale onClick={onIndietro}>
           {t('tornaIndietro')}
+        </Bottone>
+        <Bottone primario onClick={onConferma}>
+          {t('conferma')}
         </Bottone>
       </div>
     </DialogoModale>
