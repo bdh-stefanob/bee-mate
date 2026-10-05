@@ -13,10 +13,10 @@ interface Aspetto {
 }
 
 const ASPETTO: Record<VoceScenario['stato']['tipo'], Aspetto> = {
-  passato: { Icona: CheckCircle2, colore: 'var(--verde)' },
-  fallito: { Icona: XCircle, colore: 'var(--rosso)' },
-  modificato: { Icona: History, colore: 'var(--ambra)' },
-  mai: { Icona: CircleDashed, colore: 'var(--testo-tenue)' },
+  passato: { Icona: CheckCircle2, colore: 'text-verde' },
+  fallito: { Icona: XCircle, colore: 'text-rosso' },
+  modificato: { Icona: History, colore: 'text-ambra' },
+  mai: { Icona: CircleDashed, colore: 'text-testo-tenue' },
 };
 
 interface Props {
@@ -90,21 +90,17 @@ function RigaScenarioBase({ voce, ambiente, scelta, attiva, riga, idOpzione, onS
       onFocus={() => onFuoco(voce.chiave)}
       className={cn(
         'flex min-h-14 cursor-pointer items-start gap-2.5 border-l-4 px-3 py-2 text-left',
-        'hover:bg-black/5 dark:hover:bg-white/10',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2'
+        'outline-blu focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
+        // La riga scelta ha il suo fondo e non cambia al passaggio del mouse.
+        scelta ? 'border-l-blu bg-superficie-tenue' : 'border-l-transparent hover:bg-black/5 dark:hover:bg-white/10'
       )}
-      style={{
-        borderLeftColor: scelta ? 'var(--blu)' : 'transparent',
-        background: scelta ? 'var(--superficie-tenue)' : undefined,
-        outlineColor: 'var(--blu)',
-      }}
     >
-      <Icona size={20} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: colore }} />
+      <Icona size={20} aria-hidden="true" className={cn('mt-0.5 shrink-0', colore)} />
       <span className="flex min-w-0 flex-col gap-0.5">
-        <span className={cn('text-sm break-words', scelta && 'font-semibold')} style={{ color: 'var(--testo)' }}>
+        <span className={cn('text-sm break-words', scelta && 'font-semibold', 'text-testo')}>
           {voce.nome}
         </span>
-        <span className="text-xs break-words" style={{ color: 'var(--testo-tenue)' }}>
+        <span className="text-xs break-words text-testo-tenue">
           {testoStato}
         </span>
       </span>

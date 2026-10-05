@@ -40,6 +40,7 @@ import {
 } from '@/components/cruscotto/scenari/layout';
 import { TITOLO_PAGINA, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 const tutto = (i: Istantanea<RispostaScenari>): Istantanea<RispostaScenari> => i;
 
 const CLASSE_PAGINA = 'flex flex-col gap-4 min-w-0';
@@ -200,10 +201,10 @@ function ScenariContenuto() {
   const intestazione = (
     <>
       <div>
-        <h1 className={TITOLO_PAGINA} style={{ color: 'var(--testo)' }}>
+        <h1 className={cn(TITOLO_PAGINA, 'text-testo')}>
           {t('titolo')}
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="mt-1 text-sm text-testo-tenue">
           {t('descrizione')}
         </p>
       </div>
@@ -261,7 +262,7 @@ function ScenariContenuto() {
       {intestazione}
 
       <RiepilogoEsiti riepilogo={riepilogo} attiva={categoria} onScegli={setCategoria} />
-      <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+      <p className="text-xs text-testo-tenue">
         {ambienteScelto ? t('notaEsiti', { ambiente: ambienteScelto }) : t('notaSenzaAmbiente')}
       </p>
 
@@ -269,10 +270,9 @@ function ScenariContenuto() {
       {dati.esiti === 'illeggibile' && (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm"
-          style={{ borderColor: 'var(--ambra)', background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+          className="flex items-start gap-2 rounded-scheda border px-3 py-2 text-sm border-ambra bg-superficie-tenue text-testo"
         >
-          <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--ambra)' }} />
+          <AlertTriangle size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-ambra" />
           {t('esitiIlleggibili')}
         </p>
       )}
@@ -306,26 +306,24 @@ function ScenariContenuto() {
           ) : selezione.tipo === 'non-trovato' ? (
             <section
               aria-label={t('pannelloAria')}
-              className="flex flex-col items-start gap-3 rounded-scheda border p-6"
-              style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+              className="flex flex-col items-start gap-3 rounded-scheda border p-6 border-bordo bg-superficie"
             >
-              <h2 className={TITOLO_SEZIONE} style={{ color: 'var(--testo)' }}>
+              <h2 className={cn(TITOLO_SEZIONE, 'text-testo')}>
                 {t('nonTrovatoTitolo')}
               </h2>
-              <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+              <p className="text-sm text-testo-tenue">
                 {t('nonTrovatoTesto')}
               </p>
               <button
                 type="button"
                 onClick={() => router.replace('/scenari', { scroll: false })}
-                className="inline-flex min-h-10 items-center rounded-controllo border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ borderColor: 'var(--bordo)', color: 'var(--blu)', outlineColor: 'var(--blu)' }}
+                className="inline-flex min-h-10 items-center rounded-controllo border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-blu outline-blu"
               >
                 {t('tornaElenco')}
               </button>
             </section>
           ) : larga ? (
-            <p className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+            <p className="text-sm text-testo-tenue">
               {t('nessunaSelezione')}
             </p>
           ) : null}

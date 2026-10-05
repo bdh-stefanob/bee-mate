@@ -81,17 +81,8 @@ export const ECCEZIONI: Record<string, string> = {};
  * dell'elenco e' gia' pulito (cosi' non resta nessuna riga morta).
  */
 export const IN_ATTESA: string[] = [
-  'app/(cruscotto)/scenari/page.tsx',
   'components/GherkinEditor.tsx',
   'components/GherkinLeggibile.tsx',
-  'components/cruscotto/scenari/ElencoScenari.tsx',
-  'components/cruscotto/scenari/LinkSchermata.tsx',
-  'components/cruscotto/scenari/PannelloScenario.tsx',
-  'components/cruscotto/scenari/RiepilogoEsiti.tsx',
-  'components/cruscotto/scenari/RigaScenario.tsx',
-  'components/cruscotto/scenari/SchedaEsito.tsx',
-  'components/cruscotto/scenari/ScheletroScenari.tsx',
-  'components/cruscotto/scenari/StatoVuotoScenari.tsx',
   'components/cruscotto/scenari/modifica/Avanzate.tsx',
   'components/cruscotto/scenari/modifica/AvvisoOperazione.tsx',
   'components/cruscotto/scenari/modifica/BannerEsito.tsx',

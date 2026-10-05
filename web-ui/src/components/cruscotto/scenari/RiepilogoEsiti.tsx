@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 import type { Categoria, Riepilogo } from '@/lib/scenari-elenco';
 
 const CONTATORI = [
-  { categoria: 'superati', chiave: 'contaPassati', campo: 'superati', Icona: CheckCircle2, colore: 'var(--verde)' },
-  { categoria: 'non-superati', chiave: 'contaFalliti', campo: 'nonSuperati', Icona: XCircle, colore: 'var(--rosso)' },
-  { categoria: 'da-eseguire', chiave: 'contaDaEseguire', campo: 'daEseguire', Icona: CircleDashed, colore: 'var(--testo-tenue)' },
+  { categoria: 'superati', chiave: 'contaPassati', campo: 'superati', Icona: CheckCircle2, colore: 'text-verde' },
+  { categoria: 'non-superati', chiave: 'contaFalliti', campo: 'nonSuperati', Icona: XCircle, colore: 'text-rosso' },
+  { categoria: 'da-eseguire', chiave: 'contaDaEseguire', campo: 'daEseguire', Icona: CircleDashed, colore: 'text-testo-tenue' },
 ] as const;
 
 /**
@@ -42,16 +42,13 @@ export function RiepilogoEsiti({
             className={cn(
               'inline-flex min-h-10 items-center gap-2 rounded-controllo border px-3 text-sm font-medium transition-colors',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              premuto ? 'border-2 font-semibold' : 'hover:bg-black/5 dark:hover:bg-white/10'
+              premuto ? 'border-2 font-semibold' : 'hover:bg-black/5 dark:hover:bg-white/10',
+              'text-testo outline-blu',
+              premuto ? 'border-blu' : 'border-bordo',
+              premuto ? 'bg-superficie-tenue' : 'bg-superficie',
             )}
-            style={{
-              borderColor: premuto ? 'var(--blu)' : 'var(--bordo)',
-              background: premuto ? 'var(--superficie-tenue)' : 'var(--superficie)',
-              color: 'var(--testo)',
-              outlineColor: 'var(--blu)',
-            }}
           >
-            <Icona size={18} aria-hidden="true" style={{ color: colore }} />
+            <Icona size={18} aria-hidden="true" className={colore} />
             {t(chiave, { n: riepilogo[campo] })}
           </button>
         );

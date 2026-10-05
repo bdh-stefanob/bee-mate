@@ -14,8 +14,6 @@ const TASTI: Record<string, Tasto> = {
   End: 'fine',
 };
 
-const STILE_PULSANTE_TESTO = { color: 'var(--blu)', outlineColor: 'var(--blu)' } as const;
-
 /**
  * La ricerca e l'elenco. L'elenco e' una listbox, perche' le frecce e Invio sono
  * la richiesta e il ruolo che le promette: un solo `Tab` ci entra (sull'opzione
@@ -118,10 +116,9 @@ export function ElencoScenari({
           {t('cerca')}
         </label>
         <div
-          className="flex items-center gap-2 rounded-controllo border px-2"
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+          className="flex items-center gap-2 rounded-controllo border px-2 border-bordo bg-superficie"
         >
-          <Search size={16} aria-hidden="true" className="shrink-0" style={{ color: 'var(--testo-tenue)' }} />
+          <Search size={16} aria-hidden="true" className="shrink-0 text-testo-tenue" />
           <input
             id={idCerca}
             type="search"
@@ -136,30 +133,27 @@ export function ElencoScenari({
                 onTesto('');
               }
             }}
-            className="min-h-10 w-full min-w-0 bg-transparent text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-search-cancel-button]:hidden"
-            style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+            className="min-h-10 w-full min-w-0 bg-transparent text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-search-cancel-button]:hidden text-testo outline-blu"
           />
           {testoCerca && (
             <button
               type="button"
               aria-label={t('cancellaRicerca')}
               onClick={() => onTesto('')}
-              className="inline-flex size-10 shrink-0 items-center justify-center rounded-controllo focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={STILE_PULSANTE_TESTO}
+              className="inline-flex size-10 shrink-0 items-center justify-center rounded-controllo focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-blu outline-blu"
             >
               <X size={16} aria-hidden="true" />
             </button>
           )}
         </div>
-        <p role="status" className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+        <p role="status" className="text-xs text-testo-tenue">
           {t('risultati', { n: quanti })}
         </p>
       </div>
 
       {quanti === 0 ? (
         <div
-          className="flex flex-col items-start gap-2 rounded-scheda border p-3 text-sm"
-          style={{ borderColor: 'var(--bordo)', color: 'var(--testo)' }}
+          className="flex flex-col items-start gap-2 rounded-scheda border p-3 text-sm border-bordo text-testo"
         >
           <p>{testoCerca.trim() ? t('nessunRisultato', { testo: testoCerca.trim() }) : t('nessunoInQuelloStato')}</p>
           {(testoCerca.trim() || filtroAttivo) && (
@@ -169,8 +163,7 @@ export function ElencoScenari({
                 onTesto('');
                 onCancellaFiltro();
               }}
-              className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--bordo)', ...STILE_PULSANTE_TESTO }}
+              className="inline-flex min-h-10 items-center rounded-controllo border border-bordo px-3 font-medium text-blu outline-blu focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               {testoCerca.trim() ? t('cancellaRicerca') : t('mostraTutti')}
             </button>
@@ -183,8 +176,7 @@ export function ElencoScenari({
           role="listbox"
           aria-label={t('elencoAria')}
           onKeyDown={suTasto}
-          className={`${CLASSE_ELENCO_ALTEZZA} min-h-0 overflow-y-auto rounded-scheda border`}
-          style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)' }}
+          className={`${CLASSE_ELENCO_ALTEZZA} min-h-0 overflow-y-auto rounded-scheda border border-bordo bg-superficie`}
         >
           {gruppi.map((g) => {
             riga++; // l'intestazione del gruppo
@@ -193,8 +185,7 @@ export function ElencoScenari({
               <div key={g.chiave} role="group" aria-labelledby={idGruppo}>
                 <div
                   id={idGruppo}
-                  className="sticky top-0 z-10 border-b px-3 py-1.5 text-sm font-semibold"
-                  style={{ borderColor: 'var(--bordo)', background: 'var(--superficie-tenue)', color: 'var(--testo-tenue)' }}
+                  className="sticky top-0 z-10 border-b px-3 py-1.5 text-sm font-semibold border-bordo bg-superficie-tenue text-testo-tenue"
                 >
                   {etichettaGruppo(g)}
                 </div>
@@ -221,7 +212,7 @@ export function ElencoScenari({
       )}
 
       {soloDescritti > 0 && (
-        <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+        <p className="text-xs text-testo-tenue">
           {t('soloDescritti', { n: soloDescritti })}
         </p>
       )}

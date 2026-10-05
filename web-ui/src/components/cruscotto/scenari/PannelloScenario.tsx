@@ -15,6 +15,7 @@ import type { Istantanea } from '@/lib/risorsa';
 import type { RigaGherkin } from '@/lib/gherkin-lettura';
 import { TESTO_LETTURA, TITOLO_GRUPPO, TITOLO_SEZIONE } from '@/lib/scala-tipografica';
 
+import { cn } from '@/lib/utils';
 const CLASSE_AZIONE = `inline-flex min-h-10 ${CLASSE_AZIONE_FLESSIBILE} items-center justify-center gap-2 rounded-controllo px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`;
 
 const tutto = <T,>(i: Istantanea<T>): Istantanea<T> => i;
@@ -61,12 +62,11 @@ export function PannelloScenario({
           id={idTitolo}
           ref={titoloRef}
           tabIndex={-1}
-          className={`${TITOLO_SEZIONE} break-words focus:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
-          style={{ color: 'var(--testo)', outlineColor: 'var(--blu)' }}
+          className={`${TITOLO_SEZIONE} break-words focus:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 text-testo outline-blu`}
         >
           {voce.nome}
         </h2>
-        <p className={`text-sm ${TESTO_LETTURA}`} style={{ color: 'var(--testo-tenue)' }}>
+        <p className={`text-sm ${TESTO_LETTURA} text-testo-tenue`}>
           {voce.generato
             ? t('registratoNonSalvato')
             : voce.flusso
@@ -82,8 +82,7 @@ export function PannelloScenario({
           <Link
             href={indirizzoEsegui}
             aria-label={t('eseguiAria', { nome: voce.nome })}
-            className={CLASSE_AZIONE}
-            style={{ background: 'var(--blu-fondo)', color: '#fff', outlineColor: 'var(--blu)' }}
+            className={cn(CLASSE_AZIONE, 'bg-blu-fondo text-white outline-blu')}
           >
             <Play size={16} aria-hidden="true" />
             {t('esegui')}
@@ -94,13 +93,12 @@ export function PannelloScenario({
               type="button"
               disabled
               aria-describedby={`${idTitolo}-no-esegui`}
-              className={`${CLASSE_AZIONE} cursor-not-allowed opacity-50`}
-              style={{ background: 'var(--blu-fondo)', color: '#fff' }}
+              className={`${CLASSE_AZIONE} cursor-not-allowed opacity-50 bg-blu-fondo text-white`}
             >
               <Play size={16} aria-hidden="true" />
               {t('esegui')}
             </button>
-            <span id={`${idTitolo}-no-esegui`} className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+            <span id={`${idTitolo}-no-esegui`} className="text-xs text-testo-tenue">
               {t('eseguiNonDisponibile')}
             </span>
           </span>
@@ -108,8 +106,7 @@ export function PannelloScenario({
         <a
           href={`/api/scenari/esporta?file=${encodeURIComponent(voce.file)}`}
           aria-label={t('esportaAria', { nome: voce.nome })}
-          className={`${CLASSE_AZIONE} border`}
-          style={{ borderColor: 'var(--bordo)', color: 'var(--blu)', outlineColor: 'var(--blu)', background: 'var(--superficie)' }}
+          className={`${CLASSE_AZIONE} border border-bordo text-blu outline-blu bg-superficie`}
         >
           <Download size={16} aria-hidden="true" />
           {t('esporta')}
@@ -121,11 +118,11 @@ export function PannelloScenario({
 
       {sostituisciTesto ?? (
       <section aria-label={t('testoTitolo')} className="flex flex-col gap-2">
-        <h3 className={TITOLO_GRUPPO} style={{ color: 'var(--testo-tenue)' }}>
+        <h3 className={cn(TITOLO_GRUPPO, 'text-testo-tenue')}>
           {t('testoTitolo')}
         </h3>
         {nota && testo.dati !== null && (
-          <p className="text-xs" style={{ color: 'var(--testo-tenue)' }}>
+          <p className="text-xs text-testo-tenue">
             {nota}
           </p>
         )}
@@ -138,19 +135,18 @@ export function PannelloScenario({
             etichettaRiga={etichettaRiga}
           />
         ) : testo.stato === 'errore' ? (
-          <div className="flex flex-col items-start gap-2 text-sm" role="alert" style={{ color: 'var(--rosso)' }}>
+          <div className="flex flex-col items-start gap-2 text-sm text-rosso" role="alert">
             <p>{t('testoErrore')}</p>
             <button
               type="button"
               onClick={() => void risorsa.carica()}
-              className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ borderColor: 'var(--bordo)', color: 'var(--blu)', outlineColor: 'var(--blu)' }}
+              className="inline-flex min-h-10 items-center rounded-controllo border px-3 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-blu outline-blu"
             >
               {t('riprova')}
             </button>
           </div>
         ) : (
-          <p role="status" className="text-sm" style={{ color: 'var(--testo-tenue)' }}>
+          <p role="status" className="text-sm text-testo-tenue">
             {t('testoCaricamento')}
           </p>
         )}
