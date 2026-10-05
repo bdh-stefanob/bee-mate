@@ -81,7 +81,7 @@ export function GherkinLeggibile({
                   },
                 }
               : {})}
-            className={`grid grid-cols-[2.75rem_minmax(0,1fr)] [counter-increment:riga] before:select-none before:pr-3 before:text-right before:text-xs before:leading-6 before:text-testo-tenue before:content-[counter(riga)] border-l-[3px]${
+            className={`grid border-l-[3px] grid-cols-[2.75rem_minmax(0,1fr)] [counter-increment:riga] before:select-none before:pr-3 before:text-right before:text-xs before:leading-6 before:text-testo-tenue before:content-[counter(riga)]${
               // La barra segna lo scenario scelto.
               evidenzia ? ' border-l-blu' : ' border-l-transparent'
             }${
