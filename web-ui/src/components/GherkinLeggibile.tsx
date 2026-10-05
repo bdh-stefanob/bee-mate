@@ -51,8 +51,7 @@ export function GherkinLeggibile({
     <div
       role="region"
       aria-label={ariaLabel}
-      className="max-w-[calc(2.75rem+3px+90ch)] overflow-x-hidden rounded-scheda border py-2 font-mono text-sm leading-6 [counter-reset:riga]"
-      style={{ borderColor: 'var(--bordo)', background: 'var(--superficie)', color: 'var(--testo)' }}
+      className="max-w-[calc(2.75rem+3px+90ch)] overflow-x-hidden rounded-scheda border py-2 font-mono text-sm leading-6 [counter-reset:riga] border-bordo bg-superficie text-testo"
     >
       {righe.map((r) => {
         const evidenzia = r.numero === rigaEvidenziata;
@@ -82,16 +81,14 @@ export function GherkinLeggibile({
                   },
                 }
               : {})}
-            className={`grid grid-cols-[2.75rem_minmax(0,1fr)] [counter-increment:riga] before:select-none before:pr-3 before:text-right before:text-xs before:leading-6 before:text-[color:var(--testo-tenue)] before:content-[counter(riga)]${
+            className={`grid grid-cols-[2.75rem_minmax(0,1fr)] [counter-increment:riga] before:select-none before:pr-3 before:text-right before:text-xs before:leading-6 before:text-testo-tenue before:content-[counter(riga)] border-l-[3px]${
+              // La barra segna lo scenario scelto.
+              evidenzia ? ' border-l-blu' : ' border-l-transparent'
+            }${
               cliccabile
-                ? ' cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2'
+                ? ' cursor-pointer outline-blu hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2'
                 : ''
             }`}
-            style={{
-              // La barra segna lo scenario scelto.
-              borderLeft: `3px solid ${evidenzia ? 'var(--blu)' : 'transparent'}`,
-              ...(cliccabile ? { outlineColor: 'var(--blu)' } : {}),
-            }}
           >
             <div
               className="min-w-0 whitespace-pre-wrap pr-3 [overflow-wrap:anywhere]"
@@ -125,9 +122,6 @@ function larghezzePerRiga(righe: RigaGherkin[]): Map<number, number[]> {
   return out;
 }
 
-const TENUE = { color: 'var(--testo-tenue)' } as const;
-const BLU = { color: 'var(--blu)' } as const;
-
 function Contenuto({
   riga,
   larghezze,
@@ -142,14 +136,14 @@ function Contenuto({
       return <span aria-hidden="true">&nbsp;</span>;
     case 'tag':
       return (
-        <span style={TENUE}>
+        <span className="text-testo-tenue">
           {riga.tag.join(' ')}
         </span>
       );
     case 'intestazione':
       return (
         <>
-          <span className="font-semibold" style={BLU}>
+          <span className="font-semibold text-blu">
             {riga.parola}:
           </span>{' '}
           <span className="font-semibold">{riga.titolo}</span>
@@ -158,12 +152,12 @@ function Contenuto({
     case 'passo':
       return (
         <>
-          <span className="inline-block min-w-[3.5rem] font-semibold" style={BLU}>
+          <span className="inline-block min-w-[3.5rem] font-semibold text-blu">
             {riga.parola}
           </span>{' '}
           {riga.parti.map((p, i) =>
             p.valore ? (
-              <span key={i} className="underline decoration-1 underline-offset-2" style={{ color: 'var(--verde)' }}>
+              <span key={i} className="underline decoration-1 underline-offset-2 text-verde">
                 {p.testo}
               </span>
             ) : (
@@ -175,27 +169,26 @@ function Contenuto({
     case 'verifica':
       return (
         <span
-          className="inline-flex items-start gap-1.5 rounded-dettaglio px-2 py-0.5"
-          style={{ background: 'var(--superficie-tenue)', color: 'var(--testo)' }}
+          className="inline-flex items-start gap-1.5 rounded-dettaglio px-2 py-0.5 bg-superficie-tenue text-testo"
         >
-          <Eye size={16} aria-hidden="true" className="mt-1 shrink-0" style={BLU} />
+          <Eye size={16} aria-hidden="true" className="mt-1 shrink-0 text-blu" />
           <span>{verifica(riga.testo)}</span>
         </span>
       );
     case 'commento':
       return (
-        <span style={TENUE}>
+        <span className="text-testo-tenue">
           {riga.testo}
         </span>
       );
     case 'tabella':
       return (
         <span>
-          <span style={TENUE}>|</span>
+          <span className="text-testo-tenue">|</span>
           {riga.celle.map((c, i) => (
             <span key={i}>
               {` ${c.padEnd(larghezze?.[i] ?? c.length)} `}
-              <span style={TENUE}>|</span>
+              <span className="text-testo-tenue">|</span>
             </span>
           ))}
         </span>

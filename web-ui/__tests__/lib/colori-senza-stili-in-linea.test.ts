@@ -75,6 +75,12 @@ export function righeConColoreInLinea(testo: string): number[] {
  * deve avere almeno un caso, altrimenti l'eccezione va tolta.
  */
 export const ECCEZIONI: Record<string, string> = {
+  'components/GherkinEditor.tsx':
+    "Il tema dell'editor CodeMirror e' un oggetto JavaScript (EditorView.theme), non JSX: i colori sono variabili CSS lette dalla libreria e non possono essere classi.",
+  'components/ui/button.tsx':
+    "Il fondo al passaggio del mouse e' color-mix() calcolato a partire da --primary e --secondary: un colore composto a runtime, che non esiste come classe.",
+  'components/ui/badge.tsx':
+    "Il fondo al passaggio del mouse e' color-mix() calcolato a partire da --primary: un colore composto a runtime, che non esiste come classe.",
   'components/cruscotto/scenari/modifica/EditorTesto.tsx':
     "Rimappa le variabili di shadcn (--background, --border...) sui colori del cruscotto per l'editor CodeMirror: sono variabili CSS locali, non colori di un elemento, e non hanno una classe.",
 };
@@ -84,11 +90,6 @@ export const ECCEZIONI: Record<string, string> = {
  * dell'elenco e' gia' pulito (cosi' non resta nessuna riga morta).
  */
 export const IN_ATTESA: string[] = [
-  'components/GherkinEditor.tsx',
-  'components/GherkinLeggibile.tsx',
-  'components/ui/badge.tsx',
-  'components/ui/button.tsx',
-  'components/ui/schede.tsx',
 ];
 
 function sorgenti(dir: string): string[] {

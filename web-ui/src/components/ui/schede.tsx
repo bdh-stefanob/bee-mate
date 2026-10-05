@@ -92,8 +92,7 @@ function Schede({
         aria-label={etichettaAria}
         activateOnFocus={attivazione === "al-focus"}
         loopFocus
-        className="flex snap-x overflow-x-auto border-b"
-        style={{ borderColor: "var(--bordo)" }}
+        className="flex snap-x overflow-x-auto border-b border-bordo"
       >
         {schede.map((s) => {
           const attiva = s.id === valore
@@ -110,12 +109,10 @@ function Schede({
                 "focus-visible:outline-2 focus-visible:-outline-offset-2",
                 "motion-reduce:transition-none",
                 attiva ? "font-semibold" : "font-medium",
-                "disabled:opacity-50"
+                "disabled:opacity-50",
+                'outline-blu',
+                attiva ? 'text-testo' : 'text-testo-tenue',
               )}
-              style={{
-                color: attiva ? "var(--testo)" : "var(--testo-tenue)",
-                outlineColor: "var(--blu)",
-              }}
             >
               {Icona && <Icona size={16} aria-hidden="true" className="hidden shrink-0 sm:block" />}
               <span>{s.etichetta}</span>
@@ -123,11 +120,7 @@ function Schede({
                 <>
                   <span
                     aria-hidden="true"
-                    className="inline-flex min-w-5 items-center justify-center gap-1 rounded-pillola border px-1.5 text-xs font-semibold"
-                    style={{
-                      borderColor: attenzione ? "var(--ambra)" : "var(--bordo)",
-                      color: attenzione ? "var(--ambra)" : "var(--testo-tenue)",
-                    }}
+                    className={cn('inline-flex min-w-5 items-center justify-center gap-1 rounded-pillola border px-1.5 text-xs font-semibold', attenzione ? 'border-ambra' : 'border-bordo', attenzione ? 'text-ambra' : 'text-testo-tenue')}
                   >
                     {attenzione && <AlertTriangle size={12} aria-hidden="true" />}
                     {s.conteggio}
@@ -140,8 +133,7 @@ function Schede({
               {attiva && (
                 <span
                   aria-hidden="true"
-                  className="absolute inset-x-0 -bottom-px h-0.5"
-                  style={{ background: "var(--blu)" }}
+                  className="absolute inset-x-0 -bottom-px h-0.5 bg-blu"
                 />
               )}
             </Tabs.Tab>
@@ -154,8 +146,7 @@ function Schede({
           key={s.id}
           value={s.id}
           keepMounted={mantieniMontate}
-          className="pt-4 focus-visible:outline-2 focus-visible:-outline-offset-2"
-          style={{ outlineColor: "var(--blu)" }}
+          className="pt-4 focus-visible:outline-2 focus-visible:-outline-offset-2 outline-blu"
         >
           {mantieniMontate || s.id === valore ? pannello(s.id) : null}
         </Tabs.Panel>
