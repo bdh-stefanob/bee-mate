@@ -7,6 +7,7 @@ import { rimuoviCodiciAnsi } from './ansi';
 import { rigaDiComando, type NomeComando, type Parametri } from '@/lib/esecuzione';
 import { registraEsitiDiUnaProva, type ProvaConclusa } from './esiti-scenari';
 import { ripulisciStorico } from './pulizia-storico';
+import { MASSIMO_TEST_CONTEMPORANEI } from '@/lib/corsie';
 
 export interface ProcessoMinimo {
   onRiga(f: (r: string) => void): void;
@@ -43,8 +44,61 @@ export interface Esecuzione {
 /** Piu' di cosi' non serve a nessuno, e la memoria non cresce all'infinito. */
 const MAX_RIGHE = 500;
 
-/** I comandi che tengono occupata la macchina: uno alla volta. */
+/** I comandi che tengono occupata la macchina. */
 const LUNGHI: NomeComando[] = ['registrazione', 'sessione', 'scansione', 'test'];
+
+/**
+ * Le operazioni guidate da una persona: una alla volta, e nessun'altra che
+ * tenga il browser insieme a loro (un test non si contende lo schermo con una
+ * registrazione, Q9 = vietato come oggi).
+ */
+const PERSONA: NomeComando[] = ['registrazione', 'sessione', 'scansione'];
+
+const MESSAGGIO_OCCUPATO = "c'e' gia' in corso un'operazione che occupa il browser";
+
+/**
+ * Un rifiuto dell'avvio, con un codice che la finestra traduce: il messaggio
+ * italiano resta per chi chiama a mano, ma la schermata usa il codice e il
+ * numero, cosi' le stringhe visibili passano dai messaggi.
+ */
+export class ErroreAvvio extends Error {
+  constructor(
+    messaggio: string,
+    readonly codice: 'occupato' | 'tetto' | 'catalogo',
+    readonly n?: number
+  ) {
+    super(messaggio);
+  }
+}
+
+/**
+ * La regola del lucchetto, pura: dato il comando che si vuole avviare e quelli
+ * gia' in corso, dice perche' no (o `null` se si puo'). Un test e' ammesso fino
+ * al tetto; una operazione di persona non convive con nessun'altra operazione
+ * lunga.
+ */
+export function motivoRifiuto(
+  nome: NomeComando,
+  inCorso: NomeComando[]
+): { codice: 'occupato' | 'tetto'; messaggio: string; n?: number } | null {
+  if (PERSONA.includes(nome) && inCorso.some((x) => LUNGHI.includes(x))) {
+    return { codice: 'occupato', messaggio: MESSAGGIO_OCCUPATO };
+  }
+  if (nome === 'test') {
+    if (inCorso.some((x) => PERSONA.includes(x))) {
+      return { codice: 'occupato', messaggio: MESSAGGIO_OCCUPATO };
+    }
+    const contemporanei = inCorso.filter((x) => x === 'test').length;
+    if (contemporanei >= MASSIMO_TEST_CONTEMPORANEI) {
+      return {
+        codice: 'tetto',
+        n: MASSIMO_TEST_CONTEMPORANEI,
+        messaggio: `ci sono gia' ${MASSIMO_TEST_CONTEMPORANEI} test in corso: e' il massimo su questa macchina`,
+      };
+    }
+  }
+  return null;
+}
 
 // Su `globalThis`, non in due `const` di modulo. Il server di sviluppo di Next
 // carica questo file una volta per rotta: con una `Map` di modulo, la rotta che
@@ -136,18 +190,15 @@ export function usaPulizia(f: ((inCorso: string[]) => void) | undefined): void {
 }
 
 export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lanciatoreVero): Esecuzione {
-  if (LUNGHI.includes(nome)) {
-    const occupato = [...esecuzioni.values()].some(
-      (e) => e.stato === 'in corso' && LUNGHI.includes(e.nome)
-    );
-    if (occupato) throw new Error("c'e' gia' in corso un'operazione che occupa il browser");
-  }
+  const inCorsoOra = [...esecuzioni.values()].filter((e) => e.stato === 'in corso').map((e) => e.nome);
+  const motivo = motivoRifiuto(nome, inCorsoOra);
+  if (motivo) throw new ErroreAvvio(motivo.messaggio, motivo.codice, motivo.n);
 
   // Il catalogo non tiene occupato il browser (non e' in LUNGHI), ma due
   // rigenerazioni insieme scriverebbero sullo stesso step-catalog.json: non
   // e' il browser il lucchetto che serve qui, e' lui stesso.
-  if (nome === 'catalogo' && [...esecuzioni.values()].some((e) => e.nome === 'catalogo' && e.stato === 'in corso')) {
-    throw new Error("il catalogo si sta gia' aggiornando");
+  if (nome === 'catalogo' && inCorsoOra.includes('catalogo')) {
+    throw new ErroreAvvio("il catalogo si sta gia' aggiornando", 'catalogo');
   }
 
   // L'id nasce prima della riga di comando: un 'test' senza messaggi esplicito
@@ -198,7 +249,12 @@ export function avvia(nome: NomeComando, p?: Parametri, lancia: Lanciatore = lan
     // dell'esecuzione: lo stato su disco e' un servizio, non un requisito.
     if (nome === 'test' && parametri?.messaggi) {
       try {
-        registraEsiti({ id, ambiente: parametri.bersaglio ?? null, messaggi: parametri.messaggi });
+        registraEsiti({
+          id,
+          ambiente: parametri.bersaglio ?? null,
+          messaggi: parametri.messaggi,
+          altriInCorso: messaggiInCorso(),
+        });
       } catch {
         // Nessun esito registrato: la pagina Scenari lo dira' ("mai eseguito").
       }
@@ -237,16 +293,28 @@ export interface OperazioneLunga {
   avvio: string;
 }
 
+/** Tutto cio' che tiene occupato il browser e sta girando adesso, nell'ordine di avvio. */
+export function operazioniInCorso(): OperazioneLunga[] {
+  return [...esecuzioni.values()]
+    .filter((x) => x.stato === 'in corso' && LUNGHI.includes(x.nome))
+    .map((e) => ({ id: e.id, nome: e.nome, avvio: e.avvio }));
+}
+
 /**
- * Cosa sta girando adesso, se c'e' qualcosa. Le operazioni lunghe sono
- * esclusive (vedi `avvia`): ce n'e' al piu' una, quindi il primo risultato
- * trovato e' l'unico possibile.
+ * Una operazione da riagganciare: prima quella di persona (ce n'e' al piu'
+ * una, e non convive con i test), altrimenti la prima corsia di test. Serve
+ * solo a chi legge ancora il singolo campo `operazione`.
  */
 export function operazioneInCorso(): OperazioneLunga | undefined {
-  const e = [...esecuzioni.values()].find(
-    (x) => x.stato === 'in corso' && LUNGHI.includes(x.nome)
-  );
-  return e ? { id: e.id, nome: e.nome, avvio: e.avvio } : undefined;
+  const tutte = operazioniInCorso();
+  return tutte.find((o) => PERSONA.includes(o.nome)) ?? tutte[0];
+}
+
+/** I nomi dei file di messaggi delle corsie in corso: la ricostruzione degli esiti non li deve leggere. */
+export function messaggiInCorso(): string[] {
+  return operazioniInCorso()
+    .filter((o) => o.nome === 'test')
+    .map((o) => `${o.id}.ndjson`);
 }
 
 export function ferma(id: string): boolean {

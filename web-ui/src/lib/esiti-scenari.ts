@@ -312,6 +312,12 @@ export interface ProvaConclusa {
   ambiente: string | null;
   /** Percorso dei messaggi relativo alla radice (`reports/cruscotto/<id>.ndjson`). */
   messaggi: string;
+  /**
+   * I nomi dei `.ndjson` delle altre corsie ancora in corso. Una ricostruzione
+   * dell'indice non deve leggerli: sono parziali, e poi comparirebbero due volte
+   * (una con ambiente sconosciuto, una con quello vero).
+   */
+  altriInCorso?: string[];
 }
 
 export function registraEsitiDiUnaProva(prova: ProvaConclusa, radice: string = REPO_ROOT): void {
@@ -319,7 +325,10 @@ export function registraEsitiDiUnaProva(prova: ProvaConclusa, radice: string = R
   // processo che muore prima di scrivere il file, o un'esecuzione finta.
   if (!fs.existsSync(path.join(radice, prova.messaggi))) return;
   const indice = percorsoIndice(radice);
-  assicuraIndice(indice, cartellaMessaggi(radice), path.join(radice, 'src', 'features'), [path.basename(prova.messaggi)]);
+  assicuraIndice(indice, cartellaMessaggi(radice), path.join(radice, 'src', 'features'), [
+    path.basename(prova.messaggi),
+    ...(prova.altriInCorso ?? []),
+  ]);
   const testo = fs.readFileSync(path.join(radice, prova.messaggi), 'utf-8');
   const voci = estraiVoci(testo, { ambiente: prova.ambiente, esecuzione: prova.id });
   registraEsiti(indice, voci, path.join(radice, 'src', 'features'));

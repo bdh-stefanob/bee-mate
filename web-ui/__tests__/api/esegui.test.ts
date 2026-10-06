@@ -13,7 +13,7 @@ describe('GET /api/esegui', () => {
   it('nessuna operazione in corso: risponde con null, non con un errore', async () => {
     const res = await GET();
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ operazione: null });
+    expect(await res.json()).toEqual({ operazione: null, operazioni: [] });
   });
 
   it('un\'operazione in corso si vede, ma senza le sue righe', async () => {

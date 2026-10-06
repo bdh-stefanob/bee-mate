@@ -4,6 +4,7 @@ import { riepilogaScenari } from '@/lib/scenari';
 import { precaricaFeatures } from '@/lib/cache-file';
 import { assicuraIndiceAsync, leggiEsiti, percorsoIndice, unisciEsiti } from '@/lib/esiti-scenari';
 import type { RispostaScenari } from '@/lib/esiti-tipi';
+import { messaggiInCorso } from '@/lib/registro';
 
 /**
  * GET /api/scenari
@@ -24,7 +25,8 @@ export async function GET() {
   const { file, soloDescritti } = riepilogaScenari(FEATURES_DIR);
   // Asincrona: la ricostruzione dell'indice (una tantum) puo' leggere centinaia
   // di MB, e non deve tenere fermo il server per le altre richieste.
-  await assicuraIndiceAsync(percorsoIndice(), undefined, FEATURES_DIR);
+  // Le corsie ancora in corso non si leggono: i loro file sono parziali.
+  await assicuraIndiceAsync(percorsoIndice(), undefined, FEATURES_DIR, messaggiInCorso());
   const lettura = leggiEsiti(percorsoIndice());
   const corpo: RispostaScenari = {
     file: unisciEsiti(file, lettura.voci),

@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
-import { avvia, operazioneInCorso } from '@/lib/registro';
+import { avvia, ErroreAvvio, operazioneInCorso, operazioniInCorso } from '@/lib/registro';
 import type { NomeComando, Parametri } from '@/lib/esecuzione';
 import { daAltraOrigine } from '@/lib/stessa-origine';
 
 /**
- * Di sola lettura: dice se c'e' un'operazione che tiene occupato il browser,
- * cosi' una schermata appena aperta puo' riagganciarsi invece di far finta di
- * niente. Nessuna guardia sull'origine (non cambia nulla, non fa nulla), e
- * niente righe nella risposta: possono contenere i nomi che il tester sta
- * dando ai passi.
+ * Di sola lettura: dice quali operazioni tengono occupato il browser (tutte le
+ * corsie di test, non una sola), cosi' una schermata appena aperta puo'
+ * riagganciarle tutte invece di far finta di niente. `operazione` resta per chi
+ * legge ancora il campo singolo. Nessuna guardia sull'origine (non cambia nulla,
+ * non fa nulla), e niente righe nella risposta: possono contenere i nomi che il
+ * tester sta dando ai passi.
  */
 export async function GET() {
-  return NextResponse.json({ operazione: operazioneInCorso() ?? null });
+  return NextResponse.json({
+    operazione: operazioneInCorso() ?? null,
+    operazioni: operazioniInCorso(),
+  });
 }
 
 export async function POST(request: Request) {
@@ -38,7 +42,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: e.id });
   } catch (err) {
     // Il messaggio arriva dall'elenco chiuso o dal lucchetto: e' gia' scritto
-    // per una persona, e non contiene percorsi ne' valori.
+    // per una persona, e non contiene percorsi ne' valori. Il codice e il numero
+    // servono alla schermata per dire la stessa cosa nella lingua scelta.
+    if (err instanceof ErroreAvvio) {
+      return NextResponse.json({ errore: err.message, codice: err.codice, n: err.n }, { status: 400 });
+    }
     return NextResponse.json({ errore: (err as Error).message }, { status: 400 });
   }
 }
