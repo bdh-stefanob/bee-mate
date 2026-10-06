@@ -1,102 +1,81 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import type { Traduttore } from '@/lib/formato-quando';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
-import { PlayCircle, Loader2, AlertTriangle, Square } from 'lucide-react';
-import { PassoTest, type Passo } from '@/components/cruscotto/PassoTest';
+import { useTranslations } from 'next-intl';
+import { PlayCircle, Loader2, AlertTriangle, Square, Plus, X } from 'lucide-react';
 import { ProvaPassata } from '@/components/cruscotto/ProvaPassata';
+import { PannelloCorsia, type StatoCorsia } from '@/components/cruscotto/esecuzione/PannelloCorsia';
 import { cn } from '@/lib/utils';
 import type { NomeComando } from '@/lib/esecuzione';
-import { cancellaRiaggancio, leggiRiaggancio, scriviRiaggancio } from '@/lib/riaggancio-client';
+import { cancellaRiaggancio } from '@/lib/riaggancio-client';
 import { useAmbiente } from '@/context/AmbienteContext';
 import type { FileScenari } from '@/lib/scenari';
-import { dopoUnCambioDegliScenari } from '@/lib/stato-scenari';
-import { formattaDurata, type Traduttore } from '@/lib/formato-quando';
 import { leggiConLimite, leggiElencoScenari, statoElencoScenari, type EsitoElencoScenari } from '@/lib/lettura';
 import { ErroreLettura } from '@/components/cruscotto/ErroreLettura';
 import { TITOLO_PAGINA } from '@/lib/scala-tipografica';
+import { useRisorsa } from '@/hooks/useRisorsa';
+import { configurazione, type Configurazione } from '@/lib/stato-controllo';
+import type { Istantanea } from '@/lib/risorsa';
+import {
+  avvisoStessoAmbiente,
+  MASSIMO_TEST_CONTEMPORANEI,
+  puoAggiungereRiga,
+  puoLanciare,
+  righeDaRiagganciare,
+  type OperazioneRiaggancio,
+} from '@/lib/corsie';
 
-type StatoEsecuzione = 'in corso' | 'conclusa' | 'fallita' | 'interrotta';
-
-/** Dove questa schermata ricorda, dentro la sessione, quale esecuzione sta aspettando. */
-const CHIAVE_RIAGGANCIO = 'cruscotto.riaggancio.esecuzione';
-
-interface DatiRiaggancio {
-  id: string;
-  avviatoAlle: number;
-}
-
-interface RispostaOperazioneInCorso {
-  operazione: { id: string; nome: NomeComando; avvio: string } | null;
-}
-
-/** Cosa dire di un'operazione lunga che gira altrove, e dove mandare a guardarla. */
+/** Un'operazione lunga che gira altrove, e dove mandare a guardarla. */
 const ALTROVE: Partial<Record<NomeComando, { chiaveComando: string; percorso: string; chiaveVai: string }>> = {
   registrazione: { chiaveComando: 'comandoRegistrazione', percorso: '/registra', chiaveVai: 'vaiARegistra' },
   sessione: { chiaveComando: 'comandoSessione', percorso: '/controllo', chiaveVai: 'vaiAControllo' },
   scansione: { chiaveComando: 'comandoScansione', percorso: '/controllo', chiaveVai: 'vaiAControllo' },
 };
 
-const CHIAVE_ESITO: Record<Passo['esito'], 'esitoPassato' | 'esitoFallito' | 'esitoSaltato'> = {
-  passato: 'esitoPassato',
-  fallito: 'esitoFallito',
-  saltato: 'esitoSaltato',
-};
+/** La chiave che la versione precedente usava per una sola corsia: si toglie, non serve piu'. */
+const CHIAVE_RIAGGANCIO_VECCHIA = 'cruscotto.riaggancio.esecuzione';
 
-function conta(passi: Passo[]): Record<Passo['esito'], number> {
-  const conteggio: Record<Passo['esito'], number> = { passato: 0, fallito: 0, saltato: 0 };
-  for (const p of passi) conteggio[p.esito]++;
-  return conteggio;
+const NESSUNO: string[] = [];
+// Solo i nomi: come nella barra laterale, non si ridisegna per un indirizzo che cambia.
+const soloNomi = (i: Istantanea<Configurazione>): string[] => i.dati?.bersagli ?? NESSUNO;
+
+interface RispostaOperazioni {
+  operazione: { id: string; nome: NomeComando; avvio: string } | null;
+  operazioni?: OperazioneRiaggancio[];
 }
 
-function formattaRiepilogo(passi: Passo[], t: Traduttore): string {
-  const conteggio = conta(passi);
-  return (['passato', 'fallito', 'saltato'] as const)
-    .map((esito) => t(CHIAVE_ESITO[esito], { n: conteggio[esito] }))
-    .join(', ');
+/** Una riga del form: la corsia che si lancera'. `ambiente` vuoto vuol dire "come nella barra". */
+interface RigaForm {
+  chiave: string;
+  scenario: string;
+  ambiente: string;
 }
 
-/**
- * La riga d'esito in fondo: conteggio dei passi e, quando nota, la durata.
- * La durata si calcola qui, dal momento in cui la finestra ha lanciato il
- * test: il registro delle esecuzioni conosce avvio e fine, ma questa
- * schermata non lo consulta per quello, quindi ricaricando la scheda a test
- * concluso il tempo impiegato si perde (resta il conteggio dei passi, che
- * arriva sempre dal file).
- */
-function rigaEsito(passi: Passo[], durataMs: number | null, locale: string, t: Traduttore): string {
-  const riepilogo = formattaRiepilogo(passi, t);
-  return durataMs === null ? riepilogo : `${riepilogo} · ${formattaDurata(durataMs, locale, t)}`;
+/** Una corsia gia' lanciata o riagganciata, sulla schermata. */
+interface CorsiaSulloSchermo {
+  id: string;
+  ambiente: string;
+  scenario: string;
+  avviatoAlle: number | null;
 }
 
-/**
- * Quando l'esecuzione finisce male prima di produrre un solo passo
- * (bersaglio non risolto, sessione assente, Cucumber non installato...) la
- * sezione dei passi non si disegna affatto: e' lo scenario piu' probabile
- * alla prima esecuzione, e l'unico in cui la schermata non si puo' permettere
- * di restare muta.
- */
-function deveMostrareErroreSenzaPassi(
-  stato: StatoEsecuzione | null,
-  passi: Passo[]
-): boolean {
-  // Qualunque esito, non solo quelli rossi.
-  //
-  // Con nessuno scenario da eseguire Cucumber esce con codice ZERO, quindi
-  // l'esecuzione risulta conclusa: e' lo stato di una macchina appena accesa,
-  // e anche di una generazione che non ha prodotto niente. Guardando solo
-  // "fallita" e "interrotta", il tester premeva Lancia, aspettava, e la
-  // finestra tornava com'era senza dire una parola. Zero passi e' sempre una
-  // notizia.
-  return stato !== null && stato !== 'in corso' && passi.length === 0;
+interface RispostaErroreLancio {
+  id?: string;
+  errore?: string;
+  codice?: 'occupato' | 'tetto' | 'catalogo';
+  n?: number;
 }
 
-/** Cosa dire, quando non e' uscito nemmeno un passo. */
-function fraseSenzaPassi(stato: StatoEsecuzione | null, t: Traduttore): string {
-  if (stato === 'interrotta') return t('senzaPassiInterrotto');
-  if (stato === 'fallita') return t('senzaPassiFallito');
-  return t('senzaPassiVuoto');
+/** L'ambiente di una riga: il suo, o quello della barra se la riga non ne sceglie uno. */
+const ambienteDi = (riga: RigaForm, barra: string): string => riga.ambiente || barra;
+
+/** Il messaggio per un rifiuto del server: il codice si traduce, il resto e' gia' in italiano. */
+function messaggioDiErrore(dati: RispostaErroreLancio, t: Traduttore): string {
+  if (dati.codice === 'occupato') return t('erroreOccupato');
+  if (dati.codice === 'tetto') return t('erroreTetto', { n: dati.n ?? MASSIMO_TEST_CONTEMPORANEI });
+  return dati.errore ?? t('erroreLancio');
 }
 
 /** Un interruttore accessibile: mai un checkbox nascosto senza etichetta visibile. */
@@ -142,101 +121,78 @@ function Interruttore({
 function EsecuzioneContenuto() {
   const t = useTranslations('Esecuzione');
   const tScenari = useTranslations('Scenari');
-  const locale = useLocale();
   const router = useRouter();
   const { ambiente } = useAmbiente();
+  const ambientiDisponibili = useRisorsa(configurazione, soloNomi);
+
   const [altrove, setAltrove] = useState<NomeComando | null>(null);
   const [guardaIlBrowser, setGuardaIlBrowser] = useState(false);
   const [senzaSessione, setSenzaSessione] = useState(false);
   // Pausa fra un'azione e l'altra, in millisecondi: serve solo a chi guarda il
   // browser. 0 e' la velocita' di sempre.
   const [rallenta, setRallenta] = useState(0);
-  // Cosa eseguire: vuoto vale "tutti gli scenari registrati", il comportamento
-  // di prima; altrimenti un file o uno scenario, nella forma che Cucumber
-  // capisce (`src/features/x.feature` o `...feature:12`).
-  // Arrivando da Registra dopo un salvataggio, lo scenario appena salvato e'
-  // gia' scelto. Il valore della query non e' fidato: lo valida il server.
+
+  // Arrivando da Registra dopo un salvataggio, lo scenario appena salvato e' gia'
+  // scelto nella prima riga. Il valore della query non e' fidato: lo valida il server.
   const parametri = useSearchParams();
-  const [scelta, setScelta] = useState(() => parametri.get('scenario') ?? '');
   const salvato = parametri.get('salvato');
+  const contatoreRighe = useRef(1);
+  const [righe, setRighe] = useState<RigaForm[]>(() => [
+    { chiave: 'r1', scenario: parametri.get('scenario') ?? '', ambiente: '' },
+  ]);
+
   // null = la richiesta non e' ancora tornata. 'non-letto' NON e' "nessuno
-  // scenario": un errore di rete o un server che non risponde non deve far
-  // credere al tester di aver perso il suo lavoro.
+  // scenario": un errore di rete non deve far credere al tester di aver perso il lavoro.
   const [elenco, setElenco] = useState<EsitoElencoScenari<FileScenari> | null>(null);
   const [tentativoElenco, setTentativoElenco] = useState(0);
   const fileScenari = elenco?.tipo === 'letto' ? elenco.file : null;
   const statoElenco = statoElencoScenari(elenco);
-  const [id, setId] = useState<string | null>(null);
-  const [statoCorrente, setStatoCorrente] = useState<StatoEsecuzione | null>(null);
-  const [passi, setPassi] = useState<Passo[]>([]);
-  const [errore, setErrore] = useState<string | null>(null);
+
+  // Le corsie sulla schermata, nell'ordine di partenza, e lo stato di ciascuna.
+  // Una corsia senza stato registrato e' ancora in corso: e' lo stato con cui parte.
+  const [corsie, setCorsie] = useState<CorsiaSulloSchermo[]>([]);
+  const [statiCorsie, setStatiCorsie] = useState<Record<string, StatoCorsia>>({});
   const [inLancio, setInLancio] = useState(false);
-  // Le ultime righe grezze del processo: servono solo per lo scenario in cui
-  // il test muore prima di produrre un passo, l'unico in cui la finestra non
-  // ha nient'altro da mostrare. Non e' l'output di una registrazione (dove le
-  // righe grezze possono contenere i nomi che il tester sta dando ai passi, e
-  // si e' scelto di non mostrarle): qui e' l'output di un test gia' scritto,
-  // che non ha quel problema.
-  const [righeOutput, setRigheOutput] = useState<string[]>([]);
-  const [codiceUscita, setCodiceUscita] = useState<number | null>(null);
-  const [avviatoAlle, setAvviatoAlle] = useState<number | null>(null);
-  const [durataMs, setDurataMs] = useState<number | null>(null);
+  const [errore, setErrore] = useState<string | null>(null);
 
-  const inCorso = statoCorrente === 'in corso';
+  const inCorsoDi = (c: CorsiaSulloSchermo) => (statiCorsie[c.id] ?? 'in corso') === 'in corso';
+  const corsieInCorso = corsie.filter(inCorsoDi);
+  const ambientiDelleRighe = righe.map((r) => ambienteDi(r, ambiente));
+  const possoLanciareOra = ambientiDelleRighe.every((a) => a !== '') && puoLanciare(corsieInCorso.length, righe.length);
 
-  // Riaggancio: appena la schermata si apre, prima di tutto chiede se c'era
-  // gia' un test in corso — nella sessione di lavoro (l'ha avviato questa
-  // stessa schermata) o nel registro del server (avviato da un'altra, per
-  // esempio Registra). Un solo controllo, non un intervallo: gli effetti che
-  // seguono (passi e flusso) si agganciano da soli non appena `id` e
-  // `statoCorrente` cambiano.
+  // Riaggancio: appena la schermata si apre, chiede quali corsie di test sono
+  // ancora in corso sul server e le ripropone tutte, non una. Le operazioni di
+  // persona (registrazione, sessione, scansione) non sono corsie: si segnalano a parte.
   useEffect(() => {
     let attivo = true;
-
-    const riagganciati = (idOp: string, avviatoAlleOp: number | null) => {
-      setErrore(null);
-      setPassi([]);
-      setRigheOutput([]);
-      setCodiceUscita(null);
-      setDurataMs(null);
-      setAvviatoAlle(avviatoAlleOp);
-      setId(idOp);
-      setStatoCorrente('in corso');
-    };
-
-    const salvato = leggiRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO);
-    if (salvato) {
-      riagganciati(salvato.id, salvato.avviatoAlle);
-      return;
-    }
-
+    cancellaRiaggancio(CHIAVE_RIAGGANCIO_VECCHIA);
     leggiConLimite('/api/esegui')
       .then((r) => r.json())
-      .then((d: RispostaOperazioneInCorso) => {
-        if (!attivo || !d.operazione) return;
-        const { id: idOp, nome, avvio } = d.operazione;
-        if (nome === 'test') {
-          const avviatoAlleOp = Number.isNaN(Date.parse(avvio)) ? null : Date.parse(avvio);
-          riagganciati(idOp, avviatoAlleOp);
-        } else {
-          setAltrove(nome);
-        }
+      .then((d: RispostaOperazioni) => {
+        if (!attivo) return;
+        const operazioni = d.operazioni ?? [];
+        const persona = operazioni.find((o) => o.nome !== 'test');
+        if (persona) setAltrove(persona.nome as NomeComando);
+        const daRiagganciare = righeDaRiagganciare(operazioni);
+        if (daRiagganciare.length === 0) return;
+        setCorsie((precedenti) => {
+          const viste = new Set(precedenti.map((c) => c.id));
+          const nuove = daRiagganciare
+            .filter((r) => !viste.has(r.id))
+            .map((r) => ({ id: r.id, ambiente: '', scenario: '', avviatoAlle: r.avviatoAlle }));
+          return [...precedenti, ...nuove];
+        });
       })
       .catch(() => {
         // Nessuna notizia non e' una brutta notizia: si resta sulla scelta.
       });
-
     return () => {
       attivo = false;
     };
-    // Solo all'apertura della schermata: `riagganciati` non dipende da niente
-    // che possa cambiare (solo funzioni di stato, stabili fra un render e
-    // l'altro).
+    // Solo all'apertura della schermata.
   }, []);
 
-  // Gli scenari che si possono scegliere: letti una volta, all'apertura. Dopo
-  // una registrazione si arriva qui cambiando schermata, quindi l'elenco e'
-  // gia' aggiornato senza bisogno di interrogarlo di continuo.
+  // Gli scenari che si possono scegliere: letti una volta, all'apertura.
   useEffect(() => {
     let attivo = true;
     setElenco(null);
@@ -248,141 +204,88 @@ function EsecuzioneContenuto() {
     };
   }, [tentativoElenco]);
 
-  // I passi si aggiornano da soli mentre l'esecuzione gira: una richiesta al
-  // secondo basta, e si ferma da sola quando l'esecuzione non e' piu' in corso.
-  useEffect(() => {
-    if (!id || !inCorso) return;
-    let attivo = true;
-    const leggi = () => {
-      leggiConLimite(`/api/passi?id=${encodeURIComponent(id)}`)
-        .then((r) => r.json())
-        .then((d: { passi?: Passo[] }) => {
-          if (attivo) setPassi(d.passi ?? []);
-        })
-        .catch(() => {});
-    };
-    leggi();
-    const intervallo = setInterval(leggi, 1000);
-    return () => {
-      attivo = false;
-      clearInterval(intervallo);
-    };
-  }, [id, inCorso]);
+  // Stabile: il pannello di ogni corsia lo usa in un effetto che non deve ripartire.
+  const registraStato = useCallback((id: string, stato: StatoCorsia) => {
+    setStatiCorsie((precedenti) => ({ ...precedenti, [id]: stato }));
+  }, []);
 
-  // Il flusso dice quando l'esecuzione e' conclusa: e' il segnale per smettere
-  // di interrogare i passi, e per un ultimo aggiornamento a esecuzione finita.
-  useEffect(() => {
-    if (!id || !inCorso) return;
-    const fonte = new EventSource(`/api/esegui/${encodeURIComponent(id)}/flusso`);
-    // Le righe arrivano gia' sul flusso: se ne tengono da parte solo le
-    // ultime, per il caso (raro, si spera) in cui servano perche' non c'e'
-    // nessun passo da mostrare.
-    const suRiga = (evento: MessageEvent<string>) => {
-      try {
-        const nuove = JSON.parse(evento.data) as string[];
-        setRigheOutput((precedenti) => [...precedenti, ...nuove].slice(-20));
-      } catch {
-        // Una riga malformata non e' un guasto da segnalare: si ignora.
-      }
-    };
-    const suFine = (evento: MessageEvent<string>) => {
-      // Comunque vada a finire, l'esecuzione non c'e' piu': niente da
-      // riagganciare la prossima volta che si apre questa schermata.
-      cancellaRiaggancio(CHIAVE_RIAGGANCIO);
-      // L'esito per scenario e' gia' scritto (il server lo fa prima di dire
-      // "finita"): si rilegge l'elenco ora, cosi' la pagina Scenari ha il dato
-      // nuovo anche se non e' aperta.
-      dopoUnCambioDegliScenari();
-      try {
-        const dati = JSON.parse(evento.data) as { stato?: StatoEsecuzione; codice?: number | null };
-        setStatoCorrente(dati.stato ?? 'conclusa');
-        setCodiceUscita(dati.codice ?? null);
-      } catch {
-        setStatoCorrente('conclusa');
-      }
-      setDurataMs(avviatoAlle !== null ? Date.now() - avviatoAlle : null);
-      fonte.close();
-    };
-    fonte.addEventListener('riga', suRiga);
-    fonte.addEventListener('fine', suFine);
-    // Nessun `close` sull'errore, ed e' deliberato.
-    //
-    // Chiudere qui spegne per sempre la riconnessione che il browser fa da
-    // solo: basta un portatile che va in sospensione o un ricarico in
-    // sviluppo perche' l'evento di fine non arrivi mai piu'. La schermata
-    // resterebbe a girare con lo spinner mentre il test e' gia' finito — cioe'
-    // direbbe una cosa falsa, che e' l'unica cosa che non deve fare.
-    //
-    // Lasciando riconnettere, alla prima riconnessione la rotta rilegge lo
-    // stato e manda subito la fine se nel frattempo e' arrivata.
-    return () => {
-      fonte.removeEventListener('riga', suRiga);
-      fonte.removeEventListener('fine', suFine);
-      fonte.close();
-    };
-  }, [id, inCorso, avviatoAlle]);
+  const aggiungiRiga = () => {
+    contatoreRighe.current += 1;
+    setRighe((precedenti) => [
+      ...precedenti,
+      { chiave: `r${contatoreRighe.current}`, scenario: '', ambiente: '' },
+    ]);
+  };
 
-  // Un ultimo giro sui passi quando l'esecuzione si conclude: il file dei
-  // messaggi puo' aver ricevuto le ultime righe dopo l'ultima lettura al secondo.
-  useEffect(() => {
-    if (!id || inCorso || statoCorrente === null) return;
-    leggiConLimite(`/api/passi?id=${encodeURIComponent(id)}`)
-      .then((r) => r.json())
-      .then((d: { passi?: Passo[] }) => setPassi(d.passi ?? []))
-      .catch(() => {});
-  }, [id, inCorso, statoCorrente]);
+  const modificaRiga = (chiave: string, cambio: Partial<RigaForm>) => {
+    setRighe((precedenti) => precedenti.map((r) => (r.chiave === chiave ? { ...r, ...cambio } : r)));
+  };
 
+  const togliRiga = (chiave: string) => {
+    setRighe((precedenti) => precedenti.filter((r) => r.chiave !== chiave));
+  };
+
+  // Lancia le righe una dopo l'altra. Se una viene rifiutata, si ferma li' e dice
+  // perche': le corsie gia' partite restano, quelle dopo non partono.
   const lancia = useCallback(async () => {
     setErrore(null);
-    setPassi([]);
-    setRigheOutput([]);
-    setCodiceUscita(null);
-    setDurataMs(null);
+    if (!puoLanciare(corsieInCorso.length, righe.length)) {
+      setErrore(t('limiteCorsie', { n: MASSIMO_TEST_CONTEMPORANEI }));
+      return;
+    }
     setInLancio(true);
+    // Via le corsie gia' finite: la schermata si pulisce per il lancio nuovo, come prima.
+    setCorsie((precedenti) => precedenti.filter((c) => (statiCorsie[c.id] ?? 'in corso') === 'in corso'));
     try {
-      const risposta = await fetch('/api/esegui', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: 'test',
-          parametri: {
-            bersaglio: ambiente,
-            vedi: guardaIlBrowser,
-            pulito: senzaSessione,
-            ...(guardaIlBrowser && rallenta > 0 ? { rallenta } : {}),
-            ...(scelta ? { scenario: scelta } : {}),
-          },
-        }),
-      });
-      const dati = (await risposta.json()) as { id?: string; errore?: string };
-      if (!risposta.ok || !dati.id) {
-        setErrore(dati.errore ?? t('erroreLancio'));
-        return;
+      for (const riga of righe) {
+        const ambienteRiga = ambienteDi(riga, ambiente);
+        const risposta = await fetch('/api/esegui', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: 'test',
+            parametri: {
+              bersaglio: ambienteRiga,
+              vedi: guardaIlBrowser,
+              pulito: senzaSessione,
+              ...(guardaIlBrowser && rallenta > 0 ? { rallenta } : {}),
+              ...(riga.scenario ? { scenario: riga.scenario } : {}),
+            },
+          }),
+        });
+        const dati = (await risposta.json()) as RispostaErroreLancio;
+        if (!risposta.ok || !dati.id) {
+          setErrore(messaggioDiErrore(dati, t));
+          break;
+        }
+        const avviatoAlleOra = Date.now();
+        setCorsie((precedenti) => [
+          ...precedenti,
+          { id: dati.id as string, ambiente: ambienteRiga, scenario: riga.scenario, avviatoAlle: avviatoAlleOra },
+        ]);
+        setStatiCorsie((precedenti) => ({ ...precedenti, [dati.id as string]: 'in corso' }));
       }
-      const avviatoAlleOra = Date.now();
-      setId(dati.id);
-      setAvviatoAlle(avviatoAlleOra);
-      setStatoCorrente('in corso');
-      scriviRiaggancio<DatiRiaggancio>(CHIAVE_RIAGGANCIO, {
-        id: dati.id,
-        avviatoAlle: avviatoAlleOra,
-      });
     } catch {
       setErrore(t('erroreContattoCruscotto'));
     } finally {
       setInLancio(false);
     }
-  }, [ambiente, guardaIlBrowser, rallenta, senzaSessione, scelta, t]);
+  }, [righe, corsieInCorso.length, statiCorsie, ambiente, guardaIlBrowser, rallenta, senzaSessione, t]);
 
-  // Stesso meccanismo di Registra (`/api/esegui/[id]/ferma`, gia' testato
-  // li'): niente da inventare, solo il pulsante che mancava qui (finding F7).
-  const interrompi = useCallback(async () => {
-    if (!id) return;
-    await fetch(`/api/esegui/${encodeURIComponent(id)}/ferma`, { method: 'POST' }).catch(() => {
-      // Se la richiesta non arriva, il flusso SSE non manda comunque una fine:
-      // il tester vede l'attesa continuare e puo' riprovare.
-    });
-  }, [id]);
+  // "Interrompi tutto": ferma ogni corsia in corso, una richiesta ciascuna.
+  const interrompiTutto = useCallback(async () => {
+    const ids = corsie.filter((c) => (statiCorsie[c.id] ?? 'in corso') === 'in corso').map((c) => c.id);
+    await Promise.all(
+      ids.map((id) =>
+        fetch(`/api/esegui/${encodeURIComponent(id)}/ferma`, { method: 'POST' }).catch(() => {
+          // Se una richiesta non arriva, quella corsia resta in corso: il tester lo vede e riprova.
+        })
+      )
+    );
+  }, [corsie, statiCorsie]);
+
+  const primaScelta = righe[0]?.scenario ?? '';
+  const avvisoCondiviso = avvisoStessoAmbiente(ambientiDelleRighe);
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -391,9 +294,7 @@ function EsecuzioneContenuto() {
       </h1>
 
       {altrove && (
-        <div
-          className="flex items-center gap-3 rounded-scheda border p-4 text-sm border-ambra text-testo bg-superficie-tenue"
-        >
+        <div className="flex items-center gap-3 rounded-scheda border p-4 text-sm border-ambra text-testo bg-superficie-tenue">
           <AlertTriangle size={18} aria-hidden="true" className="text-ambra" />
           <span className="flex-1">
             {t('altroInCorso', { comando: t(ALTROVE[altrove]?.chiaveComando ?? 'comandoSessione') })}
@@ -408,9 +309,7 @@ function EsecuzioneContenuto() {
         </div>
       )}
 
-      <section
-        className="flex flex-col gap-4 rounded-scheda border p-4 border-bordo bg-superficie"
-      >
+      <section className="flex flex-col gap-4 rounded-scheda border p-4 border-bordo bg-superficie">
         <p className="text-sm text-testo-tenue">
           {ambiente ? t('ambienteCorrente', { ambiente }) : t('nessunBersaglio')}
         </p>
@@ -425,68 +324,117 @@ function EsecuzioneContenuto() {
           </button>
         )}
 
-        {(salvato === 'nuovo' || salvato === 'sovrascritto' || salvato === 'rinominato') && scelta && (
+        {(salvato === 'nuovo' || salvato === 'sovrascritto' || salvato === 'rinominato') && primaScelta && (
           <p role="status" className="text-sm rounded-scheda border px-3 py-2 border-verde text-testo">
             {t(
               salvato === 'nuovo' ? 'salvatoNuovo' : salvato === 'sovrascritto' ? 'salvatoSovrascritto' : 'salvatoRinominato',
-              { file: scelta.replace(/^src\/features\//, '') }
+              { file: primaScelta.replace(/^src\/features\//, '') }
             )}
           </p>
         )}
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="scenario-da-eseguire" className="text-sm font-medium text-testo">
-            {t('scenarioEtichetta')}
-          </label>
-          <select
-            id="scenario-da-eseguire"
-            value={scelta}
-            onChange={(e) => setScelta(e.target.value)}
-            disabled={inCorso}
-            className={cn(
-              'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'border-bordo bg-superficie text-testo outline-blu',
-            )}
+        {righe.map((riga, indice) => {
+          const numero = indice + 1;
+          return (
+            <div key={riga.chiave} className="flex flex-col gap-3 rounded-controllo border p-3 border-bordo">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={`scenario-${riga.chiave}`} className="text-sm font-medium text-testo">
+                  {righe.length > 1 ? t('scenarioCorsia', { n: numero }) : t('scenarioEtichetta')}
+                </label>
+                <select
+                  id={`scenario-${riga.chiave}`}
+                  value={riga.scenario}
+                  onChange={(e) => modificaRiga(riga.chiave, { scenario: e.target.value })}
+                  className={cn(
+                    'min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm',
+                    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                    'border-bordo bg-superficie text-testo outline-blu',
+                  )}
+                >
+                  <option value="">{t('tuttiIRegistrati')}</option>
+                  {(fileScenari ?? []).map((f) => (
+                    <optgroup key={f.file} label={f.generato ? t('gruppoRegistrato', { nome: f.nome }) : f.nome}>
+                      <option value={`src/features/${f.file}`}>
+                        {t('interoGruppo', { n: f.scenari.length, nome: f.nome })}
+                      </option>
+                      {f.scenari.map((s) => (
+                        <option key={s.riga} value={`src/features/${f.file}:${s.riga}`}>
+                          {s.nome}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                {statoElenco === 'non-letto' ? (
+                  <ErroreLettura
+                    compatto
+                    titolo={tScenari('erroreTitolo')}
+                    testo={tScenari('erroreTesto')}
+                    etichettaRiprova={tScenari('riprova')}
+                    onRiprova={() => setTentativoElenco((n) => n + 1)}
+                  />
+                ) : indice === 0 ? (
+                  <p className="text-xs text-testo-tenue">
+                    {statoElenco === 'vuoto' ? t('nessunoScenario') : t('notaDocumentati')}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={`ambiente-${riga.chiave}`} className="text-sm font-medium text-testo">
+                  {righe.length > 1 ? t('ambienteDellaCorsia', { n: numero }) : t('bersaglio')}
+                </label>
+                <select
+                  id={`ambiente-${riga.chiave}`}
+                  value={riga.ambiente}
+                  onChange={(e) => modificaRiga(riga.chiave, { ambiente: e.target.value })}
+                  className="min-h-10 w-full min-w-0 rounded-controllo border px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
+                >
+                  <option value="">{t('stessoDellaBarra', { ambiente: ambiente || t('nessunBersaglio') })}</option>
+                  {ambientiDisponibili.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {righe.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => togliRiga(riga.chiave)}
+                  className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
+                >
+                  <X size={16} aria-hidden="true" />
+                  {t('togliCorsia')}
+                </button>
+              )}
+            </div>
+          );
+        })}
+
+        {puoAggiungereRiga(righe.length) && (
+          <button
+            type="button"
+            onClick={aggiungiRiga}
+            className="inline-flex min-h-10 w-fit items-center gap-2 rounded-controllo border px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo text-testo outline-blu"
           >
-            <option value="">{t('tuttiIRegistrati')}</option>
-            {(fileScenari ?? []).map((f) => (
-              <optgroup
-                key={f.file}
-                label={f.generato ? t('gruppoRegistrato', { nome: f.nome }) : f.nome}
-              >
-                <option value={`src/features/${f.file}`}>
-                  {t('interoGruppo', { n: f.scenari.length, nome: f.nome })}
-                </option>
-                {f.scenari.map((s) => (
-                  <option key={s.riga} value={`src/features/${f.file}:${s.riga}`}>
-                    {s.nome}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-          {statoElenco === 'non-letto' ? (
-            <ErroreLettura
-              compatto
-              titolo={tScenari('erroreTitolo')}
-              testo={tScenari('erroreTesto')}
-              etichettaRiprova={tScenari('riprova')}
-              onRiprova={() => setTentativoElenco((n) => n + 1)}
-            />
-          ) : (
-            <p className="text-xs text-testo-tenue">
-              {statoElenco === 'vuoto' ? t('nessunoScenario') : t('notaDocumentati')}
-            </p>
-          )}
-        </div>
+            <Plus size={16} aria-hidden="true" />
+            {t('aggiungiCorsia')}
+          </button>
+        )}
+
+        {avvisoCondiviso && (
+          <p role="status" className="text-sm rounded-scheda border px-3 py-2 border-ambra text-testo">
+            {t('avvisoStessoAmbiente')}
+          </p>
+        )}
 
         <Interruttore
           etichetta={t('guardaIlBrowser')}
           attivo={guardaIlBrowser}
           onChange={setGuardaIlBrowser}
-          disabilitato={inCorso}
+          disabilitato={false}
         />
         {guardaIlBrowser && (
           <div className="flex items-center justify-between gap-3 min-h-10 rounded-controllo border px-3 text-sm border-bordo text-testo">
@@ -497,8 +445,7 @@ function EsecuzioneContenuto() {
               id="velocita-browser"
               value={rallenta}
               onChange={(e) => setRallenta(Number(e.target.value))}
-              disabled={inCorso}
-              className="min-h-10 rounded-controllo border px-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
+              className="min-h-10 rounded-controllo border px-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-bordo bg-superficie text-testo outline-blu"
             >
               <option value={0}>{t('velocitaNormale')}</option>
               <option value={500}>{t('velocitaLenta')}</option>
@@ -510,14 +457,14 @@ function EsecuzioneContenuto() {
           etichetta={t('partiSenzaSessione')}
           attivo={senzaSessione}
           onChange={setSenzaSessione}
-          disabilitato={inCorso}
+          disabilitato={false}
         />
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={lancia}
-            disabled={inLancio || inCorso || !ambiente}
+            onClick={() => void lancia()}
+            disabled={inLancio || !possoLanciareOra}
             className={cn(
               'inline-flex items-center justify-center gap-2 min-h-10 px-4 rounded-controllo text-sm font-semibold text-white transition-colors',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
@@ -525,25 +472,29 @@ function EsecuzioneContenuto() {
               'bg-blu-fondo outline-blu',
             )}
           >
-            {inCorso ? (
+            {inLancio ? (
               <Loader2 size={18} aria-hidden="true" className="animate-spin" />
             ) : (
               <PlayCircle size={18} aria-hidden="true" />
             )}
-            {inCorso ? t('testInCorso') : t('lanciaIlTest')}
+            {inLancio ? t('testInCorso') : t('lanciaIlTest')}
           </button>
 
-          {inCorso && (
+          {corsieInCorso.length > 0 && (
             <button
               type="button"
-              onClick={() => void interrompi()}
+              onClick={() => void interrompiTutto()}
               className="inline-flex min-h-10 items-center gap-2 rounded-controllo border px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 border-rosso text-rosso outline-rosso"
             >
               <Square size={16} aria-hidden="true" />
-              {t('interrompi')}
+              {t('interrompiTutto')}
             </button>
           )}
         </div>
+
+        {!puoLanciare(corsieInCorso.length, righe.length) && (
+          <p className="text-sm text-testo-tenue">{t('limiteCorsie', { n: MASSIMO_TEST_CONTEMPORANEI })}</p>
+        )}
 
         {errore && (
           <p role="alert" className="text-sm font-medium text-rosso">
@@ -552,47 +503,20 @@ function EsecuzioneContenuto() {
         )}
       </section>
 
-      {passi.length > 0 && (
-        <section aria-label={t('passiAriaLabel')} className="flex flex-col gap-4 min-w-0">
-          <ul className="flex flex-col gap-2" role="list">
-            {passi.map((p, i) => (
-              <PassoTest key={i} passo={p} />
-            ))}
-          </ul>
-
-          <p
-            className="text-sm font-semibold border-t pt-3 text-testo-tenue border-bordo"
-          >
-            {rigaEsito(passi, durataMs, locale, t)}
-          </p>
-        </section>
-      )}
-
-      {deveMostrareErroreSenzaPassi(statoCorrente, passi) && (
-        <section
-          role="alert"
-          aria-label={t('esitoAriaLabel')}
-          className={cn('flex flex-col gap-2 rounded-scheda border p-4 text-sm bg-superficie-tenue', statoCorrente === 'fallita' ? 'border-rosso' : 'border-testo-tenue')}
-        >
-          <p
-            className={cn('flex items-center gap-2 font-semibold', statoCorrente === 'fallita' ? 'text-rosso' : 'text-testo-tenue')}
-          >
-            <AlertTriangle size={18} aria-hidden="true" />
-            {fraseSenzaPassi(statoCorrente, t)}
-          </p>
-          <p className="text-testo-tenue">
-            {codiceUscita !== null
-              ? t('codiceUscita', { codice: codiceUscita })
-              : t('nessunCodiceUscita')}
-          </p>
-          {righeOutput.length > 0 && (
-            <pre
-              className="text-xs whitespace-pre-wrap break-words rounded-scheda p-2 m-0 font-mono bg-superficie text-testo"
-            >
-              {righeOutput.join('\n')}
-            </pre>
-          )}
-        </section>
+      {corsie.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 min-[1100px]:grid-cols-2">
+          {corsie.map((c, i) => (
+            <PannelloCorsia
+              key={c.id}
+              id={c.id}
+              numero={i + 1}
+              ambiente={c.ambiente}
+              scenario={c.scenario}
+              avviatoAlle={c.avviatoAlle}
+              onStato={registraStato}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

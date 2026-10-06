@@ -790,6 +790,25 @@ nessuna correzione). **Non toccato di proposito**: il lucchetto del registro
 struttura (`PERSONA`, il tetto, `operazioniInCorso()`) e' parte di S3 e cambia cio'
 che l'utente vede o puo' fare.
 
+**Stato di S3 (6/10/2026): fatta in una copia (`lavoro/N6`), da unire.** Il lucchetto e' diviso
+come da §3: `PERSONA` (registrazione, sessione, scansione) una alla volta e mai con un test;
+i test fino a `MASSIMO_TEST_CONTEMPORANEI` (2, in `lib/corsie.ts`); oltre, un rifiuto con
+codice `tetto` e il numero. La regola e' la funzione pura `motivoRifiuto` (`lib/registro.ts`),
+provata in `__tests__/lib/lucchetto-diviso.test.ts`. `operazioniInCorso()` elenca tutte le corsie;
+`operazioneInCorso()` resta per chi legge il campo singolo; `GET /api/esegui` restituisce anche
+`operazioni`. La schermata ha fino a due righe (scenario e ambiente per corsia), due pannelli che
+si affiancano sopra i 1100 px (`components/cruscotto/esecuzione/PannelloCorsia.tsx`), "Interrompi"
+per corsia e "Interrompi tutto". Due corsie sullo stesso ambiente sono consentite con l'avviso (Q4).
+**Difetto trovato e corretto:** se l'indice degli esiti mancava, la ricostruzione leggeva anche i
+`.ndjson` parziali delle corsie ancora in corso, e alla loro fine la prova compariva due volte (una
+con ambiente sconosciuto). Ora ogni ricostruzione esclude le corsie in corso (`messaggiInCorso()`,
+`altriInCorso` in `esiti-scenari.ts`), anche quella della rotta Scenari. La scrittura dell'indice e'
+atomica (file temporaneo e rinomina) e le fusioni sono sincrone: la concorrenza reale e' solo con
+la ricostruzione asincrona, provata in `esiti-concorrenza.test.ts`.
+**Deviazione dichiarata:** il riaggancio non usa la lista in `sessionStorage`: all'apertura la
+schermata riaggancia le corsie di test che il server dice ancora in corso (`operazioni`), che e' la
+fonte vera. La chiave vecchia viene tolta. **Non fatto in S3:** "Vai al primo fallito" e il totale
+(S1); il tetto resta a 2 (S5 lo alza solo dopo una misura).
 La vecchia S6 "Duplica ambiente" **decade**: con le utenze nell'ambiente il suo
 lavoro lo fa "Aggiungi utenza" dentro SU.
 
