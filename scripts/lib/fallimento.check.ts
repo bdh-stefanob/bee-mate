@@ -31,7 +31,7 @@ const dir = scriviFallimento(
     messaggio: 'locator.click: Timeout 10000ms exceeded.\n  password=Segreta123 Authorization: Bearer abc.def-123',
     url: "https://qa.example/messages",
     titolo: "Messages",
-    aria: '- heading "Secure messages"\n- button "Resume order"',
+    aria: '- heading "Secure messages"\n- button "Resume order"\n- textbox "Email": mario@esempio.invalid\n- textbox "••••••••": Segreta123',
     screenshot: Buffer.from("png"),
     ambiente: "qa-brochure",
     quando,
@@ -43,6 +43,10 @@ const md = fs.readFileSync(path.join(dir, "fallimento.md"), "utf8");
 truthy("il dossier nomina il passo fallito", md.includes("the user check the last notification"));
 truthy("e la pagina com'era", md.includes("https://qa.example/messages") && md.includes("Messages"));
 truthy("l'albero di accessibilita' e' un file a parte", fs.readFileSync(path.join(dir, "aria.yml"), "utf8").includes("Resume order"));
+const ariaScritta = fs.readFileSync(path.join(dir, "aria.yml"), "utf8");
+truthy("l'albero non porta la password digitata nel campo", !ariaScritta.includes("Segreta123"), "la password e' finita in aria.yml");
+truthy("ne' gli altri valori digitati", !ariaScritta.includes("mario@esempio.invalid"), "un valore digitato e' finito in aria.yml");
+truthy("ma il campo resta, col suo nome", ariaScritta.includes('- textbox "Email": [valore omesso]'), ariaScritta);
 truthy("lo screenshot e' salvato", fs.existsSync(path.join(dir, "screenshot.png")));
 truthy("il testo dice di correggere nella Page Object, non nello step", md.includes("mai nello step"));
 truthy("rilancia solo questo scenario, sullo stesso ambiente", md.includes('npm run test:bersaglio qa-brochure -- --name "^a user completes an order$"'));

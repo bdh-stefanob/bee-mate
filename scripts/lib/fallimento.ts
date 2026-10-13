@@ -49,6 +49,27 @@ export function senzaSegreti(testo: string): string {
     .replace(/(password|passwd|token|secret|authorization|cookie)(["'\s:=]+)(?!Bearer\b)[^\s"',;]+/gi, "$1$2[nascosto]");
 }
 
+/**
+ * L'albero di accessibilita' senza cio' che e' stato digitato nei campi.
+ *
+ * IL DIFETTO CHE RISOLVE. `ariaSnapshot` riporta il VALORE di ogni campo di
+ * testo (`- textbox "Email": mario@...`), e un campo password e' un campo di
+ * testo come gli altri: la password dell'ambiente finiva in chiaro in
+ * `aria.yml` a ogni fallimento avvenuto dopo l'accesso. Successo il 2026-10-13
+ * su un ambiente vero.
+ *
+ * Si toglie il valore di OGNI campo, non solo di quelli che sembrano password:
+ * il nome accessibile di un campo password e' il suo segnaposto (una fila di
+ * pallini), quindi dal nome non lo si riconosce. A chi corregge serve sapere
+ * che il campo c'era e come si chiama, non cosa conteneva.
+ */
+export function ariaSenzaValori(aria: string): string {
+  return aria.replace(
+    /^(\s*-\s+(?:textbox|searchbox|spinbutton|combobox)\b(?:\s+"(?:[^"\\]|\\.)*")?(?:\s+\[[^\]]*\])*):[ \t]+\S.*$/gm,
+    "$1: [valore omesso]"
+  );
+}
+
 export function slugFallimento(d: Pick<DatiFallimento, "scenario" | "quando">): string {
   const nome = d.scenario
     .toLowerCase()
@@ -116,7 +137,7 @@ export function scriviFallimento(d: DatiFallimento, radice = path.join("reports"
   fs.mkdirSync(dir, { recursive: true });
   const file: { aria?: string; screenshot?: string } = {};
   if (d.aria) {
-    fs.writeFileSync(path.join(dir, "aria.yml"), d.aria);
+    fs.writeFileSync(path.join(dir, "aria.yml"), ariaSenzaValori(d.aria));
     file.aria = "aria.yml";
   }
   if (d.screenshot) {
