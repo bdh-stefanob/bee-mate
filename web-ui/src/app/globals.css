@@ -277,4 +277,16 @@
   html {
     @apply font-sans;
   }
+  /*
+   * Gli elenchi nativi (`<select>`, `<datalist>`) li disegna il browser, non la
+   * pagina: senza queste regole in tema scuro restano su fondo bianco, con il
+   * testo chiaro ereditato dal `<select>` — cioe' illeggibili.
+   */
+  .dark {
+    color-scheme: dark;
+  }
+  select option,
+  select optgroup {
+    @apply bg-background text-foreground;
+  }
 }
