@@ -27,6 +27,17 @@
 
 import { expect, type Locator, type Page } from "@playwright/test";
 
+/**
+ * Quanto si aspetta che una pagina mostri cio' che la riconosce.
+ *
+ * Era 10 secondi fissi. Sull'ambiente QA vero (2026-10-13) una pagina dopo
+ * l'accesso ne impiega anche piu' di dieci a riempirsi: lo scenario falliva su
+ * un'attesa, non su un difetto. Aspettare di piu' non costa niente quando la
+ * pagina arriva; costa solo quando manca davvero. `BDD_ATTESA_PAGINA` (in
+ * millisecondi) la cambia senza toccare il codice.
+ */
+const ATTESA_PAGINA_MS = Number(process.env["BDD_ATTESA_PAGINA"] ?? 30_000);
+
 export abstract class BasePage {
   constructor(protected readonly page: Page) {}
 
@@ -80,8 +91,30 @@ export abstract class BasePage {
    * riprova finche' non scade: `toBeVisible()` su un locator e' un'asserzione
    * che aspetta, a differenza di una lettura di stato.
    */
-  protected async expectVisible(locator: Locator, ms = 10_000): Promise<void> {
+  protected async expectVisible(locator: Locator, ms = ATTESA_PAGINA_MS): Promise<void> {
+    // UNA PAGINA FERMA SOTTO IL VELO DI CARICAMENTO SI RICARICA, UNA VOLTA.
+    //
+    // Sull'ambiente QA vero (2026-10-13) una pagina su tre restava sotto il velo
+    // di caricamento oltre mezzo minuto, e ricaricandola arrivava subito: non e'
+    // lentezza, e' un caricamento che non finisce.
+    //
+    // SOLO SE IL VELO SI VEDE, e solo se l'ambiente dice qual e' (`BDD_VELO`, un
+    // selettore CSS). La prima versione ricaricava ogni pagina in ritardo, e ha
+    // fatto danno alla prima prova: una pagina che aspettava soltanto il passaggio
+    // alla successiva e' stata ricaricata, e la risposta appena data e' sparita.
+    // Ricaricare e' sicuro solo quando la pagina dichiara di non avere finito.
+    const velo = process.env["BDD_VELO"];
     try {
+      if (velo) {
+        const arrivata = await expect(locator)
+          .toBeVisible({ timeout: ms / 2 })
+          .then(() => true, () => false);
+        if (arrivata) return;
+        const fermaSulVelo = await this.page.locator(velo).first().isVisible().catch(() => false);
+        if (fermaSulVelo) await this.page.reload().catch(() => undefined);
+        await expect(locator).toBeVisible({ timeout: ms / 2 });
+        return;
+      }
       await expect(locator).toBeVisible({ timeout: ms });
     } catch (err) {
       // DOVE SI E' FINITI, NON SOLO COSA MANCAVA.
@@ -101,6 +134,29 @@ export abstract class BasePage {
           `  percorso e' cambiato prima di arrivare qui.`
       );
     }
+  }
+
+  /**
+   * Spunta una casella o sceglie un'opzione, anche quando quella vera e' nascosta.
+   *
+   * IL CASO (ambiente QA, 2026-10-13). Molte applicazioni disegnano la propria
+   * casella e tengono quella nativa fuori dallo schermo: `getByRole('checkbox')`
+   * la trova — e' lei a portare il nome accessibile — ma `.check()` non puo'
+   * cliccarla e aspetta trenta secondi un elemento "fuori dall'area visibile".
+   * Una persona clicca il disegno; il clic sull'elemento nativo fa la stessa
+   * cosa per l'applicazione (parte lo stesso evento, il modello si aggiorna).
+   *
+   * Prima si prova il modo normale, con poca pazienza: dove la casella e' una
+   * casella vera, niente cambia.
+   */
+  protected async spunta(locator: Locator): Promise<void> {
+    const normale = await locator.check({ timeout: 3000 }).then(() => true, () => false);
+    if (normale) return;
+    await locator.evaluate((el) => {
+      const casella = el as HTMLInputElement;
+      if (!casella.checked) casella.click();
+    });
+    await expect(locator).toBeChecked({ timeout: 5000 });
   }
 
   /**

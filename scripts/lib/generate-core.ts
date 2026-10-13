@@ -309,6 +309,47 @@ export interface AvvisoScartato {
   avviso: string;
 }
 
+/**
+ * Toglie i gesti che sono lo stesso gesto visto due volte.
+ *
+ * IL CASO (ambiente QA, 2026-10-13). Una scelta disegnata dall'applicazione — un
+ * pulsante «With Coaching £121» che contiene la sua opzione nativa, un'etichetta
+ * che contiene la sua casella — produce DUE eventi per un clic solo: il clic
+ * sul disegno e il cambio di stato del controllo nativo che ci sta sotto. Il
+ * registratore li scrive entrambi, perche' entrambi sono avvenuti. Rieseguirli
+ * entrambi no: il controllo nativo e' nascosto e non si lascia cliccare, e lo
+ * scenario si ferma su un gesto che il tester non ha mai fatto.
+ *
+ * Due regole, e solo fra gesti CONSECUTIVI sulla stessa pagina — nel dubbio non
+ * si toglie niente:
+ *
+ *  1. un clic su un pulsante o un link, seguito dal cambio di stato di
+ *     un'opzione il cui nome sta DENTRO il nome di quel pulsante: resta il clic
+ *     (ha un nome e si puo' rifare), va via il cambio di stato;
+ *  2. un clic senza ancoraggio — ne' ruolo ne' nome — seguito dal cambio di
+ *     stato di una casella o di un'opzione: era il clic sulla sua etichetta.
+ *     Resta il cambio di stato (ha un'identita'), va via il clic sul rettangolo.
+ */
+export function senzaGestiDoppi(steps: readonly Step[]): Step[] {
+  const scelta = (s: Step | undefined): s is Step =>
+    Boolean(s) && s!.action === "set" && (s!.role === "radio" || s!.role === "checkbox");
+  const stessaPagina = (a: Step, b: Step): boolean => (a.url ?? "") === (b.url ?? "");
+  const pulito = (testo: string): string => testo.trim().toLowerCase();
+
+  const tolti = new Set<number>();
+  steps.forEach((step, i) => {
+    const dopo = steps[i + 1];
+    if (step.action !== "click" || !scelta(dopo) || !stessaPagina(step, dopo)) return;
+    if (step.ancoraggioAssente) {
+      tolti.add(i);
+      return;
+    }
+    const contiene = dopo.name.trim() !== "" && pulito(step.name).includes(pulito(dopo.name));
+    if ((step.role === "button" || step.role === "link") && contiene) tolti.add(i + 1);
+  });
+  return steps.filter((_, i) => !tolti.has(i));
+}
+
 export interface ResolveResult {
   intents: ResolvedIntent[];
   gaps: Gap[];
@@ -498,12 +539,14 @@ export function resolveRecording(
     // `registraAvvisi`, in qualunque punto dello scenario, e quindi il passo non
     // deve esistere. Solo i click: un valore digitato in un campo che si chiama
     // come un avviso non e' la chiusura di un avviso.
-    const gesti = intent.steps.filter((step) => {
-      const avviso = step.action === "click" ? avvisoDelGesto(step) : null;
-      if (!avviso) return true;
-      avvisi.push({ where: intent.label, role: step.role, name: step.name, avviso: avviso.nome });
-      return false;
-    });
+    const gesti = senzaGestiDoppi(
+      intent.steps.filter((step) => {
+        const avviso = step.action === "click" ? avvisoDelGesto(step) : null;
+        if (!avviso) return true;
+        avvisi.push({ where: intent.label, role: step.role, name: step.name, avviso: avviso.nome });
+        return false;
+      })
+    );
 
     const steps: ResolvedStep[] = gesti.map((step) => {
       const url = step.url ?? fallbackUrl;
@@ -646,7 +689,19 @@ export function resolveRecording(
     };
   });
 
-  return { intents, gaps, pages, avvisi };
+  // UN PASSO FATTO SOLO DI AVVISI NON E' UN PASSO.
+  //
+  // «the user prefers to start over» era un clic solo, su un dialog che compare
+  // quando c'e' un ordine a meta': tolto il gesto (lo chiude `avvisi.ts`), del
+  // passo restava la frase con un corpo vuoto — uno step che passa sempre e non
+  // fa niente, cioe' una riga dello scenario che mente. Lo dichiarano gia' gli
+  // AVVISI, con il nome del passo in cui stava. Un passo nato vuoto (il tester
+  // ha chiuso un intento senza gesti) resta: quello e' un dato, non un residuo.
+  const rimasti = intents.filter(
+    (r, i) => r.steps.length > 0 || r.assertions.length > 0 || recording.intents[i]!.steps.length === 0
+  );
+
+  return { intents: rimasti, gaps, pages, avvisi };
 }
 
 // ---------------------------------------------------------------------------

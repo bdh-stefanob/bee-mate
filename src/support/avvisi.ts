@@ -54,9 +54,34 @@ export interface Avviso {
 export const AVVISI: readonly Avviso[] = [
   {
     nome: "riprendi l'ordine aperto",
-    riconoscimento: { role: "button", name: /resume/i },
-    // Escape, non «Resume»: l'ordine non si tocca.
+    // «Start over» sta nello stesso dialog di «Resume»: e' lo stesso avviso, e il
+    // gesto che il tester ci fa sopra non deve diventare un passo.
+    riconoscimento: { role: "button", name: /resume|^start over$/i },
+    // SECONDA ECCEZIONE DICHIARATA, e viene da una prova vera (2026-10-13).
+    //
+    // Dove il dialog offre «Start over», Escape non e' un'uscita: l'applicazione
+    // lo prende per un rifiuto e rimanda allo storico delle visite, da cui lo
+    // scenario non prosegue piu'. Con un ordine lasciato a meta' sull'utenza lo
+    // scenario si fermava sempre li', e senza ordine a meta' passava: cioe' non
+    // era ripetibile. Ricominciare e' l'unico gesto che porta nello stesso punto
+    // in entrambi i casi — con o senza ordine in sospeso si parte dall'inizio.
+    //
+    // Dove «Start over» non c'e' resta la regola: Escape, l'ordine non si tocca.
     chiudi: async (page) => {
+      const ricomincia = page.getByRole("button", { name: /^start over$/i }).first();
+      if (await ricomincia.isVisible().catch(() => false)) {
+        const prima = page.url();
+        await ricomincia.click({ timeout: 5000 });
+        // Ricominciare porta altrove. Sull'ambiente QA a volte la pagina resta
+        // dov'e', sotto il velo di caricamento, anche per piu' di mezzo minuto:
+        // ricaricarla la sblocca (l'ordine a meta' ormai non c'e' piu', quindi
+        // il dialog non ricompare). Visto 3 volte su 8 il 2026-10-13.
+        const andata = await page
+          .waitForURL((u) => u.toString() !== prima, { timeout: 10_000 })
+          .then(() => true, () => false);
+        if (!andata) await page.reload();
+        return;
+      }
       await page.keyboard.press("Escape");
     },
   },

@@ -27,6 +27,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   looksLikeId, pageIdentity, uniqueNames, indexDictionaries, resolveRecording, rankCandidates, componentsForPage,
+  senzaGestiDoppi,
 } from "./generate-core";
 import { componenteSenzaRuolo, toComponent } from "./component-naming";
 import { ricettaDelGesto } from "../../src/support/ricette";
@@ -499,6 +500,27 @@ console.log("\n--- rosa dei candidati ---\n");
   }
   eq("un passo su tre pagine: nessuna Page Object usata prima di essere creata", usateSenzaAssegnare, []);
 
+  // IL PASSO NON SI CHIUDE RICONOSCENDO LA PAGINA CHE HA APPENA LASCIATO.
+  //
+  // Il difetto (prima esecuzione sull'ambiente QA, 13/10): l'indirizzo di fine
+  // passo e' quello dell'ultimo gesto, cioe' la pagina su cui «Finish» e' stato
+  // cliccato. Lo step, dopo il clic, pretendeva di essere ancora li' — e dopo
+  // un clic che naviga non c'e' piu'.
+  const finisceNavigando = emitSteps(
+    {
+      intents: [{ ...intento, navigatesTo: riepilogo.key }], pages: [carrello, dati, riepilogo],
+      recordingPath: "x.json", dictionaryPaths: [], recordedAt: "", durationSeconds: 0,
+      generatedAt: "", slug: "finisce-navigando", outRoot: "src",
+    },
+    [carrello, dati, riepilogo],
+    metodi as never
+  ).contents;
+  eq(
+    "dopo l'ultimo gesto non si pretende di essere ancora sulla sua pagina",
+    finisceNavigando.slice(finisceNavigando.indexOf("clickFinish()")).includes("assertLoaded()"),
+    false
+  );
+
   // UN PASSO CHE FINISCE SU UNA PAGINA DOVE NON SI E' TOCCATO NIENTE.
   //
   // Il difetto (collaudo sull'app vera, 30/9): il passo arrivava su una pagina di
@@ -785,6 +807,58 @@ console.log("\n--- ricetta proposta, mai applicata da sola (G2, punto 4) ---\n")
 // 3. La catena intera: si genera davvero, e si compila
 // ---------------------------------------------------------------------------
 
+console.log("\n--- un clic solo non diventa due gesti (ambiente QA, 13/10) ---\n");
+
+{
+  const su = (url: string) => (s: Omit<Step, "url">): Step => ({ ...s, url });
+  const prodotti = su("https://shop.invalid/products");
+  const info = su("https://shop.invalid/info");
+  const nomi = (steps: Step[]): string[] => steps.map((s) => `${s.action} ${s.role} "${s.name}"`);
+
+  // IL CASO CHE CONTA: i gesti veri della scelta del prodotto.
+  const prodotto = senzaGestiDoppi([
+    prodotti({ action: "click", role: "button", name: "With Coaching £121" }),
+    prodotti({ action: "set", role: "radio", name: "With Coaching", value: "checked" }),
+    prodotti({ action: "click", role: "button", name: "Select" }),
+  ]);
+  eq(
+    "clic sul pulsante che contiene l'opzione: resta il clic, va via il cambio di stato",
+    nomi(prodotto),
+    ['click button "With Coaching £121"', 'click button "Select"']
+  );
+
+  const etichetta = senzaGestiDoppi([
+    info({ action: "click", role: "", name: "", ancoraggioAssente: { tag: "span", classi: ["ng-binding"] } as never }),
+    info({ action: "set", role: "checkbox", name: "I understand", value: "checked" }),
+    info({ action: "click", role: "button", name: "Continue" }),
+  ]);
+  eq(
+    "clic senza ancoraggio seguito dalla sua casella: resta la casella, va via il clic sul rettangolo",
+    nomi(etichetta),
+    ['set checkbox "I understand"', 'click button "Continue"']
+  );
+
+  // NEL DUBBIO NON SI TOGLIE NIENTE.
+  const altroNome = [
+    prodotti({ action: "click", role: "button", name: "Continue" }),
+    prodotti({ action: "set", role: "checkbox", name: "Newsletter", value: "checked" }),
+  ];
+  eq("un pulsante che non contiene il nome dell'opzione: due gesti veri", senzaGestiDoppi(altroNome).length, 2);
+
+  const altraPagina = [
+    prodotti({ action: "click", role: "button", name: "With Coaching £121" }),
+    info({ action: "set", role: "radio", name: "With Coaching", value: "checked" }),
+  ];
+  eq("stessi nomi ma su due pagine: due gesti veri", senzaGestiDoppi(altraPagina).length, 2);
+
+  const nonConsecutivi = [
+    prodotti({ action: "click", role: "button", name: "With Coaching £121" }),
+    prodotti({ action: "click", role: "button", name: "Details" }),
+    prodotti({ action: "set", role: "radio", name: "With Coaching", value: "checked" }),
+  ];
+  eq("con un gesto in mezzo: non si tocca", senzaGestiDoppi(nonConsecutivi).length, 3);
+}
+
 console.log("\n--- generazione e compilazione ---\n");
 
 interface Manifest {
@@ -802,6 +876,10 @@ function runGenerate(extra: string[]): Manifest {
       "--catalog", path.join(FIXTURES, "catalog.json"),
       "--name", "zz-controllo",
       "--manifest", path.join(TMP, "manifest.json"),
+      // Il catalogo vero non si rigenera da qui: i file di controllo vengono
+      // tolti a fine giro, e il catalogo restava con uno step che puntava a un
+      // file sparito — modificato in git a ogni `check:all`.
+      "no-catalog",
       ...extra,
     ],
     { cwd: ROOT, stdio: "pipe" }

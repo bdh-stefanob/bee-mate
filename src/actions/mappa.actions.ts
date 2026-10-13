@@ -23,43 +23,100 @@
 import type { Page } from "@playwright/test";
 
 export interface OpzioniSceltaSuMappa {
-  /** Quale pin scegliere, nell'ordine in cui compaiono nel DOM (0 = il primo). */
+  /** Quale pin scegliere, fra quelli disegnati, nell'ordine del DOM (0 = il primo). */
   indicePin?: number;
   /** Quanto aspettare che il pin compaia prima di arrendersi. */
   attesaMs?: number;
+  /**
+   * Come si riconosce un pin. Il default e' quello osservato sull'applicazione
+   * vera e sull'app finta; un'altra mappa lo dichiara qui, senza toccare la ricetta.
+   */
+  selettorePin?: string;
+  /** Di quanto scorrere la pagina perche' la mappa entri nell'area visibile (0 = non scorrere). */
+  scorriPx?: number;
 }
 
+/** Sotto questa misura un pin e' nel DOM ma non e' disegnato: non e' cliccabile. */
+const LATO_MINIMO_PIN = 5;
+
 /**
- * Sceglie un pin sulla mappa (selettore `.custom-marker`, lo stesso che
- * sintetizza `componenteSenzaRuolo`) cliccando col mouse sul suo centro, non
- * tramite l'azione guidata dal locator: quella fallirebbe con "element
- * intercepts pointer events" contro il livello che sta sopra. E' la stessa
- * tecnica di `clickSenzaAncoraggio` (vedi `src/support/base.page.ts`), qui
- * mirata al pin giusto invece che al livello che lo copre.
+ * Sceglie un pin sulla mappa cliccando col mouse sul suo centro, non tramite
+ * l'azione guidata dal locator: quella fallirebbe con "element intercepts
+ * pointer events" contro il livello che sta sopra, e un clic sintetico una
+ * mappa vera lo ignora. E' la stessa tecnica di `clickSenzaAncoraggio` (vedi
+ * `src/support/base.page.ts`), qui mirata al pin giusto invece che al livello
+ * che lo copre.
+ *
+ * SU UNA MAPPA VERA I PIN NON CI SONO FINCHE' NON SI VEDONO (2026-10-13, prima
+ * esecuzione sull'ambiente QA). Google Maps disegna i segnaposto solo per la
+ * porzione di mappa dentro l'area visibile, e in un browser senza finestra non
+ * si accorge da solo che la pagina e' scorsa. Quindi, prima di cercarli: si
+ * scorre la pagina e si annuncia un ridimensionamento, cosi' la mappa ricalcola
+ * cosa mostrare. E si conta solo un pin che ha una dimensione: uno nel DOM con
+ * rettangolo nullo esiste e non si puo' cliccare.
  */
 export async function sceltaSuMappa(page: Page, opzioni: OpzioniSceltaSuMappa = {}): Promise<void> {
-  const { indicePin = 0, attesaMs = 5000 } = opzioni;
-  const pin = page.locator(".custom-marker").nth(indicePin);
+  const { indicePin = 0, attesaMs = 25_000, selettorePin = ".custom-marker", scorriPx = 400 } = opzioni;
 
-  const visibile = await pin
-    .waitFor({ state: "visible", timeout: attesaMs })
+  if (scorriPx > 0) await page.evaluate((px) => window.scrollBy(0, px), scorriPx);
+  await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+
+  const argomenti = { selettore: selettorePin, indice: indicePin, lato: LATO_MINIMO_PIN };
+
+  const comparso = await page
+    .waitForFunction(
+      ({ selettore, indice, lato }) =>
+        [...document.querySelectorAll(selettore)].filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > lato && r.height > lato;
+        }).length > indice,
+      argomenti,
+      { timeout: attesaMs }
+    )
     .then(() => true, () => false);
-  if (!visibile) {
+  if (!comparso) {
+    const nelDom = await page.locator(selettorePin).count().catch(() => 0);
     throw new Error(
-      `La ricetta "scelta-su-mappa" non ha trovato il pin n. ${indicePin}.\n` +
-        `  Se la mappa congela l'area visibile alla creazione (come l'app finta usata per\n` +
-        `  provarla), un pin fuori da quell'area non esiste finche' non arriva un\n` +
-        `  ridimensionamento: prova a dispatchare un evento "resize" prima di questo passo.`
+      `La ricetta "scelta-su-mappa" non ha trovato il pin n. ${indicePin} (selettore ${selettorePin}).\n` +
+        `  Elementi con quel selettore nel DOM: ${nelDom}.\n` +
+        (nelDom === 0
+          ? `  Nessuno: la ricerca non ha dato risultati, oppure questa mappa disegna i pin in un altro modo\n` +
+            `  (in quel caso va dichiarato \`selettorePin\`).`
+          : `  Ci sono ma non sono disegnati: la mappa non li ha ancora messi nell'area visibile.`)
     );
   }
 
-  const box = await pin.boundingBox();
-  if (!box) {
+  // Le coordinate del mouse sono quelle dell'area visibile: un pin sotto il bordo
+  // della finestra non si colpisce, e va portato dentro.
+  //
+  // SI SCORRE LA FINESTRA, MAI `scrollIntoView` SUL PIN. Il pin vive dentro il
+  // riquadro della mappa, che nasconde cio' che sborda: `scrollIntoView` fa
+  // scorrere anche quel riquadro, la mappa non lo sa e da li' in poi disegna i
+  // pin in un punto e li ascolta in un altro. Il clic arriva, e non sceglie niente.
+  const centro = await page.evaluate(({ selettore, indice, lato }) => {
+    const pinScelto = (): Element | undefined =>
+      [...document.querySelectorAll(selettore)].filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > lato && r.height > lato;
+      })[indice];
+    let pin = pinScelto();
+    if (!pin) return null;
+    let r = pin.getBoundingClientRect();
+    const y = r.y + r.height / 2;
+    if (y < 0 || y > window.innerHeight) {
+      window.scrollBy(0, y - window.innerHeight / 2);
+      pin = pinScelto();
+      if (!pin) return null;
+      r = pin.getBoundingClientRect();
+    }
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  }, argomenti);
+  if (!centro) {
     throw new Error(
-      `La ricetta "scelta-su-mappa" ha trovato il pin n. ${indicePin} nel DOM, ma non il suo\n` +
-        `  rettangolo: non e' visualizzato (dimensione nulla, o fuori schermo).`
+      `La ricetta "scelta-su-mappa" aveva trovato il pin n. ${indicePin}, ma e' sparito prima del clic:\n` +
+        `  la mappa si e' ridisegnata. Rilancia; se si ripete, aumenta \`attesaMs\`.`
     );
   }
 
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.click(centro.x, centro.y);
 }

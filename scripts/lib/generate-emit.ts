@@ -133,7 +133,9 @@ function methodBody(c: Component, field: string): { signature: string; body: str
     };
   }
   if (kind === "choice") {
-    return { signature: "(): Promise<void>", body: `await this.${field}.check();` };
+    // `spunta`, non `.check()`: vedi `BasePage.spunta` — una casella nativa
+    // nascosta sotto una disegnata non si lascia cliccare dal locator.
+    return { signature: "(): Promise<void>", body: `await this.spunta(this.${field});` };
   }
   if (c.stability === "unnamed") {
     // Nessun ruolo, nessun nome: un clic normale non e' affidabile su una cosa
@@ -601,7 +603,22 @@ export function emitSteps(
     //
     // La transizione resta esplicita, solo che avviene qui: si vede lo stesso
     // che la pagina e' cambiata, e non si rischia un ciclo.
-    const next = intent.navigatesTo ? byKey.get(intent.navigatesTo) : undefined;
+    //
+    // NON SI RICONOSCE LA PAGINA DELL'ULTIMO GESTO, DOPO L'ULTIMO GESTO.
+    //
+    // `navigatesTo` viene dall'indirizzo dell'ultimo evento del passo: se e' un
+    // gesto, e' la pagina su cui il gesto e' AVVENUTO, non quella a cui ha
+    // portato. Un passo che finisce con «Get started» si chiudeva pretendendo di
+    // essere ancora sulla pagina di «Get started» — appena lasciata. Sulla prima
+    // esecuzione vera (2026-10-13) falliva cosi' ogni passo che termina con una
+    // navigazione: tre su dieci. Quella pagina e' gia' stata riconosciuta quando
+    // ci si e' entrati; dove si arriva lo riconosce il passo successivo, che
+    // comincia li'. Resta il caso buono: l'ultimo evento e' una VERIFICA fatta
+    // su un'altra pagina, e allora quella pagina e' davvero l'arrivo.
+    const ultimoGesto = intent.steps[intent.steps.length - 1];
+    const paginaUltimoGesto = ultimoGesto ? ultimoGesto.fromPage ?? intent.page ?? "" : null;
+    const arrivo = intent.navigatesTo ? byKey.get(intent.navigatesTo) : undefined;
+    const next = arrivo && arrivo.key === paginaUltimoGesto ? undefined : arrivo;
     if (next && next.key !== page.key && !conPageObject.has(next.key)) {
       // Si arriva su una pagina dove il tester non ha toccato niente: non ha una
       // Page Object, quindi non c'e' niente con cui riconoscerla. Costruirla qui
