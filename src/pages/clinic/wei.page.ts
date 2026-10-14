@@ -27,7 +27,8 @@ export class WeiPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly iHavenTBeenHereButton: Locator = this.page.getByRole('link', { name: 'I haven\'t been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago' });  // unstable: nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo
+  private readonly iHavenTBeenHereButton: Locator = this.page.getByRole('link', { name: 'I haven\'t been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago' }).or(this.page.getByText('I haven\'t been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago')).filter({ visible: true }).first();  // unstable: nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo
+  private readonly iMNewIAmButton: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*I'M NEW I am new to the Boots Online Doctor Weight Loss service[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*I'M NEW I am new to the Boots Online Doctor Weight Loss service[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -49,4 +50,11 @@ await this.expectVisible(this.iHavenTBeenHereButton);
 async clickIHavenTBeenHere(): Promise<void> {
   await this.iHavenTBeenHereButton.click();
 }
+
+  /**
+   * @componente  link "I'M NEW I am new to the Boots Online Doctor Weight Loss service"
+   */
+  async clickIMNewIAm(): Promise<void> {
+    await this.iMNewIAmButton.click();
+  }
 }

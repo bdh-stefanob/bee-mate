@@ -27,8 +27,13 @@ export class SummaryPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly el0000Expiry0729Button: Locator = this.page.getByRole('button', { name: '....0000 Expiry 07/29' }).first();  // ambiguous: contiene un identificativo numerico; 22 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
-private readonly placeOrderButton: Locator = this.page.getByRole('button', { name: 'Place Order' });
+  private readonly el0000Expiry0729Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\.\.\.\.0000 Expiry 07\/29[^\p{L}\p{N}]*$/u }).first();  // ambiguous: contiene un identificativo numerico; 22 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+private readonly placeOrderButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Place Order[^\p{L}\p{N}]*$/u });
+  private readonly toggleVitalityMembershipSectionButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Toggle Vitality membership section[^\p{L}\p{N}]*$/u });
+  private readonly creditOrDebitCardCvcField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*Credit or debit card CVC\/CVV[^\p{L}\p{N}]*$/u });
+  private readonly creditOrDebitCardExpirationField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*Credit or debit card expiration date[^\p{L}\p{N}]*$/u });
+  private readonly creditOrDebitCardNumberField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*Credit or debit card number[^\p{L}\p{N}]*$/u });
+  private readonly el0000Expiry1229Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\.\.\.\.0000 Expiry 12\/29[^\p{L}\p{N}]*$/u });  // unstable: contiene un identificativo numerico
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -56,4 +61,40 @@ async click0000Expiry0729(): Promise<void> {
 async clickPlaceOrder(): Promise<void> {
   await this.placeOrderButton.click();
 }
+
+  /**
+   * @componente  button "Toggle Vitality membership section"
+   */
+  async clickToggleVitalityMembershipSection(): Promise<void> {
+    await this.toggleVitalityMembershipSectionButton.click();
+  }
+
+  /**
+   * @componente  textbox "Credit or debit card CVC/CVV"
+   */
+  async fillCreditOrDebitCardCvc(value: string): Promise<void> {
+    await this.creditOrDebitCardCvcField.fill(value);
+  }
+
+  /**
+   * @componente  textbox "Credit or debit card expiration date"
+   */
+  async fillCreditOrDebitCardExpiration(value: string): Promise<void> {
+    await this.creditOrDebitCardExpirationField.fill(value);
+  }
+
+  /**
+   * @componente  textbox "Credit or debit card number"
+   */
+  async fillCreditOrDebitCardNumber(value: string): Promise<void> {
+    await this.creditOrDebitCardNumberField.fill(value);
+  }
+
+  /**
+   * @componente  button "....0000 Expiry 12/29"
+   * @attenzione  ancoraggio unstable: contiene un identificativo numerico
+   */
+  async click0000Expiry1229(): Promise<void> {
+    await this.el0000Expiry1229Button.click();
+  }
 }

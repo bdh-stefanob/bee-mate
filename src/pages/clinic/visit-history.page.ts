@@ -27,7 +27,7 @@ export class VisitHistoryPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly backToAccountButton: Locator = this.page.getByRole('button', { name: 'Back to Account' });
+  private readonly backToAccountButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Back to Account[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

@@ -27,8 +27,8 @@ export class ImportantInfoPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly iUnderstandTheImportantInformationChoice: Locator = this.page.getByRole('checkbox', { name: 'I understand the important information above.' });
-private readonly continueButton: Locator = this.page.getByRole('button', { name: 'Continue' });
+  private readonly iUnderstandTheImportantInformationChoice: Locator = this.page.getByRole('checkbox', { name: /^[^\p{L}\p{N}]*I understand the important information above\.[^\p{L}\p{N}]*$/u });
+private readonly continueButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Continue[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -44,7 +44,7 @@ private readonly continueButton: Locator = this.page.getByRole('button', { name:
  * @componente  checkbox "I understand the important information above."
  */
 async setIUnderstandTheImportantInformation(): Promise<void> {
-  await this.iUnderstandTheImportantInformationChoice.check();
+  await this.spunta(this.iUnderstandTheImportantInformationChoice);
 }
 
 /**

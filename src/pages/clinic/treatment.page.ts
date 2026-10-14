@@ -27,7 +27,7 @@ export class TreatmentPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly getStartedLink: Locator = this.page.getByRole('link', { name: 'Get started' }).first();  // ambiguous: 3 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+  private readonly getStartedLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Get started[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Get started[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();  // ambiguous: 3 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

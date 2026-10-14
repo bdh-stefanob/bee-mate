@@ -27,7 +27,9 @@ export class PharmacyMapSelectionPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly selectPharmacyButton: Locator = this.page.getByRole('button', { name: 'Select Pharmacy' });
+  private readonly selectPharmacyButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Select Pharmacy[^\p{L}\p{N}]*$/u });
+  private readonly unnamedButton: Locator = this.page.getByRole('button', { name: '' }).first();  // unnamed: nessun nome accessibile: non raggiungibile per ruolo+nome, e probabilmente invisibile a uno screen reader
+  private readonly zipField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*zip[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -45,4 +47,27 @@ export class PharmacyMapSelectionPage extends BasePage {
 async clickSelectPharmacy(): Promise<void> {
   await this.selectPharmacyButton.click();
 }
+
+  /**
+   * @componente  button ""
+   * @attenzione  ancoraggio unnamed: nessun nome accessibile: non raggiungibile per ruolo+nome, e probabilmente invisibile a uno screen reader
+   */
+  async clickUnnamed(): Promise<void> {
+    await this.clickSenzaAncoraggio(this.unnamedButton);
+  }
+
+  /**
+   * @componente  textbox "zip"
+   */
+  async fillZip(value: string): Promise<void> {
+    await this.zipField.fill(value);
+  }
+
+  /**
+   * @componente  textbox "zip"
+   */
+  async submitZip(value: string): Promise<void> {
+    await this.zipField.fill(value);
+    await this.zipField.press("Enter");
+  }
 }

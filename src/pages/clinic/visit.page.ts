@@ -27,11 +27,11 @@ export class VisitPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly openCameraButton: Locator = this.page.getByRole('button', { name: 'Open camera' });
-private readonly takePictureButton: Locator = this.page.getByRole('button', { name: 'Take Picture' });
-private readonly saveButton: Locator = this.page.getByRole('button', { name: 'Save' });
-private readonly thatSMeButton: Locator = this.page.getByRole('button', { name: 'That\'s me' });
-private readonly submitButton: Locator = this.page.getByRole('button', { name: 'Submit' });
+  private readonly openCameraButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Open camera[^\p{L}\p{N}]*$/u });
+private readonly takePictureButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Take Picture[^\p{L}\p{N}]*$/u });
+private readonly saveButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Save[^\p{L}\p{N}]*$/u });
+private readonly thatSMeButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*That's me[^\p{L}\p{N}]*$/u });
+private readonly submitButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Submit[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

@@ -27,10 +27,15 @@ export class ProductsWeiFPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly el05mgButton: Locator = this.page.getByRole('button', { name: '0.5mg' });
-private readonly withCoaching14697Button: Locator = this.page.getByRole('button', { name: 'With Coaching £146.97' });
-private readonly withCoachingChoice: Locator = this.page.getByRole('radio', { name: 'With Coaching' }).first();  // ambiguous: 6 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
-private readonly selectButton: Locator = this.page.getByRole('button', { name: 'Select' }).first();  // ambiguous: 7 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+  private readonly el05mgButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*0\.5mg[^\p{L}\p{N}]*$/u });
+private readonly withCoaching14697Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*With Coaching £146\.97[^\p{L}\p{N}]*$/u });
+private readonly withCoachingChoice: Locator = this.page.getByRole('radio', { name: /^[^\p{L}\p{N}]*With Coaching[^\p{L}\p{N}]*$/u }).first();  // ambiguous: 6 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+private readonly selectButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Select[^\p{L}\p{N}]*$/u }).first();  // ambiguous: 7 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+  private readonly el10mg31797Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*10mg £317\.97[^\p{L}\p{N}]*$/u });
+  private readonly el75mgButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*7\.5mg[^\p{L}\p{N}]*$/u });
+  private readonly withoutCoaching151Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Without Coaching £151[^\p{L}\p{N}]*$/u });
+  private readonly el72mgButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*7\.2mg[^\p{L}\p{N}]*$/u });
+  private readonly withoutCoaching28597Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Without Coaching £285\.97[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -61,7 +66,7 @@ async clickWithCoaching14697(): Promise<void> {
  * @attenzione  ancoraggio ambiguous: 6 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
  */
 async setWithCoaching(): Promise<void> {
-  await this.withCoachingChoice.check();
+  await this.spunta(this.withCoachingChoice);
 }
 
 /**
@@ -71,4 +76,39 @@ async setWithCoaching(): Promise<void> {
 async clickSelect(): Promise<void> {
   await this.selectButton.click();
 }
+
+  /**
+   * @componente  button "10mg £317.97"
+   */
+  async click10mg31797(): Promise<void> {
+    await this.el10mg31797Button.click();
+  }
+
+  /**
+   * @componente  button "7.5mg"
+   */
+  async click75mg(): Promise<void> {
+    await this.el75mgButton.click();
+  }
+
+  /**
+   * @componente  button "Without Coaching £151"
+   */
+  async clickWithoutCoaching151(): Promise<void> {
+    await this.withoutCoaching151Button.click();
+  }
+
+  /**
+   * @componente  button "7.2mg"
+   */
+  async click72mg(): Promise<void> {
+    await this.el72mgButton.click();
+  }
+
+  /**
+   * @componente  button "Without Coaching £285.97"
+   */
+  async clickWithoutCoaching28597(): Promise<void> {
+    await this.withoutCoaching28597Button.click();
+  }
 }

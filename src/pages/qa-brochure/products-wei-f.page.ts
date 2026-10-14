@@ -27,9 +27,9 @@ export class ProductsWeiFPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly withCoaching121Button: Locator = this.page.getByRole('button', { name: 'With Coaching £121' });
-private readonly withCoachingChoice: Locator = this.page.getByRole('radio', { name: 'With Coaching' }).first();  // ambiguous: 6 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
-private readonly selectButton: Locator = this.page.getByRole('button', { name: 'Select' }).first();  // ambiguous: 7 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+  private readonly withCoaching121Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*With Coaching £121[^\p{L}\p{N}]*$/u });
+private readonly withCoachingChoice: Locator = this.page.getByRole('radio', { name: /^[^\p{L}\p{N}]*With Coaching[^\p{L}\p{N}]*$/u }).first();  // ambiguous: 6 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+private readonly selectButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Select[^\p{L}\p{N}]*$/u }).first();  // ambiguous: 7 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -53,7 +53,7 @@ async clickWithCoaching121(): Promise<void> {
  * @attenzione  ancoraggio ambiguous: 6 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
  */
 async setWithCoaching(): Promise<void> {
-  await this.withCoachingChoice.check();
+  await this.spunta(this.withCoachingChoice);
 }
 
 /**

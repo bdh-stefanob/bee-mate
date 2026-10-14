@@ -27,10 +27,10 @@ export class QuestionsPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly startOfTheQuestionnaireSectionButton: Locator = this.page.getByRole('button', { name: 'Start of the Questionnaire Section - Move along' });
-private readonly nextButton: Locator = this.page.getByRole('button', { name: 'Next' });
-private readonly noGpButton: Locator = this.page.getByRole('button', { name: 'No GP' });
-private readonly el0Field: Locator = this.page.getByRole('spinbutton', { name: '0' }).first();  // ambiguous: il nome e' solo un numero: e' un valore che cambia, non un'identita'; 4 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+  private readonly startOfTheQuestionnaireSectionButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Start of the Questionnaire Section - Move along[^\p{L}\p{N}]*$/u });
+private readonly nextButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Next[^\p{L}\p{N}]*$/u });
+private readonly noGpButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*No GP[^\p{L}\p{N}]*$/u });
+private readonly el0Field: Locator = this.page.getByRole('spinbutton', { name: /^[^\p{L}\p{N}]*0[^\p{L}\p{N}]*$/u }).first();  // ambiguous: il nome e' solo un numero: e' un valore che cambia, non un'identita'; 4 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

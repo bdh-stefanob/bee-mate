@@ -27,7 +27,7 @@ export class PharmaciesPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly yesPickUpInStoreButton: Locator = this.page.getByRole('button', { name: 'Yes, pick up in store' });
+  private readonly yesPickUpInStoreButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Yes, pick up in store[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

@@ -27,7 +27,7 @@ export class AccountPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly startAConsultationsChooseFromLink: Locator = this.page.getByRole('link', { name: 'Start a consultations Choose from our list of services' });
+  private readonly startAConsultationsChooseFromLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Start a consultations Choose from our list of services[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Start a consultations Choose from our list of services[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

@@ -27,7 +27,7 @@ export class PharmacyMapSelectionPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly selectPharmacyButton: Locator = this.page.getByRole('button', { name: 'Select Pharmacy' });
+  private readonly selectPharmacyButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Select Pharmacy[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

@@ -27,7 +27,7 @@ export class SummaryPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly placeOrderButton: Locator = this.page.getByRole('button', { name: 'Place Order' });
+  private readonly placeOrderButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Place Order[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

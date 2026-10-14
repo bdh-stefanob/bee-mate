@@ -27,7 +27,8 @@ export class HomePage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly weightLossLink: Locator = this.page.getByRole('link', { name: 'Weight Loss' });
+  private readonly weightLossLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Weight Loss[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Weight Loss[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
+  private readonly logInButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Log in[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -45,4 +46,11 @@ export class HomePage extends BasePage {
 async goToWeightLoss(): Promise<void> {
   await this.weightLossLink.click();
 }
+
+  /**
+   * @componente  button "Log in"
+   */
+  async clickLogIn(): Promise<void> {
+    await this.logInButton.click();
+  }
 }

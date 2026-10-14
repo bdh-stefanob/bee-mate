@@ -27,8 +27,8 @@ export class HomePage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly acceptAllButton: Locator = this.page.getByRole('button', { name: 'Accept All' });
-private readonly weightLossLink: Locator = this.page.getByRole('link', { name: 'Weight Loss' });
+  private readonly acceptAllButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Accept All[^\p{L}\p{N}]*$/u });
+private readonly weightLossLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Weight Loss[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Weight Loss[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

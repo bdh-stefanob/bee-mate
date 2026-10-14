@@ -27,7 +27,7 @@ export class WeightLossPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly startOverButton: Locator = this.page.getByRole('button', { name: 'Start over' });
+  private readonly startOverButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Start over[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

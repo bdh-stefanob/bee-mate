@@ -27,7 +27,7 @@ export class ProductWeiFPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly continueButton: Locator = this.page.getByRole('button', { name: 'continue' });
+  private readonly continueButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*continue[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

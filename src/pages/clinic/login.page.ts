@@ -27,8 +27,8 @@ export class LoginPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly logInButton: Locator = this.page.getByRole('button', { name: 'Log In' });
-private readonly emailField: Locator = this.page.getByRole('textbox', { name: 'Email' });
+  private readonly logInButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Log In[^\p{L}\p{N}]*$/u });
+private readonly emailField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*Email[^\p{L}\p{N}]*$/u });
 private readonly passwordField: Locator = this.page.locator('input[type="password"]');
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────

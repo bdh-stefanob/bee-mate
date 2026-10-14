@@ -27,7 +27,7 @@ export class WeiPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly iMNewIAmButton: Locator = this.page.getByRole('link', { name: 'I\'M NEW I am new to the Boots Online Doctor Weight Loss service' });
+  private readonly iMNewIAmButton: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*I'M NEW I am new to the Boots Online Doctor Weight Loss service[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*I'M NEW I am new to the Boots Online Doctor Weight Loss service[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
