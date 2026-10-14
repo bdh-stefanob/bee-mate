@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-10-02T09:30:03.931Z
-Total: **25** steps (2 implemented, 23 wanted, 0 deprecated)
+Last update: 2026-10-14T13:13:47.785Z
+Total: **53** steps (2 implemented, 51 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **23/25** (92%)
+Ancorati a componenti di frontend: **51/53** (96%)
 
 ## How to use
 
@@ -17,7 +17,16 @@ expression. If it does not, flag it to the step gatekeeper.
 
 ---
 
-## Domain: `clinic/weight-loss` (16 steps)
+## Domain: `clinic/weight-loss` (44 steps)
+
+### 🔧 `submit photo`
+
+submit photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:356`
 
 ### 🔧 `the suer check new notification`
 
@@ -28,6 +37,15 @@ the suer check new notification
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:313`
 
+### 🔧 `the user answer the question`
+
+the user answer the question
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Next"
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:185`
+
 ### 🔧 `the user check and continue the order`
 
 the user check and continue the order
@@ -37,6 +55,24 @@ the user check and continue the order
 - `button` "Continue"
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:212`
+
+### 🔧 `the user check the notification and the page`
+
+the user check the notification and the page
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "1 Secure messages"
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:357`
+
+### 🔧 `the user choose pick up in store`
+
+the user choose pick up in store
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Yes, pick up in store"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:242`
 
 ### 🔧 `the user click on back to account`
 
@@ -64,6 +100,15 @@ the user click on i am old user
 - `link` "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago"
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:160`
+
+### 🔧 `the user click on start service`
+
+the user click on start service
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Start a consultations Choose from our list of services"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:96`
 
 ### 🔧 `the user click on start services`
 
@@ -117,6 +162,15 @@ the user complete the photo autentication
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:294`
 
+### 🔧 `the user complete the questionary`
+
+the user complete the questionary
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "No"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:224`
+
 ### 🔧 `the user continue`
 
 the user continue
@@ -125,6 +179,160 @@ the user continue
 - `button` "continue"
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:196`
+
+### 🔧 `the user get another photo for document`
+
+the user get another photo for document
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit" — pagina `IdPage`
+- `button` "Open camera" — pagina `VisitPage`
+- `button` "Take Picture" — pagina `VisitPage`
+- `button` "Save" — pagina `VisitPage`
+- `button` "That's me" — pagina `VisitPage`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:315`
+
+### 🔧 `the user get the front photo`
+
+the user get the front photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:378`
+
+### 🔧 `the user get the id photo`
+
+the user get the id photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:336`
+
+### 🔧 `the user get the second photo`
+
+the user get the second photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:292`
+
+### 🔧 `the user insert a card and a photo with {string}, {string} and {string}`
+
+the user insert a card and a photo with {string}, {string} and {string}
+
+**Parameters:**
+- `valore1` — textbox "Credit or debit card number"
+- `valore2` — textbox "Credit or debit card expiration date"
+- `valore3` — textbox "Credit or debit card CVC/CVV"
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Toggle Vitality membership section" — pagina `SummaryPage`
+- `textbox` "Credit or debit card number" — pagina `SummaryPage`
+- `textbox` "Credit or debit card expiration date" — pagina `SummaryPage`
+- `textbox` "Credit or debit card CVC/CVV" — pagina `SummaryPage`
+- `button` "Place Order" — pagina `SummaryPage`
+- `button` "Open camera" — pagina `IdPage`
+- `button` "Take Picture" — pagina `IdPage`
+- `button` "Save" — pagina `IdPage`
+- `button` "That's me" — pagina `IdPage`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:260`
+
+### 🔧 `the user insert personal photo`
+
+the user insert personal photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:309`
+
+### 🔧 `the user insert the bmi and the date with {string}`
+
+the user insert the bmi and the date with {string}
+
+**Parameters:**
+- `valore` — spinbutton "0" (sotto "1. What is your current weight?")
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `spinbutton` "0"
+- `button` "Next"
+- `button` "Open calendar"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:206`
+
+### 🔧 `the user insert the bmi data with {string}`
+
+the user insert the bmi data with {string}
+
+**Parameters:**
+- `valore` — spinbutton "0" (sotto "BMI Test question")
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `spinbutton` "0"
+- `button` "Next"
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:202`
+
+### 🔧 `the user insert the dose with {string}`
+
+the user insert the dose with {string}
+
+**Parameters:**
+- `valore` — spinbutton "0" (sotto "1. What is your current weight?")
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `checkbox` "I understand the important information above." — pagina `ImportantInfoPage`
+- `button` "Continue" — pagina `ImportantInfoPage`
+- `button` "Stay on the same dose" — pagina `QuestionsPage`
+- `spinbutton` "0" — pagina `QuestionsPage`
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:178`
+
+### 🔧 `The user log in and click on start a service with {string}`
+
+The user log in and click on start a service with {string}
+
+**Parameters:**
+- `valore` — textbox "Email" (sotto "LOG IN TO SAVE TIME")
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Log in" — pagina `HomePage`
+- `textbox` "Email" — pagina `LoginPage`
+- `button` "Log In" — pagina `LoginPage`
+- `link` "Start a consultations Choose from our list of services" — pagina `AccountPage`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:77`
+
+### 🔧 `The user log in with {string}`
+
+The user log in with {string}
+
+**Parameters:**
+- `valore` — textbox "Email" (sotto "LOG IN TO SAVE TIME")
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Log in" — pagina `HomePage`
+- `textbox` "Email" — pagina `LoginPage`
+- `button` "Log In" — pagina `LoginPage`
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:73`
 
 ### 🔧 `the user logged in`
 
@@ -137,6 +345,31 @@ the user logged in
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:68`
 
+### 🔧 `the user open the notification and see the order`
+
+the user open the notification and see the order
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit" — pagina `VisitPage`
+- `button` "1 Secure messages" — pagina `OrderCompleteAsyncNoCallPage`
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:425`
+
+### 🔧 `the user read the imprtant info with {string}`
+
+the user read the imprtant info with {string}
+
+**Parameters:**
+- `valore` — textbox "TdL 1430 Text Answer" (sotto "TdL 1430 Text Question")
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "continue" — pagina `ProductWeiFPage`
+- `checkbox` "I understand the important information above." — pagina `ImportantInfoPage`
+- `button` "Continue" — pagina `ImportantInfoPage`
+- `textbox` "TdL 1430 Text Answer" — pagina `Questions1Page`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:162`
+
 ### 🔧 `the user say no to GP`
 
 the user say no to GP
@@ -145,6 +378,16 @@ the user say no to GP
 - `button` "NO"
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:228`
+
+### 🔧 `the user select the card`
+
+the user select the card
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "....0000 Expiry 12/29"
+- `button` "Place Order"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:284`
 
 ### 🔧 `the user select the card and accept payment`
 
@@ -156,6 +399,33 @@ the user select the card and accept payment
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:274`
 
+### 🔧 `the user select the medication`
+
+the user select the medication
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago" — pagina `WeiPage`
+- `button` "7.2mg" — pagina `ProductsWeiFPage`
+- `button` "Without Coaching £285.97" — pagina `ProductsWeiFPage`
+- `button` "Select" — pagina `ProductsWeiFPage`
+- `button` "continue" — pagina `ProductWeiFPage`
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:145`
+
+### 🔧 `the user select the Mounjaro 7.5mg without coaching`
+
+the user select the Mounjaro 7.5mg without coaching
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "I'M NEW I am new to the Boots Online Doctor Weight Loss service" — pagina `WeiPage`
+- `button` "0.5mg" — pagina `ProductsWeiFPage`
+- `button` "Without Coaching £151" — pagina `ProductsWeiFPage`
+- `button` "10mg £317.97" — pagina `ProductsWeiFPage`
+- `button` "7.5mg" — pagina `ProductsWeiFPage`
+- `button` "Select" — pagina `ProductsWeiFPage`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:130`
+
 ### 🔧 `the user select the right store`
 
 the user select the right store
@@ -165,6 +435,65 @@ the user select the right store
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:258`
 
+### 🔧 `the user select the store pharmacy to pick up with {string}`
+
+the user select the store pharmacy to pick up with {string}
+
+**Parameters:**
+- `valore` — textbox "zip"
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Yes, pick up in store" — pagina `PharmaciesPage`
+- `textbox` "zip" — pagina `PharmacyMapSelectionPage`
+- `button` "Select Pharmacy" — pagina `PharmacyMapSelectionPage`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:225`
+
+### 🔧 `The user sleect the store with {string}`
+
+The user sleect the store with {string}
+
+**Parameters:**
+- `valore` — textbox "zip"
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `textbox` "zip"
+- `button` "Select Pharmacy"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:263`
+
+### 🔧 `The user start a wright loss service`
+
+The user start a wright loss service
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Weight Loss" — pagina `HomePage`
+- `link` "Get started" — pagina `TreatmentPage`
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:106`
+
+### 🔧 `the user start the service`
+
+the user start the service
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Weight Loss" — pagina `HomePage`
+- `link` "Get started" — pagina `TreatmentPage`
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:118`
+
+### 🔧 `the user submit the photo and the order`
+
+the user submit the photo and the order
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+- `button` "Submit"
+
+_Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.ts:340`
+
 ### 🔧 `user choos to pick up in store`
 
 user choos to pick up in store
@@ -173,6 +502,17 @@ user choos to pick up in store
 - `button` "Yes, pick up in store"
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:243`
+
+### 🔧 `user get the second photo`
+
+user get the second photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:404`
 
 ## Domain: `common` (2 steps)
 
