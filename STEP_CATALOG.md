@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-10-14T13:13:47.785Z
-Total: **53** steps (2 implemented, 51 wanted, 0 deprecated)
+Last update: 2026-10-14T15:22:35.730Z
+Total: **60** steps (9 implemented, 51 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **51/53** (96%)
+Ancorati a componenti di frontend: **51/60** (85%)
 
 ## How to use
 
@@ -16,6 +16,41 @@ an existing step that matches the intent. If it exists, reuse the exact
 expression. If it does not, flag it to the step gatekeeper.
 
 ---
+
+## Domain: `clinic/sentinelle` (7 steps)
+
+### `the order is pending clinical assessment` ⚠️ _undocumented_
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:51`
+
+### `the patient answers the questionnaire` ⚠️ _undocumented_
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:30`
+
+### `the patient is logged into clinic as {string}`
+
+Accede a clinic come paziente, dalla brochure.
+
+**Parameters:**
+- `email` — L'utenza; la password viene dall'ambiente.
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:20`
+
+### `the patient pays with the saved card` ⚠️ _undocumented_
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:41`
+
+### `the patient picks up in store near {string}` ⚠️ _undocumented_
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:35`
+
+### `the patient starts the weight loss service as a returning patient` ⚠️ _undocumented_
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:25`
+
+### `the patient takes the photos` ⚠️ _undocumented_
+
+_Source:_ `src\steps\clinic\sentinelle\sentinelle.steps.ts:46`
 
 ## Domain: `clinic/weight-loss` (44 steps)
 

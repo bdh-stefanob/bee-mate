@@ -243,7 +243,14 @@ export function locatorEmesso(c: Component): string {
   const forma = c.locator.match(/^getByRole\('([\w-]+)', \{ name: '((?:[^'\\]|\\.)*)' \}\)(\.first\(\))?$/);
   if (!forma || c.name.trim() === "") return c.locator;
   const [, ruolo, nomeTraVirgolette, primo] = forma;
-  const escaped = c.name.trim().replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  // Un nome che porta un numero che cambia («10 Secure messages») si cerca per
+  // la parte fissa: il numero diventa «qualunque numero».
+  // Un contatore in testa al nome («10 Secure messages», «3 items») conta come
+  // numero che cambia anche quando `judge` giudica stabile il nome intero.
+  const contatore = /^\d+\s+\p{L}/u.test(c.name.trim());
+  const instabile = (judge(c.name, 1).stability === "unstable" || contatore) && /\d/.test(c.name);
+  const conEscape = c.name.trim().replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  const escaped = instabile ? conEscape.replace(/\d+/g, "\\d+") : conEscape;
   const bordo = "[^\\p{L}\\p{N}]*";
   const nome = c.name.length >= 120 ? `'${nomeTraVirgolette}'` : `/^${bordo}${escaped}${bordo}$/u`;
   const perRuolo = `getByRole('${ruolo}', { name: ${nome} })`;

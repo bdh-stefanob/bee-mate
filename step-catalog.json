@@ -1,9 +1,107 @@
 {
-  "generatedAt": "2026-10-14T13:13:47.785Z",
-  "totalSteps": 53,
-  "documentedSteps": 53,
-  "undocumentedSteps": 0,
+  "generatedAt": "2026-10-14T15:22:35.730Z",
+  "totalSteps": 60,
+  "documentedSteps": 54,
+  "undocumentedSteps": 6,
   "steps": [
+    {
+      "expression": "the order is pending clinical assessment",
+      "parameters": [],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:51",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
+    {
+      "expression": "the patient answers the questionnaire",
+      "parameters": [],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:30",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
+    {
+      "expression": "the patient is logged into clinic as {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:20",
+      "doc": {
+        "params": {
+          "email": "L'utenza; la password viene dall'ambiente."
+        },
+        "intent": "Accede a clinic come paziente, dalla brochure."
+      },
+      "documented": true
+    },
+    {
+      "expression": "the patient pays with the saved card",
+      "parameters": [],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:41",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
+    {
+      "expression": "the patient picks up in store near {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:35",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
+    {
+      "expression": "the patient starts the weight loss service as a returning patient",
+      "parameters": [],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:25",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
+    {
+      "expression": "the patient takes the photos",
+      "parameters": [],
+      "app": "clinic",
+      "area": "sentinelle",
+      "domain": "clinic/sentinelle",
+      "status": "implemented",
+      "sourceRef": "src\\steps\\clinic\\sentinelle\\sentinelle.steps.ts:46",
+      "doc": {
+        "params": {}
+      },
+      "documented": false
+    },
     {
       "expression": "submit photo",
       "parameters": [],

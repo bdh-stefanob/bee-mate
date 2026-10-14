@@ -705,7 +705,10 @@ export function resolveRecording(
     return {
       label: intent.label,
       steps,
-      assertions: intent.assertions,
+      // Una verifica su un valore che cambia (un numero, una data) fallirebbe al
+      // prossimo ordine: e' gia' dichiarata fra i buchi, e non diventa una
+      // verifica (spec del 14/10).
+      assertions: intent.assertions.filter((a) => judge(a.name, 1).stability !== "unstable"),
       notes: intent.notes,
       page: pageId.key,
       navigatesTo: endId && endId.key !== pageId.key ? endId.key : null,

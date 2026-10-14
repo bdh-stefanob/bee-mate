@@ -868,6 +868,36 @@ console.log("\n--- un passo riconosciuto chiama la utility (spec del 14/10) ---\
   );
 }
 
+console.log("\n--- verifiche su numeri e date non diventano verifiche (14/10) ---\n");
+
+{
+  const conVerifiche = {
+    startUrl: "https://x.invalid/esito",
+    recordedAt: "",
+    durationSeconds: 0,
+    intents: [
+      {
+        label: "the user check the notification",
+        steps: [],
+        notes: [],
+        pageUrl: "https://x.invalid/esito",
+        assertions: [
+          { role: "text", name: "1" },
+          { role: "text", name: "14/10/2026 11:21 AM" },
+          { role: "heading", name: "That's everything we need" },
+        ],
+      },
+    ],
+  } as unknown as Recording;
+  const r = resolveRecording(conVerifiche, indexDictionaries([]), { catalog: [] });
+  eq("resta solo la verifica stabile", r.intents[0]?.assertions.map((a) => a.name), ["That's everything we need"]);
+  eq("e le altre sono dichiarate", r.gaps.filter((g) => g.kind === "asserzione-non-verificabile").length, 2);
+  const messaggi = locatorEmesso(toComponent({ role: "button", name: "10 Secure messages" }, 1));
+  eq("un nome con un numero si cerca per la parte fissa", messaggi.includes("\\d+ Secure messages"), true);
+  const conNumero = messaggi.match(/name: \/(.*)\/u \}/)?.[1] ?? "";
+  eq("e trova anche «2 Secure messages»", new RegExp(conNumero, "u").test("2 Secure messages"), true);
+}
+
 console.log("\n--- il nome si cerca per intero (ambiente QA, 13/10) ---\n");
 
 {
