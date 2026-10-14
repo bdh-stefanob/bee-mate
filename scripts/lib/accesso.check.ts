@@ -178,6 +178,24 @@ async function main(): Promise<void> {
     eq("senza il gestore lo stesso click cade: la prova misura qualcosa", cade, true);
   });
 
+  console.log("\n--- il velo di caricamento dichiarato dall'ambiente si aspetta ---\n");
+
+  const veloCheSparisce = `
+    <div class="loading-dialog" style="position:fixed;inset:0;background:#0003"></div>
+    <button onclick="document.body.dataset.ok='1'">Vai</button>
+    <script>setTimeout(() => document.querySelector('.loading-dialog').remove(), 1500)</script>`;
+  await caso(null, async (page) => {
+    await page.setContent(veloCheSparisce);
+    await registraAvvisi(page, [], ".loading-dialog");
+    await page.getByRole("button", { name: "Vai" }).click({ timeout: 5000 });
+    eq("il velo si aspetta, poi il clic arriva", await page.evaluate(() => document.body.dataset["ok"]), "1");
+  });
+  await caso(null, async (page) => {
+    await page.setContent(veloCheSparisce);
+    const cade = await page.getByRole("button", { name: "Vai" }).click({ timeout: 800 }).then(() => false, () => true);
+    eq("senza velo dichiarato lo stesso clic cade subito: la prova misura qualcosa", cade, true);
+  });
+
   await caso(conSessione, async (page) => {
     await assicuraAccesso(page, ambiente({ url: `${base}/bacheca`, readyWhen: undefined as never }), TEMPI);
     eq("una pagina interna senza conferma dichiarata vale come dentro", new URL(page.url()).pathname, "/bacheca");

@@ -107,6 +107,11 @@ export interface Target {
   /** Nota per chi registra: cosa fare dopo il login. */
   hint?: string;
   /**
+   * Selettore CSS del velo di caricamento dell'applicazione (es. ".loading-dialog").
+   * Gli scenari lo aspettano prima di ogni azione: vedi `registraAvvisi`.
+   */
+  velo?: string;
+  /**
    * Login automatico, opzionale.
    *
    * I selettori vivono qui — in un file gitignorato — e non nel repository:
@@ -229,6 +234,7 @@ export function loadTargets(file = CONFIG): Target[] {
         // Default sensato: una sessione per bersaglio, sotto reports/.
         session: t.session ?? path.join("reports", "sessions", `${name}.json`),
         ...(t.hint ? { hint: t.hint } : {}),
+        ...(typeof t.velo === "string" && t.velo.trim() ? { velo: t.velo.trim() } : {}),
         ...(t.login ? { login: t.login as LoginRecipe } : {}),
         // Booleani: MAI presunti. Si copia solo `=== true` esplicito, cosi' un
         // valore scritto per sbaglio come stringa ("true") o assente resta "non

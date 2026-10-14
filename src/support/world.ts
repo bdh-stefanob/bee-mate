@@ -43,6 +43,8 @@ loadEnv();
 interface Ambiente {
   baseURL: string;
   storageState?: string;
+  /** Il velo di caricamento dichiarato dall'ambiente: vedi `registraAvvisi`. */
+  velo?: string;
   descrizione: string;
 }
 
@@ -67,6 +69,7 @@ function ambiente(): Ambiente {
     const eta = sessionAgeHours(target);
     return {
       baseURL: target.url,
+      ...(target.velo ? { velo: target.velo } : {}),
       ...(hasSession(target) && !SENZA_SESSIONE ? { storageState: target.session } : {}),
       descrizione: SENZA_SESSIONE
         ? `bersaglio "${nome}", sessione ignorata: si parte da un browser pulito`
@@ -140,7 +143,7 @@ export class CustomWorld extends World {
     });
     this.page = await this.context.newPage();
     // Gli avvisi che compaiono quando vogliono loro: vedi avvisi.ts.
-    await registraAvvisi(this.page);
+    await registraAvvisi(this.page, undefined, AMBIENTE.velo);
   }
 
   /**

@@ -71,7 +71,9 @@ export const AVVISI: readonly Avviso[] = [
       const ricomincia = page.getByRole("button", { name: /^start over$/i }).first();
       if (await ricomincia.isVisible().catch(() => false)) {
         const prima = page.url();
-        await ricomincia.click({ timeout: 5000 });
+        // dispatchEvent come nel POC (ResumeOrderPage.clickStartOver): il velo
+        // del dialog intercetta anche un clic forzato.
+        await ricomincia.dispatchEvent("click");
         // Ricominciare porta altrove. Sull'ambiente QA a volte la pagina resta
         // dov'e', sotto il velo di caricamento, anche per piu' di mezzo minuto:
         // ricaricarla la sblocca (l'ordine a meta' ormai non c'e' piu', quindi
@@ -102,6 +104,15 @@ export const AVVISI: readonly Avviso[] = [
       // primo pulsante del dialog come ripiego.
       const x = dialog.locator("button.close").or(dialog.getByRole("button").first()).first();
       await x.dispatchEvent("click");
+    },
+  },
+  {
+    nome: "nuovo messaggio",
+    // POC, BasePage.dismissNewMessageModalIfPresent: compare a meta' sessione
+    // quando un clinico risponde, e il suo velo blocca Next e Place Order.
+    riconoscimento: { role: "heading", name: /you have a new message/i },
+    chiudi: async (page) => {
+      await page.locator("button.close").first().dispatchEvent("click");
     },
   },
   {
@@ -142,7 +153,11 @@ export function avvisoDelGesto(
  * Registra i gestori sulla pagina. `BDD_NO_AVVISI=1` li spegne: serve per uno
  * scenario che vuole proprio cliccare uno di quei pulsanti.
  */
-export async function registraAvvisi(page: Page, avvisi: readonly Avviso[] = AVVISI): Promise<void> {
+export async function registraAvvisi(
+  page: Page,
+  avvisi: readonly Avviso[] = AVVISI,
+  veloDichiarato?: string
+): Promise<void> {
   if (process.env["BDD_NO_AVVISI"] === "1") return;
 
   // IL VELO DI CARICAMENTO (ambiente QA, 2026-10-14). Alcune applicazioni
@@ -151,7 +166,9 @@ export async function registraAvvisi(page: Page, avvisi: readonly Avviso[] = AVV
   // Non si chiude: si aspetta. Il gestore scatta prima di ogni azione e di ogni
   // verifica, quindi vale in qualunque punto dello scenario. Il selettore lo
   // dichiara l'ambiente (`BDD_VELO`): senza, non succede niente.
-  const velo = process.env["BDD_VELO"];
+  // Il selettore lo dichiara l'ambiente (`velo` in bdd-targets.json);
+  // `BDD_VELO` lo sostituisce per una prova.
+  const velo = process.env["BDD_VELO"] || veloDichiarato;
   if (velo) {
     const attesa = Number(process.env["BDD_ATTESA_VELO"] ?? 90_000);
     await page.addLocatorHandler(
