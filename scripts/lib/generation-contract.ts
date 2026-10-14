@@ -342,6 +342,11 @@ export interface ResolvedIntent {
    * si mostrano e si misurano in modo diverso.
    */
   candidateEvidence?: Array<{ classe: "stessi-componenti" | "formulazione-simile"; similarity: number }>;
+  /**
+   * Una utility riconosciuta nei gesti del passo (src/support/utility.ts), solo
+   * quando il riconoscimento e' completo: allora il corpo dello step la chiama.
+   */
+  utility?: import("../../src/support/utility").UtilityRiconosciuta;
 }
 
 // ---------------------------------------------------------------------------
@@ -387,7 +392,10 @@ export interface Gap {
     // Il gesto assomiglia (per identita', mai per somiglianza) a una ricetta
     // nota in src/support/ricette.ts. Dichiarato, MAI applicato da solo: vedi
     // G2-ricette-mappa-e-ripetizioni.md, punto 4.
-    | "ricetta-disponibile";
+    | "ricetta-disponibile"
+    // Il passo assomiglia a una utility ma contiene anche altri gesti: resta
+    // generato com'e', e la utility si propone (spec del 14/10, decisione U4).
+    | "utility-proposta";
   /** Cosa non e' andato, in una frase leggibile da chi non ha scritto il codice. */
   detail: string;
   /** Dove: l'etichetta dell'intento, oppure la pagina. */

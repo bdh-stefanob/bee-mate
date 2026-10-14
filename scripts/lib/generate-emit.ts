@@ -16,6 +16,8 @@
  * la transizione fra pagine e il passo di verifica generico.
  */
 
+// `percorsi`, non `path`: emitSteps ha gia' una variabile locale `path`.
+import * as percorsi from "path";
 import { render } from "./render-template";
 import { fieldName } from "./component-naming";
 import { judge } from "./stability";
@@ -467,6 +469,23 @@ export function frasiDiIntento(intent: ResolvedIntent): {
   /** Nome del parametro che porta il conteggio, se `ripetizione` non e' null. */
   parametroVolte: string | null;
 } {
+  // Con una utility i parametri sono i suoi (il CAP), non i valori digitati:
+  // le risposte del questionario vanno nella tabella sotto lo step.
+  if (intent.utility) {
+    const base = phraseOf(intent);
+    const valoriUtility = intent.utility.parametri;
+    return {
+      espressione: valoriUtility.length === 0 ? base : `${base} with ${valoriUtility.map(() => "{string}").join(" and ")}`,
+      frase:
+        valoriUtility.length === 0
+          ? base
+          : `${base} with ${valoriUtility.map((v) => `"${v.replace(/"/g, "'")}"`).join(" and ")}`,
+      parametri: valoriUtility.map((_, k) => `valore${k + 1}`),
+      valori: [],
+      ripetizione: null,
+      parametroVolte: null,
+    };
+  }
   const base = phraseOf(intent);
   const valori = valoriDigitati(intent);
   const ripTrovata = rilevaRipetizione(intent.steps);
@@ -545,8 +564,30 @@ export function emitSteps(
   const seenPhrases = new Set<string>();
   const blocks: string[] = [];
   const initialised = new Set<string>();
+  const importUtility = new Set<string>();
 
   ctx.intents.forEach((intent, i) => {
+    // UN PASSO RICONOSCIUTO CHIAMA LA UTILITY (spec del 14/10). La frase resta
+    // quella del tester; il corpo non riproduce i gesti. L'import punta a
+    // src/actions anche quando si genera fuori da src (una prova in reports/).
+    if (intent.utility) {
+      const u = intent.utility;
+      const frasiU = frasiDiIntento(intent);
+      const daSteps = percorsi.posix.relative(`${ctx.outRoot}/steps/generated`, `src/${u.modulo}`);
+      importUtility.add(`import { ${u.funzione} } from "${daSteps.startsWith(".") ? daSteps : `./${daSteps}`}";`);
+      const argomenti = [...frasiU.parametri, ...(u.tabella ? ["tabella.raw()"] : [])];
+      const firma = frasiU.parametri.map((p) => `, ${p}: string`).join("") + (u.tabella ? ", tabella: DataTable" : "");
+      if (!seenPhrases.has(frasiU.espressione)) {
+        seenPhrases.add(frasiU.espressione);
+        blocks.push(
+          `/**\n * @intent  ${frasiU.espressione}\n * @utility ${u.nome} (src/${u.modulo}.ts)\n * @wanted\n */\n` +
+            `${keywordOf(i)}(${ts(frasiU.espressione)}, async function (this: CustomWorld${firma}) {\n` +
+            `  await ${u.funzione}(this.page${argomenti.map((a) => `, ${a}`).join("")});\n});`
+        );
+      }
+      return;
+    }
+
     const page = byKey.get(intent.page ?? "");
     if (!page) return;
 
@@ -787,7 +828,7 @@ export function emitSteps(
       SOURCE_RECORDING: ctx.recordingPath,
       GENERATED_AT: ctx.generatedAt,
       WORLD_IMPORT: "../../support/world",
-      PAGE_IMPORTS: imports,
+      PAGE_IMPORTS: [imports, ...importUtility].filter(Boolean).join("\n"),
       PAGE_DECLARATIONS: declarations,
       STEP_DEFINITIONS: blocks.join("\n\n"),
     }),
@@ -812,6 +853,9 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
     // La frase con i valori VERI: e' il .feature, il posto dove il tester li
     // cambia. Lo step li riceve come parametri (vedi `frasiDiIntento`).
     lines.push(`${keyword} ${frasiDiIntento(intent).frase}`);
+    for (const riga of intent.utility?.tabella ?? []) {
+      lines.push(`  | ${riga.map((c) => c.replace(/\|/g, "\\|")).join(" | ")} |`);
+    }
     // Le verifiche a meta' del passo stanno dentro lo step, nel punto giusto; qui si
     // vedono come commento, perche' chi legge lo scenario sappia che ci sono.
     for (const a of intent.assertions.filter((x) => verificaNelPasso(x, intent))) {

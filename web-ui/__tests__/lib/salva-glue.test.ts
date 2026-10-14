@@ -179,6 +179,18 @@ describe('step e Page Object seguono lo scenario salvato', () => {
     expect(testo).toContain("private readonly pinButton: Locator = this.page.locator('.custom-marker');");
   });
 
+  it('l\'import di una utility segue lo step nella sua cartella', () => {
+    // Uno step generato che chiama una utility la importa da src/actions: salvato
+    // un livello piu' in fondo, l'import va riportato, o lo scenario non compila.
+    const conUtility = STEPS.replace(
+      'import { OrdiniPage } from "../../pages/generated/ordini.page";',
+      'import { OrdiniPage } from "../../pages/generated/ordini.page";\nimport { scegliFarmacia } from "../../actions/farmacia.actions";'
+    );
+    const r = albero({ ...BASE, 'steps/generated/rec-1.steps.ts': conUtility });
+    scriviGlue(pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x'));
+    expect(leggi('steps/shop/orders/x.steps.ts')).toContain('import { scegliFarmacia } from "../../../actions/farmacia.actions";');
+  });
+
   it('una pagina modificata a mano non si tocca: se le manca un metodo, si dice quale', () => {
     const aMano = pagina('OrdiniPage', 'ordini', [['clickDettaglio', 'dettaglioLink', "this.page.getByRole('link')"]], false);
     const r = albero({ ...BASE, 'pages/shop/ordini.page.ts': aMano });

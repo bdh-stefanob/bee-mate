@@ -298,7 +298,9 @@ export function pianificaGlue(
 
   let stepsTesto = steps
     .replace(/^\/\/ src\/steps\/generated\/\S+$/m, `// src/${stepsFile}`)
-    .replaceAll('from "../../support/world"', 'from "../../../support/world"');
+    .replaceAll('from "../../support/world"', 'from "../../../support/world"')
+    // Le utility (src/actions) seguono lo step un livello piu' in fondo.
+    .replaceAll('from "../../actions/', 'from "../../../actions/');
   for (const [modulo, nomeModulo] of nomiSemplici) {
     stepsTesto = stepsTesto.replaceAll(
       `from "../../pages/generated/${modulo}"`,

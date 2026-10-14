@@ -24,6 +24,7 @@ import { avvisoDelGesto } from "../../src/support/avvisi";
 // l'esecuzione non possono mai descrivere due identita' diverse per lo stesso
 // caso. Pura anche questa: nessun browser, solo un confronto su ruolo+nome.
 import { ricettaDelGesto } from "../../src/support/ricette";
+import { utilityDelPasso } from "../../src/support/utility";
 import { mergeInventories } from "./inventory";
 import type {
   Assertion, CatalogStep, Component, Gap, Intent, Recording,
@@ -677,6 +678,30 @@ export function resolveRecording(
       });
     }
 
+    // UNA UTILITY RICONOSCIUTA (spec del 14/10). Completa: lo step la chiama.
+    // Parziale: si propone e basta, il passo resta generato com'e'.
+    const utility = utilityDelPasso(
+      gesti.map((g) => ({
+        action: g.action,
+        role: g.role,
+        name: g.name,
+        ...(g.value !== undefined ? { value: g.value } : {}),
+        ...(g.secret ? { secret: true } : {}),
+        ...(g.url ? { url: g.url } : {}),
+        ...(g.contesto?.intestazione ? { intestazione: g.contesto.intestazione } : {}),
+        ...(g.ancoraggioAssente ? { senzaAncoraggio: true } : {}),
+      }))
+    );
+    if (utility && !utility.completa) {
+      gaps.push({
+        kind: "utility-proposta",
+        where: intent.label,
+        detail:
+          `Questo passo assomiglia alla utility "${utility.nome}" (src/${utility.modulo}.ts), ma contiene anche ` +
+          `altri gesti: resta generato com'e'. Se i gesti in piu' sono rumore, toglili e rigenera.`,
+      });
+    }
+
     return {
       label: intent.label,
       steps,
@@ -686,6 +711,7 @@ export function resolveRecording(
       navigatesTo: endId && endId.key !== pageId.key ? endId.key : null,
       candidates: candidates.map((c) => c.step),
       candidateEvidence: candidates.map((c) => ({ classe: c.classe, similarity: c.similarity })),
+      ...(utility?.completa ? { utility } : {}),
     };
   });
 

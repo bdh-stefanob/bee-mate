@@ -31,7 +31,7 @@ import {
 } from "./generate-core";
 import { componenteSenzaRuolo, toComponent } from "./component-naming";
 import { ricettaDelGesto } from "../../src/support/ricette";
-import { assertLoadedBody, emitPageObject, emitSteps, frasiDiIntento, locatorEmesso, phraseOf, rilevaRipetizione } from "./generate-emit";
+import { assertLoadedBody, emitFeature, emitPageObject, emitSteps, frasiDiIntento, locatorEmesso, phraseOf, rilevaRipetizione } from "./generate-emit";
 import type {
   CatalogStep, Gap, Intent, Recording, ResolvedIntent, ResolvedStep, ScoutResult, Step,
 } from "./generation-contract";
@@ -806,6 +806,67 @@ console.log("\n--- ricetta proposta, mai applicata da sola (G2, punto 4) ---\n")
 // ---------------------------------------------------------------------------
 // 3. La catena intera: si genera davvero, e si compila
 // ---------------------------------------------------------------------------
+
+console.log("\n--- un passo riconosciuto chiama la utility (spec del 14/10) ---\n");
+
+{
+  const MAPPA = "https://qa-clinic.invalid/pharmacy-map-selection";
+  const Q = "https://qa-clinic.invalid/questions/1";
+  const registrazione = {
+    startUrl: MAPPA,
+    recordedAt: "",
+    durationSeconds: 0,
+    intents: [
+      {
+        label: "The user sleect the store",
+        assertions: [],
+        notes: [],
+        pageUrl: MAPPA,
+        steps: [
+          { action: "fill", role: "textbox", name: "zip", value: "NW1", url: MAPPA },
+          { action: "click", role: "button", name: "Select Pharmacy", url: MAPPA },
+        ],
+      },
+      {
+        label: "the user complete the questionary",
+        assertions: [],
+        notes: [],
+        pageUrl: Q,
+        steps: [
+          { action: "click", role: "button", name: "No", url: Q, contesto: { intestazione: "3. Has there been any change in your medication?" } },
+        ],
+      },
+    ],
+  } as unknown as Recording;
+  const risolta = resolveRecording(registrazione, indexDictionaries([]), { catalog: [] });
+  eq(
+    "il passo porta la utility della farmacia, completa",
+    [risolta.intents[0]?.utility?.nome, risolta.intents[0]?.utility?.completa],
+    ["farmacia", true]
+  );
+  const ctx = {
+    intents: risolta.intents, pages: risolta.pages, recordingPath: "x.json", dictionaryPaths: [], recordedAt: "",
+    durationSeconds: 0, generatedAt: "", slug: "farmacia", outRoot: "src",
+  };
+  const glue = emitSteps(ctx, risolta.pages, new Map() as never).contents;
+  eq("la frase resta quella del tester", glue.includes('("The user sleect the store with {string}"'), true);
+  eq("il corpo chiama la utility con il CAP", glue.includes("await scegliFarmacia(this.page, valore1);"), true);
+  eq("e la importa da src/actions", glue.includes('import { scegliFarmacia } from "../../actions/farmacia.actions";'), true);
+  eq("il questionario passa la tabella", glue.includes("await rispondiQuestionario(this.page, tabella.raw());"), true);
+  const fuori = emitSteps({ ...ctx, outRoot: "reports/prova" }, risolta.pages, new Map() as never).contents;
+  eq(
+    "generando fuori da src l'import punta comunque a src/actions",
+    fuori.includes('from "../../../../src/actions/farmacia.actions"'),
+    true
+  );
+  const feature = emitFeature(ctx, "farmacia").contents;
+  eq("nel .feature la frase del tester con il CAP", feature.includes('Given The user sleect the store with "NW1"'), true);
+  eq(
+    "e sotto il questionario la tabella delle risposte",
+    feature.includes("| 3. Has there been any change in your medication? | No |"),
+    true
+  );
+}
 
 console.log("\n--- il nome si cerca per intero (ambiente QA, 13/10) ---\n");
 
