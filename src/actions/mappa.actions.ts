@@ -63,16 +63,52 @@ export async function sceltaSuMappa(page: Page, opzioni: OpzioniSceltaSuMappa = 
 
   const argomenti = { selettore: selettorePin, indice: indicePin, lato: LATO_MINIMO_PIN };
 
+  // UN PIN SI CONTA SOLO SE UN CLIC AL SUO CENTRO LO COLPISCE (ambiente QA,
+  // 2026-10-14). Disegnato non basta: un pin sul bordo della mappa e' tagliato
+  // dal riquadro, uno sotto l'intestazione fissa e' coperto, e il clic arriva
+  // su qualcos'altro senza errori — la mappa non sceglie niente. Lo dice il
+  // browser stesso: l'elemento in cima a quel punto deve essere il pin.
+  //
+  // Prima pero' la mappa si porta al centro della finestra: scorrendo la
+  // FINESTRA, mai `scrollIntoView` sul pin, che farebbe scorrere anche il
+  // riquadro della mappa a sua insaputa (la mappa disegna i pin in un punto e
+  // li ascolta in un altro).
+  await page.evaluate((selettore) => {
+    const pin = document.querySelector(selettore);
+    let riquadro: Element | null = pin?.parentElement ?? null;
+    while (riquadro && !/(hidden|clip)/.test(getComputedStyle(riquadro).overflow)) riquadro = riquadro.parentElement;
+    if (!riquadro) return;
+    const r = riquadro.getBoundingClientRect();
+    window.scrollBy(0, r.top + r.height / 2 - window.innerHeight / 2);
+    window.dispatchEvent(new Event("resize"));
+  }, selettorePin);
+
+  const trova = ({ selettore, indice, lato }: typeof argomenti): { x: number; y: number } | null => {
+    const colpibili = [...document.querySelectorAll(selettore)]
+      .map((el) => ({ el, r: el.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > lato && r.height > lato)
+      .map(({ el, r }) => ({ el, x: r.x + r.width / 2, y: r.y + r.height / 2 }))
+      .filter(({ el, x, y }) => {
+        if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return false;
+        // Il riquadro della mappa: il primo antenato che taglia cio' che sborda.
+        let riquadro: Element | null = el.parentElement;
+        while (riquadro && !/(hidden|clip)/.test(getComputedStyle(riquadro).overflow)) riquadro = riquadro.parentElement;
+        if (riquadro) {
+          const q = riquadro.getBoundingClientRect();
+          if (x < q.left || x > q.right || y < q.top || y > q.bottom) return false;
+        }
+        // In cima a quel punto ci deve essere la mappa (il pin, o il livello che
+        // ascolta i clic sopra la mappa), non l'intestazione o il resto della pagina.
+        const sopra = document.elementFromPoint(x, y);
+        if (!sopra) return false;
+        return el === sopra || el.contains(sopra) || (riquadro !== null && riquadro.contains(sopra));
+      });
+    const scelto = colpibili[indice];
+    return scelto ? { x: scelto.x, y: scelto.y } : null;
+  };
+
   const comparso = await page
-    .waitForFunction(
-      ({ selettore, indice, lato }) =>
-        [...document.querySelectorAll(selettore)].filter((el) => {
-          const r = el.getBoundingClientRect();
-          return r.width > lato && r.height > lato;
-        }).length > indice,
-      argomenti,
-      { timeout: attesaMs }
-    )
+    .waitForFunction(trova, argomenti, { timeout: attesaMs })
     .then(() => true, () => false);
   if (!comparso) {
     const nelDom = await page.locator(selettorePin).count().catch(() => 0);
@@ -82,35 +118,12 @@ export async function sceltaSuMappa(page: Page, opzioni: OpzioniSceltaSuMappa = 
         (nelDom === 0
           ? `  Nessuno: la ricerca non ha dato risultati, oppure questa mappa disegna i pin in un altro modo\n` +
             `  (in quel caso va dichiarato \`selettorePin\`).`
-          : `  Ci sono ma non sono disegnati: la mappa non li ha ancora messi nell'area visibile.`)
+          : `  Ci sono, ma nessuno si puo' colpire con un clic: tagliati dal bordo della mappa,\n` +
+            `  coperti da qualcosa, o fuori dalla finestra.`)
     );
   }
 
-  // Le coordinate del mouse sono quelle dell'area visibile: un pin sotto il bordo
-  // della finestra non si colpisce, e va portato dentro.
-  //
-  // SI SCORRE LA FINESTRA, MAI `scrollIntoView` SUL PIN. Il pin vive dentro il
-  // riquadro della mappa, che nasconde cio' che sborda: `scrollIntoView` fa
-  // scorrere anche quel riquadro, la mappa non lo sa e da li' in poi disegna i
-  // pin in un punto e li ascolta in un altro. Il clic arriva, e non sceglie niente.
-  const centro = await page.evaluate(({ selettore, indice, lato }) => {
-    const pinScelto = (): Element | undefined =>
-      [...document.querySelectorAll(selettore)].filter((el) => {
-        const r = el.getBoundingClientRect();
-        return r.width > lato && r.height > lato;
-      })[indice];
-    let pin = pinScelto();
-    if (!pin) return null;
-    let r = pin.getBoundingClientRect();
-    const y = r.y + r.height / 2;
-    if (y < 0 || y > window.innerHeight) {
-      window.scrollBy(0, y - window.innerHeight / 2);
-      pin = pinScelto();
-      if (!pin) return null;
-      r = pin.getBoundingClientRect();
-    }
-    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-  }, argomenti);
+  const centro = await page.evaluate(trova, argomenti);
   if (!centro) {
     throw new Error(
       `La ricetta "scelta-su-mappa" aveva trovato il pin n. ${indicePin}, ma e' sparito prima del clic:\n` +

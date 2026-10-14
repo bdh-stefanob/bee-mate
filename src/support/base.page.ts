@@ -92,29 +92,11 @@ export abstract class BasePage {
    * che aspetta, a differenza di una lettura di stato.
    */
   protected async expectVisible(locator: Locator, ms = ATTESA_PAGINA_MS): Promise<void> {
-    // UNA PAGINA FERMA SOTTO IL VELO DI CARICAMENTO SI RICARICA, UNA VOLTA.
-    //
-    // Sull'ambiente QA vero (2026-10-13) una pagina su tre restava sotto il velo
-    // di caricamento oltre mezzo minuto, e ricaricandola arrivava subito: non e'
-    // lentezza, e' un caricamento che non finisce.
-    //
-    // SOLO SE IL VELO SI VEDE, e solo se l'ambiente dice qual e' (`BDD_VELO`, un
-    // selettore CSS). La prima versione ricaricava ogni pagina in ritardo, e ha
-    // fatto danno alla prima prova: una pagina che aspettava soltanto il passaggio
-    // alla successiva e' stata ricaricata, e la risposta appena data e' sparita.
-    // Ricaricare e' sicuro solo quando la pagina dichiara di non avere finito.
-    const velo = process.env["BDD_VELO"];
+    // Il velo di caricamento non si gestisce qui: lo aspetta il gestore
+    // registrato in `avvisi.ts` (`BDD_VELO`), prima di ogni azione e verifica.
+    // Ricaricare la pagina, provato il 13/10, faceva danno: azzerava le
+    // risposte appena date e dimezzava l'attesa.
     try {
-      if (velo) {
-        const arrivata = await expect(locator)
-          .toBeVisible({ timeout: ms / 2 })
-          .then(() => true, () => false);
-        if (arrivata) return;
-        const fermaSulVelo = await this.page.locator(velo).first().isVisible().catch(() => false);
-        if (fermaSulVelo) await this.page.reload().catch(() => undefined);
-        await expect(locator).toBeVisible({ timeout: ms / 2 });
-        return;
-      }
       await expect(locator).toBeVisible({ timeout: ms });
     } catch (err) {
       // DOVE SI E' FINITI, NON SOLO COSA MANCAVA.

@@ -86,6 +86,25 @@ export const AVVISI: readonly Avviso[] = [
     },
   },
   {
+    nome: "visita incompleta",
+    // Ambiente QA, 2026-10-14: all'apertura dell'account, se una visita e'
+    // rimasta a meta', un dialog propone «Continue». Si riconosce dal titolo:
+    // «Continue» da solo e' anche il pulsante di tante pagine del flusso.
+    riconoscimento: { role: "heading", name: /continue your incomplete visit/i },
+    // La X, non «Continue»: riprendere la visita cambia lo stato. La X non ha
+    // nome, quindi si cerca dentro il dialog del titolo; `dispatchEvent` perche'
+    // il velo del dialog intercetta anche i clic sui suoi stessi pulsanti.
+    chiudi: async (page) => {
+      const dialog = page
+        .getByRole("dialog")
+        .filter({ has: page.getByRole("heading", { name: /continue your incomplete visit/i }) });
+      // `button.close` come nel POC (dismissNewMessageModalIfPresent); il
+      // primo pulsante del dialog come ripiego.
+      const x = dialog.locator("button.close").or(dialog.getByRole("button").first()).first();
+      await x.dispatchEvent("click");
+    },
+  },
+  {
     nome: "banner dei cookie",
     riconoscimento: { role: "button", name: /^accept all$/i },
     // L'eccezione dichiarata in testa al file: non c'e' un'altra uscita, e
@@ -125,13 +144,43 @@ export function avvisoDelGesto(
  */
 export async function registraAvvisi(page: Page, avvisi: readonly Avviso[] = AVVISI): Promise<void> {
   if (process.env["BDD_NO_AVVISI"] === "1") return;
+
+  // IL VELO DI CARICAMENTO (ambiente QA, 2026-10-14). Alcune applicazioni
+  // coprono la pagina con un velo mentre caricano; finche' c'e', intercetta
+  // ogni clic, e sotto un backend lento resta piu' dei 30 secondi di un'azione.
+  // Non si chiude: si aspetta. Il gestore scatta prima di ogni azione e di ogni
+  // verifica, quindi vale in qualunque punto dello scenario. Il selettore lo
+  // dichiara l'ambiente (`BDD_VELO`): senza, non succede niente.
+  const velo = process.env["BDD_VELO"];
+  if (velo) {
+    const attesa = Number(process.env["BDD_ATTESA_VELO"] ?? 90_000);
+    await page.addLocatorHandler(
+      page.locator(velo).first(),
+      async (l) => {
+        await l.waitFor({ state: "hidden", timeout: attesa }).catch(() => undefined);
+      },
+      { noWaitAfter: true }
+    );
+  }
+
   for (const avviso of avvisi) {
-    await page.addLocatorHandler(locatorDiAvviso(page, avviso).first(), async () => {
-      try {
-        await avviso.chiudi(page);
-      } catch {
-        // Non chiudere un avviso non e' un fallimento del test.
-      }
-    });
+    // `noWaitAfter`: dopo il gestore NON si aspetta che l'avviso sparisca.
+    // Un nome come «Resume» compare anche fuori da un dialog — l'elenco delle
+    // consultazioni ne ha uno per ogni ordine a meta' (ambiente QA, 2026-10-14).
+    // Li' Escape non chiude niente, Playwright aspettava che il pulsante
+    // sparisse, e ogni azione successiva restava ferma fino allo scadere: lo
+    // scenario intero bloccato su una pagina che non aveva nessun dialog. Un
+    // avviso vero, chiuso, sparisce comunque; se ricompare, il gestore riparte.
+    await page.addLocatorHandler(
+      locatorDiAvviso(page, avviso).first(),
+      async () => {
+        try {
+          await avviso.chiudi(page);
+        } catch {
+          // Non chiudere un avviso non e' un fallimento del test.
+        }
+      },
+      { noWaitAfter: true }
+    );
   }
 }
