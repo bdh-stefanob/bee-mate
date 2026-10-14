@@ -141,6 +141,44 @@ describe('step e Page Object seguono lo scenario salvato', () => {
     expect(testo.trimEnd().endsWith('}')).toBe(true);
   });
 
+  it('una pagina salvata con i metodi in prima colonna non riceve doppioni', () => {
+    // Le Page Object generate fino al 2026-10-01 non rientravano i metodi: il
+    // salvataggio li credeva mancanti e li aggiungeva una seconda volta
+    // ("Duplicate function implementation" su tutte le pagine di clinic).
+    const vecchia = pagina('OrdiniPage', 'ordini', [
+      ['clickAnnullaOrdine', 'annullaButton', "this.page.getByRole('button', { name: 'Annulla ordine' })"],
+    ])
+      .replace('generated/ordini', 'shop/ordini')
+      .replace(/^ {2}(\/\*\*|\*|async |\})/gm, '$1')
+      .replace(/^ {4}await/gm, '  await');
+    expect(vecchia).toMatch(/^async clickAnnullaOrdine\(/m);
+    const r = albero({ ...BASE, 'pages/shop/ordini.page.ts': vecchia });
+    const piano = pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x');
+    scriviGlue(piano);
+    expect(piano.pagine.find((p) => p.file === 'pages/shop/ordini.page.ts')?.come).toBe('riusata');
+    expect(leggi('pages/shop/ordini.page.ts').match(/async clickAnnullaOrdine\(/g)?.length).toBe(1);
+  });
+
+  it('un campo passato come argomento arriva con il suo metodo', () => {
+    // `this.clickSenzaAncoraggio(this.pin)`: il campo non e' seguito da un
+    // punto, e la pagina estesa restava con un metodo che citava un campo mai
+    // dichiarato.
+    const conPin = pagina('OrdiniPage', 'ordini', [
+      ['clickAnnullaOrdine', 'annullaButton', "this.page.getByRole('button', { name: 'Annulla ordine' })"],
+      ['clickPin', 'pinButton', "this.page.locator('.custom-marker')"],
+    ]).replace('await this.pinButton.click();', 'await this.clickSenzaAncoraggio(this.pinButton);');
+    const steps = STEPS.replace('await ordiniPage.clickAnnullaOrdine();', 'await ordiniPage.clickAnnullaOrdine();\n  await ordiniPage.clickPin();');
+    const salvata = pagina('OrdiniPage', 'ordini', [
+      ['clickAnnullaOrdine', 'annullaButton', "this.page.getByRole('button', { name: 'Annulla ordine' })"],
+    ]).replace('generated/ordini', 'shop/ordini');
+    const r = albero({ ...BASE, 'steps/generated/rec-1.steps.ts': steps, 'pages/generated/ordini.page.ts': conPin, 'pages/shop/ordini.page.ts': salvata });
+    const piano = pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x');
+    scriviGlue(piano);
+    const testo = leggi('pages/shop/ordini.page.ts');
+    expect(testo).toContain('async clickPin()');
+    expect(testo).toContain("private readonly pinButton: Locator = this.page.locator('.custom-marker');");
+  });
+
   it('una pagina modificata a mano non si tocca: se le manca un metodo, si dice quale', () => {
     const aMano = pagina('OrdiniPage', 'ordini', [['clickDettaglio', 'dettaglioLink', "this.page.getByRole('link')"]], false);
     const r = albero({ ...BASE, 'pages/shop/ordini.page.ts': aMano });

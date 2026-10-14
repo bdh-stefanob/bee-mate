@@ -109,6 +109,20 @@ function ancoraUsataAltrove(radiceSrc: string, modulo: string, escludiSteps: str
   return false;
 }
 
+/**
+ * La pagina definisce gia' questo metodo?
+ *
+ * Con qualunque rientro. Le Page Object generate fino al 2026-10-01 hanno i
+ * metodi in prima colonna (`async clickX()`), quelle di oggi rientrati di due
+ * spazi: cercare solo la forma rientrata faceva credere mancante ogni metodo
+ * di una pagina vecchia, e il salvataggio li aggiungeva una seconda volta —
+ * "Duplicate function implementation", e nessuno scenario compilava piu'.
+ * Successo il 2026-10-14 salvando uno scenario di `clinic`.
+ */
+function haMetodo(testo: string, metodo: string): boolean {
+  return new RegExp(`^[ \\t]*async ${metodo}\\(`, 'm').test(testo);
+}
+
 /** Il blocco di un metodo, con il commento che lo precede, fino alla sua graffa di chiusura. */
 function bloccoMetodo(testo: string, metodo: string): string | null {
   const righe = testo.split('\n');
@@ -132,7 +146,7 @@ function metodiUsati(steps: string, classe: string, sorgentePagina: string): str
     for (const m of steps.matchAll(new RegExp(`\\b${v}\\.(\\w+)\\(`, 'g'))) usati.add(m[1]);
   }
   // `navigate` e gli altri metodi di BasePage non stanno nella pagina: non si copiano.
-  return [...usati].filter((m) => sorgentePagina.includes(`  async ${m}(`)).sort();
+  return [...usati].filter((m) => haMetodo(sorgentePagina, m)).sort();
 }
 
 /** Aggiunge a una pagina salvata i metodi (e i loro locator) che le mancano. */
@@ -144,7 +158,12 @@ function estendi(destinazione: string, sorgente: string, mancanti: string[]): st
     const blocco = bloccoMetodo(sorgente, m);
     if (!blocco) continue;
     nuoviMetodi.push(blocco);
-    for (const l of blocco.matchAll(/this\.(\w+)\./g)) {
+    // Ogni `this.<campo>` del metodo, non solo quelli seguiti da un punto: un
+    // campo passato come argomento (`this.clickSenzaAncoraggio(this.pin)`)
+    // restava senza la sua dichiarazione, e la pagina non compilava. Cio' che
+    // non e' un campo dichiarato nella sorgente (`this.page`, un metodo di
+    // BasePage) non trova la sua riga e si salta.
+    for (const l of blocco.matchAll(/this\.(\w+)/g)) {
       const nome = l[1];
       if (destinazione.includes(`private readonly ${nome}:`) || nuoviLocator.some((x) => x.includes(`readonly ${nome}:`))) continue;
       const riga = sorgente.split('\n').find((r) => r.includes(`private readonly ${nome}:`));
@@ -259,7 +278,7 @@ export function pianificaGlue(
     }
 
     const esistente = fs.readFileSync(destinazioneAssoluta, 'utf-8');
-    const mancanti = metodiUsati(steps, classe, sorgente).filter((m) => !esistente.includes(`  async ${m}(`));
+    const mancanti = metodiUsati(steps, classe, sorgente).filter((m) => !haMetodo(esistente, m));
     if (mancanti.length === 0) {
       pagine.push({ file, come: 'riusata' });
     } else if (!rigeneribile(esistente)) {
