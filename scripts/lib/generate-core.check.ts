@@ -31,7 +31,7 @@ import {
 } from "./generate-core";
 import { componenteSenzaRuolo, toComponent } from "./component-naming";
 import { ricettaDelGesto } from "../../src/support/ricette";
-import { assertLoadedBody, emitPageObject, emitSteps, frasiDiIntento, phraseOf, rilevaRipetizione } from "./generate-emit";
+import { assertLoadedBody, emitPageObject, emitSteps, frasiDiIntento, locatorEmesso, phraseOf, rilevaRipetizione } from "./generate-emit";
 import type {
   CatalogStep, Gap, Intent, Recording, ResolvedIntent, ResolvedStep, ScoutResult, Step,
 } from "./generation-contract";
@@ -806,6 +806,43 @@ console.log("\n--- ricetta proposta, mai applicata da sola (G2, punto 4) ---\n")
 // ---------------------------------------------------------------------------
 // 3. La catena intera: si genera davvero, e si compila
 // ---------------------------------------------------------------------------
+
+console.log("\n--- il nome si cerca per intero (ambiente QA, 13/10) ---\n");
+
+{
+  // I nomi veri della pagina di login e dei prodotti, come li vede Playwright.
+  const trova = (componente: Parameters<typeof locatorEmesso>[0], nomeSulloSchermo: string): boolean => {
+    const m = locatorEmesso(componente).match(/name: \/(.*)\/u \}/);
+    if (!m) return componente.locator.includes(nomeSulloSchermo);
+    return new RegExp(m[1]!, "u").test(nomeSulloSchermo);
+  };
+  const logIn = toComponent({ role: "button", name: "Log In" }, 1);
+  eq("«Log In» trova il pulsante del modulo", trova(logIn, "Log In"), true);
+  eq("e non quello dell'intestazione, «Log in»", trova(logIn, "Log in"), false);
+
+  const coaching = toComponent({ role: "button", name: "With Coaching £121" }, 1);
+  eq("un'icona davanti al nome non lo nasconde", trova(coaching, " With Coaching £121"), true);
+  eq(
+    "un nome piu' lungo non e' lo stesso nome",
+    trova(toComponent({ role: "radio", name: "With Coaching" }, 1), " With Coaching £1,725"),
+    false
+  );
+
+  const punti = toComponent({ role: "button", name: "....0000 Expiry 07/29" }, 2);
+  eq("i caratteri speciali del nome non rompono l'espressione", trova(punti, "....0000 Expiry 07/29"), true);
+  eq("e il .first() di un nome ambiguo resta", locatorEmesso(punti).endsWith(".first()"), true);
+
+  const vuoto = toComponent({ role: "button", name: "" }, 1);
+  eq("un nome vuoto resta com'era", locatorEmesso(vuoto), vuoto.locator);
+  const lungo = toComponent({ role: "button", name: "x".repeat(120) }, 1);
+  eq("un nome troncato dalla sonda resta una sottostringa", locatorEmesso(lungo), lungo.locator);
+
+  // Un <a> senza indirizzo: per la sonda e' un link, per Playwright no.
+  const opzione = toComponent({ role: "link", name: "I haven't been here for over 3 months" }, 1);
+  eq("un link si cerca anche per testo", locatorEmesso(opzione).includes(".or(this.page.getByText("), true);
+  eq("e l'unione prende un elemento solo", locatorEmesso(opzione).endsWith(".first()"), true);
+  eq("un pulsante no: il ruolo basta", locatorEmesso(logIn).includes("getByText"), false);
+}
 
 console.log("\n--- un clic solo non diventa due gesti (ambiente QA, 13/10) ---\n");
 

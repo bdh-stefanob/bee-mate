@@ -221,6 +221,41 @@ export function assertLoadedBody(
   );
 }
 
+/**
+ * Il locator da scrivere nella Page Object: con il nome cercato per intero.
+ *
+ * IL DIFETTO CHE RISOLVE (ambiente QA, 2026-10-13). `getByRole(r, { name })`
+ * con una stringa cerca il nome come SOTTOSTRINGA e SENZA maiuscole: sulla
+ * pagina di login «Log In» trovava anche «Log in» dell'intestazione, e lo
+ * scenario si fermava al primo passo. `exact: true` non basta: molti nomi
+ * hanno un'icona davanti (« With Coaching £121»), e il nome esatto non
+ * la contiene.
+ *
+ * Un'espressione: il nome intero, con le maiuscole che ha, e intorno solo cio'
+ * che non e' una lettera o una cifra (icone, spazi). Un nome troncato dalla
+ * sonda (120 caratteri) resta una sottostringa: della sua fine non sappiamo
+ * niente. Un nome vuoto, un ruolo non ARIA o un ancoraggio per selettore non
+ * hanno un nome da cercare e restano com'erano.
+ */
+export function locatorEmesso(c: Component): string {
+  const forma = c.locator.match(/^getByRole\('([\w-]+)', \{ name: '((?:[^'\\]|\\.)*)' \}\)(\.first\(\))?$/);
+  if (!forma || c.name.trim() === "") return c.locator;
+  const [, ruolo, nomeTraVirgolette, primo] = forma;
+  const escaped = c.name.trim().replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  const bordo = "[^\\p{L}\\p{N}]*";
+  const nome = c.name.length >= 120 ? `'${nomeTraVirgolette}'` : `/^${bordo}${escaped}${bordo}$/u`;
+  const perRuolo = `getByRole('${ruolo}', { name: ${nome} })`;
+  // UN LINK SI CERCA ANCHE PER TESTO (ambiente QA, 2026-10-14). La sonda chiama
+  // "link" ogni <a>; Playwright solo un <a> con un indirizzo. Le opzioni
+  // disegnate come <a> senza href («I haven't been here for over 3 months»)
+  // per lui non sono link, e il passo si fermava li'. Il testo e' lo stesso
+  // nome. Solo i visibili: il testo si ripete in copie nascoste (il menu per
+  // il telefono), e la prima trovata era quella. `.first()` perche' l'unione
+  // dei due puo' trovare lo stesso elemento.
+  if (ruolo === "link") return `${perRuolo}.or(this.page.getByText(${nome})).filter({ visible: true }).first()`;
+  return `${perRuolo}${primo ?? ""}`;
+}
+
 export function emitPageObject(
   page: PageIdentity,
   components: readonly Component[],
@@ -233,7 +268,7 @@ export function emitPageObject(
   const locators = components
     .map((c) => {
       const note = c.stability === "stable" ? "" : `  // ${c.stability}: ${c.notes.join("; ")}`;
-      return `private readonly ${fields.get(c)!}: Locator = this.page.${c.locator};${note}`;
+      return `private readonly ${fields.get(c)!}: Locator = this.page.${locatorEmesso(c)};${note}`;
     })
     .join("\n");
 
@@ -694,8 +729,10 @@ export function emitSteps(
         // Un componente senza ruolo non si dichiara come ancoraggio di catalogo:
         // la forma di `@component` vuole un ruolo, e un'ancora che non e'
         // un'identita' non deve entrare nel vocabolario condiviso. Resta nel
-        // `@contesto`, e nell'avviso che il generatore ha gia' emesso.
-        if (!r.component.role) continue;
+        // `@contesto`, e nell'avviso che il generatore ha gia' emesso. Lo stesso
+        // per un nome vuoto (il pin della mappa, 2026-10-14): `button ""` non
+        // identifica niente, e il catalogo lo rifiuta.
+        if (!r.component.role || r.component.name.trim() === "") continue;
         const pageSuffix = multiPagina ? ` page=${owner.className}` : "";
         componentLines.push(` * @component ${r.component.role} ${ts(r.component.name)}${pageSuffix}`);
       }
