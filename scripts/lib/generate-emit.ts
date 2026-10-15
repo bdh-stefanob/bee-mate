@@ -207,7 +207,11 @@ export function assertLoadedBody(
     }
   }
 
-  const fallback = components.find((c) => c.stability === "stable") ?? components[0];
+  // Mai un componente senza nome: «pulsante senza nome» trova tutte le icone
+  // della pagina (8 sullo storico, Hair loss del 15/10) e la verifica fallisce.
+  const fallback =
+    components.find((c) => c.stability === "stable" && c.name.trim() !== "") ??
+    components.find((c) => c.name.trim() !== "" && c.stability !== "unnamed");
   if (fallback) {
     return (
       `// Nessuna verifica dichiarata dal tester su questa pagina: si riconosce da un\n` +
@@ -663,6 +667,22 @@ export function emitSteps(
         if (verificaNelPasso(a, intent) && a.afterStep === k) {
           out.push(`await this.expectTextVisible(${ts(a.name)});`);
         }
+      }
+      // UN CLIC SENZA NOME CHE PORTA ALTROVE (Hair loss, 15/10). Il logo: per la
+      // sonda non ha nome, per la pagina ce l'ha («Boots online doctor»), e
+      // «pulsante senza nome» trova tutte le icone. Il clic non si riproduce, ma
+      // la registrazione dice dove ha portato: ci si va.
+      const dopo = intent.steps[k + 1]?.step.url ?? ctx.intents.slice(i + 1).flatMap((x) => x.steps)[0]?.step.url;
+      const senzaQuery = (u: string): string => u.split(/[?#]/)[0]!;
+      if (
+        r.step.action === "click" &&
+        r.component.role &&
+        r.component.name.trim() === "" &&
+        dopo &&
+        senzaQuery(dopo) !== senzaQuery(r.step.url ?? "")
+      ) {
+        out.push(`await this.vaiA(${ts(senzaQuery(dopo))});`);
+        return out;
       }
       const owner = byKey.get(r.fromPage ?? intent.page ?? "") ?? page;
       const ownerVar = variableName(owner.className);

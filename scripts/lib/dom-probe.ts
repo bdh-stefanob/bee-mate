@@ -78,6 +78,17 @@ export const DOM_PROBE_SOURCE = String.raw`
     return wrapper ? (wrapper.textContent || '').trim().replace(/\s+/g, ' ') : '';
   }
 
+  function nomeDeiFigli(el) {
+    if (!el.querySelectorAll) return '';
+    var parti = [];
+    var figli = el.querySelectorAll('img[alt], [aria-label]');
+    for (var i = 0; i < figli.length; i++) {
+      var v = figli[i].getAttribute('alt') || figli[i].getAttribute('aria-label');
+      if (v && v.trim()) parti.push(v.trim());
+    }
+    return parti.join(' ');
+  }
+
   function accessibleName(el) {
     const labelledBy = el.getAttribute && el.getAttribute('aria-labelledby');
     if (labelledBy) {
@@ -88,6 +99,10 @@ export const DOM_PROBE_SOURCE = String.raw`
       el.getAttribute && el.getAttribute('aria-label'),
       el.placeholder,
       el.textContent && el.textContent.trim().replace(/\s+/g, ' '),
+      // Il nome dato dalle immagini e dalle icone contenute (Hair loss, 15/10):
+      // il logo e' un pulsante con dentro solo un'immagine con alt. Il browser
+      // ne fa il nome; senza, il pulsante era registrato senza nome.
+      nomeDeiFigli(el),
       el.getAttribute && el.getAttribute('title'),
       labelText(el),
       // Il value conta per i pulsanti <input type="submit" value="Invia">,

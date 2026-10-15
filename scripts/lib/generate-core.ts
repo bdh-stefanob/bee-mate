@@ -741,6 +741,27 @@ export function resolveRecording(
     }
     for (const t of occorrenze.slice(1)) t.giaFatto = true;
   }
+  // L'ACCESSO PORTA DOVE LA REGISTRAZIONE E' ARRIVATA (Hair loss, 15/10). Dopo
+  // il login il sito apre l'account o lo storico, secondo gli ordini
+  // dell'utenza; lo scenario prosegue dalla pagina del gesto successivo.
+  let inizio = 0;
+  const tuttiIGesti = intents.flatMap((it) => it.steps.map((s) => s.step));
+  for (const it of intents) {
+    for (const t of it.tratti ?? []) {
+      if (t.utility?.nome !== "accesso") continue;
+      const successivo = tuttiIGesti[inizio + t.a];
+      try {
+        const u = new URL(successivo?.url ?? "");
+        if (/(^|\.)qa-clinic\./.test(u.host)) {
+          t.utility.argomentiDalMondo = [...(t.utility.argomentiDalMondo ?? []), JSON.stringify(u.pathname)];
+        }
+      } catch {
+        // Nessun gesto dopo l'accesso, o senza indirizzo: si resta sull'account.
+      }
+    }
+    inizio += it.steps.length;
+  }
+
   // Un passo fatto di una sola utility, chiamata davvero: la forma breve.
   for (const i of intents) {
     const [unico] = i.tratti ?? [];
@@ -914,7 +935,14 @@ export function componentsForPage(
   const byKey = new Map<string, Component>();
 
   for (const intent of intents) {
+    // I gesti fatti da una utility non servono a riconoscere le pagine (Hair
+    // loss, 15/10): la home della brochure si riconosceva da «Log in», toccato
+    // dall'accesso, e dopo l'accesso quel pulsante non c'e' piu'.
+    const diUtility = new Set(
+      (intent.tratti ?? []).filter((t) => t.utility).flatMap((t) => intent.steps.slice(t.da, t.a))
+    );
     for (const r of intent.steps) {
+      if (diUtility.has(r)) continue;
       if ((r.fromPage ?? intent.page) !== pageKey) continue;
       byKey.set(componentKey(r.component.role, r.component.name), r.component);
     }

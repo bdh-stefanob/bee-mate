@@ -956,6 +956,60 @@ console.log("\n--- passi misti e utility divise su piu' passi (registrazione del
     [feature.includes("Given the user insert the dose\n"), feature.includes("| 1. What is your current weight? | 190 / 80 |")], [true, true]);
 }
 
+console.log("\n--- dopo l'accesso, e un clic senza nome che cambia pagina (Hair loss, 15/10) ---\n");
+
+{
+  const LOGIN = "https://qa-clinic.invalid/login";
+  const STORICO = "https://qa-clinic.invalid/account/visit-history";
+  const HOME = "https://qa-brochure.invalid/?_gl=1*abc";
+  const passo = (label: string, pageUrl: string, steps: unknown[]) => ({ label, assertions: [], notes: [], pageUrl, steps });
+  const registrazione = {
+    startUrl: LOGIN,
+    recordedAt: "",
+    durationSeconds: 0,
+    intents: [
+      passo("the user log in", LOGIN, [
+        { action: "click", role: "button", name: "Log in", url: "https://qa-brochure.invalid/" },
+        { action: "fill", role: "textbox", name: "Email", value: "paziente@esempio.invalid", url: LOGIN },
+        { action: "fill", role: "textbox", name: "••••••••", value: "<password>", secret: true, url: LOGIN },
+        { action: "click", role: "button", name: "Log In", url: LOGIN },
+      ]),
+      passo("the user click on home page button", STORICO, [{ action: "click", role: "button", name: "", url: STORICO }]),
+      passo("the user start the hair loss treatment", HOME, [{ action: "click", role: "link", name: "Hair loss", url: HOME }]),
+    ],
+  } as unknown as Recording;
+  const r = resolveRecording(registrazione, indexDictionaries([]), { catalog: [] });
+  eq("l'accesso porta dove la registrazione e' arrivata", r.intents[0]?.utility?.argomentiDalMondo, [
+    "this.passwordAmbiente()",
+    '"/account/visit-history"',
+  ]);
+  const ctx = {
+    intents: r.intents, pages: r.pages, recordingPath: "x.json", dictionaryPaths: [], recordedAt: "",
+    durationSeconds: 0, generatedAt: "", slug: "logo", outRoot: "src",
+  };
+  const glue = emitSteps(ctx, r.pages, new Map() as never).contents;
+  const i = glue.indexOf('("the user click on home page button"');
+  const logo = i < 0 ? "" : glue.slice(i, glue.indexOf("\n});", i));
+  eq(
+    "un clic senza nome che porta altrove diventa l'andata a quella pagina, senza parametri di tracciamento",
+    logo.includes('await this.vaiA("https://qa-brochure.invalid/");'),
+    true
+  );
+  eq("e non cerca il pulsante senza nome", logo.includes("Unnamed"), false);
+
+  // I gesti fatti da una utility non servono a riconoscere le pagine: la home
+  // della brochure si riconosceva da «Log in», che dopo l'accesso non c'e' piu'.
+  const home = r.pages.find((p) => p.host === "qa-brochure.invalid");
+  const componentiHome = home ? componentsForPage(r.intents, home.key, (a) => toComponent({ role: a.role, name: a.name }, 1)) : [];
+  eq("la home si riconosce da cio' che il tester ha toccato dopo l'accesso", componentiHome.map((c) => c.name), ["Hair loss"]);
+
+  // La pagina dello storico aveva solo il pulsante senza nome, e si
+  // riconosceva da quello: 8 pulsanti senza nome sulla pagina, verifica fallita.
+  const senzaNome = toComponent({ role: "button", name: "" }, 1);
+  const corpo = assertLoadedBody([], [senzaNome], new Map([[senzaNome, "unnamedButton"]]));
+  eq("una pagina non si riconosce da un pulsante senza nome", corpo.includes("unnamedButton"), false);
+}
+
 console.log("\n--- verifiche su numeri e date non diventano verifiche (14/10) ---\n");
 
 {

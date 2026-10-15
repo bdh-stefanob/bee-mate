@@ -33,12 +33,13 @@ export class AccessoClinicPage extends BasePage {
 
   /**
    * Dopo l'accesso il sito porta all'account o allo storico delle consultazioni,
-   * secondo gli ordini dell'utenza (15/10). Gli scenari registrati ripartono
-   * dall'account.
+   * secondo gli ordini dell'utenza (15/10). Lo scenario riparte dalla pagina su
+   * cui era arrivata la registrazione.
    */
-  async vaiAllAccount(): Promise<void> {
-    if (/^\/account\/?$/.test(new URL(this.page.url()).pathname)) return;
-    await this.page.goto(`${CLINIC}/account`);
+  async vaiAllaPagina(percorso = "/account"): Promise<void> {
+    const qui = new URL(this.page.url()).pathname.replace(/\/$/, "");
+    if (qui === percorso.replace(/\/$/, "")) return;
+    await this.page.goto(`${CLINIC}${percorso}`);
     await this.page.getByRole("button", { name: /My account/ }).waitFor({ state: "visible", timeout: 45_000 });
   }
 }

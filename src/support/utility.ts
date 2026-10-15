@@ -98,7 +98,11 @@ const FARMACIA = perComponenti(
   { nome: "farmacia", modulo: "actions/farmacia.actions", funzione: "scegliFarmacia" },
   [(g) => g.role === "textbox" && g.name === "zip" && g.action === "fill", pulsante(/^select pharmacy$/i)],
   // Il pin, quando il registratore lo prende: un pulsante senza nome o un gesto senza ancoraggio.
-  [(g) => g.action === "click" && (g.name === "" || Boolean(g.senzaAncoraggio))],
+  [
+    (g) => g.action === "click" && (g.name === "" || Boolean(g.senzaAncoraggio)),
+    // Chiudere la scheda di una farmacia prima di sceglierne un'altra (Hair loss, 15/10).
+    pulsante(/^close$/i),
+  ],
   (gesti) => [gesti.find((g) => g.name === "zip")?.value ?? ""],
   // Il pin ammesso e' un clic senza nome: fuori dalla pagina della mappa non lo e'.
   /^\/pharmacy-map-selection/

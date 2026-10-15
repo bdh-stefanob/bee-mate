@@ -34,6 +34,12 @@ eq(
   utilityDelPasso([farmacia[0]!, { action: "click", role: "button", name: "", url: MAPPA }, farmacia[1]!])?.completa,
   true
 );
+// Hair loss, 15/10: il tester chiude la scheda di una farmacia prima di sceglierne una.
+eq(
+  "chiudere una scheda della mappa fa parte della farmacia",
+  utilityDelPasso([farmacia[0]!, { action: "click", role: "button", name: "Close", url: MAPPA }, farmacia[1]!])?.completa,
+  true
+);
 eq(
   "con un gesto estraneo e' solo una proposta",
   utilityDelPasso([...farmacia, { action: "click", role: "button", name: "Edit address", url: MAPPA }])?.completa,

@@ -6,12 +6,13 @@ import type { Page } from "@playwright/test";
 import { AccessoClinicPage } from "../pages/clinic/accesso-clinic.page";
 import { ServizioWeightLossPage } from "../pages/clinic/servizio-weight-loss.page";
 
-export async function accediAClinic(page: Page, email: string, password: string): Promise<void> {
+/** `arrivo`: la pagina su cui la registrazione era arrivata dopo l'accesso. */
+export async function accediAClinic(page: Page, email: string, password: string, arrivo = "/account"): Promise<void> {
   const accesso = new AccessoClinicPage(page);
   await accesso.apriDallaBrochure();
   await accesso.assertLoaded();
   await accesso.entra(email, password);
-  await accesso.vaiAllAccount();
+  await accesso.vaiAllaPagina(arrivo);
 }
 
 export async function avviaWeightLossDiRitorno(page: Page, dose = "7.2mg"): Promise<void> {

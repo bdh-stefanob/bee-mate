@@ -165,6 +165,16 @@ export class CustomWorld extends World {
   }
 
   /**
+   * Va a un indirizzo. Lo usa il codice generato al posto di un clic che non si
+   * puo' riprodurre (un'icona senza nome, come il logo) quando la registrazione
+   * dice dove quel clic ha portato. Un indirizzo non e' un selettore: non
+   * conosce la pagina, solo la destinazione.
+   */
+  async vaiA(indirizzo: string): Promise<void> {
+    await this.page.goto(indirizzo);
+  }
+
+  /**
    * L'ambiente nominato su cui si sta eseguendo, con il suo accesso registrato.
    * `undefined` con un indirizzo diretto (`BASE_URL`): li' non c'e' nessun
    * ambiente a cui chiedere come si entra.
