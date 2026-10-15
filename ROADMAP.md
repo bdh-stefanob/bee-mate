@@ -203,6 +203,31 @@ this can go wrong silently, and nothing is worse than a recipe that fires on the
 wrong page. What exists today is the declaration — the generator says, for every
 gesture with no accessible anchor, that a recipe is what is missing there.
 
+### Parked until after the demo — a generated codebase that converges
+
+*Raised 2026-10-15.* Every saved recording adds files, and the result grows
+instead of converging. There is one page per URL rather than one per concept
+(`questions`, `questions1`, `questions2` sit next to the hand-written
+`questionario`). Steps are owned by whichever scenario was saved first. The same
+app also appears under two names (`clinic`, `qa-brochure`). The code will be
+maintained mostly by agents (Kiro, plus a repair agent started from the
+dashboard) and by SDETs for structural work. So no change to a shared part may
+land without proof. Four sub-projects, in this order, each with its own spec:
+
+1. **S1, converging structure.** One page per concept, shared steps with a clear
+   home and owner, no duplicate scenarios, and a clear line between what the
+   machine owns and what people own.
+2. **S2, the guard.** Every change to a shared part works out which scenarios it
+   touches, reruns them, and accepts or rejects the change. This applies to the
+   dashboard, to Kiro (hook or CI) and to SDETs. Owner's choice: update the
+   existing method only after the scenarios using it pass again.
+3. **S3, recognising change.** When the app changes, tell "same element, new
+   name" apart from "element gone", at record time and at run time.
+4. **S4, the repair agent.** See `2026-10-01-assistente-nel-cruscotto-design.md`.
+   Blocked on Q-A1.
+
+**Not now:** the focus until the demo is record → generate → run.
+
 ### Open — guided recording (catalog steps offered while navigating)
 
 *Raised 2026-10-15, after two testers wrote the same phrase on purpose.* Saving
