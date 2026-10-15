@@ -5,6 +5,7 @@ import { type Page } from "@playwright/test";
 import { BasePage } from "../../support/base.page";
 
 export const BROCHURE = "https://qa-brochure.lemonaidhealth.co.uk";
+export const CLINIC = "https://qa-clinic.lemonaidhealth.co.uk";
 
 export class AccessoClinicPage extends BasePage {
   readonly path = "/login";
@@ -27,6 +28,17 @@ export class AccessoClinicPage extends BasePage {
     await this.page.getByRole("textbox", { name: "Email" }).fill(email);
     await this.page.locator('input[type="password"]').fill(password);
     await this.page.getByRole("button", { name: "Log In", exact: true }).click();
+    await this.page.getByRole("button", { name: /My account/ }).waitFor({ state: "visible", timeout: 45_000 });
+  }
+
+  /**
+   * Dopo l'accesso il sito porta all'account o allo storico delle consultazioni,
+   * secondo gli ordini dell'utenza (15/10). Gli scenari registrati ripartono
+   * dall'account.
+   */
+  async vaiAllAccount(): Promise<void> {
+    if (/^\/account\/?$/.test(new URL(this.page.url()).pathname)) return;
+    await this.page.goto(`${CLINIC}/account`);
     await this.page.getByRole("button", { name: /My account/ }).waitFor({ state: "visible", timeout: 45_000 });
   }
 }

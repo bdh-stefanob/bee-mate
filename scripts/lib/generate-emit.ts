@@ -605,7 +605,7 @@ export function emitSteps(
       const frasiU = frasiDiIntento(intent);
       const daSteps = percorsi.posix.relative(`${ctx.outRoot}/steps/generated`, `src/${u.modulo}`);
       importUtility.add(`import { ${u.funzione} } from "${daSteps.startsWith(".") ? daSteps : `./${daSteps}`}";`);
-      const argomenti = [...frasiU.parametri, ...(u.tabella ? ["tabella.raw()"] : [])];
+      const argomenti = [...frasiU.parametri, ...(u.argomentiDalMondo ?? []), ...(u.tabella ? ["tabella.raw()"] : [])];
       const firma = frasiU.parametri.map((p) => `, ${p}: string`).join("") + (u.tabella ? ", tabella: DataTable" : "");
       if (!seenPhrases.has(frasiU.espressione)) {
         seenPhrases.add(frasiU.espressione);
@@ -698,7 +698,7 @@ export function emitSteps(
         const nomi = frasi.parametri.slice(prossimoParametro, prossimoParametro + u.parametri.length);
         prossimoParametro += u.parametri.length;
         if (u.tabella) haTabella = true;
-        const argomenti = [...nomi, ...(u.tabella ? ["tabella.raw()"] : [])];
+        const argomenti = [...nomi, ...(u.argomentiDalMondo ?? []), ...(u.tabella ? ["tabella.raw()"] : [])];
         lines.push(`await ${u.funzione}(this.page${argomenti.map((a) => `, ${a}`).join("")});`);
       }
     } else if (rip) {

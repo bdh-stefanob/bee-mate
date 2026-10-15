@@ -34,6 +34,8 @@ export interface UtilityRiconosciuta {
   parametri: string[];
   /** Righe della tabella Gherkin sotto lo step, intestazione compresa. */
   tabella?: string[][];
+  /** Argomenti che vengono dallo scenario, non dalla registrazione (la password). */
+  argomentiDalMondo?: string[];
 }
 
 export interface Utility {
@@ -61,7 +63,7 @@ const percorso = (g: GestoPerUtility): string => {
  */
 const diClinic = (g: GestoPerUtility): boolean => {
   try {
-    return /(^|\.)qa-clinic\./.test(new URL(g.url ?? "").host);
+    return /(^|\.)qa-(clinic|brochure)\./.test(new URL(g.url ?? "").host);
   } catch {
     return false;
   }
@@ -74,7 +76,7 @@ const pulsante = (nome: RegExp) => (g: GestoPerUtility): boolean => g.role === "
  * `ammessi` possono esserci. Qualunque altro gesto rende la coincidenza parziale.
  */
 function perComponenti(
-  u: Omit<Utility, "riconosci" | "contiene">,
+  u: Omit<Utility, "riconosci" | "contiene"> & { argomentiDalMondo?: string[] },
   obbligatori: ReadonlyArray<(g: GestoPerUtility) => boolean>,
   ammessi: ReadonlyArray<(g: GestoPerUtility) => boolean>,
   parametri: (gesti: readonly GestoPerUtility[]) => string[],
@@ -156,7 +158,28 @@ const QUESTIONARIO: Utility = {
   },
 };
 
-export const UTILITY: readonly Utility[] = [QUESTIONARIO, FARMACIA, PAGAMENTO, FOTO];
+// L'accesso del paziente: dalla brochure al modulo di login. Dopo l'accesso il
+// sito porta a volte all'account, a volte allo storico delle consultazioni
+// (dipende dagli ordini dell'utenza): la utility riporta sempre all'account,
+// dove la registrazione proseguiva (prova del 15/10). La password non e' mai
+// nella registrazione: la chiede l'ambiente.
+const ACCESSO = perComponenti(
+  {
+    nome: "accesso",
+    modulo: "actions/servizio-weight-loss.actions",
+    funzione: "accediAClinic",
+    argomentiDalMondo: ["this.passwordAmbiente()"],
+  },
+  [
+    (g) => g.role === "textbox" && g.name === "Email" && g.action === "fill",
+    (g) => g.action === "fill" && Boolean(g.secret),
+    (g) => pulsante(/^log in$/i)(g) && /\/login/.test(percorso(g)),
+  ],
+  [pulsante(/^log in$/i)],
+  (gesti) => [gesti.find((g) => g.name === "Email")?.value ?? ""]
+);
+
+export const UTILITY: readonly Utility[] = [QUESTIONARIO, FARMACIA, PAGAMENTO, FOTO, ACCESSO];
 
 /** La prima utility che riconosce il passo; una completa prima di una parziale. */
 export function utilityDelPasso(

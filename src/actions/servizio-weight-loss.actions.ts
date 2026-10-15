@@ -11,6 +11,7 @@ export async function accediAClinic(page: Page, email: string, password: string)
   await accesso.apriDallaBrochure();
   await accesso.assertLoaded();
   await accesso.entra(email, password);
+  await accesso.vaiAllAccount();
 }
 
 export async function avviaWeightLossDiRitorno(page: Page, dose = "7.2mg"): Promise<void> {

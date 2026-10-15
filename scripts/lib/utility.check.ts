@@ -138,6 +138,18 @@ eq(
   [[0, 1, null]]
 );
 
+console.log("\n--- accesso ---\n");
+const LOGIN = "https://qa-clinic.invalid/login";
+const accesso = utilityDelPasso([
+  { action: "click", role: "button", name: "Log in", url: "https://qa-brochure.invalid/" },
+  { action: "fill", role: "textbox", name: "Email", value: "paziente@esempio.invalid", url: LOGIN },
+  { action: "fill", role: "textbox", name: "••••••••", value: "<password>", secret: true, url: LOGIN },
+  { action: "click", role: "button", name: "Log In", url: LOGIN },
+]);
+eq("brochure, email, password, Log In: l'accesso, completo", [accesso?.nome, accesso?.completa], ["accesso", true]);
+eq("l'email diventa il parametro, la password mai", accesso?.parametri, ["paziente@esempio.invalid"]);
+eq("la password la chiede l'ambiente", accesso?.argomentiDalMondo, ["this.passwordAmbiente()"]);
+
 console.log("\n--- solo su clinic ---\n");
 const FINTA = "http://127.0.0.1:4321/questions/1";
 eq(
