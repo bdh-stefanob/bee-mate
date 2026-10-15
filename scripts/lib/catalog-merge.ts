@@ -22,19 +22,35 @@
 export interface VoceCatalogo {
   expression: string;
   status?: "implemented" | "wanted" | "deprecated";
+  /** Dove e' definita (o dove lo sara'): "percorso:riga". */
+  sourceRef?: string;
 }
+
+/** Il file di un `sourceRef`, con le barre normalizzate. */
+const fileDi = (rif: string | undefined): string => (rif ?? "").replace(/:\d+$/, "").replace(/\\/g, "/");
 
 /**
  * Unisce le voci derivate dal codice con quelle che il catalogo precedente
  * teneva e che il codice non definisce.
+ *
+ * UNO STEP NATO DAL CODICE NON E' UNA RICHIESTA (revisione del 15/10). Si
+ * conserva cio' che il team ha chiesto, non cio' che il codice ha smesso di
+ * definire: una voce che punta a un file letto in questa rigenerazione e non
+ * definita li' e' una frase cambiata o tolta; una voce del limbo dei generati
+ * (`*\/generated/`) e' uno scenario mai salvato. Il catalogo versionato teneva
+ * 18 voci cosi', e chi le riusava otteneva uno step non definito.
  */
 export function conservaRichieste<T extends VoceCatalogo>(
   daCodice: readonly T[],
   precedenti: readonly T[]
 ): T[] {
   const implementate = new Set(daCodice.map((s) => s.expression));
-  const richieste = precedenti.filter(
-    (s) => s.status !== "implemented" && !implementate.has(s.expression)
-  );
+  const fileLetti = new Set(daCodice.map((s) => fileDi(s.sourceRef)).filter(Boolean));
+  const richieste = precedenti.filter((s) => {
+    if (s.status === "implemented" || implementate.has(s.expression)) return false;
+    const file = fileDi(s.sourceRef);
+    if (/(^|\/)generated\//.test(file)) return false;
+    return !fileLetti.has(file);
+  });
   return [...daCodice, ...richieste];
 }

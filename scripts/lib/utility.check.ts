@@ -92,6 +92,16 @@ const p = utilityDelPasso([
   { action: "click", role: "button", name: "Place Order", url: SUM },
 ]);
 eq("carta salvata + Place Order: pagamento, senza parametri", [p?.nome, p?.completa, p?.parametri], ["pagamento", true, []]);
+// Revisione finale (15/10): con la carta digitata, `paga()` cercava una carta
+// salvata che non c'e'. Senza la carta salvata il pagamento resta generato.
+eq(
+  "carta digitata + Place Order: non e' la utility del pagamento",
+  segmentaPasso([
+    { action: "fill", role: "textbox", name: "Credit or debit card number", value: "4000 0082 6000 0000", url: SUM },
+    { action: "click", role: "button", name: "Place Order", url: SUM },
+  ]).map((t) => t.utility?.nome ?? null),
+  [null]
+);
 
 console.log("\n--- un passo misto si divide in tratti (registrazione del 14/10) ---\n");
 const INFO = "https://qa-clinic.invalid/important-info";

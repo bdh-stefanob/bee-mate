@@ -74,7 +74,11 @@ export class QuestionarioPage extends BasePage {
       await etichetta.click();
       return true;
     }
-    const ngClick = this.page.locator("[ng-click]").filter({ hasText: risposta }).filter({ visible: true }).first();
+    // Il testo intero, non una sottostringa (revisione del 15/10): «No» trovava
+    // «None of the above», e una domanda senza la risposta riceveva una risposta
+    // a caso invece di fermare lo scenario.
+    const intero = new RegExp(`^\\s*${risposta.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i");
+    const ngClick = this.page.locator("[ng-click]").filter({ hasText: intero }).filter({ visible: true }).first();
     if (!(await ngClick.isVisible().catch(() => false))) return false;
     await ngClick.click();
     return true;

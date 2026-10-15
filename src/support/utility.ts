@@ -106,8 +106,11 @@ const FARMACIA = perComponenti(
 
 const PAGAMENTO = perComponenti(
   { nome: "pagamento", modulo: "actions/pagamento.actions", funzione: "paga" },
-  [pulsante(/^place order$/i)],
-  [pulsante(/expiry/i)],
+  // Solo la carta salvata (revisione del 15/10): con la carta digitata negli
+  // iframe di Stripe la utility cercava una carta salvata che non c'e', e un
+  // primo ordine registrato falliva. Quel caso resta generato.
+  [pulsante(/^place order$/i), pulsante(/expiry/i)],
+  [],
   () => []
 );
 

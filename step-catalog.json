@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-15T07:21:24.773Z",
-  "totalSteps": 76,
-  "documentedSteps": 70,
+  "generatedAt": "2026-10-15T07:47:23.795Z",
+  "totalSteps": 58,
+  "documentedSteps": 52,
   "undocumentedSteps": 6,
   "steps": [
     {
@@ -116,7 +116,7 @@
           "name": "Submit"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:356",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:298",
       "doc": {
         "params": {},
         "intent": "submit photo",
@@ -269,7 +269,7 @@
           "name": "Yes, pick up in store"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:242",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:228",
       "doc": {
         "params": {},
         "intent": "the user choose pick up in store",
@@ -385,7 +385,7 @@
           "name": "Start a consultations Choose from our list of services"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:96",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:84",
       "doc": {
         "params": {},
         "intent": "the user click on start service",
@@ -615,7 +615,7 @@
           "name": "No"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:224",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:209",
       "doc": {
         "params": {},
         "intent": "the user complete the questionary",
@@ -756,7 +756,7 @@
           "name": "That's me"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:378",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:321",
       "doc": {
         "params": {},
         "intent": "the user get the front photo",
@@ -809,7 +809,7 @@
           "name": "That's me"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:336",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:279",
       "doc": {
         "params": {},
         "intent": "the user get the id photo",
@@ -1015,57 +1015,17 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "page": "IdPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Open camera"
-        },
-        {
-          "role": "button",
-          "name": "Take Picture"
-        },
-        {
-          "role": "button",
-          "name": "Save"
-        },
-        {
-          "role": "button",
-          "name": "That's me"
-        }
-      ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:309",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:257",
       "doc": {
         "params": {},
         "intent": "the user insert personal photo",
-        "page": "IdPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Open camera"
-          },
-          {
-            "role": "button",
-            "name": "Take Picture"
-          },
-          {
-            "role": "button",
-            "name": "Save"
-          },
-          {
-            "role": "button",
-            "name": "That's me"
-          }
-        ],
         "wanted": true
       },
       "documented": true
     },
     {
-      "expression": "the user insert the bmi and the date with {string}",
-      "parameters": [
-        "{string}"
-      ],
+      "expression": "the user insert the bmi and the date",
+      "parameters": [],
       "app": "clinic",
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
@@ -1085,12 +1045,10 @@
           "name": "Open calendar"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:206",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:193",
       "doc": {
-        "params": {
-          "valore": "spinbutton \"0\" (sotto \"1. What is your current weight?\")"
-        },
-        "intent": "the user insert the bmi and the date with {string}",
+        "params": {},
+        "intent": "the user insert the bmi and the date",
         "page": "QuestionsPage",
         "components": [
           {
@@ -1152,10 +1110,8 @@
       "documented": true
     },
     {
-      "expression": "the user insert the dose with {string}",
-      "parameters": [
-        "{string}"
-      ],
+      "expression": "the user insert the dose",
+      "parameters": [],
       "app": "clinic",
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
@@ -1183,12 +1139,10 @@
           "page": "QuestionsPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:178",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:167",
       "doc": {
-        "params": {
-          "valore": "spinbutton \"0\" (sotto \"1. What is your current weight?\")"
-        },
-        "intent": "the user insert the dose with {string}",
+        "params": {},
+        "intent": "the user insert the dose",
         "page": "ImportantInfoPage",
         "components": [
           {
@@ -1290,48 +1244,10 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "page": "HomePage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Log in",
-          "page": "HomePage"
-        },
-        {
-          "role": "textbox",
-          "name": "Email",
-          "page": "LoginPage"
-        },
-        {
-          "role": "button",
-          "name": "Log In",
-          "page": "LoginPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:73",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:66",
       "doc": {
-        "params": {
-          "valore": "textbox \"Email\" (sotto \"LOG IN TO SAVE TIME\")"
-        },
+        "params": {},
         "intent": "The user log in with {string}",
-        "page": "HomePage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Log in",
-            "page": "HomePage"
-          },
-          {
-            "role": "textbox",
-            "name": "Email",
-            "page": "LoginPage"
-          },
-          {
-            "role": "button",
-            "name": "Log In",
-            "page": "LoginPage"
-          }
-        ],
         "wanted": true
       },
       "documented": true
@@ -1401,7 +1317,7 @@
           "page": "OrderCompleteAsyncNoCallPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:425",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:363",
       "doc": {
         "params": {},
         "intent": "the user open the notification and see the order",
@@ -1523,32 +1439,10 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "page": "SummaryPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "....0000 Expiry 12/29"
-        },
-        {
-          "role": "button",
-          "name": "Place Order"
-        }
-      ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:284",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:248",
       "doc": {
         "params": {},
         "intent": "the user select the card",
-        "page": "SummaryPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "....0000 Expiry 12/29"
-          },
-          {
-            "role": "button",
-            "name": "Place Order"
-          }
-        ],
         "wanted": true
       },
       "documented": true
@@ -1625,7 +1519,7 @@
           "page": "ProductWeiFPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:145",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:135",
       "doc": {
         "params": {},
         "intent": "the user select the medication",
@@ -1835,34 +1729,10 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "page": "PharmacyMapSelectionPage",
-      "components": [
-        {
-          "role": "textbox",
-          "name": "zip"
-        },
-        {
-          "role": "button",
-          "name": "Select Pharmacy"
-        }
-      ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:263",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:239",
       "doc": {
-        "params": {
-          "valore": "textbox \"zip\""
-        },
+        "params": {},
         "intent": "The user sleect the store with {string}",
-        "page": "PharmacyMapSelectionPage",
-        "components": [
-          {
-            "role": "textbox",
-            "name": "zip"
-          },
-          {
-            "role": "button",
-            "name": "Select Pharmacy"
-          }
-        ],
         "wanted": true
       },
       "documented": true
@@ -1928,7 +1798,7 @@
           "page": "TreatmentPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:118",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:106",
       "doc": {
         "params": {},
         "intent": "the user start the service",
@@ -2053,7 +1923,7 @@
           "name": "That's me"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:404",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:343",
       "doc": {
         "params": {},
         "intent": "user get the second photo",
@@ -2105,596 +1975,6 @@
       "doc": {
         "params": {},
         "intent": "L'utente e' dentro l'applicazione: con una sessione valida non fa"
-      },
-      "documented": true
-    },
-    {
-      "expression": "submit photo",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "IdPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Submit"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:294",
-      "doc": {
-        "params": {},
-        "intent": "submit photo",
-        "page": "IdPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Submit"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user choose pick up in store",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "PharmaciesPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Yes, pick up in store"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:225",
-      "doc": {
-        "params": {},
-        "intent": "the user choose pick up in store",
-        "page": "PharmaciesPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Yes, pick up in store"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user click on start service",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "AccountPage",
-      "components": [
-        {
-          "role": "link",
-          "name": "Start a consultations Choose from our list of services"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:83",
-      "doc": {
-        "params": {},
-        "intent": "the user click on start service",
-        "page": "AccountPage",
-        "components": [
-          {
-            "role": "link",
-            "name": "Start a consultations Choose from our list of services"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user complete the questionary",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "QuestionsPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "No"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:207",
-      "doc": {
-        "params": {},
-        "intent": "the user complete the questionary",
-        "page": "QuestionsPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "No"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user get the front photo",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "VisitPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Open camera"
-        },
-        {
-          "role": "button",
-          "name": "Take Picture"
-        },
-        {
-          "role": "button",
-          "name": "Save"
-        },
-        {
-          "role": "button",
-          "name": "That's me"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:316",
-      "doc": {
-        "params": {},
-        "intent": "the user get the front photo",
-        "page": "VisitPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Open camera"
-          },
-          {
-            "role": "button",
-            "name": "Take Picture"
-          },
-          {
-            "role": "button",
-            "name": "Save"
-          },
-          {
-            "role": "button",
-            "name": "That's me"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user get the id photo",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "IdPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Open camera"
-        },
-        {
-          "role": "button",
-          "name": "Take Picture"
-        },
-        {
-          "role": "button",
-          "name": "Save"
-        },
-        {
-          "role": "button",
-          "name": "That's me"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:276",
-      "doc": {
-        "params": {},
-        "intent": "the user get the id photo",
-        "page": "IdPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Open camera"
-          },
-          {
-            "role": "button",
-            "name": "Take Picture"
-          },
-          {
-            "role": "button",
-            "name": "Save"
-          },
-          {
-            "role": "button",
-            "name": "That's me"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user insert personal photo",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:254",
-      "doc": {
-        "params": {},
-        "intent": "the user insert personal photo",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user insert the bmi and the date",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "QuestionsPage",
-      "components": [
-        {
-          "role": "spinbutton",
-          "name": "0"
-        },
-        {
-          "role": "button",
-          "name": "Next"
-        },
-        {
-          "role": "button",
-          "name": "Open calendar"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:192",
-      "doc": {
-        "params": {},
-        "intent": "the user insert the bmi and the date",
-        "page": "QuestionsPage",
-        "components": [
-          {
-            "role": "spinbutton",
-            "name": "0"
-          },
-          {
-            "role": "button",
-            "name": "Next"
-          },
-          {
-            "role": "button",
-            "name": "Open calendar"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user insert the dose",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "ImportantInfoPage",
-      "components": [
-        {
-          "role": "checkbox",
-          "name": "I understand the important information above.",
-          "page": "ImportantInfoPage"
-        },
-        {
-          "role": "button",
-          "name": "Continue",
-          "page": "ImportantInfoPage"
-        },
-        {
-          "role": "button",
-          "name": "Stay on the same dose",
-          "page": "QuestionsPage"
-        },
-        {
-          "role": "spinbutton",
-          "name": "0",
-          "page": "QuestionsPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:166",
-      "doc": {
-        "params": {},
-        "intent": "the user insert the dose",
-        "page": "ImportantInfoPage",
-        "components": [
-          {
-            "role": "checkbox",
-            "name": "I understand the important information above.",
-            "page": "ImportantInfoPage"
-          },
-          {
-            "role": "button",
-            "name": "Continue",
-            "page": "ImportantInfoPage"
-          },
-          {
-            "role": "button",
-            "name": "Stay on the same dose",
-            "page": "QuestionsPage"
-          },
-          {
-            "role": "spinbutton",
-            "name": "0",
-            "page": "QuestionsPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "The user log in with {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:65",
-      "doc": {
-        "params": {},
-        "intent": "The user log in with {string}",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user open the notification and see the order",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "VisitPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Submit",
-          "page": "VisitPage"
-        },
-        {
-          "role": "button",
-          "name": "1 Secure messages",
-          "page": "OrderCompleteAsyncNoCallPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:356",
-      "doc": {
-        "params": {},
-        "intent": "the user open the notification and see the order",
-        "page": "VisitPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Submit",
-            "page": "VisitPage"
-          },
-          {
-            "role": "button",
-            "name": "1 Secure messages",
-            "page": "OrderCompleteAsyncNoCallPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user select the card",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:245",
-      "doc": {
-        "params": {},
-        "intent": "the user select the card",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user select the medication",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "WeiPage",
-      "components": [
-        {
-          "role": "link",
-          "name": "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago",
-          "page": "WeiPage"
-        },
-        {
-          "role": "button",
-          "name": "7.2mg",
-          "page": "ProductsWeiFPage"
-        },
-        {
-          "role": "button",
-          "name": "Without Coaching £285.97",
-          "page": "ProductsWeiFPage"
-        },
-        {
-          "role": "button",
-          "name": "Select",
-          "page": "ProductsWeiFPage"
-        },
-        {
-          "role": "button",
-          "name": "continue",
-          "page": "ProductWeiFPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:134",
-      "doc": {
-        "params": {},
-        "intent": "the user select the medication",
-        "page": "WeiPage",
-        "components": [
-          {
-            "role": "link",
-            "name": "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago",
-            "page": "WeiPage"
-          },
-          {
-            "role": "button",
-            "name": "7.2mg",
-            "page": "ProductsWeiFPage"
-          },
-          {
-            "role": "button",
-            "name": "Without Coaching £285.97",
-            "page": "ProductsWeiFPage"
-          },
-          {
-            "role": "button",
-            "name": "Select",
-            "page": "ProductsWeiFPage"
-          },
-          {
-            "role": "button",
-            "name": "continue",
-            "page": "ProductWeiFPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "The user sleect the store with {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:236",
-      "doc": {
-        "params": {},
-        "intent": "The user sleect the store with {string}",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user start the service",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "HomePage",
-      "components": [
-        {
-          "role": "link",
-          "name": "Weight Loss",
-          "page": "HomePage"
-        },
-        {
-          "role": "link",
-          "name": "Get started",
-          "page": "TreatmentPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:105",
-      "doc": {
-        "params": {},
-        "intent": "the user start the service",
-        "page": "HomePage",
-        "components": [
-          {
-            "role": "link",
-            "name": "Weight Loss",
-            "page": "HomePage"
-          },
-          {
-            "role": "link",
-            "name": "Get started",
-            "page": "TreatmentPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "user get the second photo",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "VisitPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Take Picture"
-        },
-        {
-          "role": "button",
-          "name": "Save"
-        },
-        {
-          "role": "button",
-          "name": "That's me"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\the-complete-the-second-order.steps.ts:337",
-      "doc": {
-        "params": {},
-        "intent": "user get the second photo",
-        "page": "VisitPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Take Picture"
-          },
-          {
-            "role": "button",
-            "name": "Save"
-          },
-          {
-            "role": "button",
-            "name": "That's me"
-          }
-        ],
-        "wanted": true
       },
       "documented": true
     },
@@ -3031,72 +2311,6 @@
           {
             "role": "link",
             "name": "Weight Loss"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "il cliente accede all'area ordini",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "AccessoPage",
-      "components": [
-        {
-          "role": "textbox",
-          "name": "Email"
-        },
-        {
-          "role": "button",
-          "name": "Entra"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\zz-controllo.steps.ts:39",
-      "doc": {
-        "params": {},
-        "intent": "il cliente accede all'area ordini",
-        "page": "AccessoPage",
-        "components": [
-          {
-            "role": "textbox",
-            "name": "Email"
-          },
-          {
-            "role": "button",
-            "name": "Entra"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "il cliente annulla un ordine",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "OrdiniPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Annulla ordine"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\zz-controllo.steps.ts:58",
-      "doc": {
-        "params": {},
-        "intent": "il cliente annulla un ordine",
-        "page": "OrdiniPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Annulla ordine"
           }
         ],
         "wanted": true

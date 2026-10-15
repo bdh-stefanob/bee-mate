@@ -7,7 +7,7 @@
 //
 // Generato da:
 //   registrazione : reports/recordings/qa-clinic.lemonaidhealth.co.uk-2026-10-14T09-14-05-713Z.json
-//   il            : 2026-10-15T07:21:20.297Z
+//   il            : 2026-10-15T07:45:46.589Z
 //
 // Togliendo il marcatore in prima riga questo file diventa tuo: la generazione
 // lo salta invece di riscriverlo.
@@ -31,6 +31,7 @@ import { VisitPage } from "../../../pages/clinic/visit.page";
 import { OrderCompleteAsyncNoCallPage } from "../../../pages/clinic/order-complete-async-no-call.page";
 import { accediAClinic } from "../../../actions/servizio-weight-loss.actions";
 import { rispondiQuestionario } from "../../../actions/questionario.actions";
+import { verificaGiaFatto } from "../../../actions/gia-fatto.actions";
 import { scegliFarmacia } from "../../../actions/farmacia.actions";
 import { paga } from "../../../actions/pagamento.actions";
 import { scattaFoto } from "../../../actions/foto.actions";
@@ -157,7 +158,7 @@ When("the user select the medication", async function (this: CustomWorld) {
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
- *          - the user insert the dose with {string}
+ *          - the user insert the dose
  *          - the user continue
  *          - the user check and continue the order
  *          - the user read the imprtant info with {string}
@@ -183,14 +184,15 @@ When("the user insert the dose", async function (this: CustomWorld, tabella: Dat
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
- *          - the user insert the bmi and the date with {string}
+ *          - the user insert the bmi and the date
  *          - the user insert the bmi data with {string}
  *          - the user answer the question
- *          - the user insert the dose with {string}
+ *          - the user insert the dose
  *          - the user complete the order
  */
 When("the user insert the bmi and the date", async function (this: CustomWorld) {
-  // questionario: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // questionario: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "questionario");
 });
 
 /**
@@ -205,7 +207,8 @@ When("the user insert the bmi and the date", async function (this: CustomWorld) 
  *          - the user say no to GP
  */
 When("the user complete the questionary", async function (this: CustomWorld) {
-  // questionario: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // questionario: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "questionario");
 });
 
 /**
@@ -271,10 +274,11 @@ When("the user insert personal photo", async function (this: CustomWorld) {
  *          - the user get the front photo
  *          - the user get the second photo
  *          - user get the second photo
- *          - the user insert personal photo
+ *          - the user get another photo for document
  */
 When("the user get the id photo", async function (this: CustomWorld) {
-  // foto: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // foto: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "foto");
 });
 
 /**
@@ -292,7 +296,8 @@ When("the user get the id photo", async function (this: CustomWorld) {
  *          - the user get another photo for document
  */
 When("submit photo", async function (this: CustomWorld) {
-  // foto: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // foto: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "foto");
 });
 
 /**
@@ -311,10 +316,11 @@ When("submit photo", async function (this: CustomWorld) {
  *          - the user get the id photo
  *          - the user get the second photo
  *          - user get the second photo
- *          - the user insert personal photo
+ *          - the user get another photo for document
  */
 When("the user get the front photo", async function (this: CustomWorld) {
-  // foto: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // foto: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "foto");
 });
 
 /**
@@ -332,10 +338,11 @@ When("the user get the front photo", async function (this: CustomWorld) {
  *          - the user get the second photo
  *          - the user get the id photo
  *          - the user get the front photo
- *          - the user insert personal photo
+ *          - the user submit the photo and the order
  */
 When("user get the second photo", async function (this: CustomWorld) {
-  // foto: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // foto: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "foto");
 });
 
 /**
@@ -354,7 +361,8 @@ When("user get the second photo", async function (this: CustomWorld) {
  *          - the user complete the photo autentication
  */
 When("the user open the notification and see the order", async function (this: CustomWorld) {
-  // foto: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).
+  // foto: fatto in un passo precedente (la utility lo fa tutto in una volta).
+  await verificaGiaFatto(this.page, "foto");
   orderCompleteAsyncNoCallPage = new OrderCompleteAsyncNoCallPage(this.page);
   await orderCompleteAsyncNoCallPage.assertLoaded();
   await orderCompleteAsyncNoCallPage.click1SecureMessages();

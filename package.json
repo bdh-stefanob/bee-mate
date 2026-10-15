@@ -27,7 +27,7 @@
     "check:stability": "ts-node scripts/lib/stability.check.ts",
     "check:gold": "ts-node scripts/lib/gold.check.ts",
     "check:storage": "ts-node scripts/lib/markdown-storage.check.ts",
-    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling && npm run check:inventory && npm run check:args && npm run check:eol && npm run check:kiro-tools && npm run check:hooks && npm run check:browser && npm run check:catalog-merge && npm run check:i18n && npm run check:registrati && npm run check:targets && npm run check:percorsi && npm run check:parallelo && npm run check:verifica && npm run check:ordine && npm run check:accesso && npm run check:suggerimenti && npm run check:leggi-json && npm run check:diagnosi && npm run check:fallimento && npm run check:app-finta && npm run check:copione-schema && npm run check:copione-difese && npm run check:copione-registratore && npm run check:utility",
+    "check:all": "npm run check:extract && npm run check:normalize && npm run check:stability && npm run check:gold && npm run check:storage && npm run check:templates && npm run check:generate && npm run check:benchmark && npm run check:labelling && npm run check:inventory && npm run check:args && npm run check:eol && npm run check:kiro-tools && npm run check:hooks && npm run check:browser && npm run check:catalog-merge && npm run check:i18n && npm run check:registrati && npm run check:targets && npm run check:percorsi && npm run check:parallelo && npm run check:verifica && npm run check:ordine && npm run check:accesso && npm run check:suggerimenti && npm run check:leggi-json && npm run check:diagnosi && npm run check:fallimento && npm run check:app-finta && npm run check:copione-schema && npm run check:copione-difese && npm run check:copione-registratore && npm run check:utility && npm run check:questionario",
     "analyze:corpus": "ts-node scripts/analyze-corpus.ts",
     "catalog:sync": "ts-node scripts/catalog-sync.ts",
     "confluence:publish": "ts-node scripts/confluence-publish.ts",
@@ -68,7 +68,8 @@
     "check:copione-schema": "ts-node scripts/lib/copione-schema.check.ts",
     "check:copione-difese": "ts-node scripts/lib/copione-difese.check.ts",
     "check:copione-registratore": "ts-node scripts/lib/copione-registratore.check.ts",
-    "check:utility": "ts-node scripts/lib/utility.check.ts"
+    "check:utility": "ts-node scripts/lib/utility.check.ts",
+    "check:questionario": "ts-node scripts/lib/questionario.check.ts"
   },
   "keywords": [
     "playwright",

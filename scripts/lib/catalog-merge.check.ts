@@ -22,6 +22,30 @@ const eq = (w: string, a: unknown, b: unknown): void =>
 
 const voce = (expression: string, status: VoceCatalogo["status"]): VoceCatalogo => ({ expression, status });
 
+console.log("\n--- uno step nato dal codice non e' una richiesta (15/10) ---\n");
+
+{
+  // Revisione finale: il catalogo versionato teneva step generati il cui codice
+  // non c'era piu' (un file di controllo cancellato, una frase rigenerata senza
+  // parametro). Una richiesta del team non punta a codice che esiste; uno step
+  // nato dal codice si', o sta nel limbo dei generati.
+  const conRif = (expression: string, sourceRef: string): VoceCatalogo => ({ expression, status: "wanted", sourceRef });
+  const daCodice = [
+    { expression: "the user insert the bmi and the date", status: "wanted" as const, sourceRef: "src\\steps\\clinic\\wl\\ordine.steps.ts:206" },
+  ];
+  const precedenti = [
+    conRif("the user insert the bmi and the date with {string}", "src\\steps\\clinic\\wl\\ordine.steps.ts:206"),
+    conRif("il cliente annulla un ordine", "src\\steps\\generated\\zz-controllo.steps.ts:58"),
+    conRif("I open the prescription page", "src/steps/pharmacy/prescriptions/prescriptions.steps.ts:1"),
+    voce("the user confirms the order", "wanted"),
+  ];
+  const unito = conservaRichieste(daCodice, precedenti).map((s) => s.expression);
+  eq("la frase cambiata nel suo file non resta", unito.includes("the user insert the bmi and the date with {string}"), false);
+  eq("uno step del limbo dei generati non resta", unito.includes("il cliente annulla un ordine"), false);
+  eq("una richiesta per un file che ancora non esiste resta", unito.includes("I open the prescription page"), true);
+  eq("una richiesta senza riferimento resta", unito.includes("the user confirms the order"), true);
+}
+
 console.log("\n--- rigenerazione del catalogo ---\n");
 
 {

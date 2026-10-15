@@ -859,6 +859,12 @@ console.log("\n--- un passo riconosciuto chiama la utility (spec del 14/10) ---\
     fuori.includes('from "../../../../src/actions/farmacia.actions"'),
     true
   );
+  const conBarreWindows = emitSteps({ ...ctx, outRoot: "reports\\prova" }, risolta.pages, new Map() as never).contents;
+  eq(
+    "anche con le barre di Windows l'import punta a src/actions",
+    conBarreWindows.includes('from "../../../../src/actions/farmacia.actions"'),
+    true
+  );
   const feature = emitFeature(ctx, "farmacia").contents;
   eq("nel .feature la frase del tester con il CAP", feature.includes('Given The user sleect the store with "NW1"'), true);
   eq(
@@ -939,7 +945,9 @@ console.log("\n--- passi misti e utility divise su piu' passi (registrazione del
     dose.indexOf("mContinue()") >= 0 && dose.indexOf("mContinue()") < dose.indexOf("await rispondiQuestionario(this.page, tabella.raw());"), true);
   eq("e riceve la tabella", dose.includes("tabella: DataTable"), true);
   eq("il passo dopo non rifa' il questionario", corpo("the user insert the bmi").includes("rispondiQuestionario"), false);
-  eq("ma lo dichiara", corpo("the user insert the bmi").includes("gia' fatto"), true);
+  // Revisione finale (15/10): uno step vuoto, riusato in un altro scenario,
+  // passerebbe senza fare niente. Verifica che la pagina sia gia' oltre.
+  eq("ma verifica che sia davvero gia' fatto", corpo("the user insert the bmi").includes('await verificaGiaFatto(this.page, "questionario");'), true);
   const notifica = corpo("the user open the notification");
   eq("l'ultimo passo: niente foto, solo il clic sui messaggi",
     [notifica.includes("scattaFoto"), notifica.includes("m1Securemessages()")], [false, true]);

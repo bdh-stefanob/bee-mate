@@ -572,6 +572,20 @@ export function verificaNelPasso(a: Assertion, intent: { steps: readonly unknown
   return a.afterStep !== undefined && a.afterStep < intent.steps.length;
 }
 
+/**
+ * Il percorso con cui uno step generato importa un modulo di src/ (le utility).
+ *
+ * Dalla radice di uscita normalizzata: con `out=reports\prova` (le barre di
+ * Windows) o un percorso assoluto il percorso relativo usciva sbagliato, e il
+ * codice generato non compilava (revisione del 15/10).
+ */
+function importDaSrc(outRoot: string, modulo: string): string {
+  const assoluto = percorsi.isAbsolute(outRoot);
+  const radice = (assoluto ? percorsi.relative(process.cwd(), outRoot) : outRoot).replace(/\\/g, "/");
+  const rel = percorsi.posix.relative(`${radice}/steps/generated`, `src/${modulo}`);
+  return rel.startsWith(".") ? rel : `./${rel}`;
+}
+
 export function emitSteps(
   ctx: EmitContext,
   pagesUsed: PageIdentity[],
@@ -603,8 +617,7 @@ export function emitSteps(
     if (intent.utility) {
       const u = intent.utility;
       const frasiU = frasiDiIntento(intent);
-      const daSteps = percorsi.posix.relative(`${ctx.outRoot}/steps/generated`, `src/${u.modulo}`);
-      importUtility.add(`import { ${u.funzione} } from "${daSteps.startsWith(".") ? daSteps : `./${daSteps}`}";`);
+      importUtility.add(`import { ${u.funzione} } from "${importDaSrc(ctx.outRoot, u.modulo)}";`);
       const argomenti = [...frasiU.parametri, ...(u.argomentiDalMondo ?? []), ...(u.tabella ? ["tabella.raw()"] : [])];
       const firma = frasiU.parametri.map((p) => `, ${p}: string`).join("") + (u.tabella ? ", tabella: DataTable" : "");
       if (!seenPhrases.has(frasiU.espressione)) {
@@ -690,11 +703,13 @@ export function emitSteps(
         }
         const u = t.utility;
         if (t.giaFatto) {
-          lines.push(`// ${u.nome}: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).`);
+          // Non un corpo vuoto: riusato in un altro scenario passerebbe senza fare niente.
+          importUtility.add(`import { verificaGiaFatto } from "${importDaSrc(ctx.outRoot, "actions/gia-fatto.actions")}";`);
+          lines.push(`// ${u.nome}: fatto in un passo precedente (la utility lo fa tutto in una volta).`);
+          lines.push(`await verificaGiaFatto(this.page, ${ts(u.nome)});`);
           continue;
         }
-        const daSteps = percorsi.posix.relative(`${ctx.outRoot}/steps/generated`, `src/${u.modulo}`);
-        importUtility.add(`import { ${u.funzione} } from "${daSteps.startsWith(".") ? daSteps : `./${daSteps}`}";`);
+        importUtility.add(`import { ${u.funzione} } from "${importDaSrc(ctx.outRoot, u.modulo)}";`);
         const nomi = frasi.parametri.slice(prossimoParametro, prossimoParametro + u.parametri.length);
         prossimoParametro += u.parametri.length;
         if (u.tabella) haTabella = true;
