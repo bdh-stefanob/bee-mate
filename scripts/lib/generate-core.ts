@@ -24,7 +24,7 @@ import { avvisoDelGesto } from "../../src/support/avvisi";
 // l'esecuzione non possono mai descrivere due identita' diverse per lo stesso
 // caso. Pura anche questa: nessun browser, solo un confronto su ruolo+nome.
 import { ricettaDelGesto } from "../../src/support/ricette";
-import { utilityDelPasso } from "../../src/support/utility";
+import { segmentaPasso, utilityDelPasso, type Tratto } from "../../src/support/utility";
 import { mergeInventories } from "./inventory";
 import type {
   Assertion, CatalogStep, Component, Gap, Intent, Recording,
@@ -678,10 +678,11 @@ export function resolveRecording(
       });
     }
 
-    // UNA UTILITY RICONOSCIUTA (spec del 14/10). Completa: lo step la chiama.
-    // Parziale: si propone e basta, il passo resta generato com'e'.
-    const utility = utilityDelPasso(
-      gesti.map((g) => ({
+    // LE UTILITY DEL PASSO (spec del 14/10; tratti dal 15/10). Il passo si divide
+    // in tratti: i gesti di una utility diventano una chiamata, gli altri restano
+    // generati. Se nessun tratto e' di una utility ma una la somiglia, la si
+    // propone soltanto.
+    const gestiPerUtility = gesti.map((g) => ({
         action: g.action,
         role: g.role,
         name: g.name,
@@ -690,8 +691,10 @@ export function resolveRecording(
         ...(g.url ? { url: g.url } : {}),
         ...(g.contesto?.intestazione ? { intestazione: g.contesto.intestazione } : {}),
         ...(g.ancoraggioAssente ? { senzaAncoraggio: true } : {}),
-      }))
-    );
+      }));
+    const tratti: Tratto[] = segmentaPasso(gestiPerUtility);
+    const conUtility = tratti.some((t) => t.utility);
+    const utility = conUtility ? null : utilityDelPasso(gestiPerUtility);
     if (utility && !utility.completa) {
       gaps.push({
         kind: "utility-proposta",
@@ -714,9 +717,35 @@ export function resolveRecording(
       navigatesTo: endId && endId.key !== pageId.key ? endId.key : null,
       candidates: candidates.map((c) => c.step),
       candidateEvidence: candidates.map((c) => ({ classe: c.classe, similarity: c.similarity })),
-      ...(utility?.completa ? { utility } : {}),
+      ...(conUtility ? { tratti } : {}),
     };
   });
+
+  // QUESTIONARIO E FOTO SONO UN COMPORTAMENTO SOLO PER SCENARIO, anche se il
+  // tester li ha divisi in piu' passi (registrazione del 14/10: tre passi di
+  // domande, cinque di foto). La utility fa tutto in una volta: la prima chiamata
+  // riceve le risposte raccolte da tutti i passi, le successive sono gia' fatte.
+  for (const nome of ["questionario", "foto"]) {
+    const occorrenze = intents.flatMap((i) => (i.tratti ?? []).filter((t) => t.utility?.nome === nome));
+    if (occorrenze.length === 0) continue;
+    if (nome === "questionario") {
+      const risposte = new Map<string, string>();
+      for (const t of occorrenze) {
+        for (const [domanda, risposta] of (t.utility?.tabella ?? []).slice(1)) {
+          const gia = risposte.get(domanda!);
+          const numeri = (x: string | undefined): boolean => x !== undefined && /^\d+([.,]\d+)?( \/ \d+([.,]\d+)?)*$/.test(x);
+          risposte.set(domanda!, gia !== undefined && numeri(gia) && numeri(risposta) ? `${gia} / ${risposta}` : risposta!);
+        }
+      }
+      occorrenze[0]!.utility!.tabella = [["domanda", "risposta"], ...[...risposte]];
+    }
+    for (const t of occorrenze.slice(1)) t.giaFatto = true;
+  }
+  // Un passo fatto di una sola utility, chiamata davvero: la forma breve.
+  for (const i of intents) {
+    const [unico] = i.tratti ?? [];
+    if (i.tratti?.length === 1 && unico?.utility && !unico.giaFatto) i.utility = unico.utility;
+  }
 
   // UN PASSO FATTO SOLO DI AVVISI NON E' UN PASSO.
   //

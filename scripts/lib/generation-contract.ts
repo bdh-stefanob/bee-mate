@@ -347,6 +347,12 @@ export interface ResolvedIntent {
    * quando il riconoscimento e' completo: allora il corpo dello step la chiama.
    */
   utility?: import("../../src/support/utility").UtilityRiconosciuta;
+  /**
+   * I tratti del passo, quando almeno uno e' di una utility: gesti [da, a)
+   * generati (utility null) o fatti da una utility. `giaFatto`: la utility e'
+   * stata chiamata in un passo precedente (questionario, foto).
+   */
+  tratti?: Array<import("../../src/support/utility").Tratto & { giaFatto?: boolean }>;
 }
 
 // ---------------------------------------------------------------------------

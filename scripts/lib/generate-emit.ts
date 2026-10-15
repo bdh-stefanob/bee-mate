@@ -493,6 +493,29 @@ export function frasiDiIntento(intent: ResolvedIntent): {
       parametroVolte: null,
     };
   }
+  // Un passo diviso in tratti (15/10): i valori digitati dei tratti generati,
+  // poi i parametri delle utility chiamate davvero, nell'ordine dei tratti. Le
+  // risposte del questionario vanno nella tabella, non nella frase.
+  if (intent.tratti) {
+    const base = phraseOf(intent);
+    const generati = new Set(
+      intent.tratti.filter((t) => t.utility === null).flatMap((t) => intent.steps.slice(t.da, t.a))
+    );
+    const valoriT = valoriDigitati(intent).filter((r) => generati.has(r));
+    const dalleUtility = intent.tratti.filter((t) => t.utility && !t.giaFatto).flatMap((t) => t.utility!.parametri);
+    const tutti = [
+      ...valoriT.map((r) => (r.step.value ?? "").replace(/"/g, "'")),
+      ...dalleUtility.map((v) => v.replace(/"/g, "'")),
+    ];
+    return {
+      espressione: tutti.length === 0 ? base : `${base} with ${tutti.map(() => "{string}").join(" and ")}`,
+      frase: tutti.length === 0 ? base : `${base} with ${tutti.map((v) => `"${v}"`).join(" and ")}`,
+      parametri: tutti.map((_, k) => `valore${k + 1}`),
+      valori: valoriT,
+      ripetizione: null,
+      parametroVolte: null,
+    };
+  }
   const base = phraseOf(intent);
   const valori = valoriDigitati(intent);
   const ripTrovata = rilevaRipetizione(intent.steps);
@@ -602,8 +625,14 @@ export function emitSteps(
     const lines: string[] = [];
     const frasi = frasiDiIntento(intent);
 
+    // Un passo che comincia con una utility non riconosce la sua pagina: lo fa
+    // la utility. Lo stesso per l'arrivo, quando finisce con una utility.
+    const iniziaGenerato = !intent.tratti || intent.tratti[0]!.utility === null;
+    const finisceGenerato = !intent.tratti || intent.tratti[intent.tratti.length - 1]!.utility === null;
+    let haTabella = false;
+
     // La Page Object si crea nello step che la introduce, mai in un hook.
-    if (!initialised.has(page.key) && conPageObject.has(page.key)) {
+    if (iniziaGenerato && !initialised.has(page.key) && conPageObject.has(page.key)) {
       initialised.add(page.key);
       lines.push(`${variable} = new ${page.className}(this.page);`);
       if (i === 0) lines.push(`await ${variable}.navigate();`);
@@ -651,7 +680,28 @@ export function emitSteps(
     };
 
     const rip = frasi.ripetizione;
-    if (rip) {
+    if (intent.tratti) {
+      // I tratti nell'ordine: gesti generati come sempre, utility come chiamata.
+      let prossimoParametro = frasi.valori.length;
+      for (const t of intent.tratti) {
+        if (t.utility === null) {
+          for (let k = t.da; k < t.a; k++) lines.push(...lineePerGesto(k, intent.steps[k]!));
+          continue;
+        }
+        const u = t.utility;
+        if (t.giaFatto) {
+          lines.push(`// ${u.nome}: gia' fatto in un passo precedente (la utility lo fa tutto in una volta).`);
+          continue;
+        }
+        const daSteps = percorsi.posix.relative(`${ctx.outRoot}/steps/generated`, `src/${u.modulo}`);
+        importUtility.add(`import { ${u.funzione} } from "${daSteps.startsWith(".") ? daSteps : `./${daSteps}`}";`);
+        const nomi = frasi.parametri.slice(prossimoParametro, prossimoParametro + u.parametri.length);
+        prossimoParametro += u.parametri.length;
+        if (u.tabella) haTabella = true;
+        const argomenti = [...nomi, ...(u.tabella ? ["tabella.raw()"] : [])];
+        lines.push(`await ${u.funzione}(this.page${argomenti.map((a) => `, ${a}`).join("")});`);
+      }
+    } else if (rip) {
       for (let k = 0; k < rip.inizio; k++) lines.push(...lineePerGesto(k, intent.steps[k]!));
 
       // Il corpo si emette una volta sola: si costruisce dalla PRIMA occorrenza,
@@ -701,7 +751,7 @@ export function emitSteps(
     const ultimoGesto = intent.steps[intent.steps.length - 1];
     const paginaUltimoGesto = ultimoGesto ? ultimoGesto.fromPage ?? intent.page ?? "" : null;
     const arrivo = intent.navigatesTo ? byKey.get(intent.navigatesTo) : undefined;
-    const next = arrivo && arrivo.key === paginaUltimoGesto ? undefined : arrivo;
+    const next = !finisceGenerato || (arrivo && arrivo.key === paginaUltimoGesto) ? undefined : arrivo;
     if (next && next.key !== page.key && !conPageObject.has(next.key)) {
       // Si arriva su una pagina dove il tester non ha toccato niente: non ha una
       // Page Object, quindi non c'e' niente con cui riconoscerla. Costruirla qui
@@ -812,7 +862,7 @@ export function emitSteps(
           `\n */\n` +
           `${keywordOf(i)}(${ts(phrase)}, async function (this: CustomWorld${frasi.parametri
             .map((p) => `, ${p}: string`)
-            .join("")}${frasi.parametroVolte ? `, ${frasi.parametroVolte}: number` : ""}) {\n` +
+            .join("")}${frasi.parametroVolte ? `, ${frasi.parametroVolte}: number` : ""}${haTabella ? ", tabella: DataTable" : ""}) {\n` +
           lines.map((l) => `  ${l}`).join("\n") +
           `\n});`
       );
@@ -860,7 +910,9 @@ export function emitFeature(ctx: EmitContext, title: string): GeneratedFile {
     // La frase con i valori VERI: e' il .feature, il posto dove il tester li
     // cambia. Lo step li riceve come parametri (vedi `frasiDiIntento`).
     lines.push(`${keyword} ${frasiDiIntento(intent).frase}`);
-    for (const riga of intent.utility?.tabella ?? []) {
+    const tabella =
+      intent.utility?.tabella ?? intent.tratti?.find((t) => t.utility?.tabella && !t.giaFatto)?.utility?.tabella ?? [];
+    for (const riga of tabella) {
       lines.push(`  | ${riga.map((c) => c.replace(/\|/g, "\\|")).join(" | ")} |`);
     }
     // Le verifiche a meta' del passo stanno dentro lo step, nel punto giusto; qui si

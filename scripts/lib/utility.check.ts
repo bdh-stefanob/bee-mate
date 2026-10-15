@@ -7,7 +7,7 @@
  * su qa-clinic), con indirizzi finti: e' il caso da cui nasce la spec
  * docs/superpowers/specs/2026-10-14-utility-per-comportamento-design.md.
  */
-import { utilityDelPasso, type GestoPerUtility } from "../../src/support/utility";
+import { segmentaPasso, utilityDelPasso, type GestoPerUtility } from "../../src/support/utility";
 
 let failures = 0;
 const eq = (what: string, got: unknown, want: unknown): void => {
@@ -92,6 +92,62 @@ const p = utilityDelPasso([
   { action: "click", role: "button", name: "Place Order", url: SUM },
 ]);
 eq("carta salvata + Place Order: pagamento, senza parametri", [p?.nome, p?.completa, p?.parametri], ["pagamento", true, []]);
+
+console.log("\n--- un passo misto si divide in tratti (registrazione del 14/10) ---\n");
+const INFO = "https://qa-clinic.invalid/important-info";
+const dose: GestoPerUtility[] = [
+  { action: "set", role: "checkbox", name: "I understand the important information above.", value: "checked", url: INFO },
+  { action: "click", role: "button", name: "Continue", url: INFO },
+  { action: "click", role: "button", name: "Stay on the same dose", url: Q, intestazione: "How do you wish to proceed?" },
+  { action: "fill", role: "spinbutton", name: "0", value: "190", url: Q, intestazione: "1. What is your current weight?" },
+];
+eq("due tratti: gesti generati, poi il questionario", segmentaPasso(dose).map((t) => [t.da, t.a, t.utility?.nome ?? null]), [
+  [0, 2, null],
+  [2, 4, "questionario"],
+]);
+const calendario: GestoPerUtility[] = [
+  { action: "fill", role: "spinbutton", name: "0", value: "80", url: Q, intestazione: "1. What is your current weight?" },
+  { action: "click", role: "button", name: "Next", url: Q, intestazione: "1. What is your current weight?" },
+  { action: "click", role: "button", name: "Open calendar", url: Q, intestazione: "Enter date" },
+  { action: "click", role: "", name: "", url: Q, senzaAncoraggio: true },
+  { action: "click", role: "button", name: "Next", url: Q, intestazione: "Enter date" },
+];
+eq("un giorno del calendario senza intestazione resta nel questionario", segmentaPasso(calendario).length, 1);
+eq("e prende la domanda del gesto prima", utilityDelPasso(calendario)?.tabella?.[2], ["Enter date", "oggi"]);
+const fine: GestoPerUtility[] = [
+  { action: "click", role: "button", name: "Submit", url: CAM },
+  { action: "click", role: "button", name: "1 Secure messages", url: "https://qa-clinic.invalid/order-complete-async-no-call" },
+];
+eq(
+  "l'ultimo invio della foto e il clic sui messaggi: foto, poi gesti generati",
+  segmentaPasso(fine).map((t) => t.utility?.nome ?? null),
+  ["foto", null]
+);
+eq(
+  "un clic senza ancoraggio fuori dalla mappa non e' un pin",
+  segmentaPasso([{ action: "click", role: "", name: "", url: INFO, senzaAncoraggio: true }]).map((t) => t.utility?.nome ?? null),
+  [null]
+);
+eq(
+  "un passo senza utility e' un tratto solo, generato",
+  segmentaPasso([{ action: "click", role: "link", name: "Weight Loss", url: "https://qa-brochure.invalid/" }]).map((t) => [
+    t.da,
+    t.a,
+    t.utility?.nome ?? null,
+  ]),
+  [[0, 1, null]]
+);
+
+console.log("\n--- solo su clinic ---\n");
+const FINTA = "http://127.0.0.1:4321/questions/1";
+eq(
+  "gli stessi gesti su un'altra applicazione (l'app finta) non sono una utility",
+  [
+    utilityDelPasso([{ action: "click", role: "button", name: "No", url: FINTA, intestazione: "Do you have a GP?" }]),
+    segmentaPasso([{ action: "click", role: "button", name: "No", url: FINTA, intestazione: "Do you have a GP?" }])[0]?.utility,
+  ],
+  [null, null]
+);
 
 console.log("\n--- nessuna utility ---\n");
 eq(

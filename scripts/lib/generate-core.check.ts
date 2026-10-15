@@ -868,6 +868,86 @@ console.log("\n--- un passo riconosciuto chiama la utility (spec del 14/10) ---\
   );
 }
 
+console.log("\n--- passi misti e utility divise su piu' passi (registrazione del 14/10) ---\n");
+
+{
+  const INFO = "https://qa-clinic.invalid/important-info";
+  const Q = "https://qa-clinic.invalid/questions/1";
+  const CAM = "https://qa-clinic.invalid/camera/id";
+  const ESITO = "https://qa-clinic.invalid/order-complete-async-no-call";
+  const passo = (label: string, pageUrl: string, steps: unknown[]) => ({ label, assertions: [], notes: [], pageUrl, steps });
+  const registrazione = {
+    startUrl: INFO,
+    recordedAt: "",
+    durationSeconds: 0,
+    intents: [
+      passo("the user insert the dose", INFO, [
+        { action: "set", role: "checkbox", name: "I understand the important information above.", value: "checked", url: INFO },
+        { action: "click", role: "button", name: "Continue", url: INFO },
+        { action: "click", role: "button", name: "Stay on the same dose", url: Q, contesto: { intestazione: "How do you wish to proceed?" } },
+        { action: "fill", role: "spinbutton", name: "0", value: "190", url: Q, contesto: { intestazione: "1. What is your current weight?" } },
+      ]),
+      passo("the user insert the bmi", Q, [
+        { action: "fill", role: "spinbutton", name: "0", value: "80", url: Q, contesto: { intestazione: "1. What is your current weight?" } },
+        { action: "click", role: "button", name: "Next", url: Q, contesto: { intestazione: "1. What is your current weight?" } },
+      ]),
+      passo("the user take the photo", CAM, [
+        { action: "click", role: "button", name: "Open camera", url: CAM },
+        { action: "click", role: "button", name: "Take Picture", url: CAM },
+      ]),
+      passo("the user open the notification", CAM, [
+        { action: "click", role: "button", name: "Submit", url: CAM },
+        { action: "click", role: "button", name: "1 Secure messages", url: ESITO },
+      ]),
+    ],
+  } as unknown as Recording;
+  const r = resolveRecording(registrazione, indexDictionaries([]), { catalog: [] });
+  eq(
+    "il passo misto ha due tratti: gesti generati, poi il questionario",
+    r.intents[0]?.tratti?.map((t) => [t.da, t.a, t.utility?.nome ?? null]),
+    [
+      [0, 2, null],
+      [2, 4, "questionario"],
+    ]
+  );
+  eq("il questionario prende le risposte di tutti i passi, alla prima chiamata", r.intents[0]?.tratti?.[1]?.utility?.tabella, [
+    ["domanda", "risposta"],
+    ["How do you wish to proceed?", "Stay on the same dose"],
+    ["1. What is your current weight?", "190 / 80"],
+  ]);
+  eq("dopo, il questionario e' gia' fatto", r.intents[1]?.tratti?.[0]?.giaFatto, true);
+  eq("le foto anche: la seconda volta sono gia' fatte", [r.intents[2]?.tratti?.[0]?.giaFatto ?? false, r.intents[3]?.tratti?.[0]?.giaFatto], [false, true]);
+
+  const pagine = r.pages;
+  const ctx = {
+    intents: r.intents, pages: pagine, recordingPath: "x.json", dictionaryPaths: [], recordedAt: "",
+    durationSeconds: 0, generatedAt: "", slug: "misti", outRoot: "src",
+  };
+  const metodi = new Map(
+    pagine.map((p) => [
+      p.key,
+      new Map(r.intents.flatMap((i) => i.steps.filter((s) => s.fromPage === p.key).map((s) => [s.component, `m${s.component.name.replace(/\W/g, "")}`] as const))),
+    ])
+  );
+  const glue = emitSteps(ctx, pagine, metodi as never).contents;
+  const corpo = (frase: string): string => {
+    const i = glue.indexOf(`("${frase}"`);
+    return i < 0 ? "" : glue.slice(i, glue.indexOf("\n});", i));
+  };
+  const dose = corpo("the user insert the dose");
+  eq("il passo misto: prima i gesti generati, poi la utility",
+    dose.indexOf("mContinue()") >= 0 && dose.indexOf("mContinue()") < dose.indexOf("await rispondiQuestionario(this.page, tabella.raw());"), true);
+  eq("e riceve la tabella", dose.includes("tabella: DataTable"), true);
+  eq("il passo dopo non rifa' il questionario", corpo("the user insert the bmi").includes("rispondiQuestionario"), false);
+  eq("ma lo dichiara", corpo("the user insert the bmi").includes("gia' fatto"), true);
+  const notifica = corpo("the user open the notification");
+  eq("l'ultimo passo: niente foto, solo il clic sui messaggi",
+    [notifica.includes("scattaFoto"), notifica.includes("m1Securemessages()")], [false, true]);
+  const feature = emitFeature(ctx, "misti").contents;
+  eq("nel .feature la frase del tester senza il peso, e la tabella sotto",
+    [feature.includes("Given the user insert the dose\n"), feature.includes("| 1. What is your current weight? | 190 / 80 |")], [true, true]);
+}
+
 console.log("\n--- verifiche su numeri e date non diventano verifiche (14/10) ---\n");
 
 {
