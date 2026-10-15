@@ -203,6 +203,18 @@ this can go wrong silently, and nothing is worse than a recipe that fires on the
 wrong page. What exists today is the declaration — the generator says, for every
 gesture with no accessible anchor, that a recipe is what is missing there.
 
+### Open — guided recording (catalog steps offered while navigating)
+
+*Raised 2026-10-15, after two testers wrote the same phrase on purpose.* Saving
+now reuses a phrase that is already defined (the catalog wins) and stops only
+when the arguments differ. The next step is to avoid the duplicate at the
+source. While the tester navigates the selected application, the dashboard
+lists the catalog steps that act on the current page. Clicking one runs it in
+the recording browser and inserts it into the recording, already resolved. The
+rest is recorded by hand, as it is today. **Not designed yet.** The hard part is
+running a step inside the recording browser with the scenario's state (World,
+session, environment). It needs a spec before any code.
+
 ---
 
 ## 7. Quick start for the agent

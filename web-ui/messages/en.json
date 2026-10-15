@@ -420,7 +420,7 @@
     "erroreOrigineCopione": "This scenario came from a script, not a test run by hand: it cannot be saved to the repository.",
     "erroreTroppi": "There are already too many scenarios with this name: choose another one.",
     "erroreGenerico": "I couldn't save the scenario.",
-    "errorePassoDuplicato": "These step phrases are already defined by another saved scenario. Two definitions of the same phrase would stop every test run. Record the step with a different name, or align it to the catalog first:",
+    "errorePassoDuplicato": "These step phrases are already defined by another saved scenario, but with different arguments (for example a table on one side only), so a single definition cannot serve both. Record the step with a different name, or align it to the catalog first:",
     "errorePaginaAMano": "A saved page was edited by hand and lacks methods this scenario needs. Add them by hand, or restore the generation marker:"
   },
   "Catalogo": {

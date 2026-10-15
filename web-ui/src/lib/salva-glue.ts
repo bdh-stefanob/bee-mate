@@ -30,10 +30,14 @@ import { ErroreSalvataggio, MARCATORE } from './salva-scenario';
  *    niente si toglie, perche' altri scenari li chiamano;
  *  - una Page Object modificata a mano (senza marcatore) non si tocca: se le
  *    manca qualcosa ci si ferma e si dice cosa;
- *  - una frase gia' definita da un altro scenario salvato ferma tutto: Cucumber
- *    rifiuterebbe di partire con due definizioni della stessa frase. Oggi la
- *    risposta e' dirlo; riusare la definizione esistente richiede che le
- *    pagine vivano nel World e non nel modulo (vedi il modello degli step);
+ *  - una frase gia' definita da un altro scenario salvato si **riusa**: due
+ *    tester possono scrivere apposta la stessa frase, e Cucumber rifiuterebbe
+ *    di partire con due definizioni. La definizione nuova non si scrive e vale
+ *    quella del catalogo (calibrazione deterministica). Le pagine di modulo che
+ *    solo lo step tolto inizializzava si ricreano negli step rimasti: una Page
+ *    Object non ha stato, ha solo `page`. Si ferma solo un conflitto vero:
+ *    stessa frase ma argomenti diversi (una tabella da una parte sola), che
+ *    Cucumber non saprebbe chiamare;
  *  - una Page Object copiata da `pages/generated/<host>/` sparisce da li' dopo
  *    il salvataggio: altrimenti resterebbe una copia orfana, identica a quella
  *    appena salvata, che la generazione successiva riscriverebbe. Resta solo
@@ -55,6 +59,8 @@ export interface PianoGlue {
   /** Percorso relativo a `src/` degli step salvati. */
   steps: string;
   pagine: PaginaSalvata[];
+  /** Frasi gia' definite da un altro scenario salvato: si usa quella definizione, non se ne scrive una seconda. */
+  riusate: string[];
   scritture: Array<{ assoluto: string; testo: string }>;
   /** File di `generated/` da rimuovere dopo la scrittura: gli step sempre, le Page Object copiate solo se orfane. */
   daCancellare: string[];
@@ -70,6 +76,73 @@ export function frasiDefinite(testo: string): string[] {
   const re = /\b(?:Given|When|Then)\(\s*(["'`])((?:\\.|(?!\1).)*)\1/g;
   for (const m of testo.matchAll(re)) frasi.push(m[2].replace(/\\(.)/g, '$1'));
   return frasi;
+}
+
+/** Quanti argomenti riceve la definizione di una frase (escluso `this`), o null se non si legge. */
+function argomenti(testo: string, frase: string): number | null {
+  for (const b of blocchiDiStep(testo)) {
+    if (b.frase === frase) return b.argomenti;
+  }
+  return null;
+}
+
+interface BloccoStep {
+  frase: string;
+  argomenti: number | null;
+  /** Righe [da, a] del blocco, commento compreso. */
+  da: number;
+  a: number;
+}
+
+/** Le definizioni di un file di step, ognuna con il suo commento e la sua `});` di chiusura in prima colonna. */
+function blocchiDiStep(testo: string): BloccoStep[] {
+  const righe = testo.split('\n');
+  const blocchi: BloccoStep[] = [];
+  for (let i = 0; i < righe.length; i++) {
+    const frase = frasiDefinite(righe[i])[0];
+    if (frase === undefined || !/^(Given|When|Then)\(/.test(righe[i])) continue;
+    // Una definizione scritta a mano puo' stare tutta su una riga.
+    const fine = righe[i].trimEnd().endsWith('});') ? i : righe.findIndex((r, j) => j > i && r.startsWith('});'));
+    if (fine < 0) continue;
+    let da = i;
+    if (righe[i - 1]?.trim() === '*/') {
+      while (da > 0 && !righe[da - 1].trim().startsWith('/**')) da--;
+      da--;
+    }
+    const firma = righe.slice(i, fine + 1).join('\n').match(/\(([^()]*)\)\s*(?:=>|\{)/);
+    const argomenti = firma
+      ? firma[1].split(',').map((p) => p.trim()).filter((p) => p !== '' && !/^this\b/.test(p)).length
+      : null;
+    blocchi.push({ frase, argomenti, da, a: fine });
+    i = fine;
+  }
+  return blocchi;
+}
+
+/**
+ * Toglie dagli step le definizioni delle frasi riusate e rende autonomi quelli
+ * rimasti: ogni pagina di modulo usata in uno step senza esservi creata si
+ * ricrea in testa allo step, perche' lo step che la creava puo' essere sparito.
+ */
+function senzaRiusate(steps: string, riusate: Set<string>): string {
+  const righe = steps.split('\n');
+  const via = blocchiDiStep(steps).filter((b) => riusate.has(b.frase));
+  for (const b of [...via].reverse()) {
+    const a = righe[b.a + 1]?.trim() === '' ? b.a + 1 : b.a;
+    righe.splice(b.da, a - b.da + 1);
+  }
+  const pagine = [...steps.matchAll(/^let (\w+): (\w+);$/gm)].map((m) => ({ v: m[1], classe: m[2] }));
+  let testo = righe.join('\n');
+  for (const b of [...blocchiDiStep(testo)].reverse()) {
+    const r = testo.split('\n');
+    const corpo = r.slice(b.da, b.a + 1).join('\n');
+    const mancanti = pagine.filter(({ v }) => new RegExp(`\\b${v}\\.`).test(corpo) && !new RegExp(`\\b${v} = new `).test(corpo));
+    if (mancanti.length === 0) continue;
+    const apertura = r.findIndex((riga, j) => j >= b.da && /^(Given|When|Then)\(/.test(riga));
+    r.splice(apertura + 1, 0, ...mancanti.map(({ v, classe }) => `  ${v} = new ${classe}(this.page);`));
+    testo = r.join('\n');
+  }
+  return testo;
 }
 
 function fileDiStep(dir: string, escludi: string[]): string[] {
@@ -199,8 +272,8 @@ export function pianificaGlue(
     throw new ErroreSalvataggio('non-registrato', "questi step non vengono da uno scenario registrato");
   }
   if (!fs.existsSync(stepsAssoluto)) throw new ErroreSalvataggio('non-trovato', 'non trovo gli step dello scenario generato');
-  const steps = fs.readFileSync(stepsAssoluto, 'utf-8');
-  if (!rigeneribile(steps)) throw new ErroreSalvataggio('non-registrato', "questi step non vengono da uno scenario registrato");
+  const generati = fs.readFileSync(stepsAssoluto, 'utf-8');
+  if (!rigeneribile(generati)) throw new ErroreSalvataggio('non-registrato', "questi step non vengono da uno scenario registrato");
 
   // Dove vanno gli step: accanto al flusso, con lo stesso nome dello scenario.
   // Un file omonimo modificato a mano non si tocca: si scrive accanto.
@@ -217,19 +290,29 @@ export function pianificaGlue(
 
   // Nessuna frase definita due volte: si guardano gli step gia' salvati, non
   // quelli ancora in generated/ (non versionati, e ognuno col suo scenario) e
-  // non il file che si sta per sovrascrivere.
-  const nuove = new Set(frasiDefinite(steps));
-  const doppie = new Set<string>();
+  // non il file che si sta per sovrascrivere. Una frase gia' definita si
+  // riusa; si ferma solo se gli argomenti non tornano.
+  const nuove = new Set(frasiDefinite(generati));
+  const riusate = new Set<string>();
+  const inConflitto = new Set<string>();
   for (const f of fileDiStep(path.join(radiceSrc, 'steps'), [cartellaRegistrati, stepsDestinazione])) {
-    for (const frase of frasiDefinite(fs.readFileSync(f, 'utf-8'))) if (nuove.has(frase)) doppie.add(frase);
+    const testo = fs.readFileSync(f, 'utf-8');
+    for (const frase of frasiDefinite(testo)) {
+      if (!nuove.has(frase)) continue;
+      const loro = argomenti(testo, frase);
+      const nostri = argomenti(generati, frase);
+      if (loro !== null && nostri !== null && loro !== nostri) inConflitto.add(frase);
+      else riusate.add(frase);
+    }
   }
-  if (doppie.size > 0) {
+  if (inConflitto.size > 0) {
     throw new ErroreSalvataggio(
       'passo-duplicato',
-      'queste frasi sono gia\' definite da un altro scenario salvato',
-      [...doppie].sort()
+      'queste frasi sono gia\' definite da un altro scenario salvato, con argomenti diversi',
+      [...inConflitto].sort()
     );
   }
+  const steps = riusate.size > 0 ? senzaRiusate(generati, riusate) : generati;
 
   const scritture: PianoGlue['scritture'] = [];
   const pagine: PaginaSalvata[] = [];
@@ -309,7 +392,7 @@ export function pianificaGlue(
   }
   scritture.push({ assoluto: stepsDestinazione, testo: stepsTesto });
 
-  return { steps: stepsFile, pagine, scritture, daCancellare };
+  return { steps: stepsFile, pagine, riusate: [...riusate].sort(), scritture, daCancellare };
 }
 
 export function scriviGlue(piano: PianoGlue): void {

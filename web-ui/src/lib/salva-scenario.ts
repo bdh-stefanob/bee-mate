@@ -62,6 +62,8 @@ export interface EsitoSalvataggio {
   sovrascritto: boolean;
   /** Il nome era occupato da un file modificato a mano: si e' scritto accanto. */
   rinominato: boolean;
+  /** Frasi gia' definite da un altro scenario salvato: si usa quella definizione. */
+  riusate?: string[];
 }
 
 /** Dal titolo al nome del file: minuscole, niente accenti, trattini. */

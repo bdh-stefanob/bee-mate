@@ -204,10 +204,36 @@ describe('step e Page Object seguono lo scenario salvato', () => {
     expect(leggi('pages/shop/ordini.page.ts')).toBe(aMano);
   });
 
-  it('una frase gia\' definita in un altro scenario salvato ferma tutto, prima di scrivere', () => {
+  // 15/10: due tester possono scrivere apposta la stessa frase. Prima il
+  // salvataggio si fermava; ora vale la definizione gia' salvata.
+  it('una frase gia\' definita in un altro scenario salvato si riusa: non si scrive una seconda definizione', () => {
     const r = albero({
       ...BASE,
       'steps/shop/login/entra.steps.ts': 'Given("il cliente accede", async function () {});\n',
+    });
+    const piano = pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x');
+    scriviGlue(piano);
+    expect(piano.riusate).toEqual(['il cliente accede']);
+    const salvati = leggi('steps/shop/orders/x.steps.ts');
+    expect(salvati).not.toContain('Given("il cliente accede"');
+    expect(salvati).toContain('When("il cliente annulla un ordine"');
+  });
+
+  it('lo step rimasto si crea da solo la pagina che creava lo step riusato', () => {
+    const r = albero({
+      ...BASE,
+      'steps/shop/login/entra.steps.ts': 'Given("il cliente accede", async function () {});\n',
+    });
+    scriviGlue(pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x'));
+    expect(leggi('steps/shop/orders/x.steps.ts')).toContain(
+      'When("il cliente annulla un ordine", async function (this: CustomWorld) {\n  ordiniPage = new OrdiniPage(this.page);\n  await ordiniPage.clickAnnullaOrdine();'
+    );
+  });
+
+  it('stessa frase ma argomenti diversi: conflitto vero, si ferma prima di scrivere', () => {
+    const r = albero({
+      ...BASE,
+      'steps/shop/login/entra.steps.ts': 'Given("il cliente accede", async function (this: CustomWorld, tabella: DataTable) {});\n',
     });
     try {
       pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x');

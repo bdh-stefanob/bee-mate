@@ -40,7 +40,7 @@ describe('POST /api/scenari/salva', () => {
     const res = await POST(richiesta({ app: 'shop', flusso: 'orders', titolo: 'New order', origine: '../../etc/x' }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      file: 'shop/orders/new-order.feature', sovrascritto: false, rinominato: false, steps: null, pagine: [],
+      file: 'shop/orders/new-order.feature', sovrascritto: false, rinominato: false, steps: null, pagine: [], riusate: [],
     });
     expect(fs.existsSync(path.join(RADICE, 'src', 'features', 'shop', 'orders', 'new-order.feature'))).toBe(true);
   });
@@ -74,12 +74,12 @@ describe('POST /api/scenari/salva', () => {
     expect(fs.existsSync(path.join(RADICE, 'src', 'steps', 'generated', 's1.steps.ts'))).toBe(false);
   });
 
-  it('un conflitto sugli step non sposta nemmeno lo scenario', async () => {
+  it('un conflitto sugli step (argomenti diversi) non sposta nemmeno lo scenario', async () => {
     const M = '// generato-da: bdd-generate · rigenerabile\n';
     fs.mkdirSync(path.join(RADICE, 'src', 'steps', 'generated'), { recursive: true });
     fs.mkdirSync(path.join(RADICE, 'src', 'steps', 'altro'), { recursive: true });
     fs.writeFileSync(path.join(RADICE, 'src', 'steps', 'generated', 's1.steps.ts'), M + 'Given("x", async function () {});\n');
-    fs.writeFileSync(path.join(RADICE, 'src', 'steps', 'altro', 'y.steps.ts'), 'Given("x", async function () {});\n');
+    fs.writeFileSync(path.join(RADICE, 'src', 'steps', 'altro', 'y.steps.ts'), 'Given("x", async function (this: CustomWorld, t: DataTable) {});\n');
     fs.writeFileSync(
       path.join(RADICE, 'reports', 'cruscotto', 'generazione-manifesto.json'),
       JSON.stringify({ files: [{ path: 'src/steps/generated/s1.steps.ts' }, { path: 'src/features/generated/s1.feature' }] })

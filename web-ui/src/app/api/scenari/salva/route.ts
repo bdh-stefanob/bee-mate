@@ -104,6 +104,7 @@ export async function POST(request: Request) {
       rinominato: scenario.rinominato,
       steps: glue?.steps ?? null,
       pagine: glue?.pagine ?? [],
+      riusate: glue?.riusate ?? [],
     });
   } catch (err) {
     // I messaggi sono scritti per una persona e non contengono percorsi
