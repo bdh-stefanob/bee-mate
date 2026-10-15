@@ -203,6 +203,35 @@ this can go wrong silently, and nothing is worse than a recipe that fires on the
 wrong page. What exists today is the declaration — the generator says, for every
 gesture with no accessible anchor, that a recipe is what is missing there.
 
+### Next — one action, one implementation (agreed 2026-10-15, not started)
+
+**Rule:** two steps are the same action when they are built from the same
+parts (utility or page method) with the same fixed values, whatever their
+text. A composite step is never merged with a simple one, and a scenario is
+never split automatically. The same action has one implementation. The
+`.feature` text may differ, but a catalog merge must be able to bring it back to
+one phrase, updating every test case without breaking anything.
+
+1. **Generation.** If the same phrase is already saved, reuse it and emit no
+   definition. If the phrase differs but the action is certainly the same, the
+   step becomes one line calling the same action, marked
+   `@stessa-azione-di "<catalog phrase>"`, and the catalog shows the pair as a
+   duplicate. If only the text is similar, nothing happens here.
+2. **Merging afterwards.** The merge must work for phrases with parameters and
+   with definitions in different files. Values are carried over into every
+   `.feature`. The merge is refused when the parameters do not match.
+3. **"Without breaking anything".** A dry-run of all scenarios runs after the
+   merge, with an automatic undo on any undefined or ambiguous step. A real
+   rerun on the environment is a separate button.
+4. **Small extras.** Warn when a scenario being saved duplicates one already
+   saved. Write no steps file when it would be empty.
+
+**Proof:** on clinic, three login phrases call `accediAClinic` and two
+questionnaire phrases call `rispondiQuestionario`. Read the step bodies first.
+Hair loss lands on `/account/visit-history`: a different action, so it is not
+merged. Merge the valid pairs, then rerun Weight Loss, Hair loss and the
+sentinel on QA.
+
 ### Parked until after the demo — a generated codebase that converges
 
 *Raised 2026-10-15.* Every saved recording adds files, and the result grows
