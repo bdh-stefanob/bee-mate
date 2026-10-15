@@ -151,3 +151,26 @@ ricetta della mappa, carta salvata, foto) e arriva a «Clinical assessment
 Pending» due volte di fila con la stessa utenza, in circa 2 minuti e 15 secondi.
 Le foto di ogni pagina e il diario dei tempi sono in `reports/esplora/` (fuori da
 git): sono la mappa da cui portare le utility in `src`.
+
+## Criterio di fatto: raggiunto (2026-10-15)
+
+Lo scenario «ordine successivo» salvato dal cruscotto il 14/10
+(`src/features/clinic/weight-loss/the-complete-the-second-order.feature`),
+rigenerato con il generatore che riconosce le utility, gira su QA **da inizio a
+fine due volte di fila con la stessa utenza: 16 passi su 16, 2 minuti e 16
+secondi**. La sentinella `src/features/clinic/sentinelle/ordine-successivo.feature`
+passa anch'essa (7 passi su 7).
+
+Due cose emerse lungo la strada, gia' nel codice:
+
+- **I passi del tester non coincidono con le utility** (il questionario diviso
+  in tre passi, le foto in cinque, passi che cominciano in una pagina e finiscono
+  in un'altra). Il generatore divide ogni passo in tratti: i gesti di una utility
+  diventano una chiamata, gli altri restano generati. Questionario e foto sono un
+  comportamento solo per scenario: la prima chiamata porta tutte le risposte
+  raccolte, i passi successivi lo dichiarano.
+- **La pagina d'arrivo dopo l'accesso cambia** secondo gli ordini dell'utenza
+  (account o storico): la utility dell'accesso riporta sempre all'account.
+
+Limite noto: le Page Object gia' salvate non ricevono da sole i miglioramenti del
+generatore sui locator; il 14 e il 15/10 sono state aggiornate una tantum.

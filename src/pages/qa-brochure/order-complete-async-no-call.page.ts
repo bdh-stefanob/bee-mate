@@ -27,7 +27,7 @@ export class OrderCompleteAsyncNoCallPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly el2SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*2 Secure messages[^\p{L}\p{N}]*$/u });
+  private readonly el2SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
 private readonly secureMessagesButton: Locator = this.page.getByText('Secure messages', { exact: true });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────

@@ -42,6 +42,11 @@ async function avanza(q: QuestionarioPage, page: Page, domanda: string): Promise
 
 export async function rispondiQuestionario(page: Page, tabella: string[][]): Promise<void> {
   const q = new QuestionarioPage(page);
+  // Chiamata subito dopo il clic che ci porta (prova del 15/10), la pagina e'
+  // ancora quella prima: senza aspettare, «non sono nel questionario» e si
+  // usciva senza rispondere.
+  const arrivato = await page.waitForURL(/\/questions\//, { timeout: 60_000 }).then(() => true, () => false);
+  if (!arrivato) throw new Error(`Questionario: la pagina delle domande non e' arrivata (indirizzo: ${page.url()}).`);
   for (let i = 0; i < MAX_DOMANDE; i++) {
     if (!q.sulQuestionario()) return;
     await q.aspettaDomanda();

@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-10-14T15:22:35.730Z
-Total: **60** steps (9 implemented, 51 wanted, 0 deprecated)
+Last update: 2026-10-15T07:21:24.773Z
+Total: **76** steps (9 implemented, 67 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **51/60** (85%)
+Ancorati a componenti di frontend: **63/76** (83%)
 
 ## How to use
 
@@ -566,7 +566,158 @@ L'utente e' dentro l'applicazione: con una sessione valida non fa
 
 _Source:_ `src\steps\common\accesso.steps.ts:18`
 
-## Domain: `generated` (2 steps)
+## Domain: `generated` (18 steps)
+
+### 🔧 `submit photo`
+
+submit photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:294`
+
+### 🔧 `the user choose pick up in store`
+
+the user choose pick up in store
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Yes, pick up in store"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:225`
+
+### 🔧 `the user click on start service`
+
+the user click on start service
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Start a consultations Choose from our list of services"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:83`
+
+### 🔧 `the user complete the questionary`
+
+the user complete the questionary
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "No"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:207`
+
+### 🔧 `the user get the front photo`
+
+the user get the front photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:316`
+
+### 🔧 `the user get the id photo`
+
+the user get the id photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:276`
+
+### 🔧 `the user insert personal photo`
+
+the user insert personal photo
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:254`
+
+### 🔧 `the user insert the bmi and the date`
+
+the user insert the bmi and the date
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `spinbutton` "0"
+- `button` "Next"
+- `button` "Open calendar"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:192`
+
+### 🔧 `the user insert the dose`
+
+the user insert the dose
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `checkbox` "I understand the important information above." — pagina `ImportantInfoPage`
+- `button` "Continue" — pagina `ImportantInfoPage`
+- `button` "Stay on the same dose" — pagina `QuestionsPage`
+- `spinbutton` "0" — pagina `QuestionsPage`
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:166`
+
+### 🔧 `The user log in with {string}`
+
+The user log in with {string}
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:65`
+
+### 🔧 `the user open the notification and see the order`
+
+the user open the notification and see the order
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit" — pagina `VisitPage`
+- `button` "1 Secure messages" — pagina `OrderCompleteAsyncNoCallPage`
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:356`
+
+### 🔧 `the user select the card`
+
+the user select the card
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:245`
+
+### 🔧 `the user select the medication`
+
+the user select the medication
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago" — pagina `WeiPage`
+- `button` "7.2mg" — pagina `ProductsWeiFPage`
+- `button` "Without Coaching £285.97" — pagina `ProductsWeiFPage`
+- `button` "Select" — pagina `ProductsWeiFPage`
+- `button` "continue" — pagina `ProductWeiFPage`
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:134`
+
+### 🔧 `The user sleect the store with {string}`
+
+The user sleect the store with {string}
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:236`
+
+### 🔧 `the user start the service`
+
+the user start the service
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Weight Loss" — pagina `HomePage`
+- `link` "Get started" — pagina `TreatmentPage`
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:105`
+
+### 🔧 `user get the second photo`
+
+user get the second photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\generated\the-complete-the-second-order.steps.ts:337`
 
 ### 🔧 `il cliente accede all'area ordini`
 
