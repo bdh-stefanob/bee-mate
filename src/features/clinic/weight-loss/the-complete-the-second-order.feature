@@ -23,7 +23,7 @@ Sono vere e il test gira, ma non sono ancora nel vocabolario condiviso.
     Given The user log in with "stefano.bertaccini+22@bootsdigitalhealth.co.uk"
 When the user click on start service
 When the user start the service
-When the user select the medication
+When the user select the medication with "Wegovy" and "7.2mg" and "Without Coaching"
 When the user insert the dose
   | domanda | risposta |
   | How do you wish to proceed? | Stay on the same dose |

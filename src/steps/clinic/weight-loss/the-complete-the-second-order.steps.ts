@@ -7,7 +7,7 @@
 //
 // Generato da:
 //   registrazione : reports/recordings/qa-clinic.lemonaidhealth.co.uk-2026-10-14T09-14-05-713Z.json
-//   il            : 2026-10-15T07:45:46.589Z
+//   il            : 2026-10-15T09:04:49.357Z
 //
 // Togliendo il marcatore in prima riga questo file diventa tuo: la generazione
 // lo salta invece di riscriverlo.
@@ -15,21 +15,15 @@
 import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { CustomWorld } from "../../../support/world";
 import { HomePage } from "../../../pages/clinic/home.page";
-import { LoginPage } from "../../../pages/clinic/login.page";
 import { AccountPage } from "../../../pages/clinic/account.page";
 import { TreatmentPage } from "../../../pages/clinic/treatment.page";
 import { WeiPage } from "../../../pages/clinic/wei.page";
-import { ProductsWeiFPage } from "../../../pages/clinic/products-wei-f.page";
 import { ProductWeiFPage } from "../../../pages/clinic/product-wei-f.page";
 import { ImportantInfoPage } from "../../../pages/clinic/important-info.page";
-import { QuestionsPage } from "../../../pages/clinic/questions.page";
 import { PharmaciesPage } from "../../../pages/clinic/pharmacies.page";
-import { PharmacyMapSelectionPage } from "../../../pages/clinic/pharmacy-map-selection.page";
-import { SummaryPage } from "../../../pages/clinic/summary.page";
-import { IdPage } from "../../../pages/clinic/id.page";
-import { VisitPage } from "../../../pages/clinic/visit.page";
 import { OrderCompleteAsyncNoCallPage } from "../../../pages/clinic/order-complete-async-no-call.page";
 import { accediAClinic } from "../../../actions/servizio-weight-loss.actions";
+import { scegliProdotto } from "../../../actions/prodotto.actions";
 import { rispondiQuestionario } from "../../../actions/questionario.actions";
 import { verificaGiaFatto } from "../../../actions/gia-fatto.actions";
 import { scegliFarmacia } from "../../../actions/farmacia.actions";
@@ -43,19 +37,12 @@ import { scattaFoto } from "../../../actions/foto.actions";
 // L'inizializzazione avviene nello step che possiede la transizione, mai in un
 // hook `Before`: e' quello step a sapere su quale pagina ci si trova.
 let homePage: HomePage;
-let loginPage: LoginPage;
 let accountPage: AccountPage;
 let treatmentPage: TreatmentPage;
 let weiPage: WeiPage;
-let productsWeiFPage: ProductsWeiFPage;
 let productWeiFPage: ProductWeiFPage;
 let importantInfoPage: ImportantInfoPage;
-let questionsPage: QuestionsPage;
 let pharmaciesPage: PharmaciesPage;
-let pharmacyMapSelectionPage: PharmacyMapSelectionPage;
-let summaryPage: SummaryPage;
-let idPage: IdPage;
-let visitPage: VisitPage;
 let orderCompleteAsyncNoCallPage: OrderCompleteAsyncNoCallPage;
 
 /**
@@ -64,7 +51,7 @@ let orderCompleteAsyncNoCallPage: OrderCompleteAsyncNoCallPage;
  * @wanted
  */
 Given("The user log in with {string}", async function (this: CustomWorld, valore1: string) {
-  await accediAClinic(this.page, valore1, this.passwordAmbiente());
+  await accediAClinic(this.page, valore1, this.passwordAmbiente(), "/account");
 });
 
 /**
@@ -113,7 +100,7 @@ When("the user start the service", async function (this: CustomWorld) {
 });
 
 /**
- * @intent  the user select the medication
+ * @intent  the user select the medication with {string} and {string} and {string}
  * @page    WeiPage
  * @component link "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago" page=WeiPage
  * @component button "7.2mg" page=ProductsWeiFPage
@@ -132,15 +119,11 @@ When("the user start the service", async function (this: CustomWorld) {
  *          - the user check and continue the order
  *          - the user read the imprtant info with {string}
  */
-When("the user select the medication", async function (this: CustomWorld) {
+When("the user select the medication with {string} and {string} and {string}", async function (this: CustomWorld, valore1: string, valore2: string, valore3: string) {
   weiPage = new WeiPage(this.page);
   await weiPage.assertLoaded();
   await weiPage.clickIHavenTBeenHere();
-  productsWeiFPage = new ProductsWeiFPage(this.page);
-  await productsWeiFPage.assertLoaded();
-  await productsWeiFPage.click72mg();
-  await productsWeiFPage.clickWithoutCoaching28597();
-  await productsWeiFPage.clickSelect();
+  await scegliProdotto(this.page, valore1, valore2, valore3);
   productWeiFPage = new ProductWeiFPage(this.page);
   await productWeiFPage.assertLoaded();
   await productWeiFPage.clickContinue();

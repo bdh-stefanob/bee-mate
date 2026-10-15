@@ -1,9 +1,439 @@
 {
-  "generatedAt": "2026-10-15T07:47:23.795Z",
-  "totalSteps": 58,
-  "documentedSteps": 52,
+  "generatedAt": "2026-10-15T09:08:42.178Z",
+  "totalSteps": 82,
+  "documentedSteps": 76,
   "undocumentedSteps": 6,
   "steps": [
+    {
+      "expression": "the user answer to the questions",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:156",
+      "doc": {
+        "params": {},
+        "intent": "the user answer to the questions",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user check the notification and the last of the page is the new one",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "OrderCompleteAsyncNoCallPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "15 Secure messages"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:256",
+      "doc": {
+        "params": {},
+        "intent": "the user check the notification and the last of the page is the new one",
+        "page": "OrderCompleteAsyncNoCallPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "15 Secure messages"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on home page button",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "VisitHistoryPage",
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:66",
+      "doc": {
+        "params": {},
+        "intent": "the user click on home page button",
+        "page": "VisitHistoryPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user confirm the product and accept",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "ProductHaiFPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "continue",
+          "page": "ProductHaiFPage"
+        },
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above.",
+          "page": "ImportantInfoPage"
+        },
+        {
+          "role": "button",
+          "name": "Continue",
+          "page": "ImportantInfoPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:141",
+      "doc": {
+        "params": {},
+        "intent": "the user confirm the product and accept",
+        "page": "ProductHaiFPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "continue",
+            "page": "ProductHaiFPage"
+          },
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above.",
+            "page": "ImportantInfoPage"
+          },
+          {
+            "role": "button",
+            "name": "Continue",
+            "page": "ImportantInfoPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user log in and land on consultation history with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:53",
+      "doc": {
+        "params": {},
+        "intent": "the user log in and land on consultation history with {string}",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user search in the map after insert the half postal code and select the store with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "PharmaciesPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Yes, pick up in store",
+          "page": "PharmaciesPage"
+        },
+        {
+          "role": "textbox",
+          "name": "zip",
+          "page": "PharmacyMapSelectionPage"
+        },
+        {
+          "role": "button",
+          "name": "Close",
+          "page": "PharmacyMapSelectionPage"
+        },
+        {
+          "role": "button",
+          "name": "Select Pharmacy",
+          "page": "PharmacyMapSelectionPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:230",
+      "doc": {
+        "params": {},
+        "intent": "the user search in the map after insert the half postal code and select the store with {string}",
+        "page": "PharmaciesPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Yes, pick up in store",
+            "page": "PharmaciesPage"
+          },
+          {
+            "role": "textbox",
+            "name": "zip",
+            "page": "PharmacyMapSelectionPage"
+          },
+          {
+            "role": "button",
+            "name": "Close",
+            "page": "PharmacyMapSelectionPage"
+          },
+          {
+            "role": "button",
+            "name": "Select Pharmacy",
+            "page": "PharmacyMapSelectionPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selct the card and confirm",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:242",
+      "doc": {
+        "params": {},
+        "intent": "the user selct the card and confirm",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select the product with {string} and {string} and {string}",
+      "parameters": [
+        "{string}",
+        "{string}",
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "HaiPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "First time using this service",
+          "page": "HaiPage"
+        },
+        {
+          "role": "button",
+          "name": "Bundle £20",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "No-bundle £150 £51",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "2 months",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "1 month",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "Select",
+          "page": "ProductsHaiFPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:118",
+      "doc": {
+        "params": {},
+        "intent": "the user select the product with {string} and {string} and {string}",
+        "page": "HaiPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "First time using this service",
+            "page": "HaiPage"
+          },
+          {
+            "role": "button",
+            "name": "Bundle £20",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "No-bundle £150 £51",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "2 months",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "1 month",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "Select",
+            "page": "ProductsHaiFPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user start the hair loss treatment",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Hair loss",
+          "page": "HomePage"
+        },
+        {
+          "role": "link",
+          "name": "GET STARTED",
+          "page": "PropeciaOnlinePage"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:87",
+      "doc": {
+        "params": {},
+        "intent": "the user start the hair loss treatment",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Hair loss",
+            "page": "HomePage"
+          },
+          {
+            "role": "link",
+            "name": "GET STARTED",
+            "page": "PropeciaOnlinePage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user submit the photo",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "IdPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Submit"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:206",
+      "doc": {
+        "params": {},
+        "intent": "the user submit the photo",
+        "page": "IdPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Submit"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user take a selphie",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:165",
+      "doc": {
+        "params": {},
+        "intent": "the user take a selphie",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user take the photoID",
+      "parameters": [],
+      "app": "clinic",
+      "area": "hair-loss",
+      "domain": "clinic/hair-loss",
+      "status": "wanted",
+      "page": "IdPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Open camera"
+        },
+        {
+          "role": "button",
+          "name": "Take Picture"
+        },
+        {
+          "role": "button",
+          "name": "Save"
+        },
+        {
+          "role": "button",
+          "name": "That's me"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\hair-loss\\the-user-orders-a-hair-loss-treatment.steps.ts:187",
+      "doc": {
+        "params": {},
+        "intent": "the user take the photoID",
+        "page": "IdPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Open camera"
+          },
+          {
+            "role": "button",
+            "name": "Take Picture"
+          },
+          {
+            "role": "button",
+            "name": "Save"
+          },
+          {
+            "role": "button",
+            "name": "That's me"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
     {
       "expression": "the order is pending clinical assessment",
       "parameters": [],
@@ -116,7 +546,7 @@
           "name": "Submit"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:298",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:281",
       "doc": {
         "params": {},
         "intent": "submit photo",
@@ -269,7 +699,7 @@
           "name": "Yes, pick up in store"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:228",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:211",
       "doc": {
         "params": {},
         "intent": "the user choose pick up in store",
@@ -385,7 +815,7 @@
           "name": "Start a consultations Choose from our list of services"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:84",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:71",
       "doc": {
         "params": {},
         "intent": "the user click on start service",
@@ -615,7 +1045,7 @@
           "name": "No"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:209",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:192",
       "doc": {
         "params": {},
         "intent": "the user complete the questionary",
@@ -756,7 +1186,7 @@
           "name": "That's me"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:321",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:304",
       "doc": {
         "params": {},
         "intent": "the user get the front photo",
@@ -809,7 +1239,7 @@
           "name": "That's me"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:279",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:262",
       "doc": {
         "params": {},
         "intent": "the user get the id photo",
@@ -1015,7 +1445,7 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:257",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:240",
       "doc": {
         "params": {},
         "intent": "the user insert personal photo",
@@ -1045,7 +1475,7 @@
           "name": "Open calendar"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:193",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:176",
       "doc": {
         "params": {},
         "intent": "the user insert the bmi and the date",
@@ -1139,7 +1569,7 @@
           "page": "QuestionsPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:167",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:150",
       "doc": {
         "params": {},
         "intent": "the user insert the dose",
@@ -1244,7 +1674,7 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:66",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:53",
       "doc": {
         "params": {},
         "intent": "The user log in with {string}",
@@ -1317,7 +1747,7 @@
           "page": "OrderCompleteAsyncNoCallPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:363",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:346",
       "doc": {
         "params": {},
         "intent": "the user open the notification and see the order",
@@ -1439,7 +1869,7 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:248",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:231",
       "doc": {
         "params": {},
         "intent": "the user select the card",
@@ -1485,8 +1915,12 @@
       "documented": true
     },
     {
-      "expression": "the user select the medication",
-      "parameters": [],
+      "expression": "the user select the medication with {string} and {string} and {string}",
+      "parameters": [
+        "{string}",
+        "{string}",
+        "{string}"
+      ],
       "app": "clinic",
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
@@ -1519,10 +1953,10 @@
           "page": "ProductWeiFPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:135",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:122",
       "doc": {
         "params": {},
-        "intent": "the user select the medication",
+        "intent": "the user select the medication with {string} and {string} and {string}",
         "page": "WeiPage",
         "components": [
           {
@@ -1729,7 +2163,7 @@
       "area": "weight-loss",
       "domain": "clinic/weight-loss",
       "status": "wanted",
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:239",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:222",
       "doc": {
         "params": {},
         "intent": "The user sleect the store with {string}",
@@ -1798,7 +2232,7 @@
           "page": "TreatmentPage"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:106",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:93",
       "doc": {
         "params": {},
         "intent": "the user start the service",
@@ -1923,7 +2357,7 @@
           "name": "That's me"
         }
       ],
-      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:343",
+      "sourceRef": "src\\steps\\clinic\\weight-loss\\the-complete-the-second-order.steps.ts:326",
       "doc": {
         "params": {},
         "intent": "user get the second photo",
@@ -1975,6 +2409,436 @@
       "doc": {
         "params": {},
         "intent": "L'utente e' dentro l'applicazione: con una sessione valida non fa"
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user answer to the questions",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:156",
+      "doc": {
+        "params": {},
+        "intent": "the user answer to the questions",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user check the notification and the last of the page is the new one",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "OrderCompleteAsyncNoCallPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "15 Secure messages"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:256",
+      "doc": {
+        "params": {},
+        "intent": "the user check the notification and the last of the page is the new one",
+        "page": "OrderCompleteAsyncNoCallPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "15 Secure messages"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on home page button",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitHistoryPage",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:66",
+      "doc": {
+        "params": {},
+        "intent": "the user click on home page button",
+        "page": "VisitHistoryPage",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user confirm the product and accept",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "ProductHaiFPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "continue",
+          "page": "ProductHaiFPage"
+        },
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above.",
+          "page": "ImportantInfoPage"
+        },
+        {
+          "role": "button",
+          "name": "Continue",
+          "page": "ImportantInfoPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:141",
+      "doc": {
+        "params": {},
+        "intent": "the user confirm the product and accept",
+        "page": "ProductHaiFPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "continue",
+            "page": "ProductHaiFPage"
+          },
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above.",
+            "page": "ImportantInfoPage"
+          },
+          {
+            "role": "button",
+            "name": "Continue",
+            "page": "ImportantInfoPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user log in and land on consultation history with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:53",
+      "doc": {
+        "params": {},
+        "intent": "the user log in and land on consultation history with {string}",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user search in the map after insert the half postal code and select the store with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "PharmaciesPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Yes, pick up in store",
+          "page": "PharmaciesPage"
+        },
+        {
+          "role": "textbox",
+          "name": "zip",
+          "page": "PharmacyMapSelectionPage"
+        },
+        {
+          "role": "button",
+          "name": "Close",
+          "page": "PharmacyMapSelectionPage"
+        },
+        {
+          "role": "button",
+          "name": "Select Pharmacy",
+          "page": "PharmacyMapSelectionPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:230",
+      "doc": {
+        "params": {},
+        "intent": "the user search in the map after insert the half postal code and select the store with {string}",
+        "page": "PharmaciesPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Yes, pick up in store",
+            "page": "PharmaciesPage"
+          },
+          {
+            "role": "textbox",
+            "name": "zip",
+            "page": "PharmacyMapSelectionPage"
+          },
+          {
+            "role": "button",
+            "name": "Close",
+            "page": "PharmacyMapSelectionPage"
+          },
+          {
+            "role": "button",
+            "name": "Select Pharmacy",
+            "page": "PharmacyMapSelectionPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user selct the card and confirm",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:242",
+      "doc": {
+        "params": {},
+        "intent": "the user selct the card and confirm",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select the product with {string} and {string} and {string}",
+      "parameters": [
+        "{string}",
+        "{string}",
+        "{string}"
+      ],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HaiPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "First time using this service",
+          "page": "HaiPage"
+        },
+        {
+          "role": "button",
+          "name": "Bundle £20",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "No-bundle £150 £51",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "2 months",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "1 month",
+          "page": "ProductsHaiFPage"
+        },
+        {
+          "role": "button",
+          "name": "Select",
+          "page": "ProductsHaiFPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:118",
+      "doc": {
+        "params": {},
+        "intent": "the user select the product with {string} and {string} and {string}",
+        "page": "HaiPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "First time using this service",
+            "page": "HaiPage"
+          },
+          {
+            "role": "button",
+            "name": "Bundle £20",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "No-bundle £150 £51",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "2 months",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "1 month",
+            "page": "ProductsHaiFPage"
+          },
+          {
+            "role": "button",
+            "name": "Select",
+            "page": "ProductsHaiFPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user start the hair loss treatment",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Hair loss",
+          "page": "HomePage"
+        },
+        {
+          "role": "link",
+          "name": "GET STARTED",
+          "page": "PropeciaOnlinePage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:87",
+      "doc": {
+        "params": {},
+        "intent": "the user start the hair loss treatment",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Hair loss",
+            "page": "HomePage"
+          },
+          {
+            "role": "link",
+            "name": "GET STARTED",
+            "page": "PropeciaOnlinePage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user submit the photo",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "IdPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Submit"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:206",
+      "doc": {
+        "params": {},
+        "intent": "the user submit the photo",
+        "page": "IdPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Submit"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user take a selphie",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:165",
+      "doc": {
+        "params": {},
+        "intent": "the user take a selphie",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user take the photoID",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "IdPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Open camera"
+        },
+        {
+          "role": "button",
+          "name": "Take Picture"
+        },
+        {
+          "role": "button",
+          "name": "Save"
+        },
+        {
+          "role": "button",
+          "name": "That's me"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:187",
+      "doc": {
+        "params": {},
+        "intent": "the user take the photoID",
+        "page": "IdPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Open camera"
+          },
+          {
+            "role": "button",
+            "name": "Take Picture"
+          },
+          {
+            "role": "button",
+            "name": "Save"
+          },
+          {
+            "role": "button",
+            "name": "That's me"
+          }
+        ],
+        "wanted": true
       },
       "documented": true
     },

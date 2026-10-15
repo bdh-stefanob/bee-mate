@@ -29,6 +29,7 @@ export class HomePage extends BasePage {
   // ─── Componenti ────────────────────────────────────────────────────────────
   private readonly weightLossLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Weight Loss[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Weight Loss[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
   private readonly logInButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Log in[^\p{L}\p{N}]*$/u });
+  private readonly hairLossLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Hair loss[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Hair loss[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -52,5 +53,12 @@ async goToWeightLoss(): Promise<void> {
    */
   async clickLogIn(): Promise<void> {
     await this.logInButton.click();
+  }
+
+  /**
+   * @componente  link "Hair loss"
+   */
+  async goToHairLoss(): Promise<void> {
+    await this.hairLossLink.click();
   }
 }

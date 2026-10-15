@@ -154,6 +154,33 @@ eq(
   [[0, 1, null]]
 );
 
+console.log("\n--- scelta del prodotto (Hair loss e Weight Loss, 14-15/10) ---\n");
+const PROD = "https://qa-clinic.invalid/products/HAI-F";
+const clic = (name: string, intestazione = "Propecia"): GestoPerUtility => ({ action: "click", role: "button", name, url: PROD, intestazione });
+const spunta = (name: string): GestoPerUtility => ({ action: "set", role: "radio", name, value: "checked", url: PROD, intestazione: "Propecia" });
+const propecia = utilityDelPasso([
+  clic("Bundle £20"), spunta("Bundle"),
+  clic("No-bundle £150 £51"), spunta("No-bundle"),
+  clic("2 months"), clic("1 month"),
+  clic("No-bundle £150 £51"), spunta("No-bundle"),
+  clic("Select"),
+]);
+eq("i gesti sulla pagina dei prodotti: la scelta del prodotto, completa", [propecia?.nome, propecia?.completa], ["prodotto", true]);
+eq("solo le scelte finali, senza prezzi: la scheda, la durata, la formula", propecia?.parametri, ["Propecia", "1 month", "No-bundle"]);
+const WL = "https://qa-clinic.invalid/products/WEI-F";
+const wegovy = utilityDelPasso([
+  { action: "click", role: "button", name: "7.2mg", url: WL, intestazione: "Wegovy" },
+  { action: "click", role: "button", name: "Without Coaching £285.97", url: WL, intestazione: "Wegovy" },
+  { action: "set", role: "radio", name: "Without Coaching", value: "checked", url: WL, intestazione: "Wegovy" },
+  { action: "click", role: "button", name: "Select", url: WL, intestazione: "Wegovy" },
+]);
+eq("anche con la dose in milligrammi", wegovy?.parametri, ["Wegovy", "7.2mg", "Without Coaching"]);
+eq(
+  "senza Select non e' una scelta conclusa",
+  utilityDelPasso([clic("1 month"), clic("No-bundle £150 £51")])?.completa ?? false,
+  false
+);
+
 console.log("\n--- accesso ---\n");
 const LOGIN = "https://qa-clinic.invalid/login";
 const accesso = utilityDelPasso([

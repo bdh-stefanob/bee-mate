@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-10-15T07:47:23.795Z
-Total: **58** steps (9 implemented, 49 wanted, 0 deprecated)
+Last update: 2026-10-15T09:08:42.178Z
+Total: **82** steps (9 implemented, 73 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **45/58** (78%)
+Ancorati a componenti di frontend: **59/82** (72%)
 
 ## How to use
 
@@ -16,6 +16,115 @@ an existing step that matches the intent. If it exists, reuse the exact
 expression. If it does not, flag it to the step gatekeeper.
 
 ---
+
+## Domain: `clinic/hair-loss` (12 steps)
+
+### 🔧 `the user answer to the questions`
+
+the user answer to the questions
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:156`
+
+### 🔧 `the user check the notification and the last of the page is the new one`
+
+the user check the notification and the last of the page is the new one
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "15 Secure messages"
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:256`
+
+### 🔧 `the user click on home page button`
+
+the user click on home page button
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:66`
+
+### 🔧 `the user confirm the product and accept`
+
+the user confirm the product and accept
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "continue" — pagina `ProductHaiFPage`
+- `checkbox` "I understand the important information above." — pagina `ImportantInfoPage`
+- `button` "Continue" — pagina `ImportantInfoPage`
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:141`
+
+### 🔧 `the user log in and land on consultation history with {string}`
+
+the user log in and land on consultation history with {string}
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:53`
+
+### 🔧 `the user search in the map after insert the half postal code and select the store with {string}`
+
+the user search in the map after insert the half postal code and select the store with {string}
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Yes, pick up in store" — pagina `PharmaciesPage`
+- `textbox` "zip" — pagina `PharmacyMapSelectionPage`
+- `button` "Close" — pagina `PharmacyMapSelectionPage`
+- `button` "Select Pharmacy" — pagina `PharmacyMapSelectionPage`
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:230`
+
+### 🔧 `the user selct the card and confirm`
+
+the user selct the card and confirm
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:242`
+
+### 🔧 `the user select the product with {string} and {string} and {string}`
+
+the user select the product with {string} and {string} and {string}
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "First time using this service" — pagina `HaiPage`
+- `button` "Bundle £20" — pagina `ProductsHaiFPage`
+- `button` "No-bundle £150 £51" — pagina `ProductsHaiFPage`
+- `button` "2 months" — pagina `ProductsHaiFPage`
+- `button` "1 month" — pagina `ProductsHaiFPage`
+- `button` "Select" — pagina `ProductsHaiFPage`
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:118`
+
+### 🔧 `the user start the hair loss treatment`
+
+the user start the hair loss treatment
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Hair loss" — pagina `HomePage`
+- `link` "GET STARTED" — pagina `PropeciaOnlinePage`
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:87`
+
+### 🔧 `the user submit the photo`
+
+the user submit the photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit"
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:206`
+
+### 🔧 `the user take a selphie`
+
+the user take a selphie
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:165`
+
+### 🔧 `the user take the photoID`
+
+the user take the photoID
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\clinic\hair-loss\the-user-orders-a-hair-loss-treatment.steps.ts:187`
 
 ## Domain: `clinic/sentinelle` (7 steps)
 
@@ -61,7 +170,7 @@ submit photo
 **Componenti di frontend:** _(mai confermati sulla pagina)_
 - `button` "Submit"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:298`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:281`
 
 ### 🔧 `the suer check new notification`
 
@@ -107,7 +216,7 @@ the user choose pick up in store
 **Componenti di frontend:** _(mai confermati sulla pagina)_
 - `button` "Yes, pick up in store"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:228`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:211`
 
 ### 🔧 `the user click on back to account`
 
@@ -143,7 +252,7 @@ the user click on start service
 **Componenti di frontend:** _(mai confermati sulla pagina)_
 - `link` "Start a consultations Choose from our list of services"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:84`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:71`
 
 ### 🔧 `the user click on start services`
 
@@ -204,7 +313,7 @@ the user complete the questionary
 **Componenti di frontend:** _(mai confermati sulla pagina)_
 - `button` "No"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:209`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:192`
 
 ### 🔧 `the user continue`
 
@@ -238,7 +347,7 @@ the user get the front photo
 - `button` "Save"
 - `button` "That's me"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:321`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:304`
 
 ### 🔧 `the user get the id photo`
 
@@ -250,7 +359,7 @@ the user get the id photo
 - `button` "Save"
 - `button` "That's me"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:279`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:262`
 
 ### 🔧 `the user get the second photo`
 
@@ -290,7 +399,7 @@ _Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.t
 
 the user insert personal photo
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:257`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:240`
 
 ### 🔧 `the user insert the bmi and the date`
 
@@ -301,7 +410,7 @@ the user insert the bmi and the date
 - `button` "Next"
 - `button` "Open calendar"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:193`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:176`
 
 ### 🔧 `the user insert the bmi data with {string}`
 
@@ -326,7 +435,7 @@ the user insert the dose
 - `button` "Stay on the same dose" — pagina `QuestionsPage`
 - `spinbutton` "0" — pagina `QuestionsPage`
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:167`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:150`
 
 ### 🔧 `The user log in and click on start a service with {string}`
 
@@ -347,7 +456,7 @@ _Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.t
 
 The user log in with {string}
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:66`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:53`
 
 ### 🔧 `the user logged in`
 
@@ -368,7 +477,7 @@ the user open the notification and see the order
 - `button` "Submit" — pagina `VisitPage`
 - `button` "1 Secure messages" — pagina `OrderCompleteAsyncNoCallPage`
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:363`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:346`
 
 ### 🔧 `the user read the imprtant info with {string}`
 
@@ -398,7 +507,7 @@ _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.
 
 the user select the card
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:248`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:231`
 
 ### 🔧 `the user select the card and accept payment`
 
@@ -410,9 +519,9 @@ the user select the card and accept payment
 
 _Source:_ `src\steps\clinic\weight-loss\a-user-complete-an-order-in-weight-loss.steps.ts:274`
 
-### 🔧 `the user select the medication`
+### 🔧 `the user select the medication with {string} and {string} and {string}`
 
-the user select the medication
+the user select the medication with {string} and {string} and {string}
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
 - `link` "I haven't been here for over 3 months I last used a weight loss medicine from Boots Online doctor more than 3 months ago" — pagina `WeiPage`
@@ -421,7 +530,7 @@ the user select the medication
 - `button` "Select" — pagina `ProductsWeiFPage`
 - `button` "continue" — pagina `ProductWeiFPage`
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:135`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:122`
 
 ### 🔧 `the user select the Mounjaro 7.5mg without coaching`
 
@@ -464,7 +573,7 @@ _Source:_ `src\steps\clinic\weight-loss\complete-an-order-on-weight-loss.steps.t
 
 The user sleect the store with {string}
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:239`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:222`
 
 ### 🔧 `The user start a wright loss service`
 
@@ -484,7 +593,7 @@ the user start the service
 - `link` "Weight Loss" — pagina `HomePage`
 - `link` "Get started" — pagina `TreatmentPage`
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:106`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:93`
 
 ### 🔧 `the user submit the photo and the order`
 
@@ -516,7 +625,7 @@ user get the second photo
 - `button` "Save"
 - `button` "That's me"
 
-_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:343`
+_Source:_ `src\steps\clinic\weight-loss\the-complete-the-second-order.steps.ts:326`
 
 ## Domain: `common` (2 steps)
 
@@ -534,6 +643,115 @@ _Source:_ `src\steps\common\verifica.steps.ts:21`
 L'utente e' dentro l'applicazione: con una sessione valida non fa
 
 _Source:_ `src\steps\common\accesso.steps.ts:18`
+
+## Domain: `generated` (12 steps)
+
+### 🔧 `the user answer to the questions`
+
+the user answer to the questions
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:156`
+
+### 🔧 `the user check the notification and the last of the page is the new one`
+
+the user check the notification and the last of the page is the new one
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "15 Secure messages"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:256`
+
+### 🔧 `the user click on home page button`
+
+the user click on home page button
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:66`
+
+### 🔧 `the user confirm the product and accept`
+
+the user confirm the product and accept
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "continue" — pagina `ProductHaiFPage`
+- `checkbox` "I understand the important information above." — pagina `ImportantInfoPage`
+- `button` "Continue" — pagina `ImportantInfoPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:141`
+
+### 🔧 `the user log in and land on consultation history with {string}`
+
+the user log in and land on consultation history with {string}
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:53`
+
+### 🔧 `the user search in the map after insert the half postal code and select the store with {string}`
+
+the user search in the map after insert the half postal code and select the store with {string}
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Yes, pick up in store" — pagina `PharmaciesPage`
+- `textbox` "zip" — pagina `PharmacyMapSelectionPage`
+- `button` "Close" — pagina `PharmacyMapSelectionPage`
+- `button` "Select Pharmacy" — pagina `PharmacyMapSelectionPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:230`
+
+### 🔧 `the user selct the card and confirm`
+
+the user selct the card and confirm
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:242`
+
+### 🔧 `the user select the product with {string} and {string} and {string}`
+
+the user select the product with {string} and {string} and {string}
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "First time using this service" — pagina `HaiPage`
+- `button` "Bundle £20" — pagina `ProductsHaiFPage`
+- `button` "No-bundle £150 £51" — pagina `ProductsHaiFPage`
+- `button` "2 months" — pagina `ProductsHaiFPage`
+- `button` "1 month" — pagina `ProductsHaiFPage`
+- `button` "Select" — pagina `ProductsHaiFPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:118`
+
+### 🔧 `the user start the hair loss treatment`
+
+the user start the hair loss treatment
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Hair loss" — pagina `HomePage`
+- `link` "GET STARTED" — pagina `PropeciaOnlinePage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:87`
+
+### 🔧 `the user submit the photo`
+
+the user submit the photo
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Submit"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:206`
+
+### 🔧 `the user take a selphie`
+
+the user take a selphie
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:165`
+
+### 🔧 `the user take the photoID`
+
+the user take the photoID
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Open camera"
+- `button` "Take Picture"
+- `button` "Save"
+- `button` "That's me"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:187`
 
 ## Domain: `qa-brochure/weight-loss` (5 steps)
 

@@ -186,7 +186,35 @@ const ACCESSO = perComponenti(
   (gesti) => [gesti.find((g) => g.name === "Email")?.value ?? ""]
 );
 
-export const UTILITY: readonly Utility[] = [QUESTIONARIO, FARMACIA, PAGAMENTO, FOTO, ACCESSO];
+// LA SCELTA DEL PRODOTTO (Hair loss, 15/10). La pagina ha piu' schede prodotto
+// (Finasteride, Propecia, ...), ognuna con le sue durate o dosi, le sue formule e
+// il suo «Select»; i locator generati cercavano su tutta la pagina e colpivano la
+// prima scheda. E il tester prova prima di decidere (Bundle, No-bundle, 2 mesi,
+// 1 mese, di nuovo No-bundle). La utility lavora nella scheda del titolo
+// registrato sopra i gesti, e tiene solo le scelte finali: l'ultima durata o
+// dose (un nome che comincia con un numero) e l'ultima formula, senza prezzi.
+const senzaPrezzi = (nome: string): string => nome.replace(/£\s?[\d.,]+/g, "").replace(/\s+/g, " ").trim();
+const PRODOTTO: Utility = {
+  nome: "prodotto",
+  modulo: "actions/prodotto.actions",
+  funzione: "scegliProdotto",
+  contiene: (g) =>
+    percorso(g).startsWith("/products/") && ((g.action === "click" && g.role === "button") || g.action === "set"),
+  riconosci(gesti) {
+    if (gesti.length === 0 || !gesti.some((g) => percorso(g).startsWith("/products/"))) return null;
+    const base = { nome: this.nome, modulo: this.modulo, funzione: this.funzione };
+    const conSelect = gesti.some(pulsante(/^select$/i));
+    const completa = conSelect && gesti.every((g) => this.contiene(g));
+    if (!completa) return { ...base, completa: false, parametri: [] };
+    const scheda = gesti.find((g) => g.intestazione)?.intestazione ?? "";
+    const scelte = gesti.filter((g) => g.action === "click" && !/^select$/i.test(g.name)).map((g) => senzaPrezzi(g.name));
+    const dose = [...scelte].reverse().find((s) => /^\d/.test(s));
+    const formula = [...scelte].reverse().find((s) => s !== "" && !/^\d/.test(s));
+    return { ...base, completa: true, parametri: [scheda, ...(dose ? [dose] : []), ...(formula ? [formula] : [])] };
+  },
+};
+
+export const UTILITY: readonly Utility[] = [QUESTIONARIO, FARMACIA, PAGAMENTO, FOTO, ACCESSO, PRODOTTO];
 
 /** La prima utility che riconosce il passo; una completa prima di una parziale. */
 export function utilityDelPasso(
