@@ -9,6 +9,7 @@ import { Browser, BrowserContext, Page } from "@playwright/test";
 import { avviaBrowser, MEDIA_FINTI } from "../../scripts/lib/browser";
 import { aspettaPresenza } from "./presenza";
 import { registraAvvisi } from "./avvisi";
+import { bloccaTerzeParti } from "./terze-parti";
 import { loadEnv } from "../../scripts/lib/atlassian";
 import {
   resolveTarget, hasSession, sessionAgeHours, passwordDelBersaglio, type Target,
@@ -141,6 +142,8 @@ export class CustomWorld extends World {
       // finta, questo evita la richiesta che in headless nessuno puo' accettare.
       permissions: [...MEDIA_FINTI.permissions],
     });
+    // Tracciamento e widget esterni fuori: vedi terze-parti.ts.
+    await bloccaTerzeParti(this.context);
     this.page = await this.context.newPage();
     // Gli avvisi che compaiono quando vogliono loro: vedi avvisi.ts.
     await registraAvvisi(this.page, undefined, AMBIENTE.velo);

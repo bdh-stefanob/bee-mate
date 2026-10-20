@@ -153,6 +153,10 @@ export function avvisoDelGesto(
  * Registra i gestori sulla pagina. `BDD_NO_AVVISI=1` li spegne: serve per uno
  * scenario che vuole proprio cliccare uno di quei pulsanti.
  */
+function attesaVelo(): number {
+  return Number(process.env["BDD_ATTESA_VELO"] ?? 90_000);
+}
+
 export async function registraAvvisi(
   page: Page,
   avvisi: readonly Avviso[] = AVVISI,
@@ -170,7 +174,12 @@ export async function registraAvvisi(
   // `BDD_VELO` lo sostituisce per una prova.
   const velo = process.env["BDD_VELO"] || veloDichiarato;
   if (velo) {
-    const attesa = Number(process.env["BDD_ATTESA_VELO"] ?? 90_000);
+    const attesa = attesaVelo();
+    // Playwright conta il tempo del gestore dentro il limite dell'azione che
+    // l'ha fatto scattare: con il limite di 30 s di un clic, i 90 s qui sotto
+    // erano 30 (20/10, una foto su QA lento). Il limite delle azioni sale
+    // quindi all'attesa del velo, solo dove un velo c'e'.
+    page.setDefaultTimeout(attesa);
     await page.addLocatorHandler(
       page.locator(velo).first(),
       async (l) => {
