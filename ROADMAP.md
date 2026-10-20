@@ -203,7 +203,15 @@ this can go wrong silently, and nothing is worse than a recipe that fires on the
 wrong page. What exists today is the declaration — the generator says, for every
 gesture with no accessible anchor, that a recipe is what is missing there.
 
-### Next — one action, one implementation (agreed 2026-10-15, not started)
+### Backlog, after the demo — one action, one implementation (rule agreed 2026-10-15)
+
+*Rescoped 2026-10-20.* Reading the step bodies showed that the code is already
+one: the different phrases are one-line glue calling the same utility
+(`accediAClinic`, `rispondiQuestionario`). What remains is duplicate phrases in
+the catalog, and by the rule below few of them merge: the three logins have
+different landing pages and the Weight Loss questionnaire step is composite.
+So the plan below waits until after the demo. Point 4 (warn on a duplicate
+scenario at save time) is the first piece to pick up.
 
 **Rule:** two steps are the same action when they are built from the same
 parts (utility or page method) with the same fixed values, whatever their
@@ -268,6 +276,69 @@ the recording browser and inserts it into the recording, already resolved. The
 rest is recorded by hand, as it is today. **Not designed yet.** The hard part is
 running a step inside the recording browser with the scenario's state (World,
 session, environment). It needs a spec before any code.
+
+### Backlog, after the demo — environments with several apps, clinic → PIMS
+
+*Raised 2026-10-15, brainstorming started; no spec yet.* Decided so far:
+
+- **An environment (QA, UAT...) holds several apps** (clinic, brochure,
+  PIMS), each with its own URL and login. Choosing an environment makes every
+  app point at it. Today an entry in `bdd-targets.json` is one app, so
+  `clinic` and `qa-brochure` are two entries for the same QA.
+- **Environment config in plain text and versioned**, with no `${...}`
+  placeholders. Environments are added with a commit or from the dashboard.
+  Credentials live elsewhere, outside git.
+- **Login and saved session stay optional**, a convenience we add; how login
+  works is not decided yet.
+- **clinic → PIMS is two scenarios in series.** The clinic scenario reads the
+  order or visit ID from the network response (`waitForResponse`), since the
+  patient never sees it. The ID is passed as a parameter to the PIMS step that
+  searches for or opens the order.
+
+**Open, to settle when the tests are written:**
+- Which key goes to PIMS. Option one is the Visit# read from the network: the
+  Rx Hub search accepts "Columbus ID#, Visit#". Option two is patient email
+  plus service, as the POC does. Option three is the first with the second as
+  a fallback.
+- Whether PIMS needs its own utility.
+
+**Prior art:** `uiautomationpwpoc`, scenario `clinic/jet-lag-rxhub.feature`.
+- It runs as one scenario in the same browser.
+- It correlates by email and service code.
+- It reads the Columbus ID (`LEM...`) from the PIMS UI.
+- PIMS login is plain user and password, with no SSO or MFA.
+- Its env has `CLINIC_URL`, `BROCHURE_URL` and `PIMS_URL`.
+
+Two things not to copy: the ID kept in module-level variables, and the PIMS
+login duplicated in three pages. Per-environment users were job N8, never
+done.
+
+### Backlog, low priority — running scenarios on BrowserStack
+
+*Raised 2026-10-15. Not before the demo.* Running means choosing where the
+browser opens: locally, as today, or on a BrowserStack device. The scenario,
+steps and pages stay the same. Recording stays local.
+
+- **Automate inside the tests (the part that matters).** `avviaBrowser` in
+  `scripts/lib/browser.ts` is the only place a browser is started. Behind an
+  env variable it would `chromium.connect` to BrowserStack's Playwright
+  endpoint instead of launching locally. Credentials go in `.env`
+  (`BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`). Optional: show the
+  session status and video link next to the result in the dashboard.
+- **BrowserStack Local.** A tunnel, probably needed to reach the QA
+  environment.
+- **MCP server (optional).** It gives the agent tools to read remote runs
+  (logs, video) and investigate failures. It is not needed to run tests.
+- **Check first:**
+  - The photo step. `MEDIA_FINTI` fakes the camera with Chrome launch flags,
+    which may not apply remotely or on real phones.
+  - Which Playwright versions BrowserStack supports.
+  - Whether Boots has an Automate licence (Live, which the VS Code extension
+    uses, is a different product).
+  - Whether the corporate proxy lets the WebSocket and the tunnel through.
+  - That Safari on iOS has limited Playwright support.
+- **First proof:** one clinic scenario on remote Chrome, touching only
+  `avviaBrowser`. About half a day once the Automate key is available.
 
 ---
 

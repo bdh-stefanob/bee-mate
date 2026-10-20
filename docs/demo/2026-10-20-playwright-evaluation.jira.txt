@@ -1,0 +1,131 @@
+h1. Playwright evaluation: from a manual test to an automated one
+
+{panel:title=Recommendation|borderStyle=solid|borderColor=#0E7C73|titleBGColor=#E6F4F2}
+*Adopt Playwright as the end-to-end framework, with Cucumber BDD (Gherkin) on top.*
+A recorded manual test becomes a runnable BDD scenario: Gherkin, step definitions and Page Objects. It replays on QA with its parameters and needs no hand-written automation. Two real clinic scenarios ran end to end on QA.
+{panel}
+
+h2. 1. Goal and scope
+
+The story asked for a working Playwright demo and a recommendation on adopting it.
+* *In scope:*
+** Playwright core features
+** BDD with Cucumber and Gherkin
+** codegen with real interactions
+** AI-assisted test generation
+** sample automated flows
+** this written assessment
+* *Out of scope (as per the story):*
+** full automation of production flows
+** CI/CD integration
+** performance testing
+** building a regression suite
+
+The approach we tested: *start from the manual test, not from a blank file.* The tester runs the test once in a browser and names each step in their own words. The tool generates the automation from that recording.
+
+h2. 2. What was built
+
+h3. Record, generate, run
+# *Record.* From the dashboard, the tester runs the manual test on the chosen environment and labels each step in plain words. The recording is based on Playwright codegen.
+# *Generate.* From the recording, the tool writes the {{.feature}} file in the tester's words, thin step definitions and Page Objects. Known behaviours are recognised and turned into one call to a reusable utility instead of dozens of clicks. The known behaviours so far are:
+** login
+** questionnaire
+** product choice
+** pharmacy search by postcode
+** photo
+** payment with a saved or new card
+# *Run.* Playwright replays the scenario on QA with the same parameters, as often as needed, from the dashboard or the command line.
+
+h3. Architecture (four layers)
+||Layer||Content||Rule||
+|{{features/}}|Gherkin, in the tester's words|Declarative: intent, not clicks|
+|{{steps/}}|Cucumber glue|One line per step, never a selector|
+|{{actions/}}|Business intent, reusable utilities|One behaviour, one implementation|
+|{{pages/}}|Page Objects|The only place where selectors live|
+
+Example from the Hair loss scenario:
+{code}
+When the user select the product with "Propecia" and "1 month" and "No-bundle"
+  -> scegliProdotto(page, "Propecia", "1 month", "No-bundle")
+    -> ProdottiPage.scegli() -> getByRole("button", { name: /^1 month/ })
+{code}
+
+h2. 3. Results on QA
+
+||Scenario||How it was produced||Result||
+|Weight Loss, repeat order|recorded and generated|16/16 steps green, twice in a row (15/10)|
+|Hair loss, first-time service|recorded for the first time, generated, saved|12/12 green, twice in a row (15/10); 12/12 again on 20/10|
+|Weight Loss repeat order (hand-written sentinel)|written with the utilities|7/7 green (20/10)|
+|Weight Loss, second order|recorded and generated|16/16 green (20/10, after the overlay fix in §7)|
+|Time from recording to a green run, on a third service|to be measured|[__ hours]|
+
+What made Hair loss pass was fixed *once in the generator*, and it now applies to every new recording. The fixes covered:
+* buttons without an accessible name
+* the landing page after login
+* product cards
+
+h2. 4. Exit criteria
+
+||Criterion||Status||
+|Complete demo presented to the team|Slides ready; demo on [date]|
+|Two BDD scenarios executed end to end|Done: Weight Loss and Hair loss on QA clinic|
+|Codegen demonstrated with real interactions|Done: Playwright codegen on the POC, and recording from the dashboard|
+|AI-assisted test generation shown and explained|Playwright Test Agents (planner, generator, healer) and our position, see §6|
+|Written document with outcomes, pros/cons and recommendations|This document|
+
+h2. 5. Pros and cons
+
+h3. Playwright
+||Pros||Cons / limits||
+|Auto-wait: it acts when an element is ready, so the code needs no sleeps|Its default timeouts must be tuned to a slow environment (see §7)|
+|Parallel workers and several browsers with no licence cost|Safari on real iOS devices has limited support|
+|Trace viewer: every step, DOM snapshot and network call can be replayed after a failure|-|
+|Codegen records real interactions|Raw codegen output is imperative and brittle, so we generate on top of it|
+|Network is visible to the test ({{waitForResponse}}), for example to read an order ID the user never sees|-|
+
+h3. Record-and-generate on top of Playwright
+||Pros||Cons / limits||
+|Manual testers keep writing in their own words|Phrases are not uniform: the same action can be written several ways (see §8)|
+|Hard behaviours are written once, as utilities, and reused by every recording|A new service may need a new utility the first time (as with Hair loss)|
+|Generation is deterministic: the same recording gives the same code|Test data is still fixed: one user, one saved card|
+|The repository grows with every saved recording|Generated Page Objects are one per URL, not one per concept. Planned for a later version.|
+
+h2. 6. AI-assisted generation
+
+* *What Playwright offers.* Playwright Test Agents: a *planner* explores the app and writes a test plan, a *generator* turns the plan into tests, a *healer* reruns failing tests and repairs them. Source: [Playwright docs|https://playwright.dev/docs/test-agents].
+* *Our position: AI proposes, deterministic checks decide.* Generation from a recording stays deterministic and repeatable. An agent (Kiro, or later a repair agent started from the dashboard) may propose a change. A guard reruns the affected scenarios before the change is accepted.
+* *Open point:* which test data may be sent to an AI model. This is a company decision, not a technical one.
+
+h2. 7. Lessons from running on QA
+
+{info}
+These are not Playwright defects. They are properties of a shared QA environment that the framework has to absorb.
+{info}
+* *Third-party scripts.* On 20/10 the QA brochure page did not finish loading within 30 s: Trustpilot, Awin, Clarity, Bing and Google Tag Manager were hanging. The scenarios failed at login because of a review widget. *Fix:* the test browser blocks tracking, advertising and widget domains, none of which any step uses. After the fix, Hair loss and the repeat order went green.
+* *Loading overlay.* Clinic covers the page with a loading overlay while the backend works, and on a slow QA it stays longer than 30 s. The framework waited up to 90 s, but Playwright counts that wait inside the 30 s limit of the click. *Fix:* when an environment declares an overlay, the action timeout matches the overlay wait. After the fix, the second Weight Loss order went green: 16/16 on the 20/10 rerun.
+* *Network.* QA is reached through the company network, and on some days its response times swing widely. Keep a recorded green run (report and video) as a fallback for any live demo.
+
+h2. 8. Open points
+
+||Point||Status||
+|Merging duplicate phrases in the catalog, including phrases with parameters|Rule agreed; after the demo. The code is already one: different phrases call the same utility.|
+|Test data: a fresh user per run, a typed card|Open|
+|Environments holding several apps (clinic, brochure, PIMS), config in plain text and versioned, credentials kept apart|Outlined; after the demo|
+|One order from clinic to PIMS: two scenarios in series, the order ID read from the network and passed to PIMS|Outlined; after the demo. The POC already has a similar flow (jet lag to Rx Hub).|
+|Running on BrowserStack devices|Low-priority backlog|
+|Which data may reach an AI model|Company decision|
+|CI/CD pipeline|Out of scope for this story|
+
+h2. 9. Next steps
+
+# *Measure:* manual to automated on a third clinic service, timed from the recording to a green run.
+# *Converge:* merge duplicate phrases in the catalog, so the catalog stays readable.
+# *Extend:* environments with several apps, and the clinic to PIMS flow.
+# *Deep dive:* a technical session for whoever wants the details.
+
+h2. 10. References
+
+* Slides: [From a manual test to an automated one|https://claude.ai/artifact/D4qK1vsrmyKthhMThMNyrW]
+* Repository: {{bdd-automation-scaffold}}, branch {{per-bdh}}
+* POC: {{uiautomationpwpoc}}
+* [Playwright Test Agents|https://playwright.dev/docs/test-agents]
