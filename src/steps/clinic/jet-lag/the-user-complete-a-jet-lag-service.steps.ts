@@ -7,7 +7,7 @@
 //
 // Generato da:
 //   registrazione : reports\recordings\qa-clinic.lemonaidhealth.co.uk-2026-10-21T12-55-02-371Z.json
-//   il            : 2026-10-21T13:03:49.976Z
+//   il            : 2026-10-21T14:11:21.231Z
 //
 // Togliendo il marcatore in prima riga questo file diventa tuo: la generazione
 // lo salta invece di riscriverlo.
@@ -60,9 +60,8 @@ Given("the user log in with username and password with {string}", async function
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
+ *          - the user click on Boots title and land on main page
  *          - the user click on home page button
- *          - the user click on home page button
- *          - the user log in and land on consultation history with {string}
  *          - the user log in and land on consultation history with {string}
  */
 When("the user click on Boots title and land on main page", async function (this: CustomWorld) {
@@ -82,11 +81,11 @@ When("the user click on Boots title and land on main page", async function (this
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
+ *          - the user select Jet-Lag service
  *          - the user click get started
  *          - the user click on get started
  *          - the user start the service
  *          - The user start a wright loss service
- *          - the user start the hair loss treatment
  */
 When("the user select Jet-Lag service", async function (this: CustomWorld) {
   homePage = new HomePage(this.page);
@@ -108,11 +107,11 @@ When("the user select Jet-Lag service", async function (this: CustomWorld) {
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
+ *          - the user select and confirm the propduct
  *          - the user continue
  *          - the user confirm the product and accept
- *          - the user confirm the product and accept
  *          - the user check and continue the order
- *          - the user read the imprtant info with {string}
+ *          - the user accept important info
  */
 When("the user select and confirm the propduct", async function (this: CustomWorld) {
   productsJetFPage = new ProductsJetFPage(this.page);
@@ -132,7 +131,7 @@ When("the user select and confirm the propduct", async function (this: CustomWor
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
- *          - the user confirm the product and accept
+ *          - the user accept important info
  *          - the user confirm the product and accept
  *          - the user continue
  *          - the user check and continue the order
@@ -162,9 +161,9 @@ When("the user complete the questionarie", async function (this: CustomWorld, ta
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
+ *          - the user click No on gp
  *          - the user say no to GP
  *          - the user complete the questionary
- *          - the user click on home page button
  *          - the user click on home page button
  */
 When("the user click No on gp", async function (this: CustomWorld) {
@@ -180,10 +179,10 @@ When("the user click No on gp", async function (this: CustomWorld) {
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
+ *          - the user click on pick up in store
  *          - user choos to pick up in store
  *          - the user choose pick up in store
  *          - the user select the store pharmacy to pick up with {string}
- *          - the user search in the map after insert the half postal code and select the store with {string}
  *          - the user search in the map after insert the half postal code and select the store with {string}
  */
 When("the user click on pick up in store", async function (this: CustomWorld) {
@@ -218,7 +217,7 @@ When("the user select a card on his list and confrm the payment", async function
  *
  * Formulazione presa dall'etichetta del tester, con i valori digitati portati
  * nel .feature. Da portare nel catalogo:
- *          (nessuno: serve una formulazione nuova)
+ *          - the user see the new notification and check it
  */
 When("the user see the new notification and check it", async function (this: CustomWorld) {
   orderCompleteAsyncNoCallPage = new OrderCompleteAsyncNoCallPage(this.page);

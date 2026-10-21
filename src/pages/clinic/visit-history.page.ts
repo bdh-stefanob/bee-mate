@@ -28,6 +28,7 @@ export class VisitHistoryPage extends BasePage {
 
   // ─── Componenti ────────────────────────────────────────────────────────────
   private readonly backToAccountButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Back to Account[^\p{L}\p{N}]*$/u });
+  private readonly bootsOnlineDoctorButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Boots online doctor[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -47,4 +48,11 @@ async clickBackToAccount(): Promise<void> {
 }
 
 
+
+  /**
+   * @componente  button "Boots online doctor"
+   */
+  async clickBootsOnlineDoctor(): Promise<void> {
+    await this.bootsOnlineDoctorButton.click();
+  }
 }

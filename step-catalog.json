@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T13:05:34.389Z",
+  "generatedAt": "2026-10-21T14:13:57.247Z",
   "totalSteps": 88,
   "documentedSteps": 82,
   "undocumentedSteps": 6,
@@ -428,6 +428,315 @@
           {
             "role": "button",
             "name": "That's me"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user accept important info",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "ImportantInfoPage",
+      "components": [
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above."
+        },
+        {
+          "role": "button",
+          "name": "Continue"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:140",
+      "doc": {
+        "params": {},
+        "intent": "the user accept important info",
+        "page": "ImportantInfoPage",
+        "components": [
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above."
+          },
+          {
+            "role": "button",
+            "name": "Continue"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click No on gp",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "Questions2Page",
+      "components": [
+        {
+          "role": "button",
+          "name": "No"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:169",
+      "doc": {
+        "params": {},
+        "intent": "the user click No on gp",
+        "page": "Questions2Page",
+        "components": [
+          {
+            "role": "button",
+            "name": "No"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on Boots title and land on main page",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "VisitHistoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Boots online doctor"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:67",
+      "doc": {
+        "params": {},
+        "intent": "the user click on Boots title and land on main page",
+        "page": "VisitHistoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Boots online doctor"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on pick up in store",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "PharmaciesPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Yes, pick up in store"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:188",
+      "doc": {
+        "params": {},
+        "intent": "the user click on pick up in store",
+        "page": "PharmaciesPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Yes, pick up in store"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user complete the questionarie",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:152",
+      "doc": {
+        "params": {},
+        "intent": "the user complete the questionarie",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user insert the store cap and select it on the map with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:199",
+      "doc": {
+        "params": {},
+        "intent": "the user insert the store cap and select it on the map with {string}",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user log in with username and password with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:51",
+      "doc": {
+        "params": {},
+        "intent": "the user log in with username and password with {string}",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user see the new notification and check it",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "OrderCompleteAsyncNoCallPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "92 Secure messages"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:222",
+      "doc": {
+        "params": {},
+        "intent": "the user see the new notification and check it",
+        "page": "OrderCompleteAsyncNoCallPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "92 Secure messages"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select a card on his list and confrm the payment",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:208",
+      "doc": {
+        "params": {},
+        "intent": "the user select a card on his list and confrm the payment",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select and confirm the propduct",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "ProductsJetFPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your",
+          "page": "ProductsJetFPage"
+        },
+        {
+          "role": "button",
+          "name": "continue",
+          "page": "ProductJetFPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:116",
+      "doc": {
+        "params": {},
+        "intent": "the user select and confirm the propduct",
+        "page": "ProductsJetFPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your",
+            "page": "ProductsJetFPage"
+          },
+          {
+            "role": "button",
+            "name": "continue",
+            "page": "ProductJetFPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select Jet-Lag service",
+      "parameters": [],
+      "app": "clinic",
+      "area": "jet-lag",
+      "domain": "clinic/jet-lag",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Services",
+          "page": "HomePage"
+        },
+        {
+          "role": "link",
+          "name": "Jet lag",
+          "page": "HomePage"
+        },
+        {
+          "role": "link",
+          "name": "GET STARTED",
+          "page": "JetLagPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\clinic\\jet-lag\\the-user-complete-a-jet-lag-service.steps.ts:90",
+      "doc": {
+        "params": {},
+        "intent": "the user select Jet-Lag service",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Services",
+            "page": "HomePage"
+          },
+          {
+            "role": "link",
+            "name": "Jet lag",
+            "page": "HomePage"
+          },
+          {
+            "role": "link",
+            "name": "GET STARTED",
+            "page": "JetLagPage"
           }
         ],
         "wanted": true
@@ -2442,179 +2751,6 @@
       "documented": true
     },
     {
-      "expression": "the user accept important info",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "ImportantInfoPage",
-      "components": [
-        {
-          "role": "checkbox",
-          "name": "I understand the important information above."
-        },
-        {
-          "role": "button",
-          "name": "Continue"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:141",
-      "doc": {
-        "params": {},
-        "intent": "the user accept important info",
-        "page": "ImportantInfoPage",
-        "components": [
-          {
-            "role": "checkbox",
-            "name": "I understand the important information above."
-          },
-          {
-            "role": "button",
-            "name": "Continue"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user click No on gp",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "Questions2Page",
-      "components": [
-        {
-          "role": "button",
-          "name": "No"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:170",
-      "doc": {
-        "params": {},
-        "intent": "the user click No on gp",
-        "page": "Questions2Page",
-        "components": [
-          {
-            "role": "button",
-            "name": "No"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user click on Boots title and land on main page",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "VisitHistoryPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Boots online doctor"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:68",
-      "doc": {
-        "params": {},
-        "intent": "the user click on Boots title and land on main page",
-        "page": "VisitHistoryPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Boots online doctor"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user click on pick up in store",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "PharmaciesPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Yes, pick up in store"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:189",
-      "doc": {
-        "params": {},
-        "intent": "the user click on pick up in store",
-        "page": "PharmaciesPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Yes, pick up in store"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user complete the questionarie",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:153",
-      "doc": {
-        "params": {},
-        "intent": "the user complete the questionarie",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user insert the store cap and select it on the map with {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:200",
-      "doc": {
-        "params": {},
-        "intent": "the user insert the store cap and select it on the map with {string}",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user log in with username and password with {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:51",
-      "doc": {
-        "params": {},
-        "intent": "the user log in with username and password with {string}",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
       "expression": "the user logged in",
       "parameters": [],
       "app": "generated",
@@ -2814,142 +2950,6 @@
           {
             "role": "button",
             "name": "Search"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user see the new notification and check it",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "OrderCompleteAsyncNoCallPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "92 Secure messages"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:223",
-      "doc": {
-        "params": {},
-        "intent": "the user see the new notification and check it",
-        "page": "OrderCompleteAsyncNoCallPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "92 Secure messages"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user select a card on his list and confrm the payment",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:209",
-      "doc": {
-        "params": {},
-        "intent": "the user select a card on his list and confrm the payment",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user select and confirm the propduct",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "ProductsJetFPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your",
-          "page": "ProductsJetFPage"
-        },
-        {
-          "role": "button",
-          "name": "continue",
-          "page": "ProductJetFPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:117",
-      "doc": {
-        "params": {},
-        "intent": "the user select and confirm the propduct",
-        "page": "ProductsJetFPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your",
-            "page": "ProductsJetFPage"
-          },
-          {
-            "role": "button",
-            "name": "continue",
-            "page": "ProductJetFPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user select Jet-Lag service",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "HomePage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Services",
-          "page": "HomePage"
-        },
-        {
-          "role": "link",
-          "name": "Jet lag",
-          "page": "HomePage"
-        },
-        {
-          "role": "link",
-          "name": "GET STARTED",
-          "page": "JetLagPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:91",
-      "doc": {
-        "params": {},
-        "intent": "the user select Jet-Lag service",
-        "page": "HomePage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Services",
-            "page": "HomePage"
-          },
-          {
-            "role": "link",
-            "name": "Jet lag",
-            "page": "HomePage"
-          },
-          {
-            "role": "link",
-            "name": "GET STARTED",
-            "page": "JetLagPage"
           }
         ],
         "wanted": true

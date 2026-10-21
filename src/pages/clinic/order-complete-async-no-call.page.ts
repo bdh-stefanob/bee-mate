@@ -31,6 +31,7 @@ export class OrderCompleteAsyncNoCallPage extends BasePage {
 private readonly el22Button: Locator = this.page.getByText('22', { exact: true });  // unstable: il nome e' solo un numero: e' un valore che cambia, non un'identita'
   private readonly el1SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
   private readonly el15SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
+  private readonly el92SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -72,4 +73,11 @@ async click22(): Promise<void> {
   }
 
 
+
+  /**
+   * @componente  button "92 Secure messages"
+   */
+  async click92SecureMessages(): Promise<void> {
+    await this.el92SecureMessagesButton.click();
+  }
 }
