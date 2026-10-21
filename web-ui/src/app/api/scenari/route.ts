@@ -4,6 +4,7 @@ import { riepilogaScenari } from '@/lib/scenari';
 import { precaricaFeatures } from '@/lib/cache-file';
 import { assicuraIndiceAsync, leggiEsiti, percorsoIndice, unisciEsiti } from '@/lib/esiti-scenari';
 import type { RispostaScenari } from '@/lib/esiti-tipi';
+import { leggiPrimiVerdi, percorsoPrimiVerdi } from '@/lib/cronometro';
 import { messaggiInCorso } from '@/lib/registro';
 
 /**
@@ -29,7 +30,7 @@ export async function GET() {
   await assicuraIndiceAsync(percorsoIndice(), undefined, FEATURES_DIR, messaggiInCorso());
   const lettura = leggiEsiti(percorsoIndice());
   const corpo: RispostaScenari = {
-    file: unisciEsiti(file, lettura.voci),
+    file: unisciEsiti(file, lettura.voci, leggiPrimiVerdi(percorsoPrimiVerdi())),
     soloDescritti,
     esiti: lettura.stato,
   };

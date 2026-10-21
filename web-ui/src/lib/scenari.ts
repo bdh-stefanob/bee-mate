@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { walkFeatures } from './features';
 import { improntaDiTesto } from './impronta-scenario';
+import { registrazioneDaIntestazione, type Registrazione } from './cronometro';
 import { CachePerFile, testoCondiviso, potaTestiCondivisi } from './cache-file';
 
 /**
@@ -33,6 +34,8 @@ export interface FileScenari {
    * decide se un esito salvato e' ancora valido per il file com'e' adesso.
    */
   impronta: string;
+  /** Inizio e durata della registrazione da cui e' uscito; `null` se scritto a mano. */
+  registrazione?: Registrazione | null;
 }
 
 const TAG_DOCUMENTO = '@non-automatizzato';
@@ -80,6 +83,7 @@ export function leggiScenari(testo: string, file: string): FileScenari {
     scenari,
     nonAutomatizzati,
     impronta: improntaDiTesto(testo),
+    registrazione: registrazioneDaIntestazione(testo),
   };
 }
 

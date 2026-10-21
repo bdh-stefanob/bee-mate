@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formattaQuando, formattaDurata, type Traduttore } from '@/lib/formato-quando';
+import { formattaQuando, formattaDurata, formattaDurataLunga, type Traduttore } from '@/lib/formato-quando';
 
 /** Un traduttore finto che mostra la chiave e i valori: si vede quale frase sceglie. */
 const t: Traduttore = (chiave, valori) =>
@@ -64,5 +64,19 @@ describe('formattaDurata', () => {
 
   it('esattamente un minuto', () => {
     expect(formattaDurata(60_000, 'it', td)).toBe('durataMinutiSecondi:00:1');
+  });
+});
+
+describe('formattaDurataLunga', () => {
+  it("sotto l'ora, solo minuti", () => {
+    expect(formattaDurataLunga(41 * 60_000 + 20_000, t)).toBe('durataMinuti(m=41)');
+  });
+
+  it("sopra l'ora, ore e minuti con due cifre", () => {
+    expect(formattaDurataLunga(125 * 60_000, t)).toBe('durataOreMinuti(h=2,m=05)');
+  });
+
+  it('oltre il giorno resta in ore', () => {
+    expect(formattaDurataLunga(26 * 3_600_000, t)).toBe('durataOreMinuti(h=26,m=00)');
   });
 });

@@ -5,6 +5,7 @@ import { cediIlTurno } from './cache-file';
 import { estraiVoci, type VoceEsito } from './esiti-da-messaggi';
 import type { FileScenari } from './scenari';
 import type { FileConEsiti, UltimoEsito } from './esiti-tipi';
+import { cronometroDi, percorsoPrimiVerdi, primoVerdeDi, registraPrimiVerdi } from './cronometro';
 
 /**
  * L'indice degli esiti per scenario: `reports/esiti-scenari.json`.
@@ -273,7 +274,12 @@ export function assicuraIndice(
  * piu' non si da' per buono. Le voci di scenari che non ci sono piu' (titolo
  * cambiato, file spostato) non compaiono.
  */
-export function unisciEsiti(elenco: FileScenari[], voci: VoceEsito[]): FileConEsiti[] {
+export function unisciEsiti(
+  elenco: FileScenari[],
+  voci: VoceEsito[],
+  /** Da `leggiPrimiVerdi`: senza, nessun cronometro ha ancora un verde. */
+  primiVerdi: Record<string, string> = {}
+): FileConEsiti[] {
   const perScenario = new Map<string, VoceEsito[]>();
   for (const v of voci) {
     const k = `${v.file}\u0000${v.nome}`;
@@ -296,7 +302,8 @@ export function unisciEsiti(elenco: FileScenari[], voci: VoceEsito[]): FileConEs
           aggiornato: v.impronta !== '' && v.impronta === f.impronta,
           ...(v.passoFallito ? { passoFallito: v.passoFallito } : {}),
         }));
-      return { ...s, esiti };
+      const cronometro = cronometroDi(f.registrazione ?? null, primoVerdeDi(primiVerdi, f.file, s.nome));
+      return { ...s, esiti, cronometro };
     }),
   }));
 }
@@ -332,4 +339,9 @@ export function registraEsitiDiUnaProva(prova: ProvaConclusa, radice: string = R
   const testo = fs.readFileSync(path.join(radice, prova.messaggi), 'utf-8');
   const voci = estraiVoci(testo, { ambiente: prova.ambiente, esecuzione: prova.id });
   registraEsiti(indice, voci, path.join(radice, 'src', 'features'));
+  try {
+    registraPrimiVerdi(percorsoPrimiVerdi(radice), voci);
+  } catch {
+    // Senza il primo verde il cronometro resta "nessun verde": mai un numero sbagliato.
+  }
 }

@@ -1,5 +1,6 @@
 import type { FileScenari, ScenarioEseguibile } from './scenari';
 import type { PassoFallito } from './esiti-da-messaggi';
+import type { Cronometro } from './cronometro';
 
 /**
  * I tipi della risposta di `GET /api/scenari`, senza codice: li importano sia la
@@ -25,6 +26,8 @@ export interface UltimoEsito {
 export interface ScenarioConEsiti extends ScenarioEseguibile {
   /** Uno per ambiente su cui e' stato provato, il piu' recente per primo. Vuoto = mai eseguito qui. */
   esiti: UltimoEsito[];
+  /** Dalla registrazione al primo verde; `null` per uno scenario scritto a mano. */
+  cronometro?: Cronometro | null;
 }
 
 export interface FileConEsiti extends Omit<FileScenari, 'scenari'> {

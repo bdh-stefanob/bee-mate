@@ -1,4 +1,5 @@
 import type { FileConEsiti, UltimoEsito } from './esiti-tipi';
+import type { Cronometro } from './cronometro';
 
 /**
  * L'elenco della pagina Scenari: tutto cio' che e' logica sta qui, puro, senza
@@ -63,6 +64,8 @@ export interface VoceScenario {
   flusso: string;
   stato: StatoScenario;
   categoria: Categoria;
+  /** Dalla registrazione al primo verde; `null` per uno scenario scritto a mano. */
+  cronometro: Cronometro | null;
 }
 
 export const chiaveScenario = (file: string, nome: string): string => `${file}\u0000${nome}`;
@@ -94,6 +97,7 @@ export function costruisciVoci(file: FileConEsiti[], ambiente: string | null): V
         flusso,
         stato,
         categoria: categoriaDi(stato),
+        cronometro: s.cronometro ?? null,
       });
     }
   }

@@ -43,6 +43,18 @@ export function formattaQuando(iso: string, locale: string, t: Traduttore, adess
  * `Esecuzione`, lo stesso testo che la schermata Esecuzione usa per la stessa
  * cosa.
  */
+/**
+ * Per durate lunghe, come il cronometro da registrazione a verde: i secondi non
+ * servono piu'. Sotto l'ora "41 min", sopra "2 h 05 min". Chiavi del namespace
+ * `Scenari` (`durataMinuti`, `durataOreMinuti`).
+ */
+export function formattaDurataLunga(ms: number, t: Traduttore): string {
+  const minutiTotali = Math.max(0, Math.round(ms / 60_000));
+  if (minutiTotali < 60) return t('durataMinuti', { m: minutiTotali });
+  const h = Math.floor(minutiTotali / 60);
+  return t('durataOreMinuti', { h, m: String(minutiTotali % 60).padStart(2, '0') });
+}
+
 export function formattaDurata(ms: number, locale: string, t: Traduttore): string {
   const secondiTotali = ms / 1000;
   if (secondiTotali < 60) {

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Download, Play } from 'lucide-react';
 import { GherkinLeggibile } from '@/components/GherkinLeggibile';
 import { SchedaEsito } from './SchedaEsito';
+import { RigaCronometro } from './RigaCronometro';
 import { CLASSE_AZIONE_FLESSIBILE } from './layout';
 import { useRisorsa } from '@/hooks/useRisorsa';
 import { risorsaTesto } from '@/lib/stato-scenari';
@@ -115,6 +116,7 @@ export function PannelloScenario({
       </div>
 
       <SchedaEsito stato={voce.stato} ambiente={ambiente} />
+      <RigaCronometro cronometro={voce.cronometro} />
 
       {sostituisciTesto ?? (
       <section aria-label={t('testoTitolo')} className="flex flex-col gap-2">
