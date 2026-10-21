@@ -82,7 +82,12 @@ function indentBlock(value: string, indent: string): string {
  * da un nome letto su una pagina vera. Un dato non deve poter pilotare il
  * rendering, e nemmeno farlo fallire.
  */
-export function renderString(template: string, vars: TemplateVars, source = "(stringa)"): string {
+export function renderString(rawTemplate: string, vars: TemplateVars, source = "(stringa)"): string {
+  // Un modello scaricato da git su Windows puo' avere righe CRLF: il `\r` in
+  // fondo alla riga impedisce di riconoscere un segnaposto "da solo sulla
+  // riga", e i blocchi uscivano senza rientro (21/10, metodi delle Page Object
+  // in prima colonna). Si lavora sempre in LF.
+  const template = rawTemplate.replace(/\r\n/g, "\n");
   const needed = placeholdersOf(template);
 
   // Regola 1 — nessun segnaposto senza valore.

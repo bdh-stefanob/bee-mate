@@ -83,6 +83,15 @@ expectThrow(
 }
 
 {
+  // 21/10: un modello scaricato con CRLF (git su Windows) perdeva il rientro dei
+  // blocchi, e le Page Object uscivano con i metodi in prima colonna.
+  const out = renderString("class X {\r\n    {{CORPO}}\r\n}\r\n", { CORPO: "const a = 1;\nconst b = 2;" });
+  const expected = "class X {\n    const a = 1;\n    const b = 2;\n}\n";
+  if (out === expected) ok("un modello con righe CRLF rientra i blocchi come uno LF");
+  else fail("modello CRLF", `ottenuto: ${JSON.stringify(out)}`);
+}
+
+{
   // Un blocco vuoto non deve lasciare una riga bianca a testimoniare la propria assenza.
   const out = renderString("a\n  {{VUOTO}}\nb", { VUOTO: "" });
   if (out === "a\nb") ok("blocco vuoto: sparisce anche la riga");

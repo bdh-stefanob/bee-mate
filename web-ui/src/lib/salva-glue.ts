@@ -196,19 +196,36 @@ function haMetodo(testo: string, metodo: string): boolean {
   return new RegExp(`^[ \\t]*async ${metodo}\\(`, 'm').test(testo);
 }
 
-/** Il blocco di un metodo, con il commento che lo precede, fino alla sua graffa di chiusura. */
+/**
+ * Il blocco di un metodo, con il commento che lo precede, fino alla sua graffa
+ * di chiusura, rientrato di due spazi come le Page Object salvate.
+ *
+ * Con qualunque rientro e con righe CRLF, come `haMetodo`: il 21/10 una
+ * sorgente generata su un PC con il modello in CRLF aveva i metodi in prima
+ * colonna. `haMetodo` li trovava, questa funzione no, e l'unione scriveva due
+ * righe vuote al posto di ogni metodo: la pagina restava senza, lo scenario
+ * salvato non compilava.
+ */
 function bloccoMetodo(testo: string, metodo: string): string | null {
-  const righe = testo.split('\n');
-  const inizio = righe.findIndex((r) => r.startsWith(`  async ${metodo}(`));
+  const righe = testo.split(/\r?\n/);
+  const inizio = righe.findIndex((r) => new RegExp(`^[ \\t]*async ${metodo}\\(`).test(r));
   if (inizio < 0) return null;
+  const rientro = righe[inizio].match(/^[ \t]*/)![0];
   let da = inizio;
   if (righe[inizio - 1]?.trim() === '*/') {
     while (da > 0 && !righe[da - 1].trim().startsWith('/**')) da--;
     da--;
   }
-  const fine = righe.findIndex((r, i) => i > inizio && r === '  }');
+  const fine = righe.findIndex((r, i) => i > inizio && r.trimEnd() === `${rientro}}`);
   if (fine < 0) return null;
-  return righe.slice(da, fine + 1).join('\n');
+  // Il corpo di un metodo in prima colonna puo' essere rientrato di due spazi
+  // (lo e' nel modello): si porta il blocco al rientro di classe senza toccarlo
+  // se lo e' gia'.
+  const sposta = rientro === '' ? '  ' : '';
+  return righe
+    .slice(da, fine + 1)
+    .map((r) => (r.trim() === '' ? '' : sposta + r))
+    .join('\n');
 }
 
 /** I metodi che gli step chiamano su una pagina, fra quelli che quella pagina definisce. */
@@ -229,7 +246,9 @@ function estendi(destinazione: string, sorgente: string, mancanti: string[]): st
   const nuoviMetodi: string[] = [];
   for (const m of mancanti) {
     const blocco = bloccoMetodo(sorgente, m);
-    if (!blocco) continue;
+    // Mai una pagina "estesa" senza il metodo: lo scenario salvato non
+    // compilerebbe, e lo si scoprirebbe solo lanciandolo.
+    if (!blocco) throw new Error(`Il metodo ${m} non si estrae dalla Page Object generata: salvataggio fermato.`);
     nuoviMetodi.push(blocco);
     // Ogni `this.<campo>` del metodo, non solo quelli seguiti da un punto: un
     // campo passato come argomento (`this.clickSenzaAncoraggio(this.pin)`)

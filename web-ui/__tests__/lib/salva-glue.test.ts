@@ -159,6 +159,22 @@ describe('step e Page Object seguono lo scenario salvato', () => {
     expect(leggi('pages/shop/ordini.page.ts').match(/async clickAnnullaOrdine\(/g)?.length).toBe(1);
   });
 
+  it('una sorgente con i metodi in prima colonna e righe CRLF cresce lo stesso la pagina salvata', () => {
+    // 21/10, altro PC: il modello scaricato con CRLF dava metodi senza rientro,
+    // e l'unione scriveva due righe vuote al posto di ogni metodo mancante.
+    const sorgente = ORDINI.replace(/^ {2}(\/\*\*|\*|async |\})/gm, '$1').replace(/\n/g, '\r\n');
+    const vecchia = pagina('OrdiniPage', 'ordini', [
+      ['clickDettaglio', 'dettaglioLink', "this.page.getByRole('link', { name: 'Dettaglio' })"],
+    ]).replace('generated/ordini', 'shop/ordini');
+    const r = albero({ ...BASE, 'pages/generated/ordini.page.ts': sorgente, 'pages/shop/ordini.page.ts': vecchia });
+    const piano = pianificaGlue(r, 'steps/generated/rec-1.steps.ts', 'shop', 'orders', 'x');
+    scriviGlue(piano);
+    const testo = leggi('pages/shop/ordini.page.ts');
+    expect(testo).toMatch(/async clickAnnullaOrdine\(\): Promise<void> \{\r?\n\s*await this\.annullaButton\.click\(\);/);
+    expect(testo).toContain('private readonly annullaButton: Locator');
+    expect(testo.trimEnd().endsWith('}')).toBe(true);
+  });
+
   it('un campo passato come argomento arriva con il suo metodo', () => {
     // `this.clickSenzaAncoraggio(this.pin)`: il campo non e' seguito da un
     // punto, e la pagina estesa restava con un metodo che citava un campo mai

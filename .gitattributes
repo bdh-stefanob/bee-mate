@@ -1,0 +1,3 @@
+# I modelli del generatore restano LF su ogni PC: con CRLF i blocchi perdevano il
+# rientro (21/10). Il renderer ora regge anche CRLF; questa riga evita di arrivarci.
+templates/*.tmpl text eol=lf
