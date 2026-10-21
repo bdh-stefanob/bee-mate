@@ -45,4 +45,6 @@ export class VisitHistoryPage extends BasePage {
 async clickBackToAccount(): Promise<void> {
   await this.backToAccountButton.click();
 }
+
+
 }

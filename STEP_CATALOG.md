@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-10-15T09:08:42.178Z
-Total: **82** steps (9 implemented, 73 wanted, 0 deprecated)
+Last update: 2026-10-21T13:05:34.389Z
+Total: **88** steps (9 implemented, 79 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **59/82** (72%)
+Ancorati a componenti di frontend: **66/88** (75%)
 
 ## How to use
 
@@ -644,114 +644,165 @@ L'utente e' dentro l'applicazione: con una sessione valida non fa
 
 _Source:_ `src\steps\common\accesso.steps.ts:18`
 
-## Domain: `generated` (12 steps)
+## Domain: `generated` (18 steps)
 
-### 🔧 `the user answer to the questions`
+### 🔧 `the use open the fails tab and search the ID 608623_7`
 
-the user answer to the questions
-
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:156`
-
-### 🔧 `the user check the notification and the last of the page is the new one`
-
-the user check the notification and the last of the page is the new one
+the use open the fails tab and search the ID 608623_7
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `button` "15 Secure messages"
+- `link` "Fails"
 
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:256`
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:102`
 
-### 🔧 `the user click on home page button`
+### 🔧 `the user accept important info`
 
-the user click on home page button
-
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:66`
-
-### 🔧 `the user confirm the product and accept`
-
-the user confirm the product and accept
+the user accept important info
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `button` "continue" — pagina `ProductHaiFPage`
-- `checkbox` "I understand the important information above." — pagina `ImportantInfoPage`
-- `button` "Continue" — pagina `ImportantInfoPage`
+- `checkbox` "I understand the important information above."
+- `button` "Continue"
 
 _Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:141`
 
-### 🔧 `the user log in and land on consultation history with {string}`
+### 🔧 `the user click No on gp`
 
-the user log in and land on consultation history with {string}
-
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:53`
-
-### 🔧 `the user search in the map after insert the half postal code and select the store with {string}`
-
-the user search in the map after insert the half postal code and select the store with {string}
+the user click No on gp
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `button` "Yes, pick up in store" — pagina `PharmaciesPage`
-- `textbox` "zip" — pagina `PharmacyMapSelectionPage`
-- `button` "Close" — pagina `PharmacyMapSelectionPage`
-- `button` "Select Pharmacy" — pagina `PharmacyMapSelectionPage`
+- `button` "No"
 
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:230`
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:170`
 
-### 🔧 `the user selct the card and confirm`
+### 🔧 `the user click on Boots title and land on main page`
 
-the user selct the card and confirm
-
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:242`
-
-### 🔧 `the user select the product with {string} and {string} and {string}`
-
-the user select the product with {string} and {string} and {string}
+the user click on Boots title and land on main page
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `link` "First time using this service" — pagina `HaiPage`
-- `button` "Bundle £20" — pagina `ProductsHaiFPage`
-- `button` "No-bundle £150 £51" — pagina `ProductsHaiFPage`
-- `button` "2 months" — pagina `ProductsHaiFPage`
-- `button` "1 month" — pagina `ProductsHaiFPage`
-- `button` "Select" — pagina `ProductsHaiFPage`
+- `button` "Boots online doctor"
 
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:118`
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:68`
 
-### 🔧 `the user start the hair loss treatment`
+### 🔧 `the user click on pick up in store`
 
-the user start the hair loss treatment
+the user click on pick up in store
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `link` "Hair loss" — pagina `HomePage`
-- `link` "GET STARTED" — pagina `PropeciaOnlinePage`
+- `button` "Yes, pick up in store"
 
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:87`
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:189`
 
-### 🔧 `the user submit the photo`
+### 🔧 `the user complete the questionarie`
 
-the user submit the photo
+the user complete the questionarie
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:153`
+
+### 🔧 `the user insert the store cap and select it on the map with {string}`
+
+the user insert the store cap and select it on the map with {string}
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:200`
+
+### 🔧 `the user log in with username and password with {string}`
+
+the user log in with username and password with {string}
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:51`
+
+### 🔧 `the user logged in`
+
+the user logged in
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `button` "Submit"
+- `textbox` "Email"
+- `button` "Login"
 
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:206`
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:42`
 
-### 🔧 `the user take a selphie`
+### 🔧 `the user open batch tab`
 
-the user take a selphie
-
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:165`
-
-### 🔧 `the user take the photoID`
-
-the user take the photoID
+the user open batch tab
 
 **Componenti di frontend:** _(mai confermati sulla pagina)_
-- `button` "Open camera"
-- `button` "Take Picture"
-- `button` "Save"
-- `button` "That's me"
+- `link` "Batching"
 
-_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:187`
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:59`
+
+### 🔧 `the user open rx hub tab`
+
+the user open rx hub tab
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Rx Hub"
+
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:74`
+
+### 🔧 `the user opens an appointment from the list`
+
+the user opens an appointment from the list
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Unsubscribe"
+- `link` "Appointments"
+- `link` "A 29/Nov/23 7:30 PM29/Nov/23 6:24 PMTom Jerry f971 2Depression and Anxiety - First Consultation Expired 129/Nov/23 7:26 "
+
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:118`
+
+### 🔧 `the user opens the exam section of the appointment`
+
+the user opens the exam section of the appointment
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "Exam"
+
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:133`
+
+### 🔧 `the user search LEM0000609685 on the order list`
+
+the user search LEM0000609685 on the order list
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `textbox` "Columbus ID#, Visit#"
+- `button` "Search"
+
+_Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:88`
+
+### 🔧 `the user see the new notification and check it`
+
+the user see the new notification and check it
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "92 Secure messages"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:223`
+
+### 🔧 `the user select a card on his list and confrm the payment`
+
+the user select a card on his list and confrm the payment
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:209`
+
+### 🔧 `the user select and confirm the propduct`
+
+the user select and confirm the propduct
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your" — pagina `ProductsJetFPage`
+- `button` "continue" — pagina `ProductJetFPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:117`
+
+### 🔧 `the user select Jet-Lag service`
+
+the user select Jet-Lag service
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Services" — pagina `HomePage`
+- `link` "Jet lag" — pagina `HomePage`
+- `link` "GET STARTED" — pagina `JetLagPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:91`
 
 ## Domain: `qa-brochure/weight-loss` (5 steps)
 

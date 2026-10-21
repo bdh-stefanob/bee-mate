@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-15T09:08:42.178Z",
-  "totalSteps": 82,
-  "documentedSteps": 76,
+  "generatedAt": "2026-10-21T13:05:34.389Z",
+  "totalSteps": 88,
+  "documentedSteps": 82,
   "undocumentedSteps": 6,
   "steps": [
     {
@@ -2413,22 +2413,415 @@
       "documented": true
     },
     {
-      "expression": "the user answer to the questions",
+      "expression": "the use open the fails tab and search the ID 608623_7",
       "parameters": [],
       "app": "generated",
       "area": "generated",
       "domain": "generated",
       "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:156",
+      "page": "VisitsPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Fails"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:102",
       "doc": {
         "params": {},
-        "intent": "the user answer to the questions",
+        "intent": "the use open the fails tab and search the ID 608623_7",
+        "page": "VisitsPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Fails"
+          }
+        ],
         "wanted": true
       },
       "documented": true
     },
     {
-      "expression": "the user check the notification and the last of the page is the new one",
+      "expression": "the user accept important info",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "ImportantInfoPage",
+      "components": [
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above."
+        },
+        {
+          "role": "button",
+          "name": "Continue"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:141",
+      "doc": {
+        "params": {},
+        "intent": "the user accept important info",
+        "page": "ImportantInfoPage",
+        "components": [
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above."
+          },
+          {
+            "role": "button",
+            "name": "Continue"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click No on gp",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "Questions2Page",
+      "components": [
+        {
+          "role": "button",
+          "name": "No"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:170",
+      "doc": {
+        "params": {},
+        "intent": "the user click No on gp",
+        "page": "Questions2Page",
+        "components": [
+          {
+            "role": "button",
+            "name": "No"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on Boots title and land on main page",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitHistoryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Boots online doctor"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:68",
+      "doc": {
+        "params": {},
+        "intent": "the user click on Boots title and land on main page",
+        "page": "VisitHistoryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Boots online doctor"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user click on pick up in store",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "PharmaciesPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Yes, pick up in store"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:189",
+      "doc": {
+        "params": {},
+        "intent": "the user click on pick up in store",
+        "page": "PharmaciesPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Yes, pick up in store"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user complete the questionarie",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:153",
+      "doc": {
+        "params": {},
+        "intent": "the user complete the questionarie",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user insert the store cap and select it on the map with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:200",
+      "doc": {
+        "params": {},
+        "intent": "the user insert the store cap and select it on the map with {string}",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user log in with username and password with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:51",
+      "doc": {
+        "params": {},
+        "intent": "the user log in with username and password with {string}",
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user logged in",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Email"
+        },
+        {
+          "role": "button",
+          "name": "Login"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:42",
+      "doc": {
+        "params": {},
+        "intent": "the user logged in",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Email"
+          },
+          {
+            "role": "button",
+            "name": "Login"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user open batch tab",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitsPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Batching"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:59",
+      "doc": {
+        "params": {},
+        "intent": "the user open batch tab",
+        "page": "VisitsPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Batching"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user open rx hub tab",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitsPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Rx Hub"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:74",
+      "doc": {
+        "params": {},
+        "intent": "the user open rx hub tab",
+        "page": "VisitsPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Rx Hub"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user opens an appointment from the list",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitsPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Unsubscribe"
+        },
+        {
+          "role": "link",
+          "name": "Appointments"
+        },
+        {
+          "role": "link",
+          "name": "A 29/Nov/23 7:30 PM29/Nov/23 6:24 PMTom Jerry f971 2Depression and Anxiety - First Consultation Expired 129/Nov/23 7:26 "
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:118",
+      "doc": {
+        "params": {},
+        "intent": "the user opens an appointment from the list",
+        "page": "VisitsPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Unsubscribe"
+          },
+          {
+            "role": "link",
+            "name": "Appointments"
+          },
+          {
+            "role": "link",
+            "name": "A 29/Nov/23 7:30 PM29/Nov/23 6:24 PMTom Jerry f971 2Depression and Anxiety - First Consultation Expired 129/Nov/23 7:26 "
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user opens the exam section of the appointment",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitsDetailPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "Exam"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:133",
+      "doc": {
+        "params": {},
+        "intent": "the user opens the exam section of the appointment",
+        "page": "VisitsDetailPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "Exam"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user search LEM0000609685 on the order list",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "VisitsPage",
+      "components": [
+        {
+          "role": "textbox",
+          "name": "Columbus ID#, Visit#"
+        },
+        {
+          "role": "button",
+          "name": "Search"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-lemonaidpims-co-uk.steps.ts:88",
+      "doc": {
+        "params": {},
+        "intent": "the user search LEM0000609685 on the order list",
+        "page": "VisitsPage",
+        "components": [
+          {
+            "role": "textbox",
+            "name": "Columbus ID#, Visit#"
+          },
+          {
+            "role": "button",
+            "name": "Search"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user see the new notification and check it",
       "parameters": [],
       "app": "generated",
       "area": "generated",
@@ -2438,18 +2831,18 @@
       "components": [
         {
           "role": "button",
-          "name": "15 Secure messages"
+          "name": "92 Secure messages"
         }
       ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:256",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:223",
       "doc": {
         "params": {},
-        "intent": "the user check the notification and the last of the page is the new one",
+        "intent": "the user see the new notification and check it",
         "page": "OrderCompleteAsyncNoCallPage",
         "components": [
           {
             "role": "button",
-            "name": "15 Secure messages"
+            "name": "92 Secure messages"
           }
         ],
         "wanted": true
@@ -2457,67 +2850,55 @@
       "documented": true
     },
     {
-      "expression": "the user click on home page button",
+      "expression": "the user select a card on his list and confrm the payment",
       "parameters": [],
       "app": "generated",
       "area": "generated",
       "domain": "generated",
       "status": "wanted",
-      "page": "VisitHistoryPage",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:66",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:209",
       "doc": {
         "params": {},
-        "intent": "the user click on home page button",
-        "page": "VisitHistoryPage",
+        "intent": "the user select a card on his list and confrm the payment",
         "wanted": true
       },
       "documented": true
     },
     {
-      "expression": "the user confirm the product and accept",
+      "expression": "the user select and confirm the propduct",
       "parameters": [],
       "app": "generated",
       "area": "generated",
       "domain": "generated",
       "status": "wanted",
-      "page": "ProductHaiFPage",
+      "page": "ProductsJetFPage",
       "components": [
+        {
+          "role": "button",
+          "name": "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your",
+          "page": "ProductsJetFPage"
+        },
         {
           "role": "button",
           "name": "continue",
-          "page": "ProductHaiFPage"
-        },
-        {
-          "role": "checkbox",
-          "name": "I understand the important information above.",
-          "page": "ImportantInfoPage"
-        },
-        {
-          "role": "button",
-          "name": "Continue",
-          "page": "ImportantInfoPage"
+          "page": "ProductJetFPage"
         }
       ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:141",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:117",
       "doc": {
         "params": {},
-        "intent": "the user confirm the product and accept",
-        "page": "ProductHaiFPage",
+        "intent": "the user select and confirm the propduct",
+        "page": "ProductsJetFPage",
         "components": [
+          {
+            "role": "button",
+            "name": "10 Hard Capsules £120 Melatonin 3mg Melatonin is a hormone found naturally in the body that can be used to regulate your",
+            "page": "ProductsJetFPage"
+          },
           {
             "role": "button",
             "name": "continue",
-            "page": "ProductHaiFPage"
-          },
-          {
-            "role": "checkbox",
-            "name": "I understand the important information above.",
-            "page": "ImportantInfoPage"
-          },
-          {
-            "role": "button",
-            "name": "Continue",
-            "page": "ImportantInfoPage"
+            "page": "ProductJetFPage"
           }
         ],
         "wanted": true
@@ -2525,187 +2906,7 @@
       "documented": true
     },
     {
-      "expression": "the user log in and land on consultation history with {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:53",
-      "doc": {
-        "params": {},
-        "intent": "the user log in and land on consultation history with {string}",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user search in the map after insert the half postal code and select the store with {string}",
-      "parameters": [
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "PharmaciesPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Yes, pick up in store",
-          "page": "PharmaciesPage"
-        },
-        {
-          "role": "textbox",
-          "name": "zip",
-          "page": "PharmacyMapSelectionPage"
-        },
-        {
-          "role": "button",
-          "name": "Close",
-          "page": "PharmacyMapSelectionPage"
-        },
-        {
-          "role": "button",
-          "name": "Select Pharmacy",
-          "page": "PharmacyMapSelectionPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:230",
-      "doc": {
-        "params": {},
-        "intent": "the user search in the map after insert the half postal code and select the store with {string}",
-        "page": "PharmaciesPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Yes, pick up in store",
-            "page": "PharmaciesPage"
-          },
-          {
-            "role": "textbox",
-            "name": "zip",
-            "page": "PharmacyMapSelectionPage"
-          },
-          {
-            "role": "button",
-            "name": "Close",
-            "page": "PharmacyMapSelectionPage"
-          },
-          {
-            "role": "button",
-            "name": "Select Pharmacy",
-            "page": "PharmacyMapSelectionPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user selct the card and confirm",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:242",
-      "doc": {
-        "params": {},
-        "intent": "the user selct the card and confirm",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user select the product with {string} and {string} and {string}",
-      "parameters": [
-        "{string}",
-        "{string}",
-        "{string}"
-      ],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "HaiPage",
-      "components": [
-        {
-          "role": "link",
-          "name": "First time using this service",
-          "page": "HaiPage"
-        },
-        {
-          "role": "button",
-          "name": "Bundle £20",
-          "page": "ProductsHaiFPage"
-        },
-        {
-          "role": "button",
-          "name": "No-bundle £150 £51",
-          "page": "ProductsHaiFPage"
-        },
-        {
-          "role": "button",
-          "name": "2 months",
-          "page": "ProductsHaiFPage"
-        },
-        {
-          "role": "button",
-          "name": "1 month",
-          "page": "ProductsHaiFPage"
-        },
-        {
-          "role": "button",
-          "name": "Select",
-          "page": "ProductsHaiFPage"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:118",
-      "doc": {
-        "params": {},
-        "intent": "the user select the product with {string} and {string} and {string}",
-        "page": "HaiPage",
-        "components": [
-          {
-            "role": "link",
-            "name": "First time using this service",
-            "page": "HaiPage"
-          },
-          {
-            "role": "button",
-            "name": "Bundle £20",
-            "page": "ProductsHaiFPage"
-          },
-          {
-            "role": "button",
-            "name": "No-bundle £150 £51",
-            "page": "ProductsHaiFPage"
-          },
-          {
-            "role": "button",
-            "name": "2 months",
-            "page": "ProductsHaiFPage"
-          },
-          {
-            "role": "button",
-            "name": "1 month",
-            "page": "ProductsHaiFPage"
-          },
-          {
-            "role": "button",
-            "name": "Select",
-            "page": "ProductsHaiFPage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user start the hair loss treatment",
+      "expression": "the user select Jet-Lag service",
       "parameters": [],
       "app": "generated",
       "area": "generated",
@@ -2714,128 +2915,41 @@
       "page": "HomePage",
       "components": [
         {
+          "role": "button",
+          "name": "Services",
+          "page": "HomePage"
+        },
+        {
           "role": "link",
-          "name": "Hair loss",
+          "name": "Jet lag",
           "page": "HomePage"
         },
         {
           "role": "link",
           "name": "GET STARTED",
-          "page": "PropeciaOnlinePage"
+          "page": "JetLagPage"
         }
       ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:87",
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:91",
       "doc": {
         "params": {},
-        "intent": "the user start the hair loss treatment",
+        "intent": "the user select Jet-Lag service",
         "page": "HomePage",
         "components": [
           {
+            "role": "button",
+            "name": "Services",
+            "page": "HomePage"
+          },
+          {
             "role": "link",
-            "name": "Hair loss",
+            "name": "Jet lag",
             "page": "HomePage"
           },
           {
             "role": "link",
             "name": "GET STARTED",
-            "page": "PropeciaOnlinePage"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user submit the photo",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "IdPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Submit"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:206",
-      "doc": {
-        "params": {},
-        "intent": "the user submit the photo",
-        "page": "IdPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Submit"
-          }
-        ],
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user take a selphie",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:165",
-      "doc": {
-        "params": {},
-        "intent": "the user take a selphie",
-        "wanted": true
-      },
-      "documented": true
-    },
-    {
-      "expression": "the user take the photoID",
-      "parameters": [],
-      "app": "generated",
-      "area": "generated",
-      "domain": "generated",
-      "status": "wanted",
-      "page": "IdPage",
-      "components": [
-        {
-          "role": "button",
-          "name": "Open camera"
-        },
-        {
-          "role": "button",
-          "name": "Take Picture"
-        },
-        {
-          "role": "button",
-          "name": "Save"
-        },
-        {
-          "role": "button",
-          "name": "That's me"
-        }
-      ],
-      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:187",
-      "doc": {
-        "params": {},
-        "intent": "the user take the photoID",
-        "page": "IdPage",
-        "components": [
-          {
-            "role": "button",
-            "name": "Open camera"
-          },
-          {
-            "role": "button",
-            "name": "Take Picture"
-          },
-          {
-            "role": "button",
-            "name": "Save"
-          },
-          {
-            "role": "button",
-            "name": "That's me"
+            "page": "JetLagPage"
           }
         ],
         "wanted": true

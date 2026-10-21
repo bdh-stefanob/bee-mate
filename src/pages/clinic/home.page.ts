@@ -61,4 +61,6 @@ async goToWeightLoss(): Promise<void> {
   async goToHairLoss(): Promise<void> {
     await this.hairLossLink.click();
   }
+
+
 }
