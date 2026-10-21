@@ -23,11 +23,12 @@ import { DOM_PROBE_SOURCE } from "./dom-probe";
 import { RECORDER_OVERLAY_SOURCE } from "./recorder-overlay";
 import { inventory, mergeInventories } from "./inventory";
 import { pageIdentity } from "./generate-core";
+import { annullaUltimo, elencoRegistrato, type Annullato, type VoceElenco } from "./elenco-registrazione";
 import type { Contesto, ScoutResult, SenzaAncoraggio } from "./generation-contract";
 
 /** Un evento come arriva dalla pagina, prima di diventare intento. */
 export interface RawEvent {
-  type: "ready" | "action" | "assert" | "intent" | "note" | "stop";
+  type: "ready" | "action" | "assert" | "intent" | "note" | "stop" | "annulla";
   at: number;
   url?: string;
   action?: "click" | "fill" | "set";
@@ -112,10 +113,15 @@ export async function apriRegistrazione(
    * vedrebbe "0 azioni" dopo aver fatto il login e concluderebbe che non sta
    * registrando. Il totale vero lo conosce solo questo lato.
    */
-  const counts = (): { actions: number; intents: number; assertions: number } => ({
+  // Con i totali torna anche l'elenco di cosa si e' registrato: vedi elenco-registrazione.ts.
+  const counts = (
+    annullato?: Annullato | null
+  ): { actions: number; intents: number; assertions: number; elenco: VoceElenco[]; annullato?: Annullato | null } => ({
     actions: eventi.filter((e) => e.type === "action").length,
     intents: eventi.filter((e) => e.type === "intent").length,
     assertions: eventi.filter((e) => e.type === "assert").length,
+    elenco: elencoRegistrato(eventi),
+    ...(annullato !== undefined ? { annullato } : {}),
   });
 
   await context.exposeBinding("__bddEmit", async (source, payload: string) => {
@@ -134,6 +140,7 @@ export async function apriRegistrazione(
       fermato = true;
       return counts();
     }
+    if (event.type === "annulla") return counts(annullaUltimo(eventi));
     // L'URL lo stampiglia Node, non la pagina: `page.url()` e' vero anche dopo
     // un redirect che la pagina non ha avuto tempo di raccontare. Senza, non si
     // sa a quale Page Object appartiene il gesto, e un intento che attraversa

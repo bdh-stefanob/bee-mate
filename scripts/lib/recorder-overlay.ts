@@ -40,7 +40,7 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
   if (window.__bddRecorder) return;
   if (!window.__bddProbe) return;
 
-  const state = { picking: false, actions: 0, intents: 0, assertions: 0, mode: null };
+  const state = { picking: false, actions: 0, intents: 0, assertions: 0, mode: null, elenco: [] };
 
   /**
    * Manda l'evento a Node e aggiorna i contatori con quello che Node risponde.
@@ -60,6 +60,8 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
           state.actions = counts.actions;
           state.intents = counts.intents;
           state.assertions = counts.assertions;
+          state.elenco = counts.elenco || [];
+          if (counts.annullato !== undefined) avvisaAnnullato(counts.annullato);
           refresh();
         }).catch(function () { /* pagina in navigazione */ });
       }
@@ -117,6 +119,16 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     'input:focus{outline:2px solid #2563eb;border-color:#2563eb}',
     '.min{background:transparent;color:#6b7280;flex:0 0 auto;padding:2px 6px;font-size:14px}',
     '.bar.collapsed .body{display:none}',
+    '.list{list-style:none;margin:0;padding:0;max-height:220px;overflow:auto;max-width:300px;',
+    'display:none;flex-direction:column;gap:3px;border-top:1px solid #374151;padding-top:6px}',
+    '.list.on{display:flex}',
+    '.list li{font:12px system-ui,sans-serif;line-height:1.35;color:#e5e7eb;overflow-wrap:anywhere}',
+    '.list li.verifica,.list li.nota{padding-left:16px;color:#a7f3d0}',
+    '.list li.nota{color:#d1d5db;font-style:italic}',
+    '.list li.in-corso{color:#fbbf24}',
+    '.list .n{color:#9ca3af}',
+    '.esito{font:11px system-ui,sans-serif;color:#a7f3d0;text-align:center;display:none;max-width:260px;line-height:1.4}',
+    '.esito.on{display:block}',
     '</style>',
     '<div class="bar" id="bar">',
     '  <div class="grip" id="grip">= = =</div>',
@@ -136,6 +148,12 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     '    </div>',
     '    <div class="row"><button id="stop" class="stop">Fine registrazione</button></div>',
     '    <div class="count" id="count">0 azioni · 0 intenti · 0 verifiche</div>',
+    '    <div class="row">',
+    '      <button id="mostra">Mostra elenco</button>',
+    '      <button id="annulla">Annulla ultimo</button>',
+    '    </div>',
+    '    <div class="esito" id="esito" role="status"></div>',
+    '    <ol class="list" id="list"></ol>',
     '    <div class="hint" id="hint">Clicca cio che dimostra che e andata bene: un titolo, un messaggio, un totale</div>',
     '  </div>',
     '</div>',
@@ -157,9 +175,61 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     if (h) h.textContent = testo;
   }
 
+  /**
+   * Cosa e' stato registrato finora, in ordine. Costruito con textContent: le
+   * frasi e i testi verificati vengono dalla pagina e dal tester, e non devono
+   * mai diventare HTML.
+   */
+  function disegnaElenco() {
+    const list = $('list');
+    list.textContent = '';
+    let n = 0;
+    for (const v of state.elenco) {
+      const li = document.createElement('li');
+      li.className = v.tipo;
+      if (v.tipo === 'passo') {
+        n++;
+        li.textContent = '✓ ' + n + '. ' + v.testo + ' ';
+        const s = document.createElement('span');
+        s.className = 'n';
+        s.textContent = '(' + v.azioni + (v.azioni === 1 ? ' azione)' : ' azioni)');
+        li.appendChild(s);
+      } else if (v.tipo === 'verifica') {
+        li.textContent = '☑ verifica: «' + v.testo + '»';
+      } else if (v.tipo === 'nota') {
+        li.textContent = 'nota: ' + v.testo;
+      } else {
+        li.textContent = '… passo in corso (' + v.azioni + (v.azioni === 1 ? ' azione' : ' azioni') + ', non ancora chiuso)';
+      }
+      list.appendChild(li);
+    }
+    if (state.elenco.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'n';
+      li.textContent = 'Ancora niente di registrato';
+      list.appendChild(li);
+    }
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function avvisaAnnullato(annullato) {
+    const e = $('esito');
+    e.textContent = !annullato
+      ? 'Niente da annullare: ci sono solo azioni'
+      : annullato.tipo === 'passo'
+        ? 'Riaperto il passo «' + annullato.testo + '»: le sue azioni tornano nel passo in corso'
+        : annullato.tipo === 'verifica'
+          ? 'Tolta la verifica «' + annullato.testo + '»'
+          : 'Tolta la nota «' + annullato.testo + '»';
+    e.classList.add('on');
+    clearTimeout(avvisaAnnullato.timer);
+    avvisaAnnullato.timer = setTimeout(() => e.classList.remove('on'), 5000);
+  }
+
   function refresh() {
     $('count').textContent =
       state.actions + ' azioni · ' + state.intents + ' intenti · ' + state.assertions + ' verifiche';
+    disegnaElenco();
     $('assert').classList.toggle('active', state.picking);
     $('hint').classList.toggle('on', state.picking);
   }
@@ -214,6 +284,24 @@ export const RECORDER_OVERLAY_SOURCE = String.raw`
     state.picking = !state.picking;
     suggerisci(SUGGERIMENTO);
     refresh();
+  });
+
+  // Aperto o chiuso resta tale cambiando pagina, come la posizione della barra.
+  let elencoAperto = false;
+  try { elencoAperto = sessionStorage.getItem('__bdd_elenco') === '1'; } catch (e) { /* niente */ }
+  function applicaElenco() {
+    $('list').classList.toggle('on', elencoAperto);
+    $('mostra').textContent = elencoAperto ? 'Nascondi elenco' : 'Mostra elenco';
+  }
+  applicaElenco();
+  $('mostra').addEventListener('click', () => {
+    elencoAperto = !elencoAperto;
+    try { sessionStorage.setItem('__bdd_elenco', elencoAperto ? '1' : '0'); } catch (e) { /* niente */ }
+    applicaElenco();
+  });
+
+  $('annulla').addEventListener('click', () => {
+    emit({ type: 'annulla', at: Date.now() });
   });
 
   $('stop').addEventListener('click', () => {
