@@ -139,6 +139,8 @@ const KIRO_INCLUSION: Record<string, string[]> = {
   // Le trappole gia' pagate sono quasi tutte di codice: servono quando se ne
   // scrive, in scripts/ come in src/.
   "lezioni.md": ["inclusion: fileMatch", "fileMatchPattern: '**/*.ts'"],
+  // Come si corregge uno scenario fallito: quando si apre il suo dossier.
+  "dopo-un-fallimento.md": ["inclusion: fileMatch", "fileMatchPattern: 'reports/failures/**'"],
 };
 
 /** Default per un file nuovo non ancora mappato: meglio caricarlo sempre che mai. */
