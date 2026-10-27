@@ -18,7 +18,7 @@ import { scattaFoto } from "../../../actions/foto.actions";
  * @param   email L'utenza; la password viene dall'ambiente.
  */
 Given("the patient is logged into clinic as {string}", async function (this: CustomWorld, email: string) {
-  await accediAClinic(this.page, email, this.passwordAmbiente());
+  await accediAClinic(this.page, email, this.passwordAmbiente(email));
 });
 
 /** @intent Avvia Weight Loss come paziente di ritorno, fino al questionario. */

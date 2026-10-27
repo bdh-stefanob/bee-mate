@@ -980,7 +980,7 @@ console.log("\n--- dopo l'accesso, e un clic senza nome che cambia pagina (Hair 
   } as unknown as Recording;
   const r = resolveRecording(registrazione, indexDictionaries([]), { catalog: [] });
   eq("l'accesso porta dove la registrazione e' arrivata", r.intents[0]?.utility?.argomentiDalMondo, [
-    "this.passwordAmbiente()",
+    "this.passwordAmbiente($1)",
     '"/account/visit-history"',
   ]);
   const ctx = {
@@ -988,6 +988,11 @@ console.log("\n--- dopo l'accesso, e un clic senza nome che cambia pagina (Hair 
     durationSeconds: 0, generatedAt: "", slug: "logo", outRoot: "src",
   };
   const glue = emitSteps(ctx, r.pages, new Map() as never).contents;
+  eq(
+    "la password dell'accesso e' quella dell'email dello scenario",
+    glue.includes("this.passwordAmbiente(valore1)"),
+    true
+  );
   const i = glue.indexOf('("the user click on home page button"');
   const logo = i < 0 ? "" : glue.slice(i, glue.indexOf("\n});", i));
   eq(

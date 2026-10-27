@@ -13,7 +13,7 @@
 
 import * as path from "path";
 import type { Target } from "./targets";
-import { accessoRegistrato, ambientiIncompleti, passwordDelBersaglio } from "./targets";
+import { accessoRegistrato, ambientiIncompleti, passwordDelBersaglio, passwordDellUtenza } from "./targets";
 
 let failures = 0;
 const ok = (w: string): void => console.log(`OK   ${w}`);
@@ -80,6 +80,20 @@ eq(
   passwordDelBersaglio(conLogin("${CHECK_VARIABILE_INESISTENTE}", { selector: "#password" })),
   undefined
 );
+
+console.log("\n--- la password e' quella dell'utenza dello scenario ---\n");
+
+// 21/10: lo scenario Jet Lag registrato con +qa2 girava su un PC la cui password
+// d'ambiente era quella di +22. Login fallito (e il sito blocca dopo 6), e con
+// +22 il percorso cambia comunque. La password si cerca per l'email.
+process.env["CHECK_PWD_QA2"] = "pwd-qa2";
+const conUtenze = bersaglio({
+  utenze: { "Paziente+QA2@esempio.invalid": "${CHECK_PWD_QA2}", "vuota@esempio.invalid": "${CHECK_VARIABILE_INESISTENTE}" },
+});
+eq("l'email trova la sua password, senza badare alle maiuscole", passwordDellUtenza(conUtenze, "paziente+qa2@esempio.invalid"), { stato: "trovata", password: "pwd-qa2" });
+eq("un'email fuori elenco lo dice, invece di provare un'altra password", passwordDellUtenza(conUtenze, "altro@esempio.invalid"), { stato: "non-in-elenco" });
+eq("una variabile mancante lo dice, invece di dare una password vuota", passwordDellUtenza(conUtenze, "vuota@esempio.invalid"), { stato: "variabile-vuota" });
+eq("senza elenco di utenze vale la password dell'ambiente, come prima", passwordDellUtenza(bersaglio({}), "x@esempio.invalid"), { stato: "nessun-elenco" });
 
 console.log("\n--- F3: un ambiente con variabili mancanti non e' pronto, e si dice quali ---\n");
 

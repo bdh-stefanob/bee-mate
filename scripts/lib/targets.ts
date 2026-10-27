@@ -123,6 +123,13 @@ export interface Target {
    */
   login?: LoginRecipe;
   /**
+   * Le utenze di questo ambiente: email -> password, con la password come
+   * ${VARIABILE} da .env. Uno scenario registrato percorre la strada della sua
+   * utenza (identita' gia' verificata o no, ordini precedenti): gira con la
+   * sua email e quindi con la SUA password, non con quella dell'ambiente.
+   */
+  utenze?: Record<string, string>;
+  /**
    * L'ambiente e' di collaudo — MAI presunto da nome o indirizzo (N10, difesa 2
    * del collaudo da copione). Lo scrive la persona che amministra l'ambiente,
    * sapendo che non e' produzione: ne' il copione ne' il codice possono
@@ -236,6 +243,7 @@ export function loadTargets(file = CONFIG): Target[] {
         ...(t.hint ? { hint: t.hint } : {}),
         ...(typeof t.velo === "string" && t.velo.trim() ? { velo: t.velo.trim() } : {}),
         ...(t.login ? { login: t.login as LoginRecipe } : {}),
+        ...(t.utenze && typeof t.utenze === "object" ? { utenze: t.utenze as Record<string, string> } : {}),
         // Booleani: MAI presunti. Si copia solo `=== true` esplicito, cosi' un
         // valore scritto per sbaglio come stringa ("true") o assente resta "non
         // di collaudo" invece di passare per caso (difesa 2).
@@ -301,6 +309,24 @@ export function passwordDelBersaglio(target: Target): string | undefined {
   );
   const valore = passo?.value !== undefined ? expand(passo.value) : "";
   return valore || undefined;
+}
+
+export type PasswordUtenza =
+  | { stato: "trovata"; password: string }
+  /** L'ambiente non ha un elenco di utenze: vale la password del suo login. */
+  | { stato: "nessun-elenco" }
+  /** C'e' un elenco, e quell'email non c'e': non si prova un'altra password. */
+  | { stato: "non-in-elenco" }
+  /** La ${VARIABILE} di quell'email manca o e' vuota in .env. */
+  | { stato: "variabile-vuota" };
+
+/** La password dell'utenza `email` su questo ambiente. L'email si confronta senza maiuscole. */
+export function passwordDellUtenza(target: Target, email: string): PasswordUtenza {
+  if (!target.utenze) return { stato: "nessun-elenco" };
+  const voce = Object.entries(target.utenze).find(([e]) => e.trim().toLowerCase() === email.trim().toLowerCase());
+  if (!voce) return { stato: "non-in-elenco" };
+  const password = expand(voce[1]);
+  return password ? { stato: "trovata", password } : { stato: "variabile-vuota" };
 }
 
 /** La sessione esiste ed e' leggibile? */

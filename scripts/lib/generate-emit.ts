@@ -553,6 +553,11 @@ export function frasiDiIntento(intent: ResolvedIntent): {
   };
 }
 
+/** Gli argomenti "dal mondo" di una utility, con `$1` sostituito dal nome del suo primo parametro. */
+function dalMondo(argomenti: readonly string[] | undefined, parametri: readonly string[]): string[] {
+  return (argomenti ?? []).map((a) => a.replace("$1", parametri[0] ?? ""));
+}
+
 function keywordOf(index: number): "Given" | "When" {
   return index === 0 ? "Given" : "When";
 }
@@ -622,7 +627,7 @@ export function emitSteps(
       const u = intent.utility;
       const frasiU = frasiDiIntento(intent);
       importUtility.add(`import { ${u.funzione} } from "${importDaSrc(ctx.outRoot, u.modulo)}";`);
-      const argomenti = [...frasiU.parametri, ...(u.argomentiDalMondo ?? []), ...(u.tabella ? ["tabella.raw()"] : [])];
+      const argomenti = [...frasiU.parametri, ...dalMondo(u.argomentiDalMondo, frasiU.parametri), ...(u.tabella ? ["tabella.raw()"] : [])];
       const firma = frasiU.parametri.map((p) => `, ${p}: string`).join("") + (u.tabella ? ", tabella: DataTable" : "");
       if (!seenPhrases.has(frasiU.espressione)) {
         seenPhrases.add(frasiU.espressione);
@@ -733,7 +738,7 @@ export function emitSteps(
         const nomi = frasi.parametri.slice(prossimoParametro, prossimoParametro + u.parametri.length);
         prossimoParametro += u.parametri.length;
         if (u.tabella) haTabella = true;
-        const argomenti = [...nomi, ...(u.argomentiDalMondo ?? []), ...(u.tabella ? ["tabella.raw()"] : [])];
+        const argomenti = [...nomi, ...dalMondo(u.argomentiDalMondo, nomi), ...(u.tabella ? ["tabella.raw()"] : [])];
         lines.push(`await ${u.funzione}(this.page${argomenti.map((a) => `, ${a}`).join("")});`);
       }
     } else if (rip) {

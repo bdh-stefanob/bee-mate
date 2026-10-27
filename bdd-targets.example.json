@@ -7,7 +7,9 @@
     "Il blocco 'login' e' facoltativo: senza, si accede a mano una volta e la sessione si salva.",
     "collaudo/produzione/pubblico (N10): MAI presunti da nome o indirizzo. Li scrive la persona",
     "che amministra l'ambiente. Un copione gira solo contro collaudo:true; produzione:true lo",
-    "rifiuta subito anche insieme a collaudo:true. pubblico:true salta la conferma umana (difesa 5)."
+    "rifiuta subito anche insieme a collaudo:true. pubblico:true salta la conferma umana (difesa 5).",
+    "'utenze' (facoltativo): email -> password come ${VARIABILE}. Uno scenario accede con la password",
+    "della SUA email (un'altra utenza fa un'altra strada); un'email fuori elenco lo ferma prima del login."
   ],
 
   "demo": {
@@ -49,6 +51,10 @@
         { "fill": { "selector": "[formcontrolname=password]" }, "value": "${APP_A_PASS}" },
         { "click": { "selector": "#login-button" } }
       ]
+    },
+    "utenze": {
+      "utente.uno@esempio.invalid": "${APP_A_PASS}",
+      "utente.due@esempio.invalid": "${APP_A_PASS_DUE}"
     },
     "hint": "se compare la MFA, inserisci il codice a mano: la sessione si salva appena entri"
   },

@@ -34,7 +34,11 @@ export interface UtilityRiconosciuta {
   parametri: string[];
   /** Righe della tabella Gherkin sotto lo step, intestazione compresa. */
   tabella?: string[][];
-  /** Argomenti che vengono dallo scenario, non dalla registrazione (la password). */
+  /**
+   * Argomenti che vengono dallo scenario, non dalla registrazione (la password).
+   * `$1` sta per il primo parametro della utility: la password si chiede per
+   * l'email dello scenario, non per l'ambiente.
+   */
   argomentiDalMondo?: string[];
 }
 
@@ -169,13 +173,15 @@ const QUESTIONARIO: Utility = {
 // sito porta a volte all'account, a volte allo storico delle consultazioni
 // (dipende dagli ordini dell'utenza): la utility riporta sempre all'account,
 // dove la registrazione proseguiva (prova del 15/10). La password non e' mai
-// nella registrazione: la chiede l'ambiente.
+// nella registrazione: la chiede l'ambiente, per l'email dello scenario (21/10:
+// un'altra utenza prende un'altra strada, e con la password sbagliata il sito
+// blocca l'account dopo 6 tentativi).
 const ACCESSO = perComponenti(
   {
     nome: "accesso",
     modulo: "actions/servizio-weight-loss.actions",
     funzione: "accediAClinic",
-    argomentiDalMondo: ["this.passwordAmbiente()"],
+    argomentiDalMondo: ["this.passwordAmbiente($1)"],
   },
   [
     (g) => g.role === "textbox" && g.name === "Email" && g.action === "fill",

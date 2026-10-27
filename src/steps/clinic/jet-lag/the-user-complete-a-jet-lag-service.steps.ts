@@ -49,7 +49,7 @@ let orderCompleteAsyncNoCallPage: OrderCompleteAsyncNoCallPage;
  * @wanted
  */
 Given("the user log in with username and password with {string}", async function (this: CustomWorld, valore1: string) {
-  await accediAClinic(this.page, valore1, this.passwordAmbiente(), "/account/visit-history");
+  await accediAClinic(this.page, valore1, this.passwordAmbiente(valore1), "/account/visit-history");
 });
 
 /**

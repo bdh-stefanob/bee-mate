@@ -12,7 +12,7 @@ import { registraAvvisi } from "./avvisi";
 import { bloccaTerzeParti } from "./terze-parti";
 import { loadEnv } from "../../scripts/lib/atlassian";
 import {
-  resolveTarget, hasSession, sessionAgeHours, passwordDelBersaglio, type Target,
+  resolveTarget, hasSession, sessionAgeHours, passwordDelBersaglio, passwordDellUtenza, type Target,
 } from "../../scripts/lib/targets";
 
 // Una sola implementazione del lettore di .env in tutto il progetto: due copie
@@ -196,8 +196,27 @@ export class CustomWorld extends World {
    * scritto in `.env`. `APP_PASSWORD` resta solo come ripiego per un indirizzo
    * diretto, dove non c'e' nessun ambiente.
    */
-  passwordAmbiente(): string {
+  passwordAmbiente(email?: string): string {
     const nome = process.env["BDD_TARGET"];
+    // Con l'email dello scenario, e un elenco di utenze sull'ambiente, vale la
+    // password di QUELLA utenza (21/10, vedi `utenze` in targets.ts). Se non
+    // c'e', ci si ferma PRIMA di provare il login: una password sbagliata
+    // avvicina il blocco dell'account, e un'altra utenza farebbe un'altra strada.
+    if (email && nome) {
+      const utenza = passwordDellUtenza(resolveTarget(nome), email);
+      if (utenza.stato === "trovata") return utenza.password;
+      if (utenza.stato === "non-in-elenco") {
+        throw new Error(
+          `Sull'ambiente "${nome}" non c'e' la password di ${email}: nessun tentativo di accesso fatto.\n` +
+            `  Aggiungila in bdd-targets.json, sotto "utenze" di "${nome}", come ${"${VARIABILE}"} definita in .env.`
+        );
+      }
+      if (utenza.stato === "variabile-vuota") {
+        throw new Error(
+          `La password di ${email} su "${nome}" richiama una variabile assente o vuota in .env: nessun tentativo di accesso fatto.`
+        );
+      }
+    }
     const dallAmbiente = nome ? passwordDelBersaglio(resolveTarget(nome)) : undefined;
     const valore = dallAmbiente ?? process.env["APP_PASSWORD"];
     if (!valore) {

@@ -191,7 +191,7 @@ const accesso = utilityDelPasso([
 ]);
 eq("brochure, email, password, Log In: l'accesso, completo", [accesso?.nome, accesso?.completa], ["accesso", true]);
 eq("l'email diventa il parametro, la password mai", accesso?.parametri, ["paziente@esempio.invalid"]);
-eq("la password la chiede l'ambiente", accesso?.argomentiDalMondo, ["this.passwordAmbiente()"]);
+eq("la password la chiede l'ambiente, per l'email dello scenario", accesso?.argomentiDalMondo, ["this.passwordAmbiente($1)"]);
 
 console.log("\n--- solo su clinic ---\n");
 const FINTA = "http://127.0.0.1:4321/questions/1";
