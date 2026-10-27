@@ -1,6 +1,9 @@
 # Ambienti, app, utenze (ENV → APPS → UTENZE)
 
-*Spec del 2026-10-27. Stato: da approvare. Fase 1 del piano del 27/10.*
+*Spec del 2026-10-27. Stato: approvata da Stefano il 27/10 ("dobbiamo essere il più
+rapidi"). Fase 1 del piano del 27/10. Risposte: PIMS su staging è
+`staging.lemonaidpims.co.uk`; le utenze di staging sono diverse da quelle di QA e le
+aggiunge Stefano; i nomi degli ambienti sono `qa` e `staging`.*
 
 ## 1. Il problema
 
