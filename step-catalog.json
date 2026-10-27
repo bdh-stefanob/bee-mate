@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-21T14:13:57.247Z",
-  "totalSteps": 88,
-  "documentedSteps": 82,
+  "generatedAt": "2026-10-27T10:27:36.608Z",
+  "totalSteps": 95,
+  "documentedSteps": 89,
   "undocumentedSteps": 6,
   "steps": [
     {
@@ -2722,6 +2722,99 @@
       "documented": true
     },
     {
+      "expression": "th user pick up in store and selct a store with {string}",
+      "parameters": [
+        "{string}"
+      ],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "Questions1Page",
+      "components": [
+        {
+          "role": "button",
+          "name": "Less than 3 months",
+          "page": "Questions1Page"
+        },
+        {
+          "role": "button",
+          "name": "Next",
+          "page": "Questions1Page"
+        },
+        {
+          "role": "button",
+          "name": "Less than 7 hours",
+          "page": "Questions2Page"
+        },
+        {
+          "role": "button",
+          "name": "Next",
+          "page": "Questions2Page"
+        },
+        {
+          "role": "button",
+          "name": "Yes, pick up in store",
+          "page": "PharmaciesPage"
+        },
+        {
+          "role": "textbox",
+          "name": "zip",
+          "page": "PharmacyMapSelectionPage"
+        },
+        {
+          "role": "button",
+          "name": "Select Pharmacy",
+          "page": "PharmacyMapSelectionPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:160",
+      "doc": {
+        "params": {},
+        "intent": "th user pick up in store and selct a store with {string}",
+        "page": "Questions1Page",
+        "components": [
+          {
+            "role": "button",
+            "name": "Less than 3 months",
+            "page": "Questions1Page"
+          },
+          {
+            "role": "button",
+            "name": "Next",
+            "page": "Questions1Page"
+          },
+          {
+            "role": "button",
+            "name": "Less than 7 hours",
+            "page": "Questions2Page"
+          },
+          {
+            "role": "button",
+            "name": "Next",
+            "page": "Questions2Page"
+          },
+          {
+            "role": "button",
+            "name": "Yes, pick up in store",
+            "page": "PharmaciesPage"
+          },
+          {
+            "role": "textbox",
+            "name": "zip",
+            "page": "PharmacyMapSelectionPage"
+          },
+          {
+            "role": "button",
+            "name": "Select Pharmacy",
+            "page": "PharmacyMapSelectionPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
       "expression": "the use open the fails tab and search the ID 608623_7",
       "parameters": [],
       "app": "generated",
@@ -2744,6 +2837,109 @@
           {
             "role": "link",
             "name": "Fails"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user accept important info",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "ImportantInfoPage",
+      "components": [
+        {
+          "role": "checkbox",
+          "name": "I understand the important information above."
+        },
+        {
+          "role": "button",
+          "name": "Continue"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:132",
+      "doc": {
+        "params": {},
+        "intent": "the user accept important info",
+        "page": "ImportantInfoPage",
+        "components": [
+          {
+            "role": "checkbox",
+            "name": "I understand the important information above."
+          },
+          {
+            "role": "button",
+            "name": "Continue"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user check notification",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "OrderCompleteAsyncNoCallPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "16 Secure messages"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:198",
+      "doc": {
+        "params": {},
+        "intent": "the user check notification",
+        "page": "OrderCompleteAsyncNoCallPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "16 Secure messages"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user comple the card assignemnt",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "SummaryPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "....0005 Expiry 07/29"
+        },
+        {
+          "role": "button",
+          "name": "Save & continue"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:181",
+      "doc": {
+        "params": {},
+        "intent": "the user comple the card assignemnt",
+        "page": "SummaryPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "....0005 Expiry 07/29"
+          },
+          {
+            "role": "button",
+            "name": "Save & continue"
           }
         ],
         "wanted": true
@@ -2950,6 +3146,127 @@
           {
             "role": "button",
             "name": "Search"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select a product",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "ProductsInsFPage",
+      "components": [
+        {
+          "role": "button",
+          "name": "30 Tablets £85 Quviviq 25mg Quviviq is an oral tablet used to treat chronic insomnia (long-term sleeping difficulties) t",
+          "page": "ProductsInsFPage"
+        },
+        {
+          "role": "button",
+          "name": "continue",
+          "page": "ProductInsFPage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:108",
+      "doc": {
+        "params": {},
+        "intent": "the user select a product",
+        "page": "ProductsInsFPage",
+        "components": [
+          {
+            "role": "button",
+            "name": "30 Tablets £85 Quviviq 25mg Quviviq is an oral tablet used to treat chronic insomnia (long-term sleeping difficulties) t",
+            "page": "ProductsInsFPage"
+          },
+          {
+            "role": "button",
+            "name": "continue",
+            "page": "ProductInsFPage"
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select i'am new",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "InsPage",
+      "components": [
+        {
+          "role": "link",
+          "name": "I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment..."
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:86",
+      "doc": {
+        "params": {},
+        "intent": "the user select i'am new",
+        "page": "InsPage",
+        "components": [
+          {
+            "role": "link",
+            "name": "I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment..."
+          }
+        ],
+        "wanted": true
+      },
+      "documented": true
+    },
+    {
+      "expression": "the user select insomnia treatment",
+      "parameters": [],
+      "app": "generated",
+      "area": "generated",
+      "domain": "generated",
+      "status": "wanted",
+      "page": "HomePage",
+      "components": [
+        {
+          "role": "button",
+          "name": "Services",
+          "page": "HomePage"
+        },
+        {
+          "role": "link",
+          "name": "Insomnia",
+          "page": "HomePage"
+        },
+        {
+          "role": "link",
+          "name": "Get started",
+          "page": "InsomniaServicePage"
+        }
+      ],
+      "sourceRef": "src\\steps\\generated\\qa-clinic-lemonaidhealth-co-uk.steps.ts:62",
+      "doc": {
+        "params": {},
+        "intent": "the user select insomnia treatment",
+        "page": "HomePage",
+        "components": [
+          {
+            "role": "button",
+            "name": "Services",
+            "page": "HomePage"
+          },
+          {
+            "role": "link",
+            "name": "Insomnia",
+            "page": "HomePage"
+          },
+          {
+            "role": "link",
+            "name": "Get started",
+            "page": "InsomniaServicePage"
           }
         ],
         "wanted": true

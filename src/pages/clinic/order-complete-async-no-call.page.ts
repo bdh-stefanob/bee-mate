@@ -32,6 +32,7 @@ private readonly el22Button: Locator = this.page.getByText('22', { exact: true }
   private readonly el1SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
   private readonly el15SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
   private readonly el92SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
+  private readonly el16SecureMessagesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\d+ Secure messages[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -79,5 +80,12 @@ async click22(): Promise<void> {
    */
   async click92SecureMessages(): Promise<void> {
     await this.el92SecureMessagesButton.click();
+  }
+
+  /**
+   * @componente  button "16 Secure messages"
+   */
+  async click16SecureMessages(): Promise<void> {
+    await this.el16SecureMessagesButton.click();
   }
 }

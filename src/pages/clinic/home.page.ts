@@ -32,6 +32,7 @@ export class HomePage extends BasePage {
   private readonly hairLossLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Hair loss[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Hair loss[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
   private readonly servicesButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Services[^\p{L}\p{N}]*$/u });
   private readonly jetLagLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Jet lag[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Jet lag[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
+  private readonly insomniaLink: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*Insomnia[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*Insomnia[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -78,5 +79,12 @@ async goToWeightLoss(): Promise<void> {
    */
   async goToJetLag(): Promise<void> {
     await this.jetLagLink.click();
+  }
+
+  /**
+   * @componente  link "Insomnia"
+   */
+  async goToInsomnia(): Promise<void> {
+    await this.insomniaLink.click();
   }
 }

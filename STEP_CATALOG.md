@@ -4,10 +4,10 @@
 > Source of truth: the step definitions in the code. Regenerated on
 > every build. To change a step, change the code.
 
-Last update: 2026-10-21T14:13:57.247Z
-Total: **88** steps (9 implemented, 79 wanted, 0 deprecated)
+Last update: 2026-10-27T10:27:36.608Z
+Total: **95** steps (9 implemented, 86 wanted, 0 deprecated)
 
-Ancorati a componenti di frontend: **66/88** (75%)
+Ancorati a componenti di frontend: **73/95** (77%)
 
 ## How to use
 
@@ -737,7 +737,22 @@ L'utente e' dentro l'applicazione: con una sessione valida non fa
 
 _Source:_ `src\steps\common\accesso.steps.ts:18`
 
-## Domain: `generated` (7 steps)
+## Domain: `generated` (14 steps)
+
+### 🔧 `th user pick up in store and selct a store with {string}`
+
+th user pick up in store and selct a store with {string}
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Less than 3 months" — pagina `Questions1Page`
+- `button` "Next" — pagina `Questions1Page`
+- `button` "Less than 7 hours" — pagina `Questions2Page`
+- `button` "Next" — pagina `Questions2Page`
+- `button` "Yes, pick up in store" — pagina `PharmaciesPage`
+- `textbox` "zip" — pagina `PharmacyMapSelectionPage`
+- `button` "Select Pharmacy" — pagina `PharmacyMapSelectionPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:160`
 
 ### 🔧 `the use open the fails tab and search the ID 608623_7`
 
@@ -747,6 +762,35 @@ the use open the fails tab and search the ID 608623_7
 - `link` "Fails"
 
 _Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:102`
+
+### 🔧 `the user accept important info`
+
+the user accept important info
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `checkbox` "I understand the important information above."
+- `button` "Continue"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:132`
+
+### 🔧 `the user check notification`
+
+the user check notification
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "16 Secure messages"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:198`
+
+### 🔧 `the user comple the card assignemnt`
+
+the user comple the card assignemnt
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "....0005 Expiry 07/29"
+- `button` "Save & continue"
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:181`
 
 ### 🔧 `the user logged in`
 
@@ -805,6 +849,36 @@ the user search LEM0000609685 on the order list
 - `button` "Search"
 
 _Source:_ `src\steps\generated\qa-lemonaidpims-co-uk.steps.ts:88`
+
+### 🔧 `the user select a product`
+
+the user select a product
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "30 Tablets £85 Quviviq 25mg Quviviq is an oral tablet used to treat chronic insomnia (long-term sleeping difficulties) t" — pagina `ProductsInsFPage`
+- `button` "continue" — pagina `ProductInsFPage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:108`
+
+### 🔧 `the user select i'am new`
+
+the user select i'am new
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `link` "I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment..."
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:86`
+
+### 🔧 `the user select insomnia treatment`
+
+the user select insomnia treatment
+
+**Componenti di frontend:** _(mai confermati sulla pagina)_
+- `button` "Services" — pagina `HomePage`
+- `link` "Insomnia" — pagina `HomePage`
+- `link` "Get started" — pagina `InsomniaServicePage`
+
+_Source:_ `src\steps\generated\qa-clinic-lemonaidhealth-co-uk.steps.ts:62`
 
 ## Domain: `qa-brochure/weight-loss` (5 steps)
 

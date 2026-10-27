@@ -34,6 +34,8 @@ private readonly placeOrderButton: Locator = this.page.getByRole('button', { nam
   private readonly creditOrDebitCardExpirationField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*Credit or debit card expiration date[^\p{L}\p{N}]*$/u });
   private readonly creditOrDebitCardNumberField: Locator = this.page.getByRole('textbox', { name: /^[^\p{L}\p{N}]*Credit or debit card number[^\p{L}\p{N}]*$/u });
   private readonly el0000Expiry1229Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\.\.\.\.0000 Expiry 12\/29[^\p{L}\p{N}]*$/u });  // unstable: contiene un identificativo numerico
+  private readonly el0005Expiry0729Button: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*\.\.\.\.\d+ Expiry \d+\/\d+[^\p{L}\p{N}]*$/u }).first();  // ambiguous: contiene un identificativo numerico; 5 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+  private readonly saveContinueButton: Locator = this.page.getByRole('button', { name: /^[^\p{L}\p{N}]*Save & continue[^\p{L}\p{N}]*$/u });
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono
@@ -96,5 +98,20 @@ async clickPlaceOrder(): Promise<void> {
    */
   async click0000Expiry1229(): Promise<void> {
     await this.el0000Expiry1229Button.click();
+  }
+
+  /**
+   * @componente  button "....0005 Expiry 07/29"
+   * @attenzione  ancoraggio ambiguous: contiene un identificativo numerico; 5 elementi con lo stesso ruolo e nome: il locator non e' univoco, servira' .nth() o un filtro
+   */
+  async click0005Expiry0729(): Promise<void> {
+    await this.el0005Expiry0729Button.click();
+  }
+
+  /**
+   * @componente  button "Save & continue"
+   */
+  async clickSaveContinue(): Promise<void> {
+    await this.saveContinueButton.click();
   }
 }
