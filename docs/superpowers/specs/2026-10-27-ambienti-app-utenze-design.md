@@ -213,7 +213,12 @@ Nessuna riscrittura obbligatoria (vedi §3.3 e §4.2), ma per pulizia:
 
 ## 8. Domande aperte
 
-1. **Indirizzi di staging** di brochure, clinic e pims.
+1. **Indirizzi di staging** (risposta del 27/10): gli stessi di QA con `staging-` al
+   posto di `qa-`, cioè `https://staging-brochure.lemonaidhealth.co.uk` e
+   `https://staging-clinic.lemonaidhealth.co.uk`. Si scrivono per intero in
+   `ambienti.json`, senza ricavarli dal prefisso. **Da confermare** PIMS, che su
+   QA è `qa.lemonaidpims.co.uk` (con il punto): su staging si suppone
+   `staging.lemonaidpims.co.uk`.
 2. **Le utenze di staging** sono le stesse di QA?
 3. **Il nome degli ambienti:** `qa` e `staging` vanno bene, o usate altri nomi
    (es. `uat`)?
