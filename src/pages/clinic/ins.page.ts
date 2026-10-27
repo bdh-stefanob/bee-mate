@@ -26,7 +26,7 @@ export class InsPage extends BasePage {
   }
 
   // ─── Componenti ────────────────────────────────────────────────────────────
-  private readonly iMNewToBootsButton: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment\.\.\.[^\p{L}\p{N}]*$/u }).or(this.page.getByText(/^[^\p{L}\p{N}]*I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment\.\.\.[^\p{L}\p{N}]*$/u)).filter({ visible: true }).first();  // unstable: nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo
+  private readonly iMNewToBootsButton: Locator = this.page.getByRole('link', { name: /^[^\p{L}\p{N}]*I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment\.\.\.[^\p{L}\p{N}]*$/u }).or(this.page.getByText('I\'m new to Boots Online Doctor for insomnia I\'m here for my first visit with the medical team for insomnia treatment...', { exact: true })).filter({ visible: true }).first();  // unstable: nome molto lungo: probabilmente e' il testo di un contenitore, non del controllo
 
   // ─── Riconoscimento ────────────────────────────────────────────────────────
   // Costruito dalle asserzioni che il tester ha dichiarato registrando: sono

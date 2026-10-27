@@ -265,7 +265,23 @@ export function locatorEmesso(c: Component): string {
   // nome. Solo i visibili: il testo si ripete in copie nascoste (il menu per
   // il telefono), e la prima trovata era quella. `.first()` perche' l'unione
   // dei due puo' trovare lo stesso elemento.
-  if (ruolo === "link") return `${perRuolo}.or(this.page.getByText(${nome})).filter({ visible: true }).first()`;
+  //
+  // IL TESTO SI CERCA COME TESTO, NON COME ESPRESSIONE (Insomnia su QA, 27/10).
+  // La scheda «I'm new to …» e' un <a ng-click> con titolo e descrizione in due
+  // blocchi, a capo e un doppio spazio: Playwright normalizza gli spazi quando
+  // cerca una stringa, non quando cerca un'espressione regolare, e il ripiego
+  // `/^…$/u` trovava zero elementi. Stringa esatta: non aggancia testi piu'
+  // lunghi che la contengono («Log in» non e' «Log in to see more»). Un nome
+  // troncato dalla sonda resta una sottostringa; uno con un numero che cambia
+  // resta un'espressione, perche' il numero deve poter cambiare.
+  if (ruolo === "link") {
+    const perTesto = instabile
+      ? `this.page.getByText(${nome})`
+      : c.name.length >= 120
+        ? `this.page.getByText('${nomeTraVirgolette}')`
+        : `this.page.getByText('${nomeTraVirgolette}', { exact: true })`;
+    return `${perRuolo}.or(${perTesto}).filter({ visible: true }).first()`;
+  }
   return `${perRuolo}${primo ?? ""}`;
 }
 
