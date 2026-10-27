@@ -1,0 +1,292 @@
+{
+  "startUrl": "https://qa-clinic.lemonaidhealth.co.uk",
+  "recordedAt": "2026-10-27T10:22:51.095Z",
+  "durationSeconds": 200,
+  "pagesVisited": [
+    "https://qa-clinic.lemonaidhealth.co.uk/",
+    "https://qa-brochure.lemonaidhealth.co.uk/",
+    "https://widget.trustpilot.com/trustboxes/5419b637fa0340045cd0c936/index.html?templateId=5419b637fa0340045cd0c936&businessunitId=60f54d7e6255650001e3e666#locale=en-GB&styleHeight=20px&styleWidth=100%25&token=a86f4bc1-f059-43a8-9ed0-51b234b834ea",
+    "https://qa-brochure.lemonaidhealth.co.uk/insomnia-service",
+    "https://qa-clinic.lemonaidhealth.co.uk/insomnia?_gl=1*4c4ug3*_gcl_au*MTM0MDkwMjA1My4xNzkzMDk2MjQ0LjE0MTI1MTExMDMuMTc5MzA5NjI0OS4xNzkzMDk2Mzc1LjEzODc1OTgwNy4xNzkzMDk2MjQ5LjE3OTMwOTYzNzU.*_ga*MTU4NTE2MTg3My4xNzkzMDk2MjQy*_ga_6CE1ETYRWN*czE3OTMwOTYyNDEkbzEkZzEkdDE3OTMwOTY1OTYkajM4JGwwJGgw",
+    "https://qa-clinic.lemonaidhealth.co.uk/services/INS",
+    "https://qa-clinic.lemonaidhealth.co.uk/products/INS-F",
+    "https://qa-clinic.lemonaidhealth.co.uk/product/1017/INS-F",
+    "https://qa-clinic.lemonaidhealth.co.uk/important-info",
+    "https://qa-clinic.lemonaidhealth.co.uk/questions/",
+    "https://qa-clinic.lemonaidhealth.co.uk/questions/1",
+    "https://qa-clinic.lemonaidhealth.co.uk/questions/2",
+    "https://qa-clinic.lemonaidhealth.co.uk/pharmacies",
+    "https://qa-clinic.lemonaidhealth.co.uk/pharmacy-map-selection",
+    "https://qa-clinic.lemonaidhealth.co.uk/summary",
+    "https://js.stripe.com/v3/controller-with-preconnect-78220ee840eec927e30b2d442009d032.html#__shared_params__[version]=v3&__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22adc53748-c69a-4977-9ee7-70d4e4156be7%22%2C%22assignments%22%3A%7B%22ewcs_integration_error_fatal_reclassification%22%3A%7B%22variant%22%3A%22treatment%22%2C%22population%22%3A1%7D%7D%2C%22unqualifiedExperiments%22%3A%7B%22react_version_18_v4%22%3A0.5%7D%7D&apiKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&stripeJsId=adc53748-c69a-4977-9ee7-70d4e4156be7&stripeObjId=sobj-ef4f340a-b1a3-48cc-9822-04c8036c0642&firstStripeInstanceCreatedLatency=61&controllerCount=1&isCheckout=false&stripeJsLoadTime=1793096702879.7&manualBrowserDeprecationRollout=false&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&referrer=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&controllerId=__privateStripeController8261",
+    "https://js.stripe.com/v3/elements-inner-card-c7ce06978757eadab53a31c64a872ead.html#__shared_params__[version]=v3&__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22adc53748-c69a-4977-9ee7-70d4e4156be7%22%2C%22assignments%22%3A%7B%22ewcs_integration_error_fatal_reclassification%22%3A%7B%22variant%22%3A%22treatment%22%2C%22population%22%3A1%7D%7D%2C%22unqualifiedExperiments%22%3A%7B%22react_version_18_v4%22%3A0.5%7D%7D&wait=false&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&elementId=cardNumber-3e3d517f-1eb5-41fa-9170-3c649ba1e8af&style[base][color]=%2332325d&style[base][lineHeight]=18px&style[base][fontFamily]=%22Helvetica+Neue%22%2C+Helvetica%2C+sans-serif&style[base][fontSmoothing]=antialiased&style[base][fontSize]=16px&style[base][::placeholder][color]=%23aab7c4&style[invalid][color]=%2305054B&style[invalid][iconColor]=%2305054B&stripeJsMountedInIframe=false&rtl=false&componentName=cardNumber&keyMode=test&apiKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&frameMessagingStrategy=postMessage&referrer=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&controllerId=__privateStripeController8261",
+    "https://js.stripe.com/v3/elements-inner-card-c7ce06978757eadab53a31c64a872ead.html#__shared_params__[version]=v3&__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22adc53748-c69a-4977-9ee7-70d4e4156be7%22%2C%22assignments%22%3A%7B%22ewcs_integration_error_fatal_reclassification%22%3A%7B%22variant%22%3A%22treatment%22%2C%22population%22%3A1%7D%7D%2C%22unqualifiedExperiments%22%3A%7B%22react_version_18_v4%22%3A0.5%7D%7D&wait=false&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&elementId=cardExpiry-af03fe80-1abd-4774-8c87-957eb8773fc9&style[base][color]=%2332325d&style[base][lineHeight]=18px&style[base][fontFamily]=%22Helvetica+Neue%22%2C+Helvetica%2C+sans-serif&style[base][fontSmoothing]=antialiased&style[base][fontSize]=16px&style[base][::placeholder][color]=%23aab7c4&style[invalid][color]=%2305054B&style[invalid][iconColor]=%2305054B&stripeJsMountedInIframe=false&rtl=false&componentName=cardExpiry&keyMode=test&apiKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&frameMessagingStrategy=postMessage&referrer=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&controllerId=__privateStripeController8261",
+    "https://js.stripe.com/v3/elements-inner-card-c7ce06978757eadab53a31c64a872ead.html#__shared_params__[version]=v3&__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22adc53748-c69a-4977-9ee7-70d4e4156be7%22%2C%22assignments%22%3A%7B%22ewcs_integration_error_fatal_reclassification%22%3A%7B%22variant%22%3A%22treatment%22%2C%22population%22%3A1%7D%7D%2C%22unqualifiedExperiments%22%3A%7B%22react_version_18_v4%22%3A0.5%7D%7D&wait=false&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&elementId=cardCvc-afccaec9-9711-4efe-9652-3c1cbfc38057&style[base][color]=%2332325d&style[base][lineHeight]=18px&style[base][fontFamily]=%22Helvetica+Neue%22%2C+Helvetica%2C+sans-serif&style[base][fontSmoothing]=antialiased&style[base][fontSize]=16px&style[base][::placeholder][color]=%23aab7c4&style[invalid][color]=%2305054B&style[invalid][iconColor]=%2305054B&stripeJsMountedInIframe=false&rtl=false&componentName=cardCvc&keyMode=test&apiKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&frameMessagingStrategy=postMessage&referrer=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&controllerId=__privateStripeController8261",
+    "https://js.stripe.com/v3/universal-link-modal-inner-54f2bd67e7ec3bac934ab44d6df86bcc.html#apiKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&stripeJsId=adc53748-c69a-4977-9ee7-70d4e4156be7&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&locale=en&openerFrameId=__privateStripeFrame8263&surface=web_split_card_element_popup&referrer=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&controllerId=__privateStripeController8261",
+    "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&title=Consultation%20%7C%20Boots%20Online%20Doctor&referrer=https%3A%2F%2Fqa-brochure.lemonaidhealth.co.uk%2F&muid=NA&sid=NA&version=6&preview=false&__shared_params__[version]=v3",
+    "https://m.stripe.network/inner.html#url=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk%2Fsummary&title=Consultation%20%7C%20Boots%20Online%20Doctor&referrer=https%3A%2F%2Fqa-brochure.lemonaidhealth.co.uk%2F&muid=NA&sid=NA&version=6&preview=false&__shared_params__[version]=v3",
+    "https://js.stripe.com/v3/hcaptcha-invisible-fe255319470605058d14bfa4c2d12563.html#debugMode=false&parentOrigin=https%3A%2F%2Fqa-clinic.lemonaidhealth.co.uk",
+    "https://js.stripe.com/v3/elements-inner-link-button-for-card-cc2fee9b6153f104504ae4f87b249bf2.html#locale=en&style[foregroundColor]=%2332325d&frameId=__privateStripeFrame8263&publishableKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&stripeJsId=adc53748-c69a-4977-9ee7-70d4e4156be7&controllerId=__privateStripeController8261&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&component=cardNumber&elementId=cardNumber-3e3d517f-1eb5-41fa-9170-3c649ba1e8af&experimentAssignments[link_global_holdback_non_ewcs_aa]=control&experimentAssignments[link_global_holdback_non_ewcs]=control&experimentAssignments[link_ce_conversion_unrecognized_aa]=control&experimentAssignments[link_ce_conversion_unrecognized_post_entry_aa]=control&experimentAssignments[link_ce_conversion_cookie_aa]=control&experimentAssignments[link_ce_conversion_ncdv_aa]=control&experimentAssignments[link_ce_conversion_recognized_loading_animation]=control&experimentAssignments[link_ce_conversion_unrecognized_copy_change]=control&experimentAssignments[link_growth_ece_ncdv]=control&experimentAssignments[link_growth_ece_ncdv_aa]=control&experimentAssignments[link_growth_ncdv_mpdvou_tolerance]=control&experimentAssignments[link_growth_ncdv_phone]=control&experimentAssignments[link_pe_signup_green_logo]=control&experimentAssignments[link_pe_signup_green_logo_aa]=control&experimentAssignments[link_pe_signup_toggle]=control&experimentAssignments[ff_elements_google_pay_sheet_lifecycle_guards_eff]=control&link_brand=link",
+    "https://js.stripe.com/v3/elements-inner-link-button-for-card-cc2fee9b6153f104504ae4f87b249bf2.html#locale=en&style[foregroundColor]=%2332325d&frameId=__privateStripeFrame8263&publishableKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&stripeJsId=adc53748-c69a-4977-9ee7-70d4e4156be7&controllerId=__privateStripeController8261&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&component=cardExpiry&elementId=cardExpiry-af03fe80-1abd-4774-8c87-957eb8773fc9",
+    "https://js.stripe.com/v3/elements-inner-link-button-for-card-cc2fee9b6153f104504ae4f87b249bf2.html#locale=en&style[foregroundColor]=%2332325d&frameId=__privateStripeFrame8263&publishableKey=pk_test_51IQzhhEDx7XV6EhhvkoiZgTvkb1J25xnFfuBfbpwY0jGzEg0mYtRy57jj0I1F0qJCRKi38UoICQIF9v7vqYmFYlx00zqfURleR&stripeJsId=adc53748-c69a-4977-9ee7-70d4e4156be7&controllerId=__privateStripeController8261&mids[guid]=NA&mids[muid]=NA&mids[sid]=NA&component=cardCvc&elementId=cardCvc-afccaec9-9711-4efe-9652-3c1cbfc38057",
+    "https://b.stripecdn.com/stripethirdparty-srv/assets/v35.5/HCaptchaInvisible.html?id=c471de36-7e90-44ee-9f9a-967b40e19297&origin=https%3A%2F%2Fjs.stripe.com",
+    "https://newassets.hcaptcha.com/captcha/v1/aca5f59ac1dedd238fa84e3f3225f622e5735959/static/hcaptcha.html#frame=challenge&id=0hj4pvohx3c5&host=b.stripecdn.com&sentry=true&reportapi=https%3A%2F%2Faccounts.hcaptcha.com&recaptchacompat=true&custom=false&hl=en&tplinks=on&andint=off&pstissuer=https%3A%2F%2Fpst-issuer.hcaptcha.com&sitekey=20000000-ffff-ffff-ffff-000000000002&size=invisible&theme=light&origin=https%3A%2F%2Fb.stripecdn.com&clientOptions=%7B%22sentry%22%3Atrue%2C%22reportapi%22%3A%22https%3A%2F%2Faccounts.hcaptcha.com%22%2C%22recaptchacompat%22%3A%22true%22%2C%22custom%22%3Afalse%2C%22hl%22%3A%22en-US%22%2C%22tplinks%22%3A%22on%22%2C%22andint%22%3A%22off%22%2C%22pat%22%3A%22on%22%2C%22pstissuer%22%3A%22https%3A%2F%2Fpst-issuer.hcaptcha.com%22%2C%22endpoint%22%3A%22https%3A%2F%2Fapi.hcaptcha.com%22%2C%22theme%22%3A%22light%22%2C%22size%22%3A%22normal%22%2C%22confirm-nav%22%3Afalse%7D",
+    "https://newassets.hcaptcha.com/captcha/v1/aca5f59ac1dedd238fa84e3f3225f622e5735959/static/hcaptcha.html#frame=checkbox-invisible",
+    "https://qa-clinic.lemonaidhealth.co.uk/order-complete-async-no-call",
+    "https://www.awin1.com/alt.php?mid=78360&gv=2&l=https%3A//www.awin1.com/sread.php%3Fa%3D78360%26b%3D85.00%26cr%3DGBP%26c%3D38103%26d%3DDEFAULT%3A85.00%26vc%3Dnull%26t%3D0%26ch%3Daw%26l%3Dhttps%253A%252F%252Fqa-clinic.lemonaidhealth.co.uk%252Forder-complete-async-no-call%26tv%3D2%26tt%3Det",
+    "https://qa-clinic.lemonaidhealth.co.uk/messages",
+    "https://qa-clinic.lemonaidhealth.co.uk/messages#65125"
+  ],
+  "summary": {
+    "intents": 7,
+    "steps": 19,
+    "assertions": 2,
+    "unlabelled": 0
+  },
+  "intents": [
+    {
+      "label": "the user select insomnia treatment",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Services",
+          "url": "https://qa-brochure.lemonaidhealth.co.uk/"
+        },
+        {
+          "action": "click",
+          "role": "link",
+          "name": "Insomnia",
+          "url": "https://qa-brochure.lemonaidhealth.co.uk/"
+        },
+        {
+          "action": "click",
+          "role": "link",
+          "name": "Get started",
+          "url": "https://qa-brochure.lemonaidhealth.co.uk/insomnia-service",
+          "contesto": {
+            "intestazione": "Insomnia Treatment Service"
+          }
+        }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://qa-brochure.lemonaidhealth.co.uk/",
+      "endUrl": "https://qa-brochure.lemonaidhealth.co.uk/insomnia-service"
+    },
+    {
+      "label": "the user select i'am new",
+      "steps": [
+        {
+          "action": "click",
+          "role": "link",
+          "name": "I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment...",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/services/INS",
+          "contesto": {
+            "intestazione": "Have you seen us before?"
+          }
+        }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://qa-clinic.lemonaidhealth.co.uk/services/INS"
+    },
+    {
+      "label": "the user select a product",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "30 Tablets £85 Quviviq 25mg Quviviq is an oral tablet used to treat chronic insomnia (long-term sleeping difficulties) t",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/products/INS-F",
+          "contesto": {
+            "intestazione": "Ultimately it will be a joint decision between you and one of our clinicians on whether a particular medicine is appropriate."
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "continue",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/product/1017/INS-F"
+        }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://qa-clinic.lemonaidhealth.co.uk/products/INS-F",
+      "endUrl": "https://qa-clinic.lemonaidhealth.co.uk/product/1017/INS-F"
+    },
+    {
+      "label": "the user accept important info",
+      "steps": [
+        {
+          "action": "click",
+          "role": "",
+          "name": "",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/important-info",
+          "ancoraggioAssente": {
+            "tag": "label",
+            "classi": [
+              "ng-binding"
+            ],
+            "selettore": ".ng-binding",
+            "fra": {
+              "indice": 63,
+              "totale": 65
+            }
+          },
+          "contesto": {
+            "intestazione": "important info"
+          }
+        },
+        {
+          "action": "set",
+          "role": "checkbox",
+          "name": "I understand the important information above.",
+          "value": "checked",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/important-info",
+          "contesto": {
+            "intestazione": "important info"
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Continue",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/important-info",
+          "contesto": {
+            "intestazione": "important info"
+          }
+        }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://qa-clinic.lemonaidhealth.co.uk/important-info"
+    },
+    {
+      "label": "th user pick up in store and selct a store",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Less than 3 months",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/questions/1",
+          "contesto": {
+            "intestazione": "Welcome to our insomnia clinic. How long have you had difficulty sleeping? How long have you had difficulty sleeping?"
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Next",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/questions/1",
+          "contesto": {
+            "intestazione": "Welcome to our insomnia clinic. How long have you had difficulty sleeping? How long have you had difficulty sleeping?"
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Less than 7 hours",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/questions/2",
+          "contesto": {
+            "intestazione": "When you have difficulty sleeping, how many hours of real sleep do you usually get, not counting the time you’re awake in bed?"
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Next",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/questions/2",
+          "contesto": {
+            "intestazione": "When you have difficulty sleeping, how many hours of real sleep do you usually get, not counting the time you’re awake in bed?"
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Yes, pick up in store",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/pharmacies"
+        },
+        {
+          "action": "fill",
+          "role": "textbox",
+          "name": "zip",
+          "value": "NW1",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/pharmacy-map-selection",
+          "invio": true
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Select Pharmacy",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/pharmacy-map-selection",
+          "contesto": {
+            "dialog": "(senza nome)"
+          }
+        }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://qa-clinic.lemonaidhealth.co.uk/questions/1",
+      "endUrl": "https://qa-clinic.lemonaidhealth.co.uk/pharmacy-map-selection"
+    },
+    {
+      "label": "the user comple the card assignemnt",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "....0005 Expiry 07/29",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/summary",
+          "contesto": {
+            "intestazione": "Your Order"
+          }
+        },
+        {
+          "action": "click",
+          "role": "button",
+          "name": "Save & continue",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/summary",
+          "contesto": {
+            "intestazione": "Your Order"
+          }
+        }
+      ],
+      "assertions": [],
+      "notes": [],
+      "pageUrl": "https://qa-clinic.lemonaidhealth.co.uk/summary"
+    },
+    {
+      "label": "the user check notification",
+      "steps": [
+        {
+          "action": "click",
+          "role": "button",
+          "name": "16 Secure messages",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/order-complete-async-no-call"
+        }
+      ],
+      "assertions": [
+        {
+          "role": "button",
+          "name": "16 Secure messages",
+          "text": "16 Secure messages",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/order-complete-async-no-call",
+          "afterStep": 0
+        },
+        {
+          "role": "text",
+          "name": "27/10/2026 11:25 AM",
+          "text": "27/10/2026 11:25 AM",
+          "url": "https://qa-clinic.lemonaidhealth.co.uk/messages#65125",
+          "afterStep": 1
+        }
+      ],
+      "notes": [],
+      "pageUrl": "https://qa-clinic.lemonaidhealth.co.uk/order-complete-async-no-call",
+      "endUrl": "https://qa-clinic.lemonaidhealth.co.uk/messages#65125"
+    }
+  ],
+  "startedWithSession": true,
+  "target": "clinic"
+}

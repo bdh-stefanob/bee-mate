@@ -1,0 +1,23 @@
+- button "Cookie Preferences":
+  - img "Cookie Preferences"
+- banner:
+  - text: "Call us: Mon-Fri 8:30AM-6PM, Sat-Sun 9:30AM-4:30PM"
+  - 'button "telephone # 0203 3183773"':  0203 3183773
+  - link "Boots Advantage Card":
+    - /url: https://www.boots.com/advantage-card
+  - link "Shop Boots.com":
+    - /url: https://boots.com
+  - navigation:
+    - button "Boots online doctor":
+      - img "Boots online doctor"
+    - button "Services "
+    - button " Secure messages"
+    - button " FAQ"
+    - button " My account"
+- heading "Have you seen us before?" [level=1]
+- img
+- text: I'm new to Boots Online Doctor for insomnia I'm here for my first visit with the medical team for insomnia treatment...
+- img
+- text: "I'm using Boots insomnia medicine I am currently using an insomnia medicine prescribed by Boots Online Doctor, and need a review and repeat prescription Powered by:"
+- img "powered by Boots Digital Health Limited"
+- text: ©2026 Boots Digital Health Limited
